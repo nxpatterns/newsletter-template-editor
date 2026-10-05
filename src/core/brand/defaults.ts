@@ -43,7 +43,7 @@ export function defaultLegal(): LegalFooterConfig {
   return {
     noticeHtml:
       'Sie erhalten diese E‑Mail, weil Sie im Kontext Ihrer 360°‑Präsenz mit uns in Verbindung stehen. Eine Abmeldung ist jederzeit über den Link im Footer möglich.',
-    companyLine: 'Wise Solutions GmbH · cloudlib.eu',
+    companyLine: 'Take Marco GmbH · cloudlib.eu',
     privacyLabel: 'Datenschutz',
     privacyHref: 'https://cloudlib.eu/home/privacy',
     imprintLabel: 'Impressum',
