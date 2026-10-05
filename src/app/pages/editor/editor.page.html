@@ -1,0 +1,21 @@
+<div class="work-area" [class.work-area--panel-open]="shellUi.panelOpen()">
+  <section class="preview-panel" [attr.aria-label]="i18n.t('preview.label')">
+    <iframe
+      class="preview-frame"
+      title="Newsletter preview"
+      data-testid="preview-frame"
+      [srcdoc]="previewSrcdoc()"
+    ></iframe>
+  </section>
+
+  @if (shellUi.panelOpen()) {
+    <aside
+      class="side-panel"
+      data-testid="side-panel"
+      [attr.aria-label]="i18n.t('panel.placeholder')"
+    >
+      <p class="side-panel__title" [textContent]="i18n.t('panel.placeholder')"></p>
+      <p class="side-panel__hint" [textContent]="i18n.t('panel.hint')"></p>
+    </aside>
+  }
+</div>

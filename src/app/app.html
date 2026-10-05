@@ -1,48 +1,116 @@
-<main class="app-shell">
+<div class="app-shell" data-testid="app-shell">
   <header class="app-header">
-    <h1>{{ title() }}</h1>
-    <p class="tagline">ListMonk-style HTML email · demo brand CloudLib.EU</p>
+    <div class="app-header-bar">
+      <div class="app-header-brand">
+        <h1 class="app-header-title" data-testid="app-title" [textContent]="i18n.t('shell.title')"></h1>
+        <div class="app-header-subtitle" [textContent]="i18n.t('shell.subtitle')"></div>
+      </div>
 
-    <div
-      ngToolbar
-      class="app-toolbar"
-      aria-label="Editor actions"
-      cdkMonitorSubtreeFocus
-    >
-      <button
-        type="button"
-        ngToolbarWidget
-        class="toolbar-btn"
-        value="save"
-        data-testid="action-save"
-        (click)="save()"
-      >
-        Save
-      </button>
-      <button
-        type="button"
-        ngToolbarWidget
-        class="toolbar-btn"
-        value="reset"
-        data-testid="action-reset"
-        (click)="resetSeed()"
-      >
-        Reset seed
-      </button>
+      <div class="app-header-actions">
+        <div
+          ngToolbar
+          class="app-toolbar"
+          aria-label="Editor actions"
+          data-testid="app-toolbar"
+        >
+          <button
+            type="button"
+            ngToolbarWidget
+            class="toolbar-btn"
+            value="save"
+            data-testid="action-save"
+            [textContent]="i18n.t('action.save')"
+            (click)="session.save()"
+          ></button>
+          <button
+            type="button"
+            ngToolbarWidget
+            class="toolbar-btn"
+            value="reset"
+            data-testid="action-reset"
+            [textContent]="i18n.t('action.reset')"
+            (click)="session.resetSeed()"
+          ></button>
+          <button
+            type="button"
+            ngToolbarWidget
+            class="toolbar-btn toolbar-btn--ghost"
+            value="panel"
+            data-testid="action-panel"
+            [attr.aria-label]="i18n.t('action.panelToggle')"
+            [attr.aria-pressed]="shellUi.panelOpen()"
+            (click)="shellUi.togglePanel()"
+          >
+            ☰
+          </button>
+        </div>
+
+        <div class="locale-switch" role="group" [attr.aria-label]="i18n.t('action.locale')">
+          <button
+            type="button"
+            class="locale-btn"
+            data-testid="locale-en"
+            [class.is-active]="i18n.locale() === 'en'"
+            [attr.aria-pressed]="i18n.locale() === 'en'"
+            [textContent]="i18n.t('locale.en')"
+            (click)="setLocale('en')"
+          ></button>
+          <button
+            type="button"
+            class="locale-btn"
+            data-testid="locale-de"
+            [class.is-active]="i18n.locale() === 'de'"
+            [attr.aria-pressed]="i18n.locale() === 'de'"
+            [textContent]="i18n.t('locale.de')"
+            (click)="setLocale('de')"
+          ></button>
+        </div>
+      </div>
     </div>
   </header>
 
-  <section class="preview-panel" aria-label="Email preview">
-    <iframe
-      class="preview-frame"
-      title="Newsletter preview"
-      [srcdoc]="previewSrcdoc()"
-    ></iframe>
-  </section>
-</main>
+  <main class="app-main">
+    <router-outlet />
+  </main>
 
-<footer class="app-footer" aria-label="Application version">
-  <span class="app-footer__version" data-testid="app-version">{{ appVersion }}</span>
-</footer>
+  <footer class="app-footer">
+    <div class="app-footer-bar">
+      <div class="app-footer-left"></div>
+      <nav class="app-footer-center" aria-label="Legal">
+        <button
+          type="button"
+          class="footer-link"
+          data-testid="footer-impressum"
+          [textContent]="i18n.t('footer.impressum')"
+          (click)="openLegal('impressum')"
+        ></button>
+        <span class="app-footer-separator" aria-hidden="true">·</span>
+        <button
+          type="button"
+          class="footer-link"
+          data-testid="footer-privacy"
+          [textContent]="i18n.t('footer.privacy')"
+          (click)="openLegal('privacy')"
+        ></button>
+        <span class="app-footer-separator" aria-hidden="true">·</span>
+        <a
+          class="footer-link"
+          routerLink="/about"
+          data-testid="footer-about"
+          [textContent]="i18n.t('footer.about')"
+        ></a>
+      </nav>
+      <div class="app-footer-right">
+        <span
+          class="app-footer-version"
+          data-testid="app-version"
+          [attr.aria-label]="i18n.t('footer.version')"
+          [textContent]="appVersion"
+        ></span>
+      </div>
+    </div>
+  </footer>
+</div>
 
+<app-legal-modal [kind]="legalKind()" (closed)="closeLegal()" />
 <app-snackbar />

@@ -8,12 +8,20 @@
   --ds-text-muted: #7a9ab8;
   --ds-success: #3dd68c;
   --ds-danger: #ff6b7a;
-  --ds-footer-height: 2.5rem;
+  --ds-header-min-height: 3.5rem;
+  --ds-footer-height: 2.75rem;
+  --ds-panel-width: 21rem;
+  --ds-work-min-height: 37.5rem;
+  --ds-side-by-side-min: 60rem;
   --ds-snackbar-gap: 0.75rem;
+  --ds-safe-top: env(safe-area-inset-top, 0px);
   --ds-safe-bottom: env(safe-area-inset-bottom, 0px);
   --ds-radius: 0.5rem;
   --ds-z-footer: 40;
+  --ds-z-header: 40;
+  --ds-z-panel-overlay: 45;
   --ds-z-snackbar: 50;
+  --ds-z-modal: 60;
 }
 
 *,
@@ -26,7 +34,8 @@ html,
 body {
   margin: 0;
   padding: 0;
-  min-height: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 body {

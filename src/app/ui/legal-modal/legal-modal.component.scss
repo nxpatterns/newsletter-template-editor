@@ -1,0 +1,101 @@
+:host {
+  display: contents;
+}
+
+.legal-dialog {
+  inset: 0;
+  margin: auto;
+  max-inline-size: min(36rem, calc(100vw - 2rem));
+  max-block-size: min(85dvh, 40rem);
+  padding: 0;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius);
+  background: var(--ds-bg-panel);
+  color: var(--ds-text);
+  box-shadow: 0 16px 48px rgb(0 0 0 / 55%);
+}
+
+.legal-dialog::backdrop {
+  background: rgb(0 0 0 / 55%);
+}
+
+.legal-dialog__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-block-end: 1px solid var(--ds-border);
+}
+
+.legal-dialog__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.legal-dialog__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 2.75rem;
+  min-block-size: 2.75rem;
+  border: 0;
+  border-radius: var(--ds-radius);
+  font-size: 1.35rem;
+  line-height: 1;
+  color: var(--ds-text-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.legal-dialog__close:hover {
+  color: var(--ds-text);
+  background: color-mix(in srgb, var(--ds-accent) 12%, transparent);
+}
+
+.legal-dialog__close:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 2px;
+}
+
+.legal-dialog__body {
+  padding: 1rem 1.1rem 1.25rem;
+  overflow: auto;
+  max-block-size: calc(min(85dvh, 40rem) - 4rem);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.legal-dialog__body h3 {
+  margin-block: 1rem 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ds-accent);
+}
+
+.legal-dialog__body p,
+.legal-dialog__body ul {
+  margin: 0.5rem 0;
+}
+
+.legal-dialog__body a {
+  color: var(--ds-accent);
+}
+
+.legal-dialog__label {
+  margin-block-end: 0.15rem;
+  font-weight: 600;
+  color: var(--ds-text-muted);
+}
+
+.legal-dialog__pre {
+  margin: 0 0 0.75rem;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  white-space: pre-wrap;
+  color: var(--ds-text);
+}

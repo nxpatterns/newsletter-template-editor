@@ -1,0 +1,18 @@
+<article class="about" data-testid="about-page">
+  <h2 [textContent]="i18n.t('about.title')"></h2>
+  <p [textContent]="i18n.t('about.lead')"></p>
+  <p [textContent]="i18n.t('about.demo')"></p>
+  <p [textContent]="i18n.t('about.local')"></p>
+  <p>
+    <span [textContent]="i18n.t('about.repo')"></span>
+    <a
+      [href]="i18n.t('about.repoUrl')"
+      target="_blank"
+      rel="noopener noreferrer"
+      [textContent]="i18n.t('about.repoUrl')"
+    ></a>
+  </p>
+  <p>
+    <a routerLink="/" data-testid="about-back" [textContent]="i18n.t('about.back')"></a>
+  </p>
+</article>

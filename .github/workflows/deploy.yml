@@ -58,6 +58,11 @@ jobs:
           node scripts/write-app-version.mjs
           npm run build -- --configuration=production
 
+      - name: SPA fallback 404 for GitHub Pages
+        run: |
+          DIST="dist/newsletter-template-editor/browser"
+          cp "$DIST/index.html" "$DIST/404.html"
+
       - name: Ensure no public source maps are shipped
         run: |
           DIST="dist/newsletter-template-editor/browser"
