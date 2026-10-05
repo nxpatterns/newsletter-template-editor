@@ -6,7 +6,8 @@ Rules:
 
 - Spec lives here (or a linked file under `docs/concepts/`), not only in component comments.
 - No ship without tests (BDD at minimum; device lab later where relevant).
-- English only; no numbering in section titles.
+- **This document** is English only; no numbering in section titles.
+- **Product UI** is bilingual: `en` (default) + `de`, locale persisted — copy in the app goes through i18n keys (see guidelines). Specs here describe behaviour/placement, not DE/EN string tables.
 
 ---
 
@@ -115,8 +116,37 @@ bottom = var(--ds-footer-height) + var(--ds-snackbar-gap) + var(--ds-safe-bottom
 
 ---
 
+## Language switcher (UI locale)
+
+Product: **English (default)** and **German**; choice stored in `localStorage` and restored on load. Runtime switch (not a separate build per locale).
+
+### Placement (decide in shell-layout session)
+
+- Must be reachable without scrolling gymnastics; candidate: header/toolbar cluster or footer strip opposite the version (left vs version right).
+- Must not introduce a second page scrollbar or cover the snackbar.
+- Touch target ≥ 44×44 CSS px; clear selected state (`aria-pressed` or combobox pattern via Aria if needed).
+
+### Behaviour
+
+- Changing locale updates chrome strings immediately and sets `document.documentElement.lang`.
+- Does **not** rewrite newsletter/email author content inside the preview.
+- Persist on change; invalid stored values fall back to `en`.
+
+### Tests
+
+- Default visit → English chrome (existing BDD can stay EN).
+- Switch to DE → key chrome string(s) German; reload → DE still active.
+
+### Implementation map
+
+- Spec: this section + `docs/guidelines/angular-implementation-guidelines.md` (Internationalisation)
+- Code (when sliced): `src/app/i18n/`
+
+---
+
 ## Future chrome (stubs only — specify before build)
 
+- Shell layout (scroll owners — fixes double scrollbar)
 - Dialog / modal
 - Block list + inspector layout
 - Export download feedback (uses snackbar)
