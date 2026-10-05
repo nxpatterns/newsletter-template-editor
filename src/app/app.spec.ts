@@ -16,11 +16,10 @@ describe('App', () => {
     expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('should render Hello World', async () => {
+  it('should render app title', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('newsletter-template-editor');
-    expect(compiled.querySelector('p')?.textContent).toContain('Hello World');
+    expect(compiled.querySelector('h1')?.textContent).toContain('Newsletter Template Editor');
   });
 });

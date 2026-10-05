@@ -1,5 +1,40 @@
 <main class="app-shell">
-  <h1>{{ title() }}</h1>
-  <p>Hello World</p>
-  <router-outlet />
+  <header class="app-header">
+    <h1>{{ title() }}</h1>
+    <p class="tagline">ListMonk-style HTML email · demo brand CloudLib.EU</p>
+
+    <div
+      ngToolbar
+      class="app-toolbar"
+      aria-label="Editor actions"
+      cdkMonitorSubtreeFocus
+    >
+      <button
+        type="button"
+        ngToolbarWidget
+        class="toolbar-btn"
+        value="save"
+        (click)="save()"
+      >
+        Save
+      </button>
+      <button
+        type="button"
+        ngToolbarWidget
+        class="toolbar-btn"
+        value="reset"
+        (click)="resetSeed()"
+      >
+        Reset seed
+      </button>
+    </div>
+  </header>
+
+  <section class="preview-panel" aria-label="Email preview">
+    <iframe
+      class="preview-frame"
+      title="Newsletter preview"
+      [srcdoc]="previewSrcdoc()"
+    ></iframe>
+  </section>
 </main>
