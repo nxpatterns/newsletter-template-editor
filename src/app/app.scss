@@ -80,11 +80,6 @@
   cursor: pointer;
 }
 
-.toolbar-btn--ghost {
-  min-inline-size: 2.75rem;
-  min-block-size: 2.75rem;
-  padding-inline: 0.5rem;
-}
 
 .toolbar-btn:hover {
   background: color-mix(in srgb, var(--ds-accent) 16%, var(--ds-bg-panel));

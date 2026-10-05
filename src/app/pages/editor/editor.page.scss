@@ -7,9 +7,7 @@
 }
 
 .work-area {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr);
+  display: flex;
   flex: 1 1 auto;
   min-height: 0;
   height: 100%;
@@ -19,6 +17,7 @@
 .preview-panel {
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
@@ -35,21 +34,88 @@
   background: #08101e;
 }
 
+/* Open width / overlay rules stay project-owned; only collapse motion mirrors dogan. */
 .side-panel {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  flex: 0 0 auto;
+  width: var(--ds-panel-width);
+  min-width: var(--ds-panel-width);
   min-height: 0;
-  padding: 1rem;
   border-inline-start: 1px solid var(--ds-border);
   background: var(--ds-bg-panel);
   color: var(--ds-text-muted);
   font-size: 0.875rem;
   line-height: 1.4;
+  transition:
+    width 0.2s ease,
+    min-width 0.2s ease;
+}
+
+.side-panel.collapsed {
+  width: 2.25rem;
+  min-width: 2.25rem;
+}
+
+.side-panel.collapsed .side-panel-tabs,
+.side-panel.collapsed .side-panel-body {
+  display: none;
+}
+
+.side-panel.collapsed .side-panel-toggle {
+  transform: rotate(180deg);
+}
+
+.side-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  padding: 0.5rem;
+  border-block-end: 1px solid var(--ds-border);
+}
+
+.side-panel-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius);
+  padding: 0;
+  font: inherit;
+  line-height: 1;
+  color: var(--ds-text-muted);
+  background: transparent;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.side-panel-toggle:hover {
+  color: var(--ds-text);
+  background: color-mix(in srgb, var(--ds-accent) 12%, var(--ds-bg-panel));
+}
+
+.side-panel-toggle:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 2px;
+}
+
+.side-panel-tabs {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.side-panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0.75rem;
 }
 
 .side-panel__title {
-  margin: 0;
+  margin: 0 0 0.35rem;
   color: var(--ds-text);
   font-weight: 600;
 }
@@ -58,19 +124,25 @@
   margin: 0;
 }
 
-@media (min-width: 60rem) {
-  .work-area--panel-open {
-    grid-template-columns: minmax(0, 1fr) var(--ds-panel-width);
+@media (prefers-reduced-motion: reduce) {
+  .side-panel,
+  .side-panel-toggle {
+    transition: none;
   }
 }
 
+/* Narrow: overlay drawer; collapse still uses the same icon + width animation. */
 @media (max-width: 59.99rem) {
   .side-panel {
     position: absolute;
     z-index: var(--ds-z-panel-overlay);
     inset-block: 0;
     inset-inline-end: 0;
-    width: min(var(--ds-panel-width), 100%);
+    height: 100%;
     box-shadow: -8px 0 24px rgb(0 0 0 / 35%);
+  }
+
+  .side-panel.collapsed {
+    box-shadow: none;
   }
 }

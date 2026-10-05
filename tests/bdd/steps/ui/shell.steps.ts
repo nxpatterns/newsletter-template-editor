@@ -81,3 +81,21 @@ Then('the preview frame should fill the main work area', async ({ page }) => {
   // router-outlet must not steal vertical space
   expect(metrics!.outletH).toBeLessThan(2);
 });
+
+When('I toggle the side panel', async ({ page }) => {
+  await page.getByTestId('side-panel-toggle').click();
+});
+
+Then('the side panel should be collapsed', async ({ page }) => {
+  const panel = page.getByTestId('side-panel');
+  await expect(panel).toHaveClass(/collapsed/);
+  const expanded = await page.getByTestId('side-panel-toggle').getAttribute('aria-expanded');
+  expect(expanded).toBe('false');
+});
+
+Then('the side panel should be expanded', async ({ page }) => {
+  const panel = page.getByTestId('side-panel');
+  await expect(panel).not.toHaveClass(/collapsed/);
+  const expanded = await page.getByTestId('side-panel-toggle').getAttribute('aria-expanded');
+  expect(expanded).toBe('true');
+});

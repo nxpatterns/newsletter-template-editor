@@ -1,16 +1,26 @@
-import { Injectable, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
+
+const PANEL_COLLAPSED_KEY = 'newsletter-template-editor.side-panel-collapsed.v1';
 
 @Injectable({ providedIn: 'root' })
 export class ShellUiService {
-  private readonly panelOpenSignal = signal(true);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly collapsedSignal = signal(false);
 
-  readonly panelOpen = this.panelOpenSignal.asReadonly();
+  /** true = panel body hidden (dogan-style collapse). */
+  readonly panelCollapsed = this.collapsedSignal.asReadonly();
 
-  togglePanel(): void {
-    this.panelOpenSignal.update((open) => !open);
+  constructor() {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const raw = localStorage.getItem(PANEL_COLLAPSED_KEY);
+    if (raw === '1' || raw === 'true') this.collapsedSignal.set(true);
   }
 
-  setPanelOpen(open: boolean): void {
-    this.panelOpenSignal.set(open);
+  togglePanel(): void {
+    const next = !this.collapsedSignal();
+    this.collapsedSignal.set(next);
+    if (!isPlatformBrowser(this.platformId)) return;
+    localStorage.setItem(PANEL_COLLAPSED_KEY, next ? '1' : '0');
   }
 }

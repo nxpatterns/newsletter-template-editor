@@ -24,3 +24,10 @@ Feature: App shell layout
     Given I open the home page
     When I open the about footer link
     Then I should see the about page
+
+  Scenario: Side panel collapses with the toggle control
+    Given I open the home page
+    When I toggle the side panel
+    Then the side panel should be collapsed
+    When I toggle the side panel
+    Then the side panel should be expanded

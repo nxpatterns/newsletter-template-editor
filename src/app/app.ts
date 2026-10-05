@@ -4,7 +4,6 @@ import { RouterLink, RouterOutlet } from '@angular/router';
 import { APP_VERSION } from '../environments/app-version';
 import { NewsletterSession } from './editor/newsletter-session.service';
 import { LocaleService } from './i18n/locale.service';
-import { ShellUiService } from './shell/shell-ui.service';
 import {
   LegalModalComponent,
   type LegalModalKind,
@@ -28,7 +27,6 @@ import { SnackbarComponent } from './ui/snackbar/snackbar.component';
 export class App {
   protected readonly i18n = inject(LocaleService);
   protected readonly session = inject(NewsletterSession);
-  protected readonly shellUi = inject(ShellUiService);
   protected readonly appVersion = APP_VERSION;
 
   protected readonly legalKind = signal<LegalModalKind>(null);

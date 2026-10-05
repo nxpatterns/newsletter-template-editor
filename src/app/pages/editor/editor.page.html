@@ -1,4 +1,4 @@
-<div class="work-area" [class.work-area--panel-open]="shellUi.panelOpen()">
+<div class="work-area" [class.work-area--panel-collapsed]="shellUi.panelCollapsed()">
   <section class="preview-panel" [attr.aria-label]="i18n.t('preview.label')">
     <iframe
       class="preview-frame"
@@ -8,14 +8,32 @@
     ></iframe>
   </section>
 
-  @if (shellUi.panelOpen()) {
-    <aside
-      class="side-panel"
-      data-testid="side-panel"
-      [attr.aria-label]="i18n.t('panel.placeholder')"
-    >
+  <aside
+    class="side-panel"
+    data-testid="side-panel"
+    [class.collapsed]="shellUi.panelCollapsed()"
+    [attr.aria-label]="i18n.t('panel.placeholder')"
+  >
+    <div class="side-panel-header">
+      <button
+        type="button"
+        class="side-panel-toggle"
+        id="side-toggle"
+        data-testid="side-panel-toggle"
+        [attr.title]="i18n.t('action.panelToggle')"
+        [attr.aria-label]="i18n.t('action.panelToggle')"
+        [attr.aria-expanded]="!shellUi.panelCollapsed()"
+        (click)="shellUi.togglePanel()"
+      >
+        »
+      </button>
+      <div class="side-panel-tabs" aria-hidden="true">
+        <!-- Tab labels arrive in 3b -->
+      </div>
+    </div>
+    <div class="side-panel-body">
       <p class="side-panel__title" [textContent]="i18n.t('panel.placeholder')"></p>
       <p class="side-panel__hint" [textContent]="i18n.t('panel.hint')"></p>
-    </aside>
-  }
+    </div>
+  </aside>
 </div>

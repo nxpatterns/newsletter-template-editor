@@ -31,18 +31,6 @@
             [textContent]="i18n.t('action.reset')"
             (click)="session.resetSeed()"
           ></button>
-          <button
-            type="button"
-            ngToolbarWidget
-            class="toolbar-btn toolbar-btn--ghost"
-            value="panel"
-            data-testid="action-panel"
-            [attr.aria-label]="i18n.t('action.panelToggle')"
-            [attr.aria-pressed]="shellUi.panelOpen()"
-            (click)="shellUi.togglePanel()"
-          >
-            ☰
-          </button>
         </div>
 
         <div class="locale-switch" role="group" [attr.aria-label]="i18n.t('action.locale')">
