@@ -46,7 +46,8 @@ export const EN: MessageCatalog = {
   'privacy.prefsTitle': 'Local UI preferences (browser storage)',
   'privacy.prefsIntro':
     'To restore your last UI choices and newsletter draft on the next visit, this application stores small objects in your browser via the Web Storage API (localStorage).',
-  'privacy.key': 'Storage keys (examples): newsletter-template-editor.locale.v1 and the newsletter draft key used by the editor.',
+  'privacy.key':
+    'Storage keys (examples): newsletter-template-editor.locale.v1 and the newsletter draft key used by the editor.',
   'privacy.stored':
     'What may be stored: UI locale, newsletter JSON draft (blocks + globals you edit), and similar editor preferences — never payment data and never analytics identifiers.',
   'privacy.notStored':
@@ -67,7 +68,7 @@ export const EN: MessageCatalog = {
     'The public demo ships with CloudLib.EU Glacier defaults. Brand, colors, logo, and legal footer are configuration — not locked into the renderer.',
   'about.local':
     'Local-first: drafts live in your browser storage. No account required for the static GitHub Pages demo.',
-  'about.repo': 'Source code and issues:',
+  'about.repo': 'Source code and issues: ',
   'about.repoUrl': 'https://github.com/nxpatterns/newsletter-template-editor',
   'about.back': 'Back to editor',
 };
