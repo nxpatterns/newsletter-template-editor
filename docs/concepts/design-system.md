@@ -1,6 +1,6 @@
 # Design system
 
-Living specs for chrome UI. **Spec before code** for every new chrome element (snackbar, dialog, upload zone, stepper, …). Do not reverse-engineer layout from image-to-colors — that snackbar path is a warning.
+Living specs for chrome UI. **Spec before code** for every new chrome element (snackbar, dialog, upload zone, stepper, …). Do not reverse-engineer layout from image2colors.com -> that snackbar path is a warning.
 
 Rules:
 
