@@ -19,6 +19,7 @@ Feature: App shell layout
     Given I open the home page
     When I open the impressum footer link
     Then I should see the legal dialog
+    And the legal dialog should have a single scroll container
 
   Scenario: About page is reachable
     Given I open the home page

@@ -26,6 +26,27 @@ Then('I should see the legal dialog', async ({ page }) => {
   const dialog = page.getByTestId('legal-modal');
   await expect(dialog).toBeVisible();
   await expect(dialog).toContainText(/Legal Notice|Impressum|hobby|Hobby/i);
+  await expect(page.locator('.bmc-link')).toBeVisible();
+  await expect(page.locator('.bmc-img')).toBeVisible();
+});
+
+Then('the legal dialog should have a single scroll container', async ({ page }) => {
+  const metrics = await page.evaluate(() => {
+    const overlay = document.querySelector('[data-testid="legal-modal"]') as HTMLElement | null;
+    const dialog = document.querySelector('.legal-modal-dialog') as HTMLElement | null;
+    const body = document.querySelector('.legal-modal-body') as HTMLElement | null;
+    if (!overlay || !dialog || !body) return null;
+    const dialogStyle = getComputedStyle(dialog);
+    const bodyStyle = getComputedStyle(body);
+    return {
+      dialogOverflow: dialogStyle.overflow + dialogStyle.overflowY,
+      bodyOverflowY: bodyStyle.overflowY,
+      bodyScrollable: body.scrollHeight > body.clientHeight + 1,
+    };
+  });
+  expect(metrics).toBeTruthy();
+  expect(metrics!.dialogOverflow.includes('hidden')).toBeTruthy();
+  expect(['auto', 'scroll'].some((v) => metrics!.bodyOverflowY.includes(v))).toBeTruthy();
 });
 
 When('I open the about footer link', async ({ page }) => {

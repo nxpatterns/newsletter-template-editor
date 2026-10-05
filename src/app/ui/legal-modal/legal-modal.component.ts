@@ -6,9 +6,11 @@ import {
   inject,
   input,
   output,
+  signal,
   viewChild,
 } from '@angular/core';
 import { LocaleService } from '../../i18n/locale.service';
+import { celebrateBmc } from './bmc-celebrate';
 
 export type LegalModalKind = 'impressum' | 'privacy' | null;
 
@@ -17,6 +19,9 @@ export type LegalModalKind = 'impressum' | 'privacy' | null;
   templateUrl: './legal-modal.component.html',
   styleUrl: './legal-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '(document:keydown.escape)': 'onEscape()',
+  },
 })
 export class LegalModalComponent {
   protected readonly i18n = inject(LocaleService);
@@ -24,17 +29,23 @@ export class LegalModalComponent {
   readonly kind = input<LegalModalKind>(null);
   readonly closed = output<void>();
 
-  private readonly dialogRef = viewChild<ElementRef<HTMLDialogElement>>('dialog');
+  private readonly closeBtn = viewChild<ElementRef<HTMLButtonElement>>('closeBtn');
+
+  /** Drives enter/leave CSS classes. */
+  protected readonly openVisual = signal(false);
+  private closing = false;
+  private bmcArmed = true;
 
   constructor() {
     effect(() => {
       const kind = this.kind();
-      const dialog = this.dialogRef()?.nativeElement;
-      if (!dialog) return;
       if (kind) {
-        if (!dialog.open) dialog.showModal();
-      } else if (dialog.open) {
-        dialog.close();
+        this.closing = false;
+        // next frame so CSS transition runs
+        requestAnimationFrame(() => this.openVisual.set(true));
+        queueMicrotask(() => this.closeBtn()?.nativeElement.focus());
+      } else if (this.openVisual()) {
+        this.beginClose();
       }
     });
   }
@@ -43,11 +54,36 @@ export class LegalModalComponent {
     return this.kind() === 'privacy' ? 'privacy.title' : 'impressum.title';
   }
 
-  protected onDialogClose(): void {
-    this.closed.emit();
+  protected onBackdropClick(): void {
+    this.requestClose();
   }
 
   protected requestClose(): void {
-    this.dialogRef()?.nativeElement.close();
+    if (!this.kind() || this.closing) return;
+    this.beginClose();
+  }
+
+  protected onBmcEnter(event: Event): void {
+    if (!this.bmcArmed) return;
+    const target = event.currentTarget;
+    if (!(target instanceof HTMLElement)) return;
+    this.bmcArmed = false;
+    celebrateBmc(target);
+    window.setTimeout(() => {
+      this.bmcArmed = true;
+    }, 1100);
+  }
+
+  protected onEscape(): void {
+    if (this.kind()) this.requestClose();
+  }
+
+  private beginClose(): void {
+    this.closing = true;
+    this.openVisual.set(false);
+    window.setTimeout(() => {
+      this.closing = false;
+      this.closed.emit();
+    }, 280);
   }
 }

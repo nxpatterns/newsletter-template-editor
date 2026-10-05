@@ -25,6 +25,7 @@ export const DE: MessageCatalog = {
     'Das ist ein Hobbyprojekt von Ing. E. Buelbuel BSc. und dient der Demonstration von Webtechnologien. Es ist kein kommerzielles Projekt und es werden keine Produkte oder Dienstleistungen angeboten. Ich finanziere es aktuell ganz aus der eigenen Tasche.',
   'impressum.coffee':
     'Falls Ihnen die Webseite gefällt und Sie mich unterstützen möchten, können Sie mir gerne einen Kaffee spendieren:',
+  'impressum.bmcLabel': 'Kauf mir einen Kaffee',
   'impressum.thanks': 'Haben Sie vielen herzlichen Dank!',
   'impressum.techTitle': 'Technologien',
   'impressum.techBody':
@@ -67,7 +68,7 @@ export const DE: MessageCatalog = {
     'Die öffentliche Demo startet mit CloudLib.EU-Glacier-Defaults. Marke, Farben, Logo und Legal-Footer sind Konfiguration — nicht im Renderer fest verdrahtet.',
   'about.local':
     'Local-first: Entwürfe liegen im Browser-Speicher. Für die statische GitHub-Pages-Demo ist kein Konto nötig.',
-  'about.repo': 'Quellcode und Issues:',
+  'about.repo': 'Quellcode und Issues: ',
   'about.repoUrl': 'https://github.com/nxpatterns/newsletter-template-editor',
   'about.back': 'Zurück zum Editor',
 };

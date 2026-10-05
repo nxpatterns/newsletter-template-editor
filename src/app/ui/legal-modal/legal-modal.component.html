@@ -1,58 +1,87 @@
-<dialog
-  #dialog
-  class="legal-dialog"
-  data-testid="legal-modal"
-  (close)="onDialogClose()"
->
-  <header class="legal-dialog__head">
-    <h2 id="legal-modal-title" class="legal-dialog__title" [textContent]="i18n.t(titleKey())"></h2>
-    <button
-      type="button"
-      class="legal-dialog__close"
-      [attr.aria-label]="i18n.t('modal.close')"
-      data-testid="legal-modal-close"
-      (click)="requestClose()"
-    >
-      ×
-    </button>
-  </header>
+@if (kind(); as activeKind) {
+  <div
+    class="legal-modal-overlay"
+    data-testid="legal-modal"
+    [class.is-open]="openVisual()"
+    [class.is-closing]="!openVisual()"
+  >
+    <div class="legal-modal-backdrop" (click)="onBackdropClick()"></div>
 
-  <div class="legal-dialog__body" aria-labelledby="legal-modal-title">
-    @if (kind() === 'impressum') {
-      <p [textContent]="i18n.t('impressum.intro')"></p>
-      <p>
-        <span [textContent]="i18n.t('impressum.coffee')"></span>
-        <a
-          href="https://www.buymeacoffee.com/ebuelbuel"
-          target="_blank"
-          rel="noopener noreferrer"
-          >buymeacoffee.com/ebuelbuel</a
-        >.
-        <span [textContent]="i18n.t('impressum.thanks')"></span>
-      </p>
-      <h3 [textContent]="i18n.t('impressum.techTitle')"></h3>
-      <p [textContent]="i18n.t('impressum.techBody')"></p>
-      <h3 [textContent]="i18n.t('impressum.legalTitle')"></h3>
-      <p class="legal-dialog__label" [textContent]="i18n.t('impressum.operator')"></p>
-      <pre class="legal-dialog__pre" [textContent]="i18n.t('impressum.operatorLines')"></pre>
-      <p class="legal-dialog__label" [textContent]="i18n.t('impressum.represented')"></p>
-      <pre class="legal-dialog__pre" [textContent]="i18n.t('impressum.representedLines')"></pre>
-      <pre class="legal-dialog__pre" [textContent]="i18n.t('impressum.courtLines')"></pre>
-      <h3 [textContent]="i18n.t('impressum.creditsTitle')"></h3>
-      <pre class="legal-dialog__pre" [textContent]="i18n.t('impressum.creditsBody')"></pre>
-    } @else if (kind() === 'privacy') {
-      <h3 [textContent]="i18n.t('privacy.prefsTitle')"></h3>
-      <p [textContent]="i18n.t('privacy.prefsIntro')"></p>
-      <ul>
-        <li [textContent]="i18n.t('privacy.key')"></li>
-        <li [textContent]="i18n.t('privacy.stored')"></li>
-        <li [textContent]="i18n.t('privacy.notStored')"></li>
-        <li [textContent]="i18n.t('privacy.where')"></li>
-        <li [textContent]="i18n.t('privacy.remove')"></li>
-      </ul>
-      <p [textContent]="i18n.t('privacy.necessary')"></p>
-      <h3 [textContent]="i18n.t('privacy.analyticsTitle')"></h3>
-      <p [textContent]="i18n.t('privacy.analyticsBody')"></p>
-    }
+    <div
+      #dialogPanel
+      class="legal-modal-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="legal-modal-title"
+    >
+      <header class="legal-modal-head">
+        <h2 id="legal-modal-title" class="legal-modal-title" [textContent]="i18n.t(titleKey())"></h2>
+        <div class="legal-modal-actions">
+          <button
+            #closeBtn
+            type="button"
+            class="legal-modal-close"
+            data-testid="legal-modal-close"
+            [attr.aria-label]="i18n.t('modal.close')"
+            (click)="requestClose()"
+          >
+            ×
+          </button>
+        </div>
+      </header>
+
+      <div class="legal-modal-body">
+        @if (activeKind === 'impressum') {
+          <p [textContent]="i18n.t('impressum.intro')"></p>
+          <p>
+            <span [textContent]="i18n.t('impressum.coffee')"></span>
+            <span [textContent]="i18n.t('impressum.thanks')"></span>
+          </p>
+
+          <div class="bmc-modal-wrapper">
+            <a
+              class="bmc-link"
+              href="https://www.buymeacoffee.com/ebuelbuel"
+              target="_blank"
+              rel="noopener noreferrer"
+              [attr.aria-label]="i18n.t('impressum.bmcLabel')"
+              (mouseenter)="onBmcEnter($event)"
+            >
+              <img
+                class="bmc-img bmc-img--dark"
+                src="static/buy-me-a-coffee-dark.svg"
+                width="195"
+                height="40"
+                alt="Buy me a coffee"
+              />
+            </a>
+          </div>
+
+          <h3 [textContent]="i18n.t('impressum.techTitle')"></h3>
+          <p [textContent]="i18n.t('impressum.techBody')"></p>
+          <h3 [textContent]="i18n.t('impressum.legalTitle')"></h3>
+          <p class="legal-modal-label" [textContent]="i18n.t('impressum.operator')"></p>
+          <pre class="legal-modal-pre" [textContent]="i18n.t('impressum.operatorLines')"></pre>
+          <p class="legal-modal-label" [textContent]="i18n.t('impressum.represented')"></p>
+          <pre class="legal-modal-pre" [textContent]="i18n.t('impressum.representedLines')"></pre>
+          <pre class="legal-modal-pre" [textContent]="i18n.t('impressum.courtLines')"></pre>
+          <h3 [textContent]="i18n.t('impressum.creditsTitle')"></h3>
+          <pre class="legal-modal-pre" [textContent]="i18n.t('impressum.creditsBody')"></pre>
+        } @else {
+          <h3 [textContent]="i18n.t('privacy.prefsTitle')"></h3>
+          <p [textContent]="i18n.t('privacy.prefsIntro')"></p>
+          <ul>
+            <li [textContent]="i18n.t('privacy.key')"></li>
+            <li [textContent]="i18n.t('privacy.stored')"></li>
+            <li [textContent]="i18n.t('privacy.notStored')"></li>
+            <li [textContent]="i18n.t('privacy.where')"></li>
+            <li [textContent]="i18n.t('privacy.remove')"></li>
+          </ul>
+          <p [textContent]="i18n.t('privacy.necessary')"></p>
+          <h3 [textContent]="i18n.t('privacy.analyticsTitle')"></h3>
+          <p [textContent]="i18n.t('privacy.analyticsBody')"></p>
+        }
+      </div>
+    </div>
   </div>
-</dialog>
+}

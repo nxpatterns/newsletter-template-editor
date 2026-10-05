@@ -25,6 +25,7 @@ export const EN: MessageCatalog = {
     'This is a hobby project by Ing. E. Buelbuel BSc. and serves as a demonstration of web technologies. It is not a commercial project and no products or services are offered. I am currently funding it entirely out of my own pocket.',
   'impressum.coffee':
     'If you enjoy the website and would like to support me, feel free to buy me a coffee:',
+  'impressum.bmcLabel': 'Buy me a coffee',
   'impressum.thanks': 'Thank you very much!',
   'impressum.techTitle': 'Technologies',
   'impressum.techBody':
