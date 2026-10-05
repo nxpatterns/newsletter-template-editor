@@ -1,75 +1,76 @@
-# Angular specific
-/dist/
-/out-tsc/
-/tmp/
-/coverage/
-/e2e/test-output/
-/.angular/
-.angular/
+# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
-# VSCode
+# Compiled output
+/dist
+/tmp
+/out-tsc
+/bazel-out
+
+# Node
+/node_modules
+npm-debug.log
+yarn-error.log
+yarn-debug.log*
+
+# Keep package-lock.json tracked for reproducible CI (npm ci)
+
+# IDEs and editors
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Visual Studio Code
 .vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/mcp.json
+.history/*
 
-# Node modules and dependency files
-/node_modules/
-/package-lock.json
-/yarn.lock
-
-# Environment files
-/.env
-
-# Angular CLI and build artefacts
-/.angular-cli.json
-/.ng/
-
-# TypeScript cache
-*.tsbuildinfo
-
-# Logs & Temporary files
-/.sass-cache
+# Miscellaneous
+/.angular/cache
+.sass-cache/
 /connect.lock
 /coverage
 /libpeerconnection.log
 testem.log
 /typings
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+__screenshots__/
+*.tsbuildinfo
 
-# System Files
+# System files
 .DS_Store
 Thumbs.db
 
-# Nx specific
-
-.nx/cache
-.nx/workspace-data
-.cursor/rules/nx-rules.mdc
-.github/instructions/nx.instructions.md
-
-# Python virtualenv is not used in this repo (conda only)
-.venv/
-
 # Env files must never live in this repo
-# Defense in depth:
 .env
 .env.*
 *.env
 *.env.*
 
-# Some AI Memory and Cache files
+# Nx / local tooling cache
+.nx/cache
+.nx/workspace-data
+.nx
+
+# AI / agent local files
 .aider*
 .gitnexus
-.nx
 .understand-anything/
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md
 
-# playwright-bdd generated specs
+# playwright-bdd generated specs and reports
 .features-gen/
 reports/
 
-# Local real-device lab (tools/device-lab)
-# Screenshots etc.
+# Local real-device lab output
 tools/device-lab/.output/
 
-# AI Sessions Folder (Dev Only)
+# AI session notes (local only)
 docs/sessions
