@@ -5,7 +5,7 @@
 
 ## Project in One Sentence
 
-Newsletter Template Editor.
+Newsletter Template Editor for Listmonk with an example CloudLib.EU template.
 
 ## Absolute rule — secrets and env
 
