@@ -1,1 +1,1 @@
-# newsletter-template-editor
+# Newsletter Template Editor
