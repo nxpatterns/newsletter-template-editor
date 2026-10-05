@@ -7,6 +7,9 @@
 /.angular/
 .angular/
 
+# VSCode
+.vscode/*
+
 # Node modules and dependency files
 /node_modules/
 /package-lock.json
@@ -22,7 +25,51 @@
 # TypeScript cache
 *.tsbuildinfo
 
-# Logs
+# Logs & Temporary files
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Nx specific
+
+.nx/cache
+.nx/workspace-data
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md
+
+# Python virtualenv is not used in this repo (conda only)
+.venv/
+
+# Env files must never live in this repo
+# Defense in depth:
+.env
+.env.*
+*.env
+*.env.*
+
+# Some AI Memory and Cache files
+.aider*
+.gitnexus
+.nx
+.understand-anything/
+
+# playwright-bdd generated specs
+.features-gen/
+reports/
+
+# Local real-device lab (tools/device-lab)
+# Screenshots etc.
+tools/device-lab/.output/
+
+# AI Sessions Folder (Dev Only)
+docs/sessions
