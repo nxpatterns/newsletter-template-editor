@@ -82,7 +82,7 @@ jobs:
             exit 1
           fi
 
-- name: Commit release bump (skip if already at target version)
+      - name: Commit release bump (skip if already at target version)
         id: commit
         env:
           BUMP_TYPE: ${{ inputs.bump_type }}
