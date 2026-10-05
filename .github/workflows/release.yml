@@ -1,0 +1,108 @@
+name: Release Preparation
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Version bump type'
+        required: true
+        default: patch
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+          - set
+      set_version:
+        description: 'Target version when bump_type is set (e.g. 1.2.3)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  prepare-release:
+    name: Bump version, commit and tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure workflow runs on main branch
+        run: |
+          if [ "${GITHUB_REF_NAME}" != "main" ]; then
+            echo "Release workflow must run on main. Current branch: ${GITHUB_REF_NAME}"
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        id: bump
+        env:
+          BUMP_TYPE: ${{ inputs.bump_type }}
+          SET_VERSION: ${{ inputs.set_version }}
+        run: |
+          node scripts/release-version.mjs --bump-type "${BUMP_TYPE}" --set-version "${SET_VERSION}"
+          node scripts/write-app-version.mjs
+          NEW_VERSION="$(node -p "require('./package.json').version")"
+          echo "new_version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure release tag does not already exist
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
+        run: |
+          TAG="v${NEW_VERSION}"
+          git fetch --tags --force
+          if git rev-parse --verify --quiet "refs/tags/${TAG}" >/dev/null; then
+            echo "Tag already exists locally: ${TAG}"
+            exit 1
+          fi
+          if git ls-remote --tags origin "refs/tags/${TAG}" | grep -q "${TAG}"; then
+            echo "Tag already exists on remote: ${TAG}"
+            exit 1
+          fi
+
+      - name: Commit release bump
+        env:
+          BUMP_TYPE: ${{ inputs.bump_type }}
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
+        run: |
+          if git diff --quiet; then
+            echo "No version changes detected after bump."
+            exit 1
+          fi
+          git add package.json package-lock.json src/environments/app-version.ts
+          git commit -m "chore(release): v${NEW_VERSION}" -m "Bump type: ${BUMP_TYPE}"
+
+      - name: Create annotated release tag
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
+        run: |
+          git tag -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION}"
+
+      - name: Push release commit and tag
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
+        run: |
+          git push origin HEAD:main
+          git push origin "v${NEW_VERSION}"

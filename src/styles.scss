@@ -1,4 +1,20 @@
-/* Global styles */
+/* Design tokens — see docs/concepts/design-system.md */
+:root {
+  --ds-bg-page: #060b14;
+  --ds-bg-panel: #0c1628;
+  --ds-border: #1a3050;
+  --ds-accent: #7ecfff;
+  --ds-text: #e8f4ff;
+  --ds-text-muted: #7a9ab8;
+  --ds-success: #3dd68c;
+  --ds-danger: #ff6b7a;
+  --ds-footer-height: 2.5rem;
+  --ds-snackbar-gap: 0.75rem;
+  --ds-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --ds-radius: 0.5rem;
+  --ds-z-footer: 40;
+  --ds-z-snackbar: 50;
+}
 
 *,
 *::before,
@@ -14,6 +30,6 @@ body {
 }
 
 body {
-  color: #e8f4ff;
-  background: #060b14;
+  color: var(--ds-text);
+  background: var(--ds-bg-page);
 }

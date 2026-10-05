@@ -18,9 +18,12 @@ import {
   seedNewsletter,
   type Newsletter,
 } from '../core';
+import { APP_VERSION } from '../environments/app-version';
+import { SnackbarComponent } from './ui/snackbar/snackbar.component';
+import { SnackbarService } from './ui/snackbar/snackbar.service';
 
 @Component({
-  imports: [Toolbar, ToolbarWidget, A11yModule],
+  imports: [Toolbar, ToolbarWidget, A11yModule, SnackbarComponent],
   selector: 'app-root',
   styleUrl: './app.scss',
   templateUrl: './app.html',
@@ -29,9 +32,13 @@ export class App {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly liveAnnouncer = inject(LiveAnnouncer);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly snackbar = inject(SnackbarService);
 
   /** Product title — BDD smoke asserts this. */
   protected readonly title = signal('Newsletter Template Editor');
+
+  /** Visible bottom-right; local + Pages. */
+  protected readonly appVersion = APP_VERSION;
 
   protected readonly newsletter = signal<Newsletter>(seedNewsletter());
 
@@ -52,11 +59,13 @@ export class App {
   protected resetSeed(): void {
     const next = resetToSeed(seedNewsletter);
     this.newsletter.set(next);
+    this.snackbar.success('Demo seed restored');
     void this.liveAnnouncer.announce('Demo seed restored', 'polite');
   }
 
   protected save(): void {
     saveNewsletter(this.newsletter());
+    this.snackbar.success('Newsletter saved locally');
     void this.liveAnnouncer.announce('Newsletter saved locally', 'polite');
   }
 }

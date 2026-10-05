@@ -1,6 +1,6 @@
 {
   "name": "newsletter-template-editor",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -8,7 +8,12 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:bdd": "bddgen --config bdd.config.ts && playwright test --config bdd.config.ts",
-    "test:bdd:gen": "bddgen --config bdd.config.ts"
+    "test:bdd:gen": "bddgen --config bdd.config.ts",
+    "prestart": "node scripts/write-app-version.mjs",
+    "prebuild": "node scripts/write-app-version.mjs",
+    "pretest": "node scripts/write-app-version.mjs",
+    "version:write": "node scripts/write-app-version.mjs",
+    "release:version": "node scripts/release-version.mjs"
   },
   "private": true,
   "packageManager": "npm@11.13.0",

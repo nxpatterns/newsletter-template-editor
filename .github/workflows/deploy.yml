@@ -1,9 +1,9 @@
-name: Deploy to GitHub Pages
+name: Release Deployment
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 permissions:
@@ -12,14 +12,18 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  build:
+  deploy:
+    name: Build and deploy to GitHub Pages
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -28,24 +32,46 @@ jobs:
           node-version: '24'
           cache: npm
 
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build -- --configuration=production
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Unit tests
+        run: npm test -- --watch=false
+
+      - name: BDD tests
+        run: npm run test:bdd
+        env:
+          CI: true
+
+      - name: Production build
+        env:
+          APP_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+        run: |
+          node scripts/write-app-version.mjs
+          npm run build -- --configuration=production
+
+      - name: Ensure no public source maps are shipped
+        run: |
+          DIST="dist/newsletter-template-editor/browser"
+          if find "$DIST" -type f -name '*.map' | grep -q .; then
+            echo "Source map files found in dist. Public source maps are forbidden."
+            find "$DIST" -type f -name '*.map'
+            exit 1
+          fi
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist/newsletter-template-editor/browser
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

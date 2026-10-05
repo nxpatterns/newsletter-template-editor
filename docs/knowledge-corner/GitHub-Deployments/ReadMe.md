@@ -292,6 +292,6 @@ gh api --method PUT repos/<owner>/<repo>/environments/github-pages --input - <<<
 
 ## Related project notes
 
-This repository’s workflow lives at `.github/workflows/deploy.yml`. Production Angular `baseHref` is `/newsletter-template-editor/`. Public URL:
+This repository’s deploy workflow is `.github/workflows/deploy.yml` and runs on **`v*` tags** (and optional `workflow_dispatch`), not on every `main` push. Release bumps: `.github/workflows/release.yml`. Production Angular `baseHref` is `/newsletter-template-editor/`. Public URL:
 
 `https://nxpatterns.github.io/newsletter-template-editor/`

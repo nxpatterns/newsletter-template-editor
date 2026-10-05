@@ -1,0 +1,26 @@
+@if (snackbar.message(); as msg) {
+  <div
+    class="snackbar"
+    [class.snackbar--success]="msg.tone === 'success'"
+    [class.snackbar--error]="msg.tone === 'error'"
+    [class.snackbar--info]="msg.tone === 'info'"
+    [attr.role]="msg.tone === 'error' ? 'alert' : 'status'"
+    [attr.aria-live]="msg.tone === 'error' ? 'assertive' : 'polite'"
+    data-testid="app-snackbar"
+    (mouseenter)="snackbar.pauseTimer()"
+    (mouseleave)="snackbar.resumeTimer()"
+    (focusin)="snackbar.pauseTimer()"
+    (focusout)="snackbar.resumeTimer()"
+  >
+    <span class="snackbar__tone" aria-hidden="true"></span>
+    <p class="snackbar__text">{{ msg.text }}</p>
+    <button
+      type="button"
+      class="snackbar__dismiss"
+      aria-label="Dismiss"
+      (click)="dismiss()"
+    >
+      ×
+    </button>
+  </div>
+}

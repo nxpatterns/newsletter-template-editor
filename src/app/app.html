@@ -14,6 +14,7 @@
         ngToolbarWidget
         class="toolbar-btn"
         value="save"
+        data-testid="action-save"
         (click)="save()"
       >
         Save
@@ -23,6 +24,7 @@
         ngToolbarWidget
         class="toolbar-btn"
         value="reset"
+        data-testid="action-reset"
         (click)="resetSeed()"
       >
         Reset seed
@@ -38,3 +40,9 @@
     ></iframe>
   </section>
 </main>
+
+<footer class="app-footer" aria-label="Application version">
+  <span class="app-footer__version" data-testid="app-version">{{ appVersion }}</span>
+</footer>
+
+<app-snackbar />
