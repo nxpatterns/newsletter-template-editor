@@ -124,11 +124,17 @@ export class NewsletterSession {
     const baseline = this.editBaselineBlock;
     const id = this.editingBlockIdSignal();
     if (baseline && id) {
-      // Restore without pushing history (cancel is not an undo step).
-      this.newsletterSignal.update((n) => ({
-        ...n,
-        blocks: n.blocks.map((b) => (b.id === id ? structuredClone(baseline) : b)),
-      }));
+      const current = this.newsletterSignal().blocks.find((b) => b.id === id);
+      // Skip no-op restore — avoids preview srcdoc reload / scroll jump when nothing changed.
+      const changed =
+        !current || JSON.stringify(current) !== JSON.stringify(baseline);
+      if (changed) {
+        // Restore without pushing history (cancel is not an undo step).
+        this.newsletterSignal.update((n) => ({
+          ...n,
+          blocks: n.blocks.map((b) => (b.id === id ? structuredClone(baseline) : b)),
+        }));
+      }
     }
     // Drop undo/redo entries created while the modal was open.
     if (this.undoStack.length > this.editUndoDepth) {

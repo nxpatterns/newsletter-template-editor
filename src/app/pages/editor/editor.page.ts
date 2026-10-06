@@ -47,6 +47,9 @@ export class EditorPage {
   private dropPlace: DropPlace | null = null;
   /** Suppress the click that follows a completed drag. */
   private suppressClickUntil = 0;
+  /** Last known preview document scroll (restored after srcdoc reloads). */
+  private lastPreviewScrollY = 0;
+  private previewScrollHandler: (() => void) | null = null;
 
   protected readonly resizing = signal(false);
 
@@ -71,6 +74,7 @@ export class EditorPage {
   protected onPreviewLoad(): void {
     this.wirePreviewDocument();
     this.applySelectedClass(this.session.selectedBlockId());
+    this.restorePreviewScroll();
   }
 
   protected onResizePointerDown(event: PointerEvent): void {
@@ -107,6 +111,7 @@ export class EditorPage {
     }
 
     this.injectPreviewChrome(doc);
+    this.bindPreviewScroll(doc);
 
     if (this.previewDocWired === doc && this.previewClickHandler) {
       // Same document instance already listening.
@@ -243,6 +248,40 @@ export class EditorPage {
     if (this.previewDragEndHandler) {
       doc.removeEventListener('dragend', this.previewDragEndHandler, true);
     }
+    if (this.previewScrollHandler) {
+      doc.removeEventListener('scroll', this.previewScrollHandler, true);
+      this.previewScrollHandler = null;
+    }
+  }
+
+  private bindPreviewScroll(doc: Document): void {
+    if (this.previewScrollHandler && this.previewDocWired === doc) return;
+    if (this.previewDocWired && this.previewDocWired !== doc && this.previewScrollHandler) {
+      this.previewDocWired.removeEventListener('scroll', this.previewScrollHandler, true);
+    }
+    const onScroll = (): void => {
+      const root = doc.scrollingElement ?? doc.documentElement;
+      this.lastPreviewScrollY = root?.scrollTop ?? doc.body?.scrollTop ?? 0;
+    };
+    doc.addEventListener('scroll', onScroll, true);
+    this.previewScrollHandler = onScroll;
+    onScroll();
+  }
+
+  private restorePreviewScroll(): void {
+    const y = this.lastPreviewScrollY;
+    if (y <= 0) return;
+    const doc = this.previewFrame()?.nativeElement?.contentDocument;
+    if (!doc) return;
+    const apply = (): void => {
+      const root = doc.scrollingElement ?? doc.documentElement;
+      if (root) root.scrollTop = y;
+      if (doc.body) doc.body.scrollTop = y;
+      doc.defaultView?.scrollTo(0, y);
+    };
+    apply();
+    queueMicrotask(apply);
+    requestAnimationFrame(apply);
   }
 
   private finishDrag(doc: Document): void {

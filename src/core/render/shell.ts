@@ -171,15 +171,18 @@ export function renderExportShell(globals: Globals, bodyInner: string): string {
 
 /** Preview-only chrome. Interaction is wired by the host via contentDocument (no srcdoc scripts). */
 const PREVIEW_EDITOR_CHROME = `
-  /* Room for chrome outside the 600px column; keep export body padding 0. */
+  /* No horizontal scrollbar: never expand layout for chrome gutters.
+     Chrome sits outside the block via negative offsets; clip overflow instead of padding the body
+     (body padding + width:100% tables was causing h-scroll). */
   html, body {
-    overflow-x: visible !important;
+    overflow-x: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
-  body {
-    padding: 12px 52px !important;
-  }
-  table, tbody, tr, td {
-    overflow: visible !important;
+  /* Slightly widen the outer email frame padding so drag/edit/index can sit beside the 600px column when the iframe is wide enough. */
+  table.email-bg > tbody > tr > td.email-bg {
+    padding-left: 48px !important;
+    padding-right: 88px !important;
   }
   tr.nte-block > td {
     position: relative;
@@ -219,12 +222,15 @@ const PREVIEW_EDITOR_CHROME = `
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
     pointer-events: auto;
   }
-  tr.nte-block:hover > td .nte-drag-handle,
-  tr.nte-block.is-selected > td .nte-drag-handle,
-  tr.nte-block:hover > td .nte-edit-btn,
-  tr.nte-block.is-selected > td .nte-edit-btn,
+  /* Hover: index only. Selected: drag + edit + index. */
   tr.nte-block:hover > td .nte-block-index,
   tr.nte-block.is-selected > td .nte-block-index {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+  tr.nte-block.is-selected > td .nte-drag-handle,
+  tr.nte-block.is-selected > td .nte-edit-btn {
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
@@ -245,21 +251,21 @@ const PREVIEW_EDITOR_CHROME = `
     outline: 2px solid #ffffff;
     outline-offset: 2px;
   }
-  /* Right of box: edit, then number */
-  .nte-edit-btn {
-    left: auto;
-    right: -42px;
-    font-size: 15px;
-    cursor: pointer;
-  }
+  /* Right of box: number, then edit */
   .nte-block-index {
     left: auto;
-    right: -80px;
+    right: -42px;
     min-width: 34px;
     font-size: 12px;
     font-weight: 700;
     border-radius: 999px;
     pointer-events: none;
+  }
+  .nte-edit-btn {
+    left: auto;
+    right: -80px;
+    font-size: 15px;
+    cursor: pointer;
   }
   tr.nte-block.is-selected > td .nte-block-index {
     border-color: rgba(32, 212, 200, 0.95);
