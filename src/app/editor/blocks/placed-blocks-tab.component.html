@@ -1,9 +1,4 @@
-<section
-  class="placed-tab"
-  data-testid="placed-blocks-tab"
-  #placedRoot
-  [class.is-split-resizing]="resizingSplit()"
->
+<section class="placed-tab" data-testid="placed-blocks-tab" #placedRoot>
   <div class="placed-list-pane">
     <p class="ed-hint" [textContent]="i18n.t('placed.hint')"></p>
 
@@ -43,6 +38,16 @@
               <button
                 type="button"
                 class="ed-btn"
+                [attr.data-testid]="'edit-block-' + block.id"
+                [attr.aria-label]="i18n.t('blocks.edit')"
+                [attr.title]="i18n.t('blocks.edit')"
+                (click)="session.openBlockEditor(block.id)"
+              >
+                ✎
+              </button>
+              <button
+                type="button"
+                class="ed-btn"
                 [attr.aria-label]="i18n.t('blocks.moveUp')"
                 [disabled]="i === 0"
                 (click)="session.moveBlock(block.id, -1)"
@@ -72,29 +77,5 @@
         }
       </ul>
     }
-  </div>
-
-  <button
-    type="button"
-    class="placed-split-resizer"
-    data-testid="placed-split-resizer"
-    [attr.aria-label]="i18n.t('placed.splitResize')"
-    [attr.title]="i18n.t('placed.splitResize')"
-    (pointerdown)="onSplitPointerDown($event)"
-    (pointermove)="onSplitPointerMove($event)"
-    (pointerup)="onSplitPointerUp($event)"
-    (pointercancel)="onSplitPointerUp($event)"
-  ></button>
-
-  <div
-    class="placed-inspector-pane"
-    data-testid="placed-inspector-pane"
-    [style.flex-basis.px]="shellUi.inspectorHeightPx()"
-    [style.height.px]="shellUi.inspectorHeightPx()"
-  >
-    <h3 class="placed-inspector-title" [textContent]="i18n.t('inspector.properties')"></h3>
-    <div class="placed-inspector-scroll">
-      <app-block-inspector />
-    </div>
   </div>
 </section>

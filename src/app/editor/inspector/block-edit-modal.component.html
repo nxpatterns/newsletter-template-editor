@@ -1,0 +1,47 @@
+@if (session.editingBlockId(); as editId) {
+  <div
+    class="block-edit-overlay"
+    data-testid="block-edit-modal"
+    [class.is-open]="openVisual()"
+    [class.is-closing]="!openVisual()"
+  >
+    <div class="block-edit-backdrop" (click)="onBackdropClick()"></div>
+
+    <div
+      class="block-edit-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="block-edit-title"
+    >
+      <header class="block-edit-head">
+        <h2 id="block-edit-title" class="block-edit-title" [textContent]="titleText()"></h2>
+        <div class="block-edit-actions">
+          <button
+            #closeBtn
+            type="button"
+            class="block-edit-close"
+            data-testid="block-edit-close"
+            [attr.aria-label]="i18n.t('modal.close')"
+            (click)="requestClose()"
+          >
+            ×
+          </button>
+        </div>
+      </header>
+
+      <div class="block-edit-body">
+        <app-block-inspector />
+      </div>
+
+      <footer class="block-edit-foot">
+        <button
+          type="button"
+          class="block-edit-done"
+          data-testid="block-edit-done"
+          [textContent]="i18n.t('modal.done')"
+          (click)="requestClose()"
+        ></button>
+      </footer>
+    </div>
+  </div>
+}

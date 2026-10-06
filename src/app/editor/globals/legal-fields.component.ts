@@ -27,6 +27,10 @@ export class LegalFieldsComponent {
     event: Event,
   ): void {
     const value = (event.target as HTMLInputElement | HTMLTextAreaElement).value;
-    this.session.updateLegal({ [key]: value });
+    this.session.updateLegal({ [key]: value }, 'coalesce');
+  }
+
+  protected onFieldBlur(): void {
+    this.session.endCoalesce();
   }
 }

@@ -37,6 +37,15 @@ describe('NewsletterSession', () => {
     expect(session.panelTab()).toBe('placed');
   });
 
+  it('openBlockEditor sets editing id', () => {
+    const id = session.blocks()[0].id;
+    session.openBlockEditor(id);
+    expect(session.editingBlockId()).toBe(id);
+    expect(session.selectedBlockId()).toBe(id);
+    session.closeBlockEditor();
+    expect(session.editingBlockId()).toBeNull();
+  });
+
   it('reorders blocks by id list', () => {
     const ids = session.blocks().map((b) => b.id);
     const reversed = [...ids].reverse();
@@ -66,5 +75,33 @@ describe('NewsletterSession', () => {
     session.updateBrand({ starsText: '★' });
     expect(session.globals().accentColor).toBe('#112233');
     expect(session.globals().brand.starsText).toBe('★');
+  });
+
+  it('undo/redo restores discrete mutations', () => {
+    expect(session.canUndo()).toBe(false);
+    const before = session.blocks().length;
+    session.addBlock('divider');
+    expect(session.canUndo()).toBe(true);
+    expect(session.blocks().length).toBe(before + 1);
+    session.undo();
+    expect(session.blocks().length).toBe(before);
+    expect(session.canRedo()).toBe(true);
+    session.redo();
+    expect(session.blocks().length).toBe(before + 1);
+  });
+
+  it('coalesces text edits into one undo step', () => {
+    const hero = session.blocks().find((b) => b.type === 'hero');
+    expect(hero).toBeTruthy();
+    const original = hero!.type === 'hero' ? hero!.label : '';
+    session.updateBlock(hero!.id, { label: 'A' }, 'coalesce');
+    session.updateBlock(hero!.id, { label: 'AB' }, 'coalesce');
+    session.updateBlock(hero!.id, { label: 'ABC' }, 'coalesce');
+    session.endCoalesce();
+    const mid = session.blocks().find((b) => b.id === hero!.id);
+    expect(mid?.type === 'hero' && mid.label).toBe('ABC');
+    session.undo();
+    const restored = session.blocks().find((b) => b.id === hero!.id);
+    expect(restored?.type === 'hero' && restored.label).toBe(original);
   });
 });

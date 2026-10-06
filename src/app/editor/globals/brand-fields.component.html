@@ -9,7 +9,7 @@
       data-testid="g-stars"
       [value]="g.brand.starsText"
       (input)="onBrand('starsText', $event)"
-    />
+     (blur)="onFieldBlur()" />
   </div>
   <div class="ed-field">
     <label class="ed-label" for="g-brand-name" [textContent]="i18n.t('brand.nameHtml')"></label>
@@ -20,19 +20,19 @@
       rows="3"
       [value]="g.brand.nameHtml"
       (input)="onBrand('nameHtml', $event)"
-    ></textarea>
+     (blur)="onFieldBlur()"></textarea>
   </div>
   <div class="ed-field">
     <label class="ed-label" for="g-logo-src" [textContent]="i18n.t('brand.logoSrc')"></label>
-    <input id="g-logo-src" class="ed-input" [value]="g.logo.src" (input)="onLogo('src', $event)" />
+    <input id="g-logo-src" class="ed-input" [value]="g.logo.src" (input)="onLogo('src', $event)"  (blur)="onFieldBlur()" />
   </div>
   <div class="ed-field">
     <label class="ed-label" for="g-logo-href" [textContent]="i18n.t('brand.logoHref')"></label>
-    <input id="g-logo-href" class="ed-input" [value]="g.logo.href ?? ''" (input)="onLogo('href', $event)" />
+    <input id="g-logo-href" class="ed-input" [value]="g.logo.href ?? ''" (input)="onLogo('href', $event)"  (blur)="onFieldBlur()" />
   </div>
   <div class="ed-field">
     <label class="ed-label" for="g-logo-alt" [textContent]="i18n.t('brand.logoAlt')"></label>
-    <input id="g-logo-alt" class="ed-input" [value]="g.logo.alt ?? ''" (input)="onLogo('alt', $event)" />
+    <input id="g-logo-alt" class="ed-input" [value]="g.logo.alt ?? ''" (input)="onLogo('alt', $event)"  (blur)="onFieldBlur()" />
   </div>
   <div class="ed-field">
     <label class="ed-label" for="g-logo-h" [textContent]="i18n.t('brand.logoHeight')"></label>
@@ -44,6 +44,6 @@
       max="200"
       [value]="g.logo.heightPx"
       (input)="onLogoHeight($event)"
-    />
+     (blur)="onFieldBlur()" />
   </div>
 </section>

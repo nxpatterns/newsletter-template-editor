@@ -219,6 +219,32 @@ const PREVIEW_EDITOR_CHROME = `
     outline: 2px solid #ffffff;
     outline-offset: 2px;
   }
+  .nte-block-index {
+    display: none !important;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 20;
+    box-sizing: border-box;
+    min-width: 28px;
+    height: 28px;
+    margin: 0;
+    padding: 0 7px;
+    border: 1px solid rgba(126, 207, 255, 0.95);
+    border-radius: 999px;
+    font: 700 12px/28px system-ui, -apple-system, sans-serif;
+    text-align: center;
+    color: #061018;
+    background: #7ecfff;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    pointer-events: none;
+  }
+  tr.nte-block:hover > td .nte-block-index,
+  tr.nte-block.is-selected > td .nte-block-index {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+  }
 `;
 
 export function renderPreviewDoc(globals: Globals, bodyInner: string, subject: string): string {

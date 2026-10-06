@@ -27,11 +27,15 @@ export class CampaignFieldsComponent {
     event: Event,
   ): void {
     const value = (event.target as HTMLInputElement | HTMLTextAreaElement).value;
-    this.session.updateGlobals({ [key]: value });
+    this.session.updateGlobals({ [key]: value }, 'coalesce');
   }
 
   protected onFont(event: Event): void {
     const fontFamily = (event.target as HTMLSelectElement).value as FontFamilyPreset;
-    this.session.updateGlobals({ fontFamily });
+    this.session.updateGlobals({ fontFamily }, 'immediate');
+  }
+
+  protected onFieldBlur(): void {
+    this.session.endCoalesce();
   }
 }

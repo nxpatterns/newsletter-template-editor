@@ -10,7 +10,7 @@
       rows="3"
       [value]="g.preheader"
       (input)="onString('preheader', $event)"
-    ></textarea>
+     (blur)="onFieldBlur()"></textarea>
     <p class="ed-hint" data-testid="g-preheader-help" [textContent]="i18n.t('campaign.preheaderHelp')"></p>
   </div>
   <div class="ed-field">
@@ -21,7 +21,7 @@
       data-testid="g-subject"
       [value]="g.campaignSubject ?? ''"
       (input)="onString('campaignSubject', $event)"
-    />
+     (blur)="onFieldBlur()" />
     <p class="ed-hint" [textContent]="i18n.t('campaign.subjectHint')"></p>
   </div>
   <div class="ed-field">
@@ -40,7 +40,7 @@
         class="ed-input"
         [value]="g.customFont ?? ''"
         (input)="onString('customFont', $event)"
-      />
+       (blur)="onFieldBlur()" />
     </div>
   }
   <div class="ed-field">
@@ -51,6 +51,6 @@
       data-testid="g-export-prefix"
       [value]="g.exportFileNamePrefix"
       (input)="onString('exportFileNamePrefix', $event)"
-    />
+     (blur)="onFieldBlur()" />
   </div>
 </section>

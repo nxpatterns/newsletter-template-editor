@@ -18,9 +18,11 @@
   --ds-safe-bottom: env(safe-area-inset-bottom, 0px);
   --ds-radius: 0.25rem;
   --ds-z-footer: 40;
-  --ds-z-header: 40;
   --ds-z-panel-overlay: 45;
   --ds-z-snackbar: 50;
+  --ds-z-modal: 60;
+  --ds-z-header: 70;
+  --ds-z-modal-top: 80;
 
   --ds-glass-blur: 18px;
   --ds-glass-saturate: 140%;
@@ -45,7 +47,6 @@
   --ds-modal-shadow:
     0 1px 0 rgba(255, 255, 255, 0.08) inset,
     0 22px 48px -12px rgba(0, 0, 0, 0.65);
-  --ds-z-modal: 60;
 }
 
 *,

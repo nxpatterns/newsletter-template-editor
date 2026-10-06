@@ -23,6 +23,10 @@ export class ColorsFieldsComponent {
     event: Event,
   ): void {
     const value = (event.target as HTMLInputElement).value;
-    this.session.updateGlobals({ [key]: value });
+    this.session.updateGlobals({ [key]: value }, 'coalesce');
+  }
+
+  protected onFieldBlur(): void {
+    this.session.endCoalesce();
   }
 }

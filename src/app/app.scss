@@ -17,6 +17,7 @@
 }
 
 .app-header {
+  position: relative;
   z-index: var(--ds-z-header);
   border-block-end: 1px solid var(--ds-border);
   background: var(--ds-bg-panel);
@@ -59,35 +60,59 @@
   margin-inline-start: auto;
 }
 
+.app-icon-sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
 .app-toolbar {
-  display: flex;
+  display: inline-flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
-  padding: 0.25rem;
-  border-radius: var(--ds-radius);
-  background: color-mix(in srgb, var(--ds-accent) 10%, var(--ds-bg-panel));
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .toolbar-btn {
-  border: 1px solid color-mix(in srgb, var(--ds-accent) 35%, transparent);
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Match locale-btn footprint exactly */
+  min-inline-size: 2.75rem;
+  min-block-size: 2.75rem;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  margin: 0;
+  border: 1px solid var(--ds-border);
   border-radius: var(--ds-radius);
-  padding: 0.45rem 0.8rem;
-  font: inherit;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--ds-text);
-  background: var(--ds-bg-page);
+  padding: 0;
+  color: var(--ds-text-muted);
+  background: transparent;
   cursor: pointer;
 }
 
-
-.toolbar-btn:hover {
+.toolbar-btn:hover:not(:disabled) {
+  color: var(--ds-text);
   background: color-mix(in srgb, var(--ds-accent) 16%, var(--ds-bg-panel));
+}
+
+.toolbar-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .toolbar-btn:focus-visible {
   outline: 2px solid var(--ds-accent);
-  outline-offset: 2px;
+  outline-offset: -2px;
+}
+
+.toolbar-icon {
+  display: block;
+  width: 1.35rem;
+  height: 1.35rem;
+  fill: currentColor;
 }
 
 .locale-switch {

@@ -112,6 +112,7 @@ describe('renderExport chrome isolation', () => {
     expect(html).not.toContain('nte-block');
     expect(html).not.toContain('nte-preview');
     expect(html).not.toContain('nte-edit-btn');
+    expect(html).not.toContain('nte-block-index');
   });
 });
 

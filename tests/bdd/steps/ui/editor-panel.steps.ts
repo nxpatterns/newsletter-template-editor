@@ -47,14 +47,18 @@ When('I select the first document block', async ({ page }) => {
   await page.getByTestId('panel-tab-placed').click();
   const first = page.locator('[data-testid^="select-block-"]').first();
   await first.click();
-  await expect(page.getByTestId('placed-inspector-pane')).toBeVisible();
-  await expect(page.getByTestId('block-inspector')).toBeVisible();
+  await expect(first).toHaveAttribute('aria-pressed', 'true');
 });
 
 When('I set the hero label to {string}', async ({ page }, label: string) => {
+  const firstEdit = page.locator('[data-testid^="edit-block-"]').first();
+  await firstEdit.click();
+  const modal = page.getByTestId('block-edit-modal');
+  await expect(modal).toBeVisible();
   const input = page.getByTestId('insp-hero-label');
   await expect(input).toBeVisible();
   await input.fill(label);
+  await input.blur();
 });
 
 Then('the preview frame should contain {string}', async ({ page }, text: string) => {

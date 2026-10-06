@@ -93,7 +93,7 @@ export class EditorPage {
       this.previewDocWired.removeEventListener('click', this.previewClickHandler, true);
     }
 
-    this.injectEditButtons(doc);
+    this.injectPreviewChrome(doc);
 
     if (this.previewDocWired === doc && this.previewClickHandler) {
       // Same document instance already listening.
@@ -110,7 +110,7 @@ export class EditorPage {
         event.stopPropagation();
         const tr = editBtn.closest('tr[data-block-id]');
         const id = tr?.getAttribute('data-block-id');
-        if (id) this.session.selectBlock(id);
+        if (id) this.session.openBlockEditor(id);
         return;
       }
 
@@ -127,11 +127,26 @@ export class EditorPage {
     this.previewDocWired = doc;
   }
 
-  private injectEditButtons(doc: Document): void {
-    const label = this.i18n.t('preview.editBlock');
+  private injectPreviewChrome(doc: Document): void {
+    const editLabel = this.i18n.t('preview.editBlock');
+    const blocks = this.session.blocks();
+    const indexById = new Map(blocks.map((b, i) => [b.id, i + 1]));
+
     doc.querySelectorAll('tr.nte-block').forEach((tr) => {
       const td = tr.querySelector(':scope > td') ?? tr.querySelector('td');
       if (!td) return;
+      const blockId = tr.getAttribute('data-block-id') ?? '';
+      const index = indexById.get(blockId) ?? 0;
+
+      let badge = td.querySelector(':scope > .nte-block-index') as HTMLSpanElement | null;
+      if (!badge) {
+        badge = doc.createElement('span');
+        badge.className = 'nte-block-index';
+        badge.setAttribute('aria-hidden', 'true');
+        td.appendChild(badge);
+      }
+      badge.textContent = index > 0 ? String(index) : '';
+
       let btn = td.querySelector(':scope > .nte-edit-btn') as HTMLButtonElement | null;
       if (!btn) {
         btn = doc.createElement('button');
@@ -140,18 +155,18 @@ export class EditorPage {
         btn.textContent = '✎';
         td.appendChild(btn);
       }
-      btn.setAttribute('aria-label', label);
-      btn.title = label;
+      btn.setAttribute('aria-label', editLabel);
+      btn.title = editLabel;
     });
   }
 
   private applySelectedClass(blockId: string | null): void {
     const doc = this.previewFrame()?.nativeElement?.contentDocument;
     if (!doc) return;
-    this.injectEditButtons(doc);
+    this.injectPreviewChrome(doc);
     doc.querySelectorAll('tr.nte-block.is-selected').forEach((el) => el.classList.remove('is-selected'));
     if (!blockId) return;
-    const safe = blockId.replace(/[\\"']/g, '');
+    const safe = blockId.replace(/[\\\"']/g, '');
     const el = doc.querySelector(`tr.nte-block[data-block-id="${safe}"]`);
     el?.classList.add('is-selected');
   }

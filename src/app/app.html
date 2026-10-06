@@ -1,4 +1,22 @@
 <div class="app-shell" data-testid="app-shell">
+  <!-- Material Symbols Outlined paths (Apache-2.0), same undo/redo as image2colors -->
+  <svg class="app-icon-sprite" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="icon-undo" viewBox="0 -960 960 960">
+        <path d="M280-200v-80h284q63 0 109.5-40T720-420q0-60-46.5-100T564-560H312l104 104-56 56-200-200 200-200 56 56-104 104h252q97 0 166.5 63T800-420q0 94-69.5 157T564-200H280Z" />
+      </symbol>
+      <symbol id="icon-redo" viewBox="0 -960 960 960">
+        <path d="M396-200q-97 0-166.5-63T160-420q0-94 69.5-157T396-640h252L544-744l56-56 200 200-200 200-56-56 104-104H396q-63 0-109.5 40T240-420q0 60 46.5 100T396-280h284v80H396Z" />
+      </symbol>
+      <symbol id="icon-save" viewBox="0 -960 960 960">
+        <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-120H640v80h-80v-80H200v120Zm0-200h560v-360H200v360Zm0 200v-560 560Z" />
+      </symbol>
+      <symbol id="icon-reset" viewBox="0 -960 960 960">
+        <path d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z" />
+      </symbol>
+    </defs>
+  </svg>
+
   <header class="app-header">
     <div class="app-header-bar">
       <div class="app-header-brand">
@@ -17,20 +35,60 @@
             type="button"
             ngToolbarWidget
             class="toolbar-btn"
+            value="undo"
+            data-testid="action-undo"
+            [disabled]="!session.canUndo()"
+            [attr.aria-label]="i18n.t('action.undo')"
+            [attr.title]="i18n.t('action.undo')"
+            (click)="session.undo()"
+          >
+            <svg class="toolbar-icon" aria-hidden="true" focusable="false">
+              <use href="#icon-undo"></use>
+            </svg>
+          </button>
+          <button
+            type="button"
+            ngToolbarWidget
+            class="toolbar-btn"
+            value="redo"
+            data-testid="action-redo"
+            [disabled]="!session.canRedo()"
+            [attr.aria-label]="i18n.t('action.redo')"
+            [attr.title]="i18n.t('action.redo')"
+            (click)="session.redo()"
+          >
+            <svg class="toolbar-icon" aria-hidden="true" focusable="false">
+              <use href="#icon-redo"></use>
+            </svg>
+          </button>
+          <button
+            type="button"
+            ngToolbarWidget
+            class="toolbar-btn"
             value="save"
             data-testid="action-save"
-            [textContent]="i18n.t('action.save')"
+            [attr.aria-label]="i18n.t('action.save')"
+            [attr.title]="i18n.t('action.save')"
             (click)="session.save()"
-          ></button>
+          >
+            <svg class="toolbar-icon" aria-hidden="true" focusable="false">
+              <use href="#icon-save"></use>
+            </svg>
+          </button>
           <button
             type="button"
             ngToolbarWidget
             class="toolbar-btn"
             value="reset"
             data-testid="action-reset"
-            [textContent]="i18n.t('action.reset')"
+            [attr.aria-label]="i18n.t('action.reset')"
+            [attr.title]="i18n.t('action.reset')"
             (click)="session.resetSeed()"
-          ></button>
+          >
+            <svg class="toolbar-icon" aria-hidden="true" focusable="false">
+              <use href="#icon-reset"></use>
+            </svg>
+          </button>
         </div>
 
         <div class="locale-switch" role="group" [attr.aria-label]="i18n.t('action.locale')">
@@ -100,5 +158,6 @@
   </footer>
 </div>
 
+<app-block-edit-modal />
 <app-legal-modal [kind]="legalKind()" (closed)="closeLegal()" />
 <app-snackbar />
