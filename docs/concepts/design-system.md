@@ -83,7 +83,7 @@ Do **not** give the preview host `overflow: auto` and a tall iframe (`min(80vh)`
 - **Narrow:** not stacked under the preview. **Show/hide overlay/drawer** over the preview (`--ds-z-panel-overlay`).
 - **Resize:** user-draggable left edge. Width clamped from `--ds-panel-width` (min, `21rem` / 336px default) to **50% of the browser viewport width**. Persist open width in `localStorage` (`newsletter-template-editor.side-panel-width.v1`). Collapse still uses the thin strip; resize handle is hidden while collapsed.
 - **Tabs (3b):** Blocks, Inspect, Campaign, Brand, Colors, Legal, Merge — split so content need not rely on panel body scroll. Emergency overflow on short viewports may use panel scroll as exception.
-- Collapse control remains dogan-style `»` with width animation.
+- Collapse control remains old-style `»` with width animation.
 
 ### Header
 

@@ -1,0 +1,59 @@
+@use '../../../styles/editor-forms';
+
+:host {
+  display: block;
+}
+
+.catalog-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-block-start: 0.5rem;
+}
+
+.catalog-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  min-height: 5.25rem;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius);
+  padding: 0.65rem 0.55rem;
+  font: inherit;
+  color: var(--ds-text);
+  background: color-mix(in srgb, var(--ds-accent) 7%, var(--ds-bg-panel));
+  cursor: pointer;
+  text-align: start;
+}
+
+.catalog-card:hover {
+  border-color: color-mix(in srgb, var(--ds-accent) 55%, var(--ds-border));
+  background: color-mix(in srgb, var(--ds-accent) 14%, var(--ds-bg-panel));
+}
+
+.catalog-card:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 1px;
+}
+
+.catalog-card:active {
+  transform: translateY(1px);
+}
+
+.catalog-card__icon {
+  font-size: 1.15rem;
+  line-height: 1;
+  margin-block-end: 0.15rem;
+}
+
+.catalog-card__label {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.catalog-card__hint {
+  color: var(--ds-text-muted);
+  font-size: 0.68rem;
+  line-height: 1.3;
+}

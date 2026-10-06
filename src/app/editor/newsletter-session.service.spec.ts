@@ -19,11 +19,22 @@ describe('NewsletterSession', () => {
     ]);
   });
 
+  it('starts on the placed-blocks tab', () => {
+    expect(session.panelTab()).toBe('placed');
+  });
+
   it('adds a block and selects it for inspector', () => {
     session.addBlock('paragraph');
     expect(session.blocks().length).toBe(5);
     expect(session.selectedBlock()?.type).toBe('paragraph');
     expect(session.panelTab()).toBe('inspector');
+  });
+
+  it('reorders blocks by id list', () => {
+    const ids = session.blocks().map((b) => b.id);
+    const reversed = [...ids].reverse();
+    session.reorderBlocks(reversed);
+    expect(session.blocks().map((b) => b.id)).toEqual(reversed);
   });
 
   it('updates block fields immutably', () => {

@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Tab, TabContent, TabList, TabPanel, Tabs } from '@angular/aria/tabs';
 import { LocaleService } from '../../i18n/locale.service';
-import { BlocksTabComponent } from '../blocks/blocks-tab.component';
+import { CatalogTabComponent } from '../blocks/catalog-tab.component';
+import { PlacedBlocksTabComponent } from '../blocks/placed-blocks-tab.component';
 import { BrandFieldsComponent } from '../globals/brand-fields.component';
 import { CampaignFieldsComponent } from '../globals/campaign-fields.component';
 import { ColorsFieldsComponent } from '../globals/colors-fields.component';
@@ -14,7 +15,8 @@ import {
 } from '../newsletter-session.service';
 
 const TABS: { value: EditorPanelTab; labelKey: string }[] = [
-  { value: 'blocks', labelKey: 'panel.tab.blocks' },
+  { value: 'placed', labelKey: 'panel.tab.placed' },
+  { value: 'catalog', labelKey: 'panel.tab.catalog' },
   { value: 'inspector', labelKey: 'panel.tab.inspector' },
   { value: 'campaign', labelKey: 'panel.tab.campaign' },
   { value: 'brand', labelKey: 'panel.tab.brand' },
@@ -31,7 +33,8 @@ const TABS: { value: EditorPanelTab; labelKey: string }[] = [
     Tab,
     TabPanel,
     TabContent,
-    BlocksTabComponent,
+    PlacedBlocksTabComponent,
+    CatalogTabComponent,
     BlockInspectorComponent,
     CampaignFieldsComponent,
     BrandFieldsComponent,

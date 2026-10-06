@@ -15,7 +15,7 @@ export class ShellUiService {
   private readonly collapsedSignal = signal(false);
   private readonly widthPxSignal = signal(PANEL_WIDTH_DEFAULT_PX);
 
-  /** true = panel body hidden (dogan-style collapse). */
+  /** true = panel body hidden (old-style collapse). */
   readonly panelCollapsed = this.collapsedSignal.asReadonly();
 
   /** Open panel width in CSS pixels (clamped on set). */

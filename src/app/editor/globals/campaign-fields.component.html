@@ -11,6 +11,7 @@
       [value]="g.preheader"
       (input)="onString('preheader', $event)"
     ></textarea>
+    <p class="ed-hint" data-testid="g-preheader-help" [textContent]="i18n.t('campaign.preheaderHelp')"></p>
   </div>
   <div class="ed-field">
     <label class="ed-label" for="g-subject" [textContent]="i18n.t('campaign.subject')"></label>

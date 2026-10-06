@@ -1,0 +1,19 @@
+<section class="catalog-tab" data-testid="catalog-tab">
+  <p class="ed-hint" [textContent]="i18n.t('catalog.hint')"></p>
+  <div class="catalog-grid" role="list" data-testid="block-catalog">
+    @for (type of types; track type) {
+      <button
+        type="button"
+        class="catalog-card"
+        role="listitem"
+        [attr.data-testid]="'add-block-' + type"
+        [attr.aria-label]="label(type)"
+        (click)="add(type)"
+      >
+        <span class="catalog-card__icon" aria-hidden="true" [textContent]="icon(type)"></span>
+        <span class="catalog-card__label" [textContent]="label(type)"></span>
+        <span class="catalog-card__hint" [textContent]="hint(type)"></span>
+      </button>
+    }
+  </div>
+</section>

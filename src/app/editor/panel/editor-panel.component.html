@@ -20,9 +20,14 @@
   </div>
 
   <div class="editor-panel-body">
-    <div class="editor-tab-panel" ngTabPanel value="blocks" [preserveContent]="true">
+    <div class="editor-tab-panel" ngTabPanel value="placed" [preserveContent]="true">
       <ng-template ngTabContent>
-        <app-blocks-tab />
+        <app-placed-blocks-tab />
+      </ng-template>
+    </div>
+    <div class="editor-tab-panel" ngTabPanel value="catalog" [preserveContent]="true">
+      <ng-template ngTabContent>
+        <app-catalog-tab />
       </ng-template>
     </div>
     <div class="editor-tab-panel" ngTabPanel value="inspector" [preserveContent]="true">

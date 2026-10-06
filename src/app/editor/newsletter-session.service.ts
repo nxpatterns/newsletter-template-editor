@@ -14,7 +14,8 @@ import { LocaleService } from '../i18n/locale.service';
 import { SnackbarService } from '../ui/snackbar/snackbar.service';
 
 export type EditorPanelTab =
-  | 'blocks'
+  | 'placed'
+  | 'catalog'
   | 'inspector'
   | 'campaign'
   | 'brand'
@@ -30,7 +31,7 @@ export class NewsletterSession {
 
   private readonly newsletterSignal = signal<Newsletter>(seedNewsletter());
   private readonly selectedBlockIdSignal = signal<string | null>(null);
-  private readonly panelTabSignal = signal<EditorPanelTab>('blocks');
+  private readonly panelTabSignal = signal<EditorPanelTab>('placed');
 
   readonly newsletter = this.newsletterSignal.asReadonly();
   readonly selectedBlockId = this.selectedBlockIdSignal.asReadonly();
@@ -101,6 +102,23 @@ export class NewsletterSession {
       const blocks = [...n.blocks];
       const [item] = blocks.splice(index, 1);
       blocks.splice(target, 0, item);
+      return { ...n, blocks };
+    });
+  }
+
+  /** Reorder by full id sequence (drag-and-drop). Unknown ids are dropped. */
+  reorderBlocks(orderedIds: readonly string[]): void {
+    this.newsletterSignal.update((n) => {
+      const byId = new Map(n.blocks.map((b) => [b.id, b]));
+      const blocks: Block[] = [];
+      for (const id of orderedIds) {
+        const block = byId.get(id);
+        if (block) {
+          blocks.push(block);
+          byId.delete(id);
+        }
+      }
+      for (const leftover of byId.values()) blocks.push(leftover);
       return { ...n, blocks };
     });
   }

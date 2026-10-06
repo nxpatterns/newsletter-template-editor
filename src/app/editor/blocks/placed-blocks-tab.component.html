@@ -1,37 +1,39 @@
-<section class="blocks-tab" data-testid="blocks-tab">
-  <h3 class="ed-section-title" [textContent]="i18n.t('blocks.library')"></h3>
-  <div class="library" role="list">
-    @for (type of library; track type) {
-      <button
-        type="button"
-        class="library-card"
-        role="listitem"
-        [attr.data-testid]="'add-block-' + type"
-        [textContent]="blockLabel(type)"
-        (click)="session.addBlock(type)"
-      ></button>
-    }
-  </div>
+<section class="placed-tab" data-testid="placed-blocks-tab">
+  <p class="ed-hint" [textContent]="i18n.t('placed.hint')"></p>
 
-  <h3 class="ed-section-title document-title" [textContent]="i18n.t('blocks.document')"></h3>
   @if (session.blocks().length === 0) {
-    <p class="ed-hint" [textContent]="i18n.t('blocks.empty')"></p>
+    <p class="ed-hint empty" data-testid="placed-empty" [textContent]="i18n.t('placed.empty')"></p>
   } @else {
-    <ul class="doc-list" data-testid="block-list">
+    <ul
+      class="placed-list"
+      data-testid="block-list"
+      cdkDropList
+      [cdkDropListData]="listData()"
+      (cdkDropListDropped)="onDrop($event)"
+    >
       @for (block of session.blocks(); track block.id; let i = $index) {
-        <li class="doc-item" [class.is-selected]="session.selectedBlockId() === block.id">
+        <li
+          class="placed-item"
+          cdkDrag
+          [class.is-selected]="session.selectedBlockId() === block.id"
+          [attr.data-testid]="'placed-item-' + block.id"
+        >
+          <button type="button" class="drag-handle" cdkDragHandle [attr.aria-label]="i18n.t('placed.drag')" title="⋮⋮">
+            ⋮⋮
+          </button>
           <button
             type="button"
-            class="doc-select"
+            class="placed-select"
             [attr.data-testid]="'select-block-' + block.id"
             [attr.aria-label]="i18n.t('blocks.select')"
             [attr.aria-pressed]="session.selectedBlockId() === block.id"
             (click)="session.selectBlock(block.id)"
           >
-            <span class="doc-index">{{ i + 1 }}</span>
-            <span [textContent]="blockLabel(block.type)"></span>
+            <span class="placed-icon" aria-hidden="true" [textContent]="icon(block.type)"></span>
+            <span class="placed-index">{{ i + 1 }}</span>
+            <span class="placed-label" [textContent]="blockLabel(block.type)"></span>
           </button>
-          <div class="doc-actions">
+          <div class="placed-actions">
             <button
               type="button"
               class="ed-btn"
