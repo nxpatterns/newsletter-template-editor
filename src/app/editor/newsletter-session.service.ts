@@ -40,6 +40,10 @@ export class NewsletterSession {
   private readonly selectedBlockIdSignal = signal<string | null>(null);
   private readonly panelTabSignal = signal<EditorPanelTab>('placed');
   private readonly editingBlockIdSignal = signal<string | null>(null);
+  /** Snapshot of the block when the edit modal opened (for Cancel). */
+  private editBaselineBlock: Block | null = null;
+  /** Undo-stack depth when the modal opened — cancel trims entries pushed during edit. */
+  private editUndoDepth = 0;
 
   private undoStack: Newsletter[] = [];
   private redoStack: Newsletter[] = [];
@@ -91,6 +95,7 @@ export class NewsletterSession {
     const next = resetToSeed(seedNewsletter);
     this.newsletterSignal.set(next);
     this.editingBlockIdSignal.set(null);
+    this.editBaselineBlock = null;
     this.ensureSelection(next);
     this.snackbar.success(this.i18n.t('snackbar.reset'));
   }
@@ -107,12 +112,45 @@ export class NewsletterSession {
   /** Select + open the shared block edit modal. */
   openBlockEditor(id: string): void {
     this.selectBlock(id);
+    const block = this.newsletterSignal().blocks.find((b) => b.id === id) ?? null;
+    this.editBaselineBlock = block ? structuredClone(block) : null;
+    this.editUndoDepth = this.undoStack.length;
     this.editingBlockIdSignal.set(id);
   }
 
-  closeBlockEditor(): void {
+  /** Discard in-progress field edits and close the modal. */
+  cancelBlockEditor(): void {
     this.endCoalesce();
+    const baseline = this.editBaselineBlock;
+    const id = this.editingBlockIdSignal();
+    if (baseline && id) {
+      // Restore without pushing history (cancel is not an undo step).
+      this.newsletterSignal.update((n) => ({
+        ...n,
+        blocks: n.blocks.map((b) => (b.id === id ? structuredClone(baseline) : b)),
+      }));
+    }
+    // Drop undo/redo entries created while the modal was open.
+    if (this.undoStack.length > this.editUndoDepth) {
+      this.undoStack.length = this.editUndoDepth;
+    }
+    this.redoStack = [];
+    this.syncHistoryFlags();
+    this.editBaselineBlock = null;
+    this.editUndoDepth = 0;
     this.editingBlockIdSignal.set(null);
+  }
+
+  /** Keep live edits and close the modal. */
+  saveBlockEditor(): void {
+    this.endCoalesce();
+    this.editBaselineBlock = null;
+    this.editUndoDepth = 0;
+    this.editingBlockIdSignal.set(null);
+  }
+
+  closeBlockEditor(): void {
+    this.saveBlockEditor();
   }
 
   addBlock(type: Block['type']): void {
@@ -132,6 +170,7 @@ export class NewsletterSession {
       }
       if (this.editingBlockIdSignal() === id) {
         this.editingBlockIdSignal.set(null);
+        this.editBaselineBlock = null;
       }
       return { ...n, blocks };
     });
@@ -290,6 +329,7 @@ export class NewsletterSession {
     const editing = this.editingBlockIdSignal();
     if (editing && !n.blocks.some((b) => b.id === editing)) {
       this.editingBlockIdSignal.set(null);
+      this.editBaselineBlock = null;
     }
   }
 }

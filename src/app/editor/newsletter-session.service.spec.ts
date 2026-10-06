@@ -42,8 +42,23 @@ describe('NewsletterSession', () => {
     session.openBlockEditor(id);
     expect(session.editingBlockId()).toBe(id);
     expect(session.selectedBlockId()).toBe(id);
-    session.closeBlockEditor();
+    session.saveBlockEditor();
     expect(session.editingBlockId()).toBeNull();
+  });
+
+  it('cancelBlockEditor restores the block snapshot', () => {
+    const hero = session.blocks().find((b) => b.type === 'hero');
+    expect(hero).toBeTruthy();
+    const original = hero!.type === 'hero' ? hero!.label : '';
+    expect(session.canUndo()).toBe(false);
+    session.openBlockEditor(hero!.id);
+    session.updateBlock(hero!.id, { label: 'TEMP' }, 'coalesce');
+    expect(session.canUndo()).toBe(true);
+    session.cancelBlockEditor();
+    const restored = session.blocks().find((b) => b.id === hero!.id);
+    expect(restored?.type === 'hero' && restored.label).toBe(original);
+    expect(session.editingBlockId()).toBeNull();
+    expect(session.canUndo()).toBe(false);
   });
 
   it('reorders blocks by id list', () => {

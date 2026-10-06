@@ -15,18 +15,6 @@
     >
       <header class="block-edit-head">
         <h2 id="block-edit-title" class="block-edit-title" [textContent]="titleText()"></h2>
-        <div class="block-edit-actions">
-          <button
-            #closeBtn
-            type="button"
-            class="block-edit-close"
-            data-testid="block-edit-close"
-            [attr.aria-label]="i18n.t('modal.close')"
-            (click)="requestClose()"
-          >
-            ×
-          </button>
-        </div>
       </header>
 
       <div class="block-edit-body">
@@ -35,11 +23,19 @@
 
       <footer class="block-edit-foot">
         <button
+          #cancelBtn
           type="button"
-          class="block-edit-done"
-          data-testid="block-edit-done"
-          [textContent]="i18n.t('modal.done')"
-          (click)="requestClose()"
+          class="block-edit-btn block-edit-btn--ghost"
+          data-testid="block-edit-cancel"
+          [textContent]="i18n.t('modal.cancel')"
+          (click)="requestCancel()"
+        ></button>
+        <button
+          type="button"
+          class="block-edit-btn block-edit-btn--primary"
+          data-testid="block-edit-save"
+          [textContent]="i18n.t('modal.save')"
+          (click)="requestSave()"
         ></button>
       </footer>
     </div>

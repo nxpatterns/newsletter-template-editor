@@ -26,11 +26,12 @@ export class BlockEditModalComponent {
   protected readonly i18n = inject(LocaleService);
   protected readonly session = inject(NewsletterSession);
 
-  private readonly closeBtn = viewChild<ElementRef<HTMLButtonElement>>('closeBtn');
+  private readonly cancelBtn = viewChild<ElementRef<HTMLButtonElement>>('cancelBtn');
 
   /** Drives enter/leave CSS classes. Kept true while dialog is mounted. */
   protected readonly openVisual = signal(false);
   private closing = false;
+  private closeAction: 'save' | 'cancel' = 'cancel';
 
   protected readonly titleText = computed(() => {
     const block = this.session.editingBlock();
@@ -47,27 +48,38 @@ export class BlockEditModalComponent {
       const id = this.session.editingBlockId();
       if (id) {
         this.closing = false;
+        this.closeAction = 'cancel';
         requestAnimationFrame(() => this.openVisual.set(true));
-        queueMicrotask(() => this.closeBtn()?.nativeElement.focus());
+        queueMicrotask(() => this.cancelBtn()?.nativeElement.focus());
       }
     });
   }
 
   protected onBackdropClick(): void {
-    this.requestClose();
+    this.requestCancel();
   }
 
-  protected requestClose(): void {
-    if (!this.session.editingBlockId() || this.closing) return;
-    this.closing = true;
-    this.openVisual.set(false);
-    window.setTimeout(() => {
-      this.closing = false;
-      this.session.closeBlockEditor();
-    }, 280);
+  protected requestCancel(): void {
+    this.beginClose('cancel');
+  }
+
+  protected requestSave(): void {
+    this.beginClose('save');
   }
 
   protected onEscape(): void {
-    if (this.session.editingBlockId()) this.requestClose();
+    if (this.session.editingBlockId()) this.requestCancel();
+  }
+
+  private beginClose(action: 'save' | 'cancel'): void {
+    if (!this.session.editingBlockId() || this.closing) return;
+    this.closing = true;
+    this.closeAction = action;
+    this.openVisual.set(false);
+    window.setTimeout(() => {
+      this.closing = false;
+      if (this.closeAction === 'save') this.session.saveBlockEditor();
+      else this.session.cancelBlockEditor();
+    }, 280);
   }
 }

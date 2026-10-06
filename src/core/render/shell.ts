@@ -171,27 +171,41 @@ export function renderExportShell(globals: Globals, bodyInner: string): string {
 
 /** Preview-only chrome. Interaction is wired by the host via contentDocument (no srcdoc scripts). */
 const PREVIEW_EDITOR_CHROME = `
+  /* Room for chrome outside the 600px column; keep export body padding 0. */
+  html, body {
+    overflow-x: visible !important;
+  }
+  body {
+    padding: 12px 52px !important;
+  }
+  table, tbody, tr, td {
+    overflow: visible !important;
+  }
   tr.nte-block > td {
     position: relative;
     cursor: pointer;
-    transition: box-shadow 0.12s ease;
+    transition: box-shadow 0.12s ease, outline-color 0.12s ease;
   }
-  tr.nte-block:hover > td {
-    box-shadow: inset 0 0 0 2px rgba(126, 207, 255, 0.55);
+  /* Hover: dashed ice-blue */
+  tr.nte-block:hover:not(.is-selected) > td {
+    box-shadow: inset 0 0 0 2px rgba(126, 207, 255, 0.45);
     outline: 2px dashed #7ecfff;
     outline-offset: -2px;
   }
+  /* Selected: solid turquoise */
   tr.nte-block.is-selected > td {
-    box-shadow: inset 0 0 0 2px rgba(126, 207, 255, 0.95);
-    outline: 2px dashed #7ecfff;
+    box-shadow: inset 0 0 0 2px rgba(32, 212, 200, 0.95);
+    outline: 2px solid #20d4c8;
     outline-offset: -2px;
   }
-  .nte-edit-btn {
+  /* Shared chrome chip look — all sit OUTSIDE the block box */
+  .nte-drag-handle,
+  .nte-edit-btn,
+  .nte-block-index {
     display: none !important;
     position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 20;
+    top: 0;
+    z-index: 30;
     box-sizing: border-box;
     width: 34px;
     height: 34px;
@@ -199,51 +213,69 @@ const PREVIEW_EDITOR_CHROME = `
     border: 1px solid rgba(126, 207, 255, 0.95);
     border-radius: 0.25rem;
     padding: 0;
-    font: 700 15px/1 system-ui, -apple-system, sans-serif;
+    font: 700 14px/1 system-ui, -apple-system, sans-serif;
     color: #061018;
     background: #7ecfff;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
-    cursor: pointer;
     pointer-events: auto;
   }
+  tr.nte-block:hover > td .nte-drag-handle,
+  tr.nte-block.is-selected > td .nte-drag-handle,
   tr.nte-block:hover > td .nte-edit-btn,
-  tr.nte-block.is-selected > td .nte-edit-btn {
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-  }
-  .nte-edit-btn:hover {
-    background: #a8e2ff;
-  }
-  .nte-edit-btn:focus-visible {
-    outline: 2px solid #ffffff;
-    outline-offset: 2px;
-  }
-  .nte-block-index {
-    display: none !important;
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 20;
-    box-sizing: border-box;
-    min-width: 28px;
-    height: 28px;
-    margin: 0;
-    padding: 0 7px;
-    border: 1px solid rgba(126, 207, 255, 0.95);
-    border-radius: 999px;
-    font: 700 12px/28px system-ui, -apple-system, sans-serif;
-    text-align: center;
-    color: #061018;
-    background: #7ecfff;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
-    pointer-events: none;
-  }
+  tr.nte-block.is-selected > td .nte-edit-btn,
   tr.nte-block:hover > td .nte-block-index,
   tr.nte-block.is-selected > td .nte-block-index {
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
+  }
+  /* Left of box: drag */
+  .nte-drag-handle {
+    left: -42px;
+    right: auto;
+    letter-spacing: -0.06em;
+    cursor: grab;
+    touch-action: none;
+  }
+  .nte-drag-handle:active { cursor: grabbing; }
+  .nte-drag-handle:hover,
+  .nte-edit-btn:hover { background: #a8e2ff; }
+  .nte-drag-handle:focus-visible,
+  .nte-edit-btn:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
+  /* Right of box: edit, then number */
+  .nte-edit-btn {
+    left: auto;
+    right: -42px;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  .nte-block-index {
+    left: auto;
+    right: -80px;
+    min-width: 34px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 999px;
+    pointer-events: none;
+  }
+  tr.nte-block.is-selected > td .nte-block-index {
+    border-color: rgba(32, 212, 200, 0.95);
+    background: #20d4c8;
+  }
+  tr.nte-block.is-dragging {
+    opacity: 0.45;
+  }
+  tr.nte-block.nte-drop-before > td {
+    box-shadow: inset 0 3px 0 0 #20d4c8 !important;
+  }
+  tr.nte-block.nte-drop-after > td {
+    box-shadow: inset 0 -3px 0 0 #20d4c8 !important;
+  }
+  body.nte-is-dnd {
+    cursor: grabbing;
   }
 `;
 
