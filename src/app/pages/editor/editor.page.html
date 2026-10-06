@@ -12,8 +12,24 @@
     class="side-panel"
     data-testid="side-panel"
     [class.collapsed]="shellUi.panelCollapsed()"
-    [attr.aria-label]="i18n.t('panel.placeholder')"
+    [class.is-resizing]="resizing()"
+    [style.width]="shellUi.panelCollapsed() ? null : shellUi.panelWidthPx() + 'px'"
+    [style.min-width]="shellUi.panelCollapsed() ? null : shellUi.panelWidthPx() + 'px'"
+    [attr.aria-label]="i18n.t('panel.tabs')"
   >
+    <button
+      type="button"
+      class="side-panel-resizer"
+      data-testid="side-panel-resizer"
+      [attr.aria-label]="i18n.t('action.panelResize')"
+      [attr.title]="i18n.t('action.panelResize')"
+      [disabled]="shellUi.panelCollapsed()"
+      (pointerdown)="onResizePointerDown($event)"
+      (pointermove)="onResizePointerMove($event)"
+      (pointerup)="onResizePointerUp($event)"
+      (pointercancel)="onResizePointerUp($event)"
+    ></button>
+
     <div class="side-panel-header">
       <button
         type="button"
@@ -27,13 +43,10 @@
       >
         »
       </button>
-      <div class="side-panel-tabs" aria-hidden="true">
-        <!-- Tab labels arrive in 3b -->
-      </div>
     </div>
+
     <div class="side-panel-body">
-      <p class="side-panel__title" [textContent]="i18n.t('panel.placeholder')"></p>
-      <p class="side-panel__hint" [textContent]="i18n.t('panel.hint')"></p>
+      <app-editor-panel />
     </div>
   </aside>
 </div>

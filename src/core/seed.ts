@@ -12,7 +12,7 @@ export function seedNewsletter(): Newsletter {
   const paragraph = createBlock('paragraph');
   if (paragraph.type === 'paragraph') {
     paragraph.html =
-      'MIT-licensed block editor for ListMonk-style HTML email. Demo brand is CloudLib.EU — fully overridable via config.';
+      'MIT-licensed block editor for ListMonk-style HTML email. Demo Template is CloudLib.EU — fully overridable via config.';
   }
 
   const cta = createBlock('cta-button');

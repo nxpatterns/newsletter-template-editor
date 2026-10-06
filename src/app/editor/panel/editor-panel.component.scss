@@ -1,0 +1,63 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+.editor-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+.editor-panel-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  flex-shrink: 0;
+  padding: 0.35rem 0.5rem;
+  border-block-end: 1px solid var(--ds-border);
+}
+
+.editor-tab {
+  border: 0;
+  border-radius: 0.35rem;
+  padding: 0.3rem 0.45rem;
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--ds-text-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.editor-tab:hover {
+  color: var(--ds-text);
+  background: color-mix(in srgb, var(--ds-accent) 10%, transparent);
+}
+
+.editor-tab[aria-selected='true'] {
+  color: var(--ds-bg-page);
+  background: var(--ds-accent);
+}
+
+.editor-tab:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 1px;
+}
+
+.editor-panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0.65rem 0.75rem;
+  overflow: auto;
+}
+
+.editor-tab-panel[inert] {
+  display: none;
+}

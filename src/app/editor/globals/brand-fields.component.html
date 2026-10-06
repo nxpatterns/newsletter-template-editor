@@ -1,0 +1,49 @@
+@let g = session.globals();
+
+<section data-testid="brand-fields">
+  <div class="ed-field">
+    <label class="ed-label" for="g-stars" [textContent]="i18n.t('brand.stars')"></label>
+    <input
+      id="g-stars"
+      class="ed-input"
+      data-testid="g-stars"
+      [value]="g.brand.starsText"
+      (input)="onBrand('starsText', $event)"
+    />
+  </div>
+  <div class="ed-field">
+    <label class="ed-label" for="g-brand-name" [textContent]="i18n.t('brand.nameHtml')"></label>
+    <textarea
+      id="g-brand-name"
+      class="ed-textarea"
+      data-testid="g-brand-name"
+      rows="3"
+      [value]="g.brand.nameHtml"
+      (input)="onBrand('nameHtml', $event)"
+    ></textarea>
+  </div>
+  <div class="ed-field">
+    <label class="ed-label" for="g-logo-src" [textContent]="i18n.t('brand.logoSrc')"></label>
+    <input id="g-logo-src" class="ed-input" [value]="g.logo.src" (input)="onLogo('src', $event)" />
+  </div>
+  <div class="ed-field">
+    <label class="ed-label" for="g-logo-href" [textContent]="i18n.t('brand.logoHref')"></label>
+    <input id="g-logo-href" class="ed-input" [value]="g.logo.href ?? ''" (input)="onLogo('href', $event)" />
+  </div>
+  <div class="ed-field">
+    <label class="ed-label" for="g-logo-alt" [textContent]="i18n.t('brand.logoAlt')"></label>
+    <input id="g-logo-alt" class="ed-input" [value]="g.logo.alt ?? ''" (input)="onLogo('alt', $event)" />
+  </div>
+  <div class="ed-field">
+    <label class="ed-label" for="g-logo-h" [textContent]="i18n.t('brand.logoHeight')"></label>
+    <input
+      id="g-logo-h"
+      class="ed-input"
+      type="number"
+      min="16"
+      max="200"
+      [value]="g.logo.heightPx"
+      (input)="onLogoHeight($event)"
+    />
+  </div>
+</section>

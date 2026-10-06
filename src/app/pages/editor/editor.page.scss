@@ -34,8 +34,8 @@
   background: #08101e;
 }
 
-/* Open width / overlay rules stay project-owned; only collapse motion mirrors dogan. */
 .side-panel {
+  position: relative;
   display: flex;
   flex-direction: column;
   flex: 0 0 auto;
@@ -52,18 +52,52 @@
     min-width 0.2s ease;
 }
 
+.side-panel.is-resizing {
+  transition: none;
+  user-select: none;
+}
+
 .side-panel.collapsed {
   width: 2.25rem;
   min-width: 2.25rem;
 }
 
-.side-panel.collapsed .side-panel-tabs,
-.side-panel.collapsed .side-panel-body {
+.side-panel.collapsed .side-panel-body,
+.side-panel.collapsed .side-panel-resizer {
   display: none;
 }
 
 .side-panel.collapsed .side-panel-toggle {
   transform: rotate(180deg);
+}
+
+.side-panel-resizer {
+  position: absolute;
+  z-index: 2;
+  inset-block: 0;
+  inset-inline-start: -0.25rem;
+  width: 0.5rem;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  cursor: col-resize;
+  background: transparent;
+  touch-action: none;
+}
+
+.side-panel-resizer:hover,
+.side-panel-resizer:focus-visible {
+  background: color-mix(in srgb, var(--ds-accent) 45%, transparent);
+}
+
+.side-panel-resizer:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: -1px;
+}
+
+.side-panel-resizer:disabled {
+  cursor: default;
+  pointer-events: none;
 }
 
 .side-panel-header {
@@ -103,25 +137,13 @@
   outline-offset: 2px;
 }
 
-.side-panel-tabs {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
 .side-panel-body {
+  display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  padding: 0.75rem;
-}
-
-.side-panel__title {
-  margin: 0 0 0.35rem;
-  color: var(--ds-text);
-  font-weight: 600;
-}
-
-.side-panel__hint {
-  margin: 0;
+  min-width: 0;
+  overflow: hidden;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -131,7 +153,6 @@
   }
 }
 
-/* Narrow: overlay drawer; collapse still uses the same icon + width animation. */
 @media (max-width: 59.99rem) {
   .side-panel {
     position: absolute;

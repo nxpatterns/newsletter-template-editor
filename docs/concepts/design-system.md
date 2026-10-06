@@ -81,8 +81,9 @@ Do **not** give the preview host `overflow: auto` and a tall iframe (`min(80vh)`
 
 - **Wide:** docked right column; collapsible to a thin handle (show/hide).
 - **Narrow:** not stacked under the preview. **Show/hide overlay/drawer** over the preview (`--ds-z-panel-overlay`).
-- **No panel body scrollbar** as the design goal. Long dogan-style “Globals” is split into multiple short tabs (e.g. Campaign, Brand, Colors, Legal, Merge) so each tab fits `--ds-work-min-height` under header/footer. Emergency overflow on very short phones may allow panel scroll as a documented exception later — not the default.
-- 3a ships an empty/collapsible **slot** with the grid contract; tab content is 3b.
+- **Resize:** user-draggable left edge. Width clamped from `--ds-panel-width` (min, `21rem` / 336px default) to **50% of the browser viewport width**. Persist open width in `localStorage` (`newsletter-template-editor.side-panel-width.v1`). Collapse still uses the thin strip; resize handle is hidden while collapsed.
+- **Tabs (3b):** Blocks, Inspect, Campaign, Brand, Colors, Legal, Merge — split so content need not rely on panel body scroll. Emergency overflow on short viewports may use panel scroll as exception.
+- Collapse control remains dogan-style `»` with width animation.
 
 ### Header
 

@@ -1,0 +1,55 @@
+@let g = session.globals();
+
+<section data-testid="campaign-fields">
+  <div class="ed-field">
+    <label class="ed-label" for="g-preheader" [textContent]="i18n.t('campaign.preheader')"></label>
+    <textarea
+      id="g-preheader"
+      class="ed-textarea"
+      data-testid="g-preheader"
+      rows="3"
+      [value]="g.preheader"
+      (input)="onString('preheader', $event)"
+    ></textarea>
+  </div>
+  <div class="ed-field">
+    <label class="ed-label" for="g-subject" [textContent]="i18n.t('campaign.subject')"></label>
+    <input
+      id="g-subject"
+      class="ed-input"
+      data-testid="g-subject"
+      [value]="g.campaignSubject ?? ''"
+      (input)="onString('campaignSubject', $event)"
+    />
+    <p class="ed-hint" [textContent]="i18n.t('campaign.subjectHint')"></p>
+  </div>
+  <div class="ed-field">
+    <label class="ed-label" for="g-font" [textContent]="i18n.t('campaign.font')"></label>
+    <select id="g-font" class="ed-select" data-testid="g-font" [value]="g.fontFamily" (change)="onFont($event)">
+      @for (opt of fonts; track opt.value) {
+        <option [value]="opt.value" [textContent]="opt.label"></option>
+      }
+    </select>
+  </div>
+  @if (g.fontFamily === 'Custom') {
+    <div class="ed-field">
+      <label class="ed-label" for="g-custom-font" [textContent]="i18n.t('campaign.customFont')"></label>
+      <input
+        id="g-custom-font"
+        class="ed-input"
+        [value]="g.customFont ?? ''"
+        (input)="onString('customFont', $event)"
+      />
+    </div>
+  }
+  <div class="ed-field">
+    <label class="ed-label" for="g-export-prefix" [textContent]="i18n.t('campaign.exportPrefix')"></label>
+    <input
+      id="g-export-prefix"
+      class="ed-input"
+      data-testid="g-export-prefix"
+      [value]="g.exportFileNamePrefix"
+      (input)="onString('exportFileNamePrefix', $event)"
+    />
+  </div>
+</section>

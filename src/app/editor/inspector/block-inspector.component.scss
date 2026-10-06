@@ -1,0 +1,14 @@
+@use '../../../styles/editor-forms';
+
+:host {
+  display: block;
+}
+
+.type-label {
+  margin: 0 0 0.35rem;
+  color: var(--ds-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}

@@ -1,0 +1,114 @@
+/* Shared editor panel form chrome — used via @use in feature SCSS */
+
+.ed-section-title {
+  margin: 0 0 0.5rem;
+  color: var(--ds-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ed-hint {
+  margin: 0 0 0.65rem;
+  color: var(--ds-text-muted);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.ed-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-block-end: 0.55rem;
+}
+
+.ed-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.ed-label {
+  color: var(--ds-text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.ed-input,
+.ed-textarea,
+.ed-select {
+  width: 100%;
+  border: 1px solid var(--ds-border);
+  border-radius: 0.35rem;
+  padding: 0.4rem 0.5rem;
+  font: inherit;
+  font-size: 0.8125rem;
+  color: var(--ds-text);
+  background: var(--ds-bg-page);
+}
+
+.ed-textarea {
+  min-height: 3.5rem;
+  resize: vertical;
+}
+
+.ed-input:focus-visible,
+.ed-textarea:focus-visible,
+.ed-select:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 1px;
+}
+
+.ed-color {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.ed-color input[type='color'] {
+  width: 2.25rem;
+  height: 2rem;
+  border: 1px solid var(--ds-border);
+  border-radius: 0.35rem;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.ed-color .ed-input {
+  flex: 1 1 auto;
+}
+
+.ed-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-block-start: 0.65rem;
+}
+
+.ed-btn {
+  border: 1px solid var(--ds-border);
+  border-radius: 0.35rem;
+  padding: 0.35rem 0.55rem;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ds-text);
+  background: transparent;
+  cursor: pointer;
+}
+
+.ed-btn:hover {
+  background: color-mix(in srgb, var(--ds-accent) 12%, var(--ds-bg-panel));
+}
+
+.ed-btn:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 1px;
+}
+
+.ed-btn--danger {
+  color: var(--ds-danger);
+  border-color: color-mix(in srgb, var(--ds-danger) 45%, var(--ds-border));
+}

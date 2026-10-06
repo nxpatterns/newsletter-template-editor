@@ -1,0 +1,25 @@
+@let p = session.globals().personalization;
+
+<section data-testid="merge-fields">
+  <p class="ed-hint" [textContent]="i18n.t('merge.hint')"></p>
+  <div class="ed-field">
+    <label class="ed-label" for="g-sample-name" [textContent]="i18n.t('merge.sampleName')"></label>
+    <input
+      id="g-sample-name"
+      class="ed-input"
+      data-testid="g-sample-name"
+      [value]="p.samples['name'] ?? ''"
+      (input)="onSample('name', $event)"
+    />
+  </div>
+  <div class="ed-field">
+    <label class="ed-label" for="g-sample-email" [textContent]="i18n.t('merge.sampleEmail')"></label>
+    <input
+      id="g-sample-email"
+      class="ed-input"
+      data-testid="g-sample-email"
+      [value]="p.samples['email'] ?? ''"
+      (input)="onSample('email', $event)"
+    />
+  </div>
+</section>

@@ -1,0 +1,58 @@
+@let g = session.globals();
+
+<section data-testid="colors-fields">
+  <div class="ed-field-row">
+    <div class="ed-field">
+      <label class="ed-label" for="g-accent" [textContent]="i18n.t('colors.accent')"></label>
+      <div class="ed-color">
+        <input id="g-accent" type="color" data-testid="g-accent" [value]="g.accentColor" (input)="onColor('accentColor', $event)" />
+        <input class="ed-input" [value]="g.accentColor" (input)="onColor('accentColor', $event)" />
+      </div>
+    </div>
+    <div class="ed-field">
+      <label class="ed-label" for="g-gold" [textContent]="i18n.t('colors.gold')"></label>
+      <div class="ed-color">
+        <input id="g-gold" type="color" data-testid="g-gold" [value]="g.goldColor" (input)="onColor('goldColor', $event)" />
+        <input class="ed-input" [value]="g.goldColor" (input)="onColor('goldColor', $event)" />
+      </div>
+    </div>
+  </div>
+  <div class="ed-field-row">
+    <div class="ed-field">
+      <label class="ed-label" for="g-body" [textContent]="i18n.t('colors.bodyText')"></label>
+      <div class="ed-color">
+        <input id="g-body" type="color" [value]="g.bodyTextColor" (input)="onColor('bodyTextColor', $event)" />
+        <input class="ed-input" [value]="g.bodyTextColor" (input)="onColor('bodyTextColor', $event)" />
+      </div>
+    </div>
+    <div class="ed-field">
+      <label class="ed-label" for="g-heading" [textContent]="i18n.t('colors.heading')"></label>
+      <div class="ed-color">
+        <input id="g-heading" type="color" [value]="g.headingColor" (input)="onColor('headingColor', $event)" />
+        <input class="ed-input" [value]="g.headingColor" (input)="onColor('headingColor', $event)" />
+      </div>
+    </div>
+  </div>
+  <div class="ed-field-row">
+    <div class="ed-field">
+      <label class="ed-label" for="g-page-bg" [textContent]="i18n.t('colors.pageBg')"></label>
+      <div class="ed-color">
+        <input id="g-page-bg" type="color" data-testid="g-page-bg" [value]="g.pageBgColor" (input)="onColor('pageBgColor', $event)" />
+        <input class="ed-input" [value]="g.pageBgColor" (input)="onColor('pageBgColor', $event)" />
+      </div>
+    </div>
+    <div class="ed-field">
+      <label class="ed-label" for="g-content-bg" [textContent]="i18n.t('colors.contentBg')"></label>
+      <div class="ed-color">
+        <input
+          id="g-content-bg"
+          type="color"
+          data-testid="g-content-bg"
+          [value]="g.contentBgColor"
+          (input)="onColor('contentBgColor', $event)"
+        />
+        <input class="ed-input" [value]="g.contentBgColor" (input)="onColor('contentBgColor', $event)" />
+      </div>
+    </div>
+  </div>
+</section>

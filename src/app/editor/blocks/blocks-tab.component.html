@@ -1,0 +1,67 @@
+<section class="blocks-tab" data-testid="blocks-tab">
+  <h3 class="ed-section-title" [textContent]="i18n.t('blocks.library')"></h3>
+  <div class="library" role="list">
+    @for (type of library; track type) {
+      <button
+        type="button"
+        class="library-card"
+        role="listitem"
+        [attr.data-testid]="'add-block-' + type"
+        [textContent]="blockLabel(type)"
+        (click)="session.addBlock(type)"
+      ></button>
+    }
+  </div>
+
+  <h3 class="ed-section-title document-title" [textContent]="i18n.t('blocks.document')"></h3>
+  @if (session.blocks().length === 0) {
+    <p class="ed-hint" [textContent]="i18n.t('blocks.empty')"></p>
+  } @else {
+    <ul class="doc-list" data-testid="block-list">
+      @for (block of session.blocks(); track block.id; let i = $index) {
+        <li class="doc-item" [class.is-selected]="session.selectedBlockId() === block.id">
+          <button
+            type="button"
+            class="doc-select"
+            [attr.data-testid]="'select-block-' + block.id"
+            [attr.aria-label]="i18n.t('blocks.select')"
+            [attr.aria-pressed]="session.selectedBlockId() === block.id"
+            (click)="session.selectBlock(block.id)"
+          >
+            <span class="doc-index">{{ i + 1 }}</span>
+            <span [textContent]="blockLabel(block.type)"></span>
+          </button>
+          <div class="doc-actions">
+            <button
+              type="button"
+              class="ed-btn"
+              [attr.aria-label]="i18n.t('blocks.moveUp')"
+              [disabled]="i === 0"
+              (click)="session.moveBlock(block.id, -1)"
+            >
+              ↑
+            </button>
+            <button
+              type="button"
+              class="ed-btn"
+              [attr.aria-label]="i18n.t('blocks.moveDown')"
+              [disabled]="i === session.blocks().length - 1"
+              (click)="session.moveBlock(block.id, 1)"
+            >
+              ↓
+            </button>
+            <button
+              type="button"
+              class="ed-btn ed-btn--danger"
+              [attr.aria-label]="i18n.t('blocks.remove')"
+              [attr.data-testid]="'remove-block-' + block.id"
+              (click)="session.removeBlock(block.id)"
+            >
+              ✕
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</section>

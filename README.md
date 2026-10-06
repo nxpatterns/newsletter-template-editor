@@ -2,7 +2,7 @@
 
 MIT-licensed editor for **ListMonk-style HTML email**.
 
-Demo brand: **CloudLib Newsletter** (config defaults only — fully overridable, not a locked shell).
+Demo template: **CloudLib Newsletter** (config defaults only — fully overridable, not a locked shell).
 
 Live demo: [nxpatterns.github.io/newsletter-template-editor](https://nxpatterns.github.io/newsletter-template-editor/)
 

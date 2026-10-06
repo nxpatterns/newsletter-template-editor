@@ -42,4 +42,5 @@ export function renderExport(newsletter: Newsletter): ExportArtifacts {
 
 export { renderBlocks, renderExportShell, renderPreviewDoc };
 export type { RenderContext } from './blocks';
+export { FONT_PRESETS, fontStack } from './utils';
 export type { RenderMode } from './utils';

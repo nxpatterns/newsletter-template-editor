@@ -1,0 +1,40 @@
+@let l = session.globals().legal;
+
+<section data-testid="legal-fields">
+  <div class="ed-field">
+    <label class="ed-label" for="g-notice" [textContent]="i18n.t('legal.notice')"></label>
+    <textarea id="g-notice" class="ed-textarea" rows="3" [value]="l.noticeHtml" (input)="onLegal('noticeHtml', $event)"></textarea>
+  </div>
+  <div class="ed-field">
+    <label class="ed-label" for="g-company" [textContent]="i18n.t('legal.company')"></label>
+    <input id="g-company" class="ed-input" data-testid="g-company" [value]="l.companyLine" (input)="onLegal('companyLine', $event)" />
+  </div>
+  <div class="ed-field-row">
+    <div class="ed-field">
+      <label class="ed-label" for="g-priv-l" [textContent]="i18n.t('legal.privacyLabel')"></label>
+      <input id="g-priv-l" class="ed-input" [value]="l.privacyLabel" (input)="onLegal('privacyLabel', $event)" />
+    </div>
+    <div class="ed-field">
+      <label class="ed-label" for="g-priv-h" [textContent]="i18n.t('legal.privacyHref')"></label>
+      <input id="g-priv-h" class="ed-input" [value]="l.privacyHref" (input)="onLegal('privacyHref', $event)" />
+    </div>
+  </div>
+  <div class="ed-field-row">
+    <div class="ed-field">
+      <label class="ed-label" for="g-imp-l" [textContent]="i18n.t('legal.imprintLabel')"></label>
+      <input id="g-imp-l" class="ed-input" [value]="l.imprintLabel" (input)="onLegal('imprintLabel', $event)" />
+    </div>
+    <div class="ed-field">
+      <label class="ed-label" for="g-imp-h" [textContent]="i18n.t('legal.imprintHref')"></label>
+      <input id="g-imp-h" class="ed-input" [value]="l.imprintHref" (input)="onLegal('imprintHref', $event)" />
+    </div>
+  </div>
+  <div class="ed-field">
+    <label class="ed-label" for="g-unsub" [textContent]="i18n.t('legal.unsubscribe')"></label>
+    <input id="g-unsub" class="ed-input" [value]="l.unsubscribeLabel" (input)="onLegal('unsubscribeLabel', $event)" />
+  </div>
+  <div class="ed-field">
+    <label class="ed-label" for="g-view" [textContent]="i18n.t('legal.viewInBrowser')"></label>
+    <input id="g-view" class="ed-input" [value]="l.viewInBrowserLabel" (input)="onLegal('viewInBrowserLabel', $event)" />
+  </div>
+</section>

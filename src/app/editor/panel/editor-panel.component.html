@@ -1,0 +1,59 @@
+<div class="editor-panel" ngTabs data-testid="editor-panel">
+  <div
+    class="editor-panel-tabs"
+    ngTabList
+    selectionMode="follow"
+    [selectedTab]="session.panelTab()"
+    (selectedTabChange)="onTabChange($event)"
+    [attr.aria-label]="i18n.t('panel.tabs')"
+  >
+    @for (tab of tabs; track tab.value) {
+      <button
+        type="button"
+        class="editor-tab"
+        ngTab
+        [value]="tab.value"
+        [attr.data-testid]="'panel-tab-' + tab.value"
+        [textContent]="i18n.t(tab.labelKey)"
+      ></button>
+    }
+  </div>
+
+  <div class="editor-panel-body">
+    <div class="editor-tab-panel" ngTabPanel value="blocks" [preserveContent]="true">
+      <ng-template ngTabContent>
+        <app-blocks-tab />
+      </ng-template>
+    </div>
+    <div class="editor-tab-panel" ngTabPanel value="inspector" [preserveContent]="true">
+      <ng-template ngTabContent>
+        <app-block-inspector />
+      </ng-template>
+    </div>
+    <div class="editor-tab-panel" ngTabPanel value="campaign" [preserveContent]="true">
+      <ng-template ngTabContent>
+        <app-campaign-fields />
+      </ng-template>
+    </div>
+    <div class="editor-tab-panel" ngTabPanel value="brand" [preserveContent]="true">
+      <ng-template ngTabContent>
+        <app-brand-fields />
+      </ng-template>
+    </div>
+    <div class="editor-tab-panel" ngTabPanel value="colors" [preserveContent]="true">
+      <ng-template ngTabContent>
+        <app-colors-fields />
+      </ng-template>
+    </div>
+    <div class="editor-tab-panel" ngTabPanel value="legal" [preserveContent]="true">
+      <ng-template ngTabContent>
+        <app-legal-fields />
+      </ng-template>
+    </div>
+    <div class="editor-tab-panel" ngTabPanel value="merge" [preserveContent]="true">
+      <ng-template ngTabContent>
+        <app-merge-fields />
+      </ng-template>
+    </div>
+  </div>
+</div>
