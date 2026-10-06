@@ -14,11 +14,16 @@ export function darkModeCss(globals: Globals): string {
   @media (prefers-color-scheme: dark) {
     body, .email-bg, .footer-bg { background-color:${pageBg} !important; }
     .header-bg, .content-bg { background-color:${contentBg} !important; }
+    .chapter-bg, .stat-box-bg { background-color:#060e1a !important; }
+    .price-box-bg { background-color:#060d1a !important; }
     .text-body { color:${globals.bodyTextColor} !important; }
     .text-heading { color:${globals.headingColor} !important; }
     .text-accent { color:${globals.accentColor} !important; }
-    .text-gold { color:${globals.goldColor} !important; }
+    .text-gold, .text-chapter-label { color:${globals.goldColor} !important; }
     .text-dim { color:#4a6a88 !important; }
+    .text-stat { color:${globals.accentColor} !important; }
+    .text-price-main { color:#ffffff !important; }
+    .text-cta-body { color:#3a6080 !important; }
   }
   @media screen and (max-width: 600px) {
     .email-container { width:100% !important; }
@@ -58,6 +63,14 @@ export function renderHeader(globals: Globals, mode: RenderMode, bodyInner: stri
   const unsubHref = mode === 'export' ? '{{ UnsubscribeURL }}' : '#';
   const privacyHref = attrHref(resolveHref(legal.privacyHref, mode), mode);
   const imprintHref = attrHref(resolveHref(legal.imprintHref, mode), mode);
+  const companySiteHref = legal.companyWebsiteHref
+    ? attrHref(resolveHref(legal.companyWebsiteHref, mode), mode)
+    : '';
+  const companyName = escapeHtml(legal.companyName || '');
+  const companySiteLabel = escapeHtml(legal.companyWebsiteLabel || '');
+  const companyRow = companySiteHref && companySiteLabel
+    ? `${companyName}${companyName ? '&nbsp;·&nbsp;' : ''}<a href="${companySiteHref}" target="_blank" style="color:#4a6a88;text-decoration:underline" data-field="legal.companyWebsiteLabel">${companySiteLabel}</a>`
+    : companyName;
 
   return `
     <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" bgcolor="${pageBg}" class="email-bg" style="background-color:${pageBg}">
@@ -102,8 +115,8 @@ export function renderHeader(globals: Globals, mode: RenderMode, bodyInner: stri
                 <p style="font-family:${font};font-size:11px;color:#1a3050;margin:18px 0 0 0;text-align:center;letter-spacing:3px">
                   <span style="color:${gold};font-size:9px" class="text-gold">${starsText || '★ ★ ★ ★ ★ ★'}</span>
                 </p>
-                <p style="font-family:${font};font-size:12px;color:#4a6a88;margin:10px 0 0 0;text-align:center" class="text-dim" data-field="legal.companyLine">
-                  ${escapeHtml(legal.companyLine)}
+                <p style="font-family:${font};font-size:12px;color:#4a6a88;margin:10px 0 0 0;text-align:center" class="text-dim" data-field="legal.companyName">
+                  ${companyRow}
                 </p>
                 <p style="font-family:${font};font-size:12px;margin:8px 0 0 0;text-align:center">
                   <a href="${privacyHref}" target="_blank" style="color:#4a6a88;text-decoration:underline">${escapeHtml(
@@ -156,6 +169,58 @@ export function renderExportShell(globals: Globals, bodyInner: string): string {
 </html>`;
 }
 
+/** Preview-only chrome. Interaction is wired by the host via contentDocument (no srcdoc scripts). */
+const PREVIEW_EDITOR_CHROME = `
+  tr.nte-block > td {
+    position: relative;
+    cursor: pointer;
+    transition: box-shadow 0.12s ease;
+  }
+  tr.nte-block:hover > td {
+    box-shadow: inset 0 0 0 2px rgba(126, 207, 255, 0.55);
+    outline: 2px dashed #7ecfff;
+    outline-offset: -2px;
+  }
+  tr.nte-block.is-selected > td {
+    box-shadow: inset 0 0 0 2px rgba(126, 207, 255, 0.95);
+    outline: 2px dashed #7ecfff;
+    outline-offset: -2px;
+  }
+  .nte-edit-btn {
+    display: none !important;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 20;
+    box-sizing: border-box;
+    width: 34px;
+    height: 34px;
+    margin: 0;
+    border: 1px solid rgba(126, 207, 255, 0.95);
+    border-radius: 0.25rem;
+    padding: 0;
+    font: 700 15px/1 system-ui, -apple-system, sans-serif;
+    color: #061018;
+    background: #7ecfff;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    pointer-events: auto;
+  }
+  tr.nte-block:hover > td .nte-edit-btn,
+  tr.nte-block.is-selected > td .nte-edit-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+  .nte-edit-btn:hover {
+    background: #a8e2ff;
+  }
+  .nte-edit-btn:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
+`;
+
 export function renderPreviewDoc(globals: Globals, bodyInner: string, subject: string): string {
   const font = fontStack(globals);
   const preheader = escapeHtml(globals.preheader || '');
@@ -168,7 +233,7 @@ export function renderPreviewDoc(globals: Globals, bodyInner: string, subject: s
   <meta name="color-scheme" content="light dark" />
   <meta name="supported-color-schemes" content="light dark" />
   <title>${escapeHtml(subject || 'Preview')}</title>
-  <style>${darkModeCss(globals)}</style>
+  <style>${darkModeCss(globals)}${PREVIEW_EDITOR_CHROME}</style>
 </head>
 <body bgcolor="${pageBg}" style="margin:0;padding:0;background-color:${pageBg};font-family:${font}">
   <div style="display:none;max-height:0;overflow:hidden">${preheader}</div>

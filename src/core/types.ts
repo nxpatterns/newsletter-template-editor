@@ -40,7 +40,12 @@ export interface LogoConfig {
 /** Legal / company footer — all overridable (no CloudLib lock-in). */
 export interface LegalFooterConfig {
   noticeHtml: string;
-  companyLine: string;
+  /** Company / operator name (plain text). */
+  companyName: string;
+  /** Website link label in the footer company row. */
+  companyWebsiteLabel: string;
+  /** Website URL for the company row link. */
+  companyWebsiteHref: string;
   privacyLabel: string;
   privacyHref: string;
   imprintLabel: string;
@@ -96,8 +101,61 @@ export interface CtaButtonBlock extends BlockBase {
   href: string;
 }
 
-/** v0 block union — expand slice by slice */
-export type Block = DividerBlock | HeroBlock | ParagraphBlock | CtaButtonBlock;
+export interface ChapterBandBlock extends BlockBase {
+  type: 'chapter-band';
+  titleHtml: string;
+}
+
+export interface PullQuoteBlock extends BlockBase {
+  type: 'pull-quote';
+  html: string;
+}
+
+export interface StatBoxBlock extends BlockBase {
+  type: 'stat-box';
+  number: string;
+  label: string;
+  geoHtml: string;
+}
+
+export interface BenefitsListBlock extends BlockBase {
+  type: 'benefits-list';
+  items: string[];
+}
+
+export interface PriceBoxBlock extends BlockBase {
+  type: 'price-box';
+  badge: string;
+  strike: string;
+  mainPriceHtml: string;
+  details: string;
+  fine: string;
+}
+
+export interface CtaLinkListItem {
+  label: string;
+  intro: string;
+  linkText: string;
+  href: string;
+}
+
+export interface CtaLinkListBlock extends BlockBase {
+  type: 'cta-link-list';
+  items: CtaLinkListItem[];
+}
+
+/** Block union — expand slice by slice */
+export type Block =
+  | DividerBlock
+  | HeroBlock
+  | ParagraphBlock
+  | CtaButtonBlock
+  | ChapterBandBlock
+  | PullQuoteBlock
+  | StatBoxBlock
+  | BenefitsListBlock
+  | PriceBoxBlock
+  | CtaLinkListBlock;
 
 export interface Newsletter {
   schemaVersion: number;
@@ -125,6 +183,37 @@ export function createBlock(type: Block['type']): Block {
       return { id, type, html: 'New paragraph.' };
     case 'cta-button':
       return { id, type, text: 'Learn more', href: 'https://example.com' };
+    case 'chapter-band':
+      return { id, type, titleHtml: 'Chapter title' };
+    case 'pull-quote':
+      return { id, type, html: '\u201cA memorable line.\u201d' };
+    case 'stat-box':
+      return { id, type, number: '1.000+', label: 'Metric label', geoHtml: 'Region A · Region B' };
+    case 'benefits-list':
+      return { id, type, items: ['Benefit one', 'Benefit two', 'Benefit three'] };
+    case 'price-box':
+      return {
+        id,
+        type,
+        badge: 'Offer',
+        strike: 'Was €199 / year',
+        mainPriceHtml: '€99 <span style="font-size:16px;font-weight:300">/ year</span>',
+        details: 'No auto-renew · Cancel anytime',
+        fine: 'Limited availability.',
+      };
+    case 'cta-link-list':
+      return {
+        id,
+        type,
+        items: [
+          {
+            label: 'Book a call:',
+            intro: 'We will call you back —',
+            linkText: 'Schedule',
+            href: 'https://example.com/contact',
+          },
+        ],
+      };
     default: {
       const _exhaustive: never = type;
       throw new Error(`Unknown block type: ${_exhaustive}`);
@@ -137,4 +226,10 @@ export const BLOCK_LABELS: Record<Block['type'], string> = {
   hero: 'Hero',
   paragraph: 'Paragraph',
   'cta-button': 'CTA Button',
+  'chapter-band': 'Chapter band',
+  'pull-quote': 'Pull quote',
+  'stat-box': 'Stat box',
+  'benefits-list': 'Benefits list',
+  'price-box': 'Price box',
+  'cta-link-list': 'CTA link list',
 };

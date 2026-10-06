@@ -15,7 +15,9 @@ export class LegalFieldsComponent {
   protected onLegal(
     key:
       | 'noticeHtml'
-      | 'companyLine'
+      | 'companyName'
+      | 'companyWebsiteLabel'
+      | 'companyWebsiteHref'
       | 'privacyLabel'
       | 'privacyHref'
       | 'imprintLabel'

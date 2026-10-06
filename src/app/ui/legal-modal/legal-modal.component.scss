@@ -41,7 +41,7 @@
   max-height: calc(100dvh - 2rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
   overflow: hidden;
   border: 1px solid color-mix(in srgb, #fff 8%, transparent);
-  border-radius: 0.35rem;
+  border-radius: var(--ds-radius);
   background: var(--ds-glass-surface);
   color: var(--ds-text);
   box-shadow: var(--ds-modal-shadow);

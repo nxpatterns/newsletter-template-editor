@@ -6,8 +6,36 @@
     <textarea id="g-notice" class="ed-textarea" rows="3" [value]="l.noticeHtml" (input)="onLegal('noticeHtml', $event)"></textarea>
   </div>
   <div class="ed-field">
-    <label class="ed-label" for="g-company" [textContent]="i18n.t('legal.company')"></label>
-    <input id="g-company" class="ed-input" data-testid="g-company" [value]="l.companyLine" (input)="onLegal('companyLine', $event)" />
+    <label class="ed-label" for="g-company-name" [textContent]="i18n.t('legal.companyName')"></label>
+    <input
+      id="g-company-name"
+      class="ed-input"
+      data-testid="g-company"
+      [value]="l.companyName"
+      (input)="onLegal('companyName', $event)"
+    />
+  </div>
+  <div class="ed-field-row">
+    <div class="ed-field">
+      <label class="ed-label" for="g-company-site-l" [textContent]="i18n.t('legal.companyWebsiteLabel')"></label>
+      <input
+        id="g-company-site-l"
+        class="ed-input"
+        data-testid="g-company-site-label"
+        [value]="l.companyWebsiteLabel"
+        (input)="onLegal('companyWebsiteLabel', $event)"
+      />
+    </div>
+    <div class="ed-field">
+      <label class="ed-label" for="g-company-site-h" [textContent]="i18n.t('legal.companyWebsiteHref')"></label>
+      <input
+        id="g-company-site-h"
+        class="ed-input"
+        data-testid="g-company-site-href"
+        [value]="l.companyWebsiteHref"
+        (input)="onLegal('companyWebsiteHref', $event)"
+      />
+    </div>
   </div>
   <div class="ed-field-row">
     <div class="ed-field">

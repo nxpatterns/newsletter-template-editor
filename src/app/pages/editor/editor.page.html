@@ -1,10 +1,12 @@
 <div class="work-area" [class.work-area--panel-collapsed]="shellUi.panelCollapsed()">
   <section class="preview-panel" [attr.aria-label]="i18n.t('preview.label')">
     <iframe
+      #previewFrame
       class="preview-frame"
       title="Newsletter preview"
       data-testid="preview-frame"
       [srcdoc]="previewSrcdoc()"
+      (load)="onPreviewLoad()"
     ></iframe>
   </section>
 
@@ -30,23 +32,24 @@
       (pointercancel)="onResizePointerUp($event)"
     ></button>
 
-    <div class="side-panel-header">
+    <!-- Collapsed: only the reopen control. Open: full panel (toggle lives in the tab strip). -->
+    @if (shellUi.panelCollapsed()) {
       <button
         type="button"
-        class="side-panel-toggle"
+        class="side-panel-toggle side-panel-toggle--collapsed"
         id="side-toggle"
         data-testid="side-panel-toggle"
         [attr.title]="i18n.t('action.panelToggle')"
         [attr.aria-label]="i18n.t('action.panelToggle')"
-        [attr.aria-expanded]="!shellUi.panelCollapsed()"
+        aria-expanded="false"
         (click)="shellUi.togglePanel()"
       >
         »
       </button>
-    </div>
-
-    <div class="side-panel-body">
-      <app-editor-panel />
-    </div>
+    } @else {
+      <div class="side-panel-body">
+        <app-editor-panel />
+      </div>
+    }
   </aside>
 </div>

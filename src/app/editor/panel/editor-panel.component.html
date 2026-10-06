@@ -1,22 +1,45 @@
 <div class="editor-panel" ngTabs data-testid="editor-panel">
-  <div
-    class="editor-panel-tabs"
-    ngTabList
-    selectionMode="follow"
-    [selectedTab]="session.panelTab()"
-    (selectedTabChange)="onTabChange($event)"
-    [attr.aria-label]="i18n.t('panel.tabs')"
-  >
-    @for (tab of tabs; track tab.value) {
-      <button
-        type="button"
-        class="editor-tab"
-        ngTab
-        [value]="tab.value"
-        [attr.data-testid]="'panel-tab-' + tab.value"
-        [textContent]="i18n.t(tab.labelKey)"
-      ></button>
-    }
+  <div class="editor-panel-toolbar">
+    <button
+      type="button"
+      class="panel-collapse"
+      id="side-toggle"
+      data-testid="side-panel-toggle"
+      [attr.title]="i18n.t('action.panelToggle')"
+      [attr.aria-label]="i18n.t('action.panelToggle')"
+      aria-expanded="true"
+      (click)="shellUi.togglePanel()"
+    >
+      »
+    </button>
+
+    <div
+      class="editor-panel-tabs"
+      role="presentation"
+      ngTabList
+      selectionMode="follow"
+      [selectedTab]="session.panelTab()"
+      (selectedTabChange)="onTabChange($event)"
+      [attr.aria-label]="i18n.t('panel.tabs')"
+    >
+      @for (tab of tabs; track tab.value) {
+        <button
+          type="button"
+          class="editor-tab"
+          [class.editor-tab--stack]="!!tab.line2Key"
+          ngTab
+          [value]="tab.value"
+          [attr.data-testid]="'panel-tab-' + tab.value"
+        >
+          @if (tab.line2Key) {
+            <span class="editor-tab-l1" [textContent]="i18n.t(tab.labelKey)"></span>
+            <span class="editor-tab-l2" [textContent]="i18n.t(tab.line2Key)"></span>
+          } @else {
+            <span [textContent]="i18n.t(tab.labelKey)"></span>
+          }
+        </button>
+      }
+    </div>
   </div>
 
   <div class="editor-panel-body">
@@ -28,11 +51,6 @@
     <div class="editor-tab-panel" ngTabPanel value="catalog" [preserveContent]="true">
       <ng-template ngTabContent>
         <app-catalog-tab />
-      </ng-template>
-    </div>
-    <div class="editor-tab-panel" ngTabPanel value="inspector" [preserveContent]="true">
-      <ng-template ngTabContent>
-        <app-block-inspector />
       </ng-template>
     </div>
     <div class="editor-tab-panel" ngTabPanel value="campaign" [preserveContent]="true">
@@ -53,11 +71,6 @@
     <div class="editor-tab-panel" ngTabPanel value="legal" [preserveContent]="true">
       <ng-template ngTabContent>
         <app-legal-fields />
-      </ng-template>
-    </div>
-    <div class="editor-tab-panel" ngTabPanel value="merge" [preserveContent]="true">
-      <ng-template ngTabContent>
-        <app-merge-fields />
       </ng-template>
     </div>
   </div>

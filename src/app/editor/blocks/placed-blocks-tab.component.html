@@ -1,69 +1,100 @@
-<section class="placed-tab" data-testid="placed-blocks-tab">
-  <p class="ed-hint" [textContent]="i18n.t('placed.hint')"></p>
+<section
+  class="placed-tab"
+  data-testid="placed-blocks-tab"
+  #placedRoot
+  [class.is-split-resizing]="resizingSplit()"
+>
+  <div class="placed-list-pane">
+    <p class="ed-hint" [textContent]="i18n.t('placed.hint')"></p>
 
-  @if (session.blocks().length === 0) {
-    <p class="ed-hint empty" data-testid="placed-empty" [textContent]="i18n.t('placed.empty')"></p>
-  } @else {
-    <ul
-      class="placed-list"
-      data-testid="block-list"
-      cdkDropList
-      [cdkDropListData]="listData()"
-      (cdkDropListDropped)="onDrop($event)"
-    >
-      @for (block of session.blocks(); track block.id; let i = $index) {
-        <li
-          class="placed-item"
-          cdkDrag
-          [class.is-selected]="session.selectedBlockId() === block.id"
-          [attr.data-testid]="'placed-item-' + block.id"
-        >
-          <button type="button" class="drag-handle" cdkDragHandle [attr.aria-label]="i18n.t('placed.drag')" title="⋮⋮">
-            ⋮⋮
-          </button>
-          <button
-            type="button"
-            class="placed-select"
-            [attr.data-testid]="'select-block-' + block.id"
-            [attr.aria-label]="i18n.t('blocks.select')"
-            [attr.aria-pressed]="session.selectedBlockId() === block.id"
-            (click)="session.selectBlock(block.id)"
+    @if (session.blocks().length === 0) {
+      <p class="ed-hint empty" data-testid="placed-empty" [textContent]="i18n.t('placed.empty')"></p>
+    } @else {
+      <ul
+        class="placed-list"
+        data-testid="block-list"
+        cdkDropList
+        [cdkDropListData]="listData()"
+        (cdkDropListDropped)="onDrop($event)"
+      >
+        @for (block of session.blocks(); track block.id; let i = $index) {
+          <li
+            class="placed-item"
+            cdkDrag
+            [class.is-selected]="session.selectedBlockId() === block.id"
+            [attr.data-testid]="'placed-item-' + block.id"
           >
-            <span class="placed-icon" aria-hidden="true" [textContent]="icon(block.type)"></span>
-            <span class="placed-index">{{ i + 1 }}</span>
-            <span class="placed-label" [textContent]="blockLabel(block.type)"></span>
-          </button>
-          <div class="placed-actions">
-            <button
-              type="button"
-              class="ed-btn"
-              [attr.aria-label]="i18n.t('blocks.moveUp')"
-              [disabled]="i === 0"
-              (click)="session.moveBlock(block.id, -1)"
-            >
-              ↑
+            <button type="button" class="drag-handle" cdkDragHandle [attr.aria-label]="i18n.t('placed.drag')" title="⋮⋮">
+              ⋮⋮
             </button>
             <button
               type="button"
-              class="ed-btn"
-              [attr.aria-label]="i18n.t('blocks.moveDown')"
-              [disabled]="i === session.blocks().length - 1"
-              (click)="session.moveBlock(block.id, 1)"
+              class="placed-select"
+              [attr.data-testid]="'select-block-' + block.id"
+              [attr.aria-label]="i18n.t('blocks.select')"
+              [attr.aria-pressed]="session.selectedBlockId() === block.id"
+              (click)="session.selectBlock(block.id)"
             >
-              ↓
+              <span class="placed-icon" aria-hidden="true" [textContent]="icon(block.type)"></span>
+              <span class="placed-index">{{ i + 1 }}</span>
+              <span class="placed-label" [textContent]="blockLabel(block.type)"></span>
             </button>
-            <button
-              type="button"
-              class="ed-btn ed-btn--danger"
-              [attr.aria-label]="i18n.t('blocks.remove')"
-              [attr.data-testid]="'remove-block-' + block.id"
-              (click)="session.removeBlock(block.id)"
-            >
-              ✕
-            </button>
-          </div>
-        </li>
-      }
-    </ul>
-  }
+            <div class="placed-actions">
+              <button
+                type="button"
+                class="ed-btn"
+                [attr.aria-label]="i18n.t('blocks.moveUp')"
+                [disabled]="i === 0"
+                (click)="session.moveBlock(block.id, -1)"
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                class="ed-btn"
+                [attr.aria-label]="i18n.t('blocks.moveDown')"
+                [disabled]="i === session.blocks().length - 1"
+                (click)="session.moveBlock(block.id, 1)"
+              >
+                ↓
+              </button>
+              <button
+                type="button"
+                class="ed-btn ed-btn--danger"
+                [attr.aria-label]="i18n.t('blocks.remove')"
+                [attr.data-testid]="'remove-block-' + block.id"
+                (click)="session.removeBlock(block.id)"
+              >
+                ✕
+              </button>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+
+  <button
+    type="button"
+    class="placed-split-resizer"
+    data-testid="placed-split-resizer"
+    [attr.aria-label]="i18n.t('placed.splitResize')"
+    [attr.title]="i18n.t('placed.splitResize')"
+    (pointerdown)="onSplitPointerDown($event)"
+    (pointermove)="onSplitPointerMove($event)"
+    (pointerup)="onSplitPointerUp($event)"
+    (pointercancel)="onSplitPointerUp($event)"
+  ></button>
+
+  <div
+    class="placed-inspector-pane"
+    data-testid="placed-inspector-pane"
+    [style.flex-basis.px]="shellUi.inspectorHeightPx()"
+    [style.height.px]="shellUi.inspectorHeightPx()"
+  >
+    <h3 class="placed-inspector-title" [textContent]="i18n.t('inspector.properties')"></h3>
+    <div class="placed-inspector-scroll">
+      <app-block-inspector />
+    </div>
+  </div>
 </section>

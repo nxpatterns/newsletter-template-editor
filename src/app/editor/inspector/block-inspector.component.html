@@ -5,77 +5,38 @@
     <p class="ed-hint" [textContent]="i18n.t('inspector.empty')"></p>
   } @else {
     <p class="type-label" [textContent]="i18n.t('block.' + block.type)"></p>
-    <h3 class="ed-section-title" [textContent]="i18n.t('inspector.properties')"></h3>
 
     @switch (block.type) {
       @case ('hero') {
         <div class="ed-field">
           <label class="ed-label" for="insp-hero-label" [textContent]="i18n.t('field.label')"></label>
-          <input
-            id="insp-hero-label"
-            class="ed-input"
-            data-testid="insp-hero-label"
-            [value]="block.label"
-            (input)="onText(block.id, 'label', $event)"
-          />
+          <input id="insp-hero-label" class="ed-input" data-testid="insp-hero-label" [value]="block.label" (input)="onText(block.id, 'label', $event)" />
         </div>
         <div class="ed-field">
           <label class="ed-label" for="insp-hero-headline" [textContent]="i18n.t('field.headlineHtml')"></label>
-          <textarea
-            id="insp-hero-headline"
-            class="ed-textarea"
-            data-testid="insp-hero-headline"
-            rows="3"
-            [value]="block.headlineHtml"
-            (input)="onText(block.id, 'headlineHtml', $event)"
-          ></textarea>
+          <textarea id="insp-hero-headline" class="ed-textarea" data-testid="insp-hero-headline" rows="3" [value]="block.headlineHtml" (input)="onText(block.id, 'headlineHtml', $event)"></textarea>
         </div>
       }
       @case ('paragraph') {
         <div class="ed-field">
           <label class="ed-label" for="insp-para" [textContent]="i18n.t('field.paragraphHtml')"></label>
-          <textarea
-            id="insp-para"
-            class="ed-textarea"
-            data-testid="insp-paragraph-html"
-            rows="5"
-            [value]="block.html"
-            (input)="onText(block.id, 'html', $event)"
-          ></textarea>
+          <textarea id="insp-para" class="ed-textarea" data-testid="insp-paragraph-html" rows="5" [value]="block.html" (input)="onText(block.id, 'html', $event)"></textarea>
         </div>
       }
       @case ('cta-button') {
         <div class="ed-field">
           <label class="ed-label" for="insp-cta-text" [textContent]="i18n.t('field.ctaText')"></label>
-          <input
-            id="insp-cta-text"
-            class="ed-input"
-            data-testid="insp-cta-text"
-            [value]="block.text"
-            (input)="onText(block.id, 'text', $event)"
-          />
+          <input id="insp-cta-text" class="ed-input" data-testid="insp-cta-text" [value]="block.text" (input)="onText(block.id, 'text', $event)" />
         </div>
         <div class="ed-field">
           <label class="ed-label" for="insp-cta-href" [textContent]="i18n.t('field.ctaHref')"></label>
-          <input
-            id="insp-cta-href"
-            class="ed-input"
-            data-testid="insp-cta-href"
-            [value]="block.href"
-            (input)="onText(block.id, 'href', $event)"
-          />
+          <input id="insp-cta-href" class="ed-input" data-testid="insp-cta-href" [value]="block.href" (input)="onText(block.id, 'href', $event)" />
         </div>
       }
       @case ('divider') {
         <div class="ed-field">
           <label class="ed-label" for="insp-div-style" [textContent]="i18n.t('field.dividerStyle')"></label>
-          <select
-            id="insp-div-style"
-            class="ed-select"
-            data-testid="insp-divider-style"
-            [value]="block.style"
-            (change)="onDividerStyle(block.id, $event)"
-          >
+          <select id="insp-div-style" class="ed-select" data-testid="insp-divider-style" [value]="block.style" (change)="onDividerStyle(block.id, $event)">
             <option value="thin" [textContent]="i18n.t('divider.thin')"></option>
             <option value="accent-double" [textContent]="i18n.t('divider.accent-double')"></option>
             <option value="spacer-only" [textContent]="i18n.t('divider.spacer-only')"></option>
@@ -84,36 +45,76 @@
         @if (block.style === 'spacer-only') {
           <div class="ed-field">
             <label class="ed-label" for="insp-div-h" [textContent]="i18n.t('field.dividerHeight')"></label>
-            <input
-              id="insp-div-h"
-              class="ed-input"
-              type="number"
-              min="8"
-              max="120"
-              [value]="block.heightPx ?? 24"
-              (input)="onDividerHeight(block.id, $event)"
-            />
+            <input id="insp-div-h" class="ed-input" type="number" min="8" max="120" [value]="block.heightPx ?? 24" (input)="onDividerHeight(block.id, $event)" />
           </div>
         }
+      }
+      @case ('chapter-band') {
+        <div class="ed-field">
+          <label class="ed-label" for="insp-chapter" [textContent]="i18n.t('field.chapterTitle')"></label>
+          <textarea id="insp-chapter" class="ed-textarea" rows="2" [value]="block.titleHtml" (input)="onText(block.id, 'titleHtml', $event)"></textarea>
+        </div>
+      }
+      @case ('pull-quote') {
+        <div class="ed-field">
+          <label class="ed-label" for="insp-quote" [textContent]="i18n.t('field.quoteHtml')"></label>
+          <textarea id="insp-quote" class="ed-textarea" rows="3" [value]="block.html" (input)="onText(block.id, 'html', $event)"></textarea>
+        </div>
+      }
+      @case ('stat-box') {
+        <div class="ed-field">
+          <label class="ed-label" for="insp-stat-n" [textContent]="i18n.t('field.statNumber')"></label>
+          <input id="insp-stat-n" class="ed-input" [value]="block.number" (input)="onText(block.id, 'number', $event)" />
+        </div>
+        <div class="ed-field">
+          <label class="ed-label" for="insp-stat-l" [textContent]="i18n.t('field.statLabel')"></label>
+          <input id="insp-stat-l" class="ed-input" [value]="block.label" (input)="onText(block.id, 'label', $event)" />
+        </div>
+        <div class="ed-field">
+          <label class="ed-label" for="insp-stat-g" [textContent]="i18n.t('field.statGeo')"></label>
+          <textarea id="insp-stat-g" class="ed-textarea" rows="3" [value]="block.geoHtml" (input)="onText(block.id, 'geoHtml', $event)"></textarea>
+        </div>
+      }
+      @case ('benefits-list') {
+        <div class="ed-field">
+          <label class="ed-label" for="insp-benefits" [textContent]="i18n.t('field.benefitsItems')"></label>
+          <textarea id="insp-benefits" class="ed-textarea" rows="5" [value]="block.items.join('\n')" (input)="onBenefits(block.id, $event)"></textarea>
+        </div>
+      }
+      @case ('price-box') {
+        <div class="ed-field">
+          <label class="ed-label" for="insp-p-badge" [textContent]="i18n.t('field.priceBadge')"></label>
+          <input id="insp-p-badge" class="ed-input" [value]="block.badge" (input)="onText(block.id, 'badge', $event)" />
+        </div>
+        <div class="ed-field">
+          <label class="ed-label" for="insp-p-strike" [textContent]="i18n.t('field.priceStrike')"></label>
+          <input id="insp-p-strike" class="ed-input" [value]="block.strike" (input)="onText(block.id, 'strike', $event)" />
+        </div>
+        <div class="ed-field">
+          <label class="ed-label" for="insp-p-main" [textContent]="i18n.t('field.priceMain')"></label>
+          <textarea id="insp-p-main" class="ed-textarea" rows="2" [value]="block.mainPriceHtml" (input)="onText(block.id, 'mainPriceHtml', $event)"></textarea>
+        </div>
+        <div class="ed-field">
+          <label class="ed-label" for="insp-p-det" [textContent]="i18n.t('field.priceDetails')"></label>
+          <input id="insp-p-det" class="ed-input" [value]="block.details" (input)="onText(block.id, 'details', $event)" />
+        </div>
+        <div class="ed-field">
+          <label class="ed-label" for="insp-p-fine" [textContent]="i18n.t('field.priceFine')"></label>
+          <textarea id="insp-p-fine" class="ed-textarea" rows="2" [value]="block.fine" (input)="onText(block.id, 'fine', $event)"></textarea>
+        </div>
+      }
+      @case ('cta-link-list') {
+        <div class="ed-field">
+          <label class="ed-label" for="insp-cta-links" [textContent]="i18n.t('field.ctaLinksJson')"></label>
+          <textarea id="insp-cta-links" class="ed-textarea" rows="6" [value]="ctaLinksJson(block)" (input)="onCtaLinksJson(block.id, $event)"></textarea>
+        </div>
       }
     }
 
     <div class="ed-actions">
-      <button type="button" class="ed-btn" [attr.aria-label]="i18n.t('blocks.moveUp')" (click)="session.moveBlock(block.id, -1)">
-        ↑
-      </button>
-      <button type="button" class="ed-btn" [attr.aria-label]="i18n.t('blocks.moveDown')" (click)="session.moveBlock(block.id, 1)">
-        ↓
-      </button>
-      <button
-        type="button"
-        class="ed-btn ed-btn--danger"
-        data-testid="insp-remove"
-        [attr.aria-label]="i18n.t('blocks.remove')"
-        (click)="session.removeBlock(block.id)"
-      >
-        ✕
-      </button>
+      <button type="button" class="ed-btn" [attr.aria-label]="i18n.t('blocks.moveUp')" (click)="session.moveBlock(block.id, -1)">↑</button>
+      <button type="button" class="ed-btn" [attr.aria-label]="i18n.t('blocks.moveDown')" (click)="session.moveBlock(block.id, 1)">↓</button>
+      <button type="button" class="ed-btn ed-btn--danger" data-testid="insp-remove" [attr.aria-label]="i18n.t('blocks.remove')" (click)="session.removeBlock(block.id)">✕</button>
     </div>
   }
 </section>

@@ -16,12 +16,10 @@ import { SnackbarService } from '../ui/snackbar/snackbar.service';
 export type EditorPanelTab =
   | 'placed'
   | 'catalog'
-  | 'inspector'
   | 'campaign'
   | 'brand'
   | 'colors'
-  | 'legal'
-  | 'merge';
+  | 'legal';
 
 @Injectable({ providedIn: 'root' })
 export class NewsletterSession {
@@ -72,14 +70,15 @@ export class NewsletterSession {
 
   selectBlock(id: string | null): void {
     this.selectedBlockIdSignal.set(id);
-    if (id) this.panelTabSignal.set('inspector');
+    // Properties stay on the placed tab (inline inspector); do not jump tabs.
+    if (id) this.panelTabSignal.set('placed');
   }
 
   addBlock(type: Block['type']): void {
     const block = createBlock(type);
     this.newsletterSignal.update((n) => ({ ...n, blocks: [...n.blocks, block] }));
     this.selectedBlockIdSignal.set(block.id);
-    this.panelTabSignal.set('inspector');
+    this.panelTabSignal.set('placed');
   }
 
   removeBlock(id: string): void {

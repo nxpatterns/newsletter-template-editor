@@ -9,25 +9,32 @@ describe('NewsletterSession', () => {
     session = TestBed.inject(NewsletterSession);
   });
 
-  it('seeds with hero/paragraph/divider/cta blocks', () => {
-    expect(session.blocks().length).toBe(4);
-    expect(session.blocks().map((b) => b.type)).toEqual([
-      'hero',
-      'paragraph',
-      'divider',
-      'cta-button',
-    ]);
+  it('seeds the full CloudLib campaign document', () => {
+    expect(session.blocks().length).toBeGreaterThanOrEqual(12);
+    expect(session.blocks()[0]?.type).toBe('hero');
+    expect(session.blocks().some((b) => b.type === 'price-box')).toBe(true);
+    expect(session.blocks().some((b) => b.type === 'cta-link-list')).toBe(true);
+    expect(session.globals().campaignSubject).toContain('Betrieb');
   });
 
   it('starts on the placed-blocks tab', () => {
     expect(session.panelTab()).toBe('placed');
   });
 
-  it('adds a block and selects it for inspector', () => {
+  it('adds a block and keeps the placed tab with selection', () => {
+    const before = session.blocks().length;
     session.addBlock('paragraph');
-    expect(session.blocks().length).toBe(5);
+    expect(session.blocks().length).toBe(before + 1);
     expect(session.selectedBlock()?.type).toBe('paragraph');
-    expect(session.panelTab()).toBe('inspector');
+    expect(session.panelTab()).toBe('placed');
+  });
+
+  it('selectBlock stays on the placed tab', () => {
+    session.setPanelTab('catalog');
+    const id = session.blocks()[0].id;
+    session.selectBlock(id);
+    expect(session.selectedBlockId()).toBe(id);
+    expect(session.panelTab()).toBe('placed');
   });
 
   it('reorders blocks by id list', () => {

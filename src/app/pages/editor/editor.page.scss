@@ -62,13 +62,8 @@
   min-width: 2.25rem;
 }
 
-.side-panel.collapsed .side-panel-body,
 .side-panel.collapsed .side-panel-resizer {
   display: none;
-}
-
-.side-panel.collapsed .side-panel-toggle {
-  transform: rotate(180deg);
 }
 
 .side-panel-resizer {
@@ -100,15 +95,6 @@
   pointer-events: none;
 }
 
-.side-panel-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-shrink: 0;
-  padding: 0.5rem;
-  border-block-end: 1px solid var(--ds-border);
-}
-
 .side-panel-toggle {
   display: flex;
   align-items: center;
@@ -116,6 +102,7 @@
   width: 1.5rem;
   height: 1.5rem;
   flex-shrink: 0;
+  margin: 0.4rem auto;
   border: 1px solid var(--ds-border);
   border-radius: var(--ds-radius);
   padding: 0;
@@ -125,6 +112,10 @@
   background: transparent;
   cursor: pointer;
   transition: transform 0.2s ease;
+}
+
+.side-panel-toggle--collapsed {
+  transform: rotate(180deg);
 }
 
 .side-panel-toggle:hover {

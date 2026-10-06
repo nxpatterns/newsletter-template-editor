@@ -7,8 +7,8 @@ Then('I should see the editor panel tabs', async ({ page }) => {
   await expect(page.getByTestId('editor-panel')).toBeVisible();
   await expect(page.getByTestId('panel-tab-placed')).toBeVisible();
   await expect(page.getByTestId('panel-tab-catalog')).toBeVisible();
-  await expect(page.getByTestId('panel-tab-inspector')).toBeVisible();
   await expect(page.getByTestId('panel-tab-colors')).toBeVisible();
+  await expect(page.getByTestId('side-panel-toggle')).toBeVisible();
 });
 
 Then('I should see the placed blocks list', async ({ page }) => {
@@ -47,6 +47,7 @@ When('I select the first document block', async ({ page }) => {
   await page.getByTestId('panel-tab-placed').click();
   const first = page.locator('[data-testid^="select-block-"]').first();
   await first.click();
+  await expect(page.getByTestId('placed-inspector-pane')).toBeVisible();
   await expect(page.getByTestId('block-inspector')).toBeVisible();
 });
 

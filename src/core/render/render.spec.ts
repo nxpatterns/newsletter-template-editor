@@ -21,7 +21,9 @@ function acmeNewsletter(): Newsletter {
     },
     legal: {
       noticeHtml: 'Acme legal notice',
-      companyLine: 'Acme Inc',
+      companyName: 'Acme Inc',
+      companyWebsiteLabel: 'acme.example',
+      companyWebsiteHref: 'https://acme.example',
       privacyLabel: 'Privacy',
       privacyHref: 'https://acme.example/privacy',
       imprintLabel: 'Imprint',
@@ -59,7 +61,7 @@ describe('renderExport', () => {
   it('places preheader immediately after body open', () => {
     const html = renderExport(seedNewsletter()).full;
     const bodyIdx = html.search(/<body\b/i);
-    const preIdx = html.indexOf('CloudLib newsletter demo');
+    const preIdx = html.indexOf('Ihre Kunden sind nicht naiv');
     expect(bodyIdx).toBeGreaterThan(-1);
     expect(preIdx).toBeGreaterThan(bodyIdx);
     const between = html.slice(bodyIdx, preIdx);
@@ -95,10 +97,21 @@ describe('renderExport', () => {
     expect(html).toContain('Acme Corp');
     expect(html).toContain('Acme legal notice');
     expect(html).toContain('Acme Inc');
+    expect(html).toContain('acme.example');
     expect(html).toContain('#112233');
     expect(html).not.toContain('CloudLib.EU');
     expect(html).not.toContain('Wise Solutions GmbH');
     expect(html).not.toContain('cloudlib.eu/home/privacy');
+  });
+});
+
+describe('renderExport chrome isolation', () => {
+  it('does not include editor annotate chrome', () => {
+    const html = renderExport(seedNewsletter()).full;
+    expect(html).not.toContain('data-block-id=');
+    expect(html).not.toContain('nte-block');
+    expect(html).not.toContain('nte-preview');
+    expect(html).not.toContain('nte-edit-btn');
   });
 });
 

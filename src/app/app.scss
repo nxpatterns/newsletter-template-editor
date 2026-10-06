@@ -70,7 +70,7 @@
 
 .toolbar-btn {
   border: 1px solid color-mix(in srgb, var(--ds-accent) 35%, transparent);
-  border-radius: 0.35rem;
+  border-radius: var(--ds-radius);
   padding: 0.45rem 0.8rem;
   font: inherit;
   font-size: 0.8125rem;

@@ -31,7 +31,7 @@ Rules:
 | `--ds-snackbar-gap` | `0.75rem` | Gap between snackbar bottom and footer top |
 | `--ds-safe-top` | `env(safe-area-inset-top, 0px)` | Notch |
 | `--ds-safe-bottom` | `env(safe-area-inset-bottom, 0px)` | Home indicator |
-| `--ds-radius` | `0.5rem` | Controls, snackbar |
+| `--ds-radius` | `0.25rem` | Controls, snackbar, chrome (email iframe unchanged) |
 | `--ds-z-footer` | `40` | Footer chrome |
 | `--ds-z-header` | `40` | Header chrome |
 | `--ds-z-panel-overlay` | `45` | Side panel when undocked overlay |
@@ -82,7 +82,7 @@ Do **not** give the preview host `overflow: auto` and a tall iframe (`min(80vh)`
 - **Wide:** docked right column; collapsible to a thin handle (show/hide).
 - **Narrow:** not stacked under the preview. **Show/hide overlay/drawer** over the preview (`--ds-z-panel-overlay`).
 - **Resize:** user-draggable left edge. Width clamped from `--ds-panel-width` (min, `21rem` / 336px default) to **50% of the browser viewport width**. Persist open width in `localStorage` (`newsletter-template-editor.side-panel-width.v1`). Collapse still uses the thin strip; resize handle is hidden while collapsed.
-- **Tabs (3b):** Blocks, Inspect, Campaign, Brand, Colors, Legal, Merge — split so content need not rely on panel body scroll. Emergency overflow on short viewports may use panel scroll as exception.
+- **Tabs:** Current blocks (list + inline inspector), All blocks, Campaign, Brand, Colors, Legal. Collapse control shares the tab toolbar. Tab chrome uses connected tab shapes (not plain button chips). Emergency overflow on short viewports may use panel scroll as exception.
 - Collapse control remains old-style `»` with width animation.
 
 ### Header

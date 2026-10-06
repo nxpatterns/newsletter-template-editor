@@ -3,8 +3,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
+  ElementRef,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 import { renderPreview } from '../../../core';
@@ -26,6 +29,12 @@ export class EditorPage {
   protected readonly shellUi = inject(ShellUiService);
   protected readonly i18n = inject(LocaleService);
 
+  private readonly previewFrame = viewChild<ElementRef<HTMLIFrameElement>>('previewFrame');
+
+  /** Prevent double-binding when srcdoc reloads. */
+  private previewDocWired: Document | null = null;
+  private previewClickHandler: ((event: Event) => void) | null = null;
+
   protected readonly resizing = signal(false);
 
   protected readonly previewSrcdoc = computed((): SafeHtml =>
@@ -33,7 +42,22 @@ export class EditorPage {
   );
 
   constructor() {
-    afterNextRender(() => this.session.hydrateFromStorage());
+    afterNextRender(() => {
+      this.session.hydrateFromStorage();
+    });
+
+    effect(() => {
+      const id = this.session.selectedBlockId();
+      // Track srcdoc changes so selection chrome re-applies after re-render.
+      void this.previewSrcdoc();
+      queueMicrotask(() => this.applySelectedClass(id));
+    });
+  }
+
+  /** iframe finished loading/parsing srcdoc — wire block chrome from the host. */
+  protected onPreviewLoad(): void {
+    this.wirePreviewDocument();
+    this.applySelectedClass(this.session.selectedBlockId());
   }
 
   protected onResizePointerDown(event: PointerEvent): void {
@@ -58,5 +82,77 @@ export class EditorPage {
     if (handle.hasPointerCapture(event.pointerId)) {
       handle.releasePointerCapture(event.pointerId);
     }
+  }
+
+  private wirePreviewDocument(): void {
+    const frame = this.previewFrame()?.nativeElement;
+    const doc = frame?.contentDocument;
+    if (!doc?.body) return;
+
+    if (this.previewDocWired && this.previewDocWired !== doc && this.previewClickHandler) {
+      this.previewDocWired.removeEventListener('click', this.previewClickHandler, true);
+    }
+
+    this.injectEditButtons(doc);
+
+    if (this.previewDocWired === doc && this.previewClickHandler) {
+      // Same document instance already listening.
+      return;
+    }
+
+    const onClick = (event: Event): void => {
+      const target = event.target as Element | null;
+      if (!target?.closest) return;
+
+      const editBtn = target.closest('.nte-edit-btn');
+      if (editBtn) {
+        event.preventDefault();
+        event.stopPropagation();
+        const tr = editBtn.closest('tr[data-block-id]');
+        const id = tr?.getAttribute('data-block-id');
+        if (id) this.session.selectBlock(id);
+        return;
+      }
+
+      const tr = target.closest('tr[data-block-id]');
+      if (!tr) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const id = tr.getAttribute('data-block-id');
+      if (id) this.session.selectBlock(id);
+    };
+
+    doc.addEventListener('click', onClick, true);
+    this.previewClickHandler = onClick;
+    this.previewDocWired = doc;
+  }
+
+  private injectEditButtons(doc: Document): void {
+    const label = this.i18n.t('preview.editBlock');
+    doc.querySelectorAll('tr.nte-block').forEach((tr) => {
+      const td = tr.querySelector(':scope > td') ?? tr.querySelector('td');
+      if (!td) return;
+      let btn = td.querySelector(':scope > .nte-edit-btn') as HTMLButtonElement | null;
+      if (!btn) {
+        btn = doc.createElement('button');
+        btn.type = 'button';
+        btn.className = 'nte-edit-btn';
+        btn.textContent = '✎';
+        td.appendChild(btn);
+      }
+      btn.setAttribute('aria-label', label);
+      btn.title = label;
+    });
+  }
+
+  private applySelectedClass(blockId: string | null): void {
+    const doc = this.previewFrame()?.nativeElement?.contentDocument;
+    if (!doc) return;
+    this.injectEditButtons(doc);
+    doc.querySelectorAll('tr.nte-block.is-selected').forEach((el) => el.classList.remove('is-selected'));
+    if (!blockId) return;
+    const safe = blockId.replace(/[\\"']/g, '');
+    const el = doc.querySelector(`tr.nte-block[data-block-id="${safe}"]`);
+    el?.classList.add('is-selected');
   }
 }

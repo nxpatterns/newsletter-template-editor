@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import type { DividerBlock } from '../../../core';
+import type { CtaLinkListBlock, DividerBlock } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
 import { NewsletterSession } from '../newsletter-session.service';
 
@@ -27,5 +27,29 @@ export class BlockInspectorComponent {
     const heightPx = Number((event.target as HTMLInputElement).value);
     if (!Number.isFinite(heightPx)) return;
     this.session.updateBlock(id, { heightPx });
+  }
+
+  protected onBenefits(id: string, event: Event): void {
+    const raw = (event.target as HTMLTextAreaElement).value;
+    const items = raw
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean);
+    this.session.updateBlock(id, { items });
+  }
+
+  protected ctaLinksJson(block: CtaLinkListBlock): string {
+    return JSON.stringify(block.items, null, 2);
+  }
+
+  protected onCtaLinksJson(id: string, event: Event): void {
+    const raw = (event.target as HTMLTextAreaElement).value;
+    try {
+      const parsed = JSON.parse(raw) as CtaLinkListBlock['items'];
+      if (!Array.isArray(parsed)) return;
+      this.session.updateBlock(id, { items: parsed });
+    } catch {
+      // keep typing until JSON is valid
+    }
   }
 }
