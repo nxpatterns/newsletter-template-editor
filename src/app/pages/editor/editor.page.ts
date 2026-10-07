@@ -15,8 +15,15 @@ import { EditorPanelComponent } from '../../editor/panel/editor-panel.component'
 import { NewsletterSession } from '../../editor/newsletter-session.service';
 import { LocaleService } from '../../i18n/locale.service';
 import { ShellUiService } from '../../shell/shell-ui.service';
-import { insertIndexForDrop, isCatalogBlockType, NTE_CATALOG_MIME } from './preview-dnd';
-import { dropPlaceFromY, reorderBlockIds } from './preview-reorder';
+import { CatalogDragService } from './catalog-drag.service';
+import {
+  insertIndexForDrop,
+  isCatalogBlockType,
+  NTE_BLOCK_ID_MIME,
+  NTE_CATALOG_MIME,
+  resolveDropAtPoint,
+} from './preview-dnd';
+import { reorderBlockIds } from './preview-reorder';
 
 type DropPlace = 'before' | 'after';
 type DragMode = 'reorder' | 'catalog';
@@ -33,6 +40,7 @@ export class EditorPage {
   private readonly session = inject(NewsletterSession);
   protected readonly shellUi = inject(ShellUiService);
   protected readonly i18n = inject(LocaleService);
+  private readonly catalogDrag = inject(CatalogDragService);
 
   private readonly previewFrame = viewChild<ElementRef<HTMLIFrameElement>>('previewFrame');
 
@@ -55,6 +63,8 @@ export class EditorPage {
   /** Last known preview document scroll (restored after srcdoc reloads). */
   private lastPreviewScrollY = 0;
   private previewScrollHandler: (() => void) | null = null;
+  /** After catalog insert, scroll this block into view once the iframe reloads. */
+  private pendingScrollToBlockId: string | null = null;
 
   protected readonly resizing = signal(false);
 
@@ -65,6 +75,16 @@ export class EditorPage {
   constructor() {
     afterNextRender(() => {
       this.session.hydrateFromStorage();
+      // Catalog drags start on the host; Escape / drop-outside fire dragend there,
+      // not inside the iframe — clear gap chrome so it cannot stick.
+      document.addEventListener(
+        'dragend',
+        () => {
+          const doc = this.previewFrame()?.nativeElement?.contentDocument;
+          if (doc) this.finishDrag(doc);
+        },
+        true,
+      );
     });
 
     effect(() => {
@@ -79,7 +99,13 @@ export class EditorPage {
   protected onPreviewLoad(): void {
     this.wirePreviewDocument();
     this.applySelectedClass(this.session.selectedBlockId());
-    this.restorePreviewScroll();
+    if (this.pendingScrollToBlockId) {
+      const id = this.pendingScrollToBlockId;
+      this.pendingScrollToBlockId = null;
+      this.scrollPreviewBlockIntoView(id, true);
+    } else {
+      this.restorePreviewScroll();
+    }
   }
 
   protected onResizePointerDown(event: PointerEvent): void {
@@ -181,126 +207,166 @@ export class EditorPage {
       this.dragCatalogType = null;
       this.dropTargetId = null;
       this.dropPlace = null;
-      event.dataTransfer.setData('text/plain', id);
+      event.dataTransfer.setData(NTE_BLOCK_ID_MIME, id);
+      // No text/plain — keeps block ids out of the browser address bar / new-tab search.
       event.dataTransfer.effectAllowed = 'move';
       tr.classList.add('is-dragging');
       doc.body.classList.add('nte-is-dnd');
       this.session.selectBlock(id);
     };
 
-    const readCatalogType = (event: DragEvent): string | null => {
+    const resolveCatalogType = (event: DragEvent): string | null => {
+      const fromService = this.catalogDrag.activeType();
+      if (fromService) return fromService;
       const dt = event.dataTransfer;
       if (!dt) return this.dragCatalogType;
-      const custom = dt.getData(NTE_CATALOG_MIME);
-      if (isCatalogBlockType(custom)) return custom;
-      const plain = dt.getData('text/plain');
-      if (plain?.startsWith('nte-catalog:')) {
-        const type = plain.slice('nte-catalog:'.length);
-        if (isCatalogBlockType(type)) return type;
+      try {
+        const custom = dt.getData(NTE_CATALOG_MIME);
+        if (isCatalogBlockType(custom)) return custom;
+      } catch {
+        // getData can throw mid-drag in some engines
       }
-      // During dragover some browsers only expose types, not getData.
-      if (Array.from(dt.types).includes(NTE_CATALOG_MIME)) return this.dragCatalogType ?? 'catalog';
-      if (plain && isCatalogBlockType(plain)) return plain;
       return this.dragCatalogType;
     };
 
+    const markDropGap = (tr: HTMLElement, place: DropPlace): void => {
+      this.clearDropIndicators(doc);
+      tr.classList.add(place === 'before' ? 'nte-drop-before' : 'nte-drop-after');
+      // Split neighbors so the gold gap + label is obvious.
+      if (place === 'before') {
+        tr.classList.add('nte-drop-open-below');
+        const prev = tr.previousElementSibling as HTMLElement | null;
+        if (prev?.classList.contains('nte-block')) prev.classList.add('nte-drop-open-above');
+      } else {
+        tr.classList.add('nte-drop-open-above');
+        const next = tr.nextElementSibling as HTMLElement | null;
+        if (next?.classList.contains('nte-block')) next.classList.add('nte-drop-open-below');
+      }
+      this.ensureInsertLabel(tr, this.i18n.t('preview.dropInsertHere'));
+      this.dropTargetId = tr.getAttribute('data-block-id');
+      this.dropPlace = place;
+    };
+
+    const collectBlockRects = (): {
+      container: DOMRect | null;
+      blocks: { id: string; top: number; bottom: number; height: number; el: HTMLElement }[];
+    } => {
+      const containerEl = doc.querySelector('table.email-container') as HTMLElement | null;
+      const container = containerEl?.getBoundingClientRect() ?? null;
+      const blocks = Array.from(doc.querySelectorAll('tr.nte-block')).map((el) => {
+        const row = el as HTMLElement;
+        const r = row.getBoundingClientRect();
+        return {
+          id: row.getAttribute('data-block-id') ?? '',
+          top: r.top,
+          bottom: r.bottom,
+          height: r.height,
+          el: row,
+        };
+      }).filter((b) => b.id);
+      return { container, blocks };
+    };
+
+    const showAppendAtEnd = (): void => {
+      // Avoid thrashing the DOM when already in append mode.
+      if (doc.body.classList.contains('nte-drop-append') && !this.dropTargetId) return;
+      this.clearDropIndicators(doc);
+      doc.body.setAttribute('data-nte-drop-append-label', this.i18n.t('preview.dropInsertAtEnd'));
+      doc.body.classList.add('nte-drop-append');
+      this.dropTargetId = null;
+      this.dropPlace = 'after';
+    };
+
     const onDragOver = (event: DragEvent): void => {
-      const target = event.target as Element | null;
-      const tr = target?.closest?.('tr.nte-block') as HTMLElement | null;
       const types = event.dataTransfer ? Array.from(event.dataTransfer.types) : [];
       const reorder = this.dragMode === 'reorder' && !!this.dragSourceId;
-      // Catalog drags come from the host panel (no dragSourceId). Custom MIME preferred;
-      // text/plain is the fallback some browsers expose mid-drag.
       const catalogish =
         !reorder &&
-        (this.dragMode === 'catalog' ||
-          types.includes(NTE_CATALOG_MIME) ||
-          (!this.dragSourceId && types.includes('text/plain')));
+        (this.catalogDrag.isActive() ||
+          this.dragMode === 'catalog' ||
+          types.includes(NTE_CATALOG_MIME));
 
       if (!reorder && !catalogish) return;
+
+      // Auto-scroll near iframe edges while dragging.
+      this.autoScrollPreviewNearEdge(doc, event.clientY);
+
+      const { container, blocks } = collectBlockRects();
+      const resolved = resolveDropAtPoint(
+        event.clientX,
+        event.clientY,
+        container,
+        blocks.map(({ id, top, bottom, height }) => ({ id, top, bottom, height })),
+      );
 
       if (catalogish) {
         event.preventDefault();
         if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy';
         doc.body.classList.add('nte-is-dnd', 'nte-is-catalog-dnd');
         this.dragMode = 'catalog';
+        this.dragCatalogType = resolveCatalogType(event);
 
-        if (!tr) {
-          this.clearDropIndicators(doc);
-          doc.body.classList.add('nte-drop-append');
-          this.dropTargetId = null;
-          this.dropPlace = 'after';
+        if (resolved.mode === 'append') {
+          showAppendAtEnd();
           return;
         }
 
-        const targetId = tr.getAttribute('data-block-id');
-        if (!targetId) return;
-        const rect = tr.getBoundingClientRect();
-        const place = dropPlaceFromY(event.clientY, rect.top, rect.height);
-        if (this.dropTargetId === targetId && this.dropPlace === place) return;
-        this.clearDropIndicators(doc);
-        tr.classList.add(place === 'before' ? 'nte-drop-before' : 'nte-drop-after');
-        this.dropTargetId = targetId;
-        this.dropPlace = place;
+        const tr = blocks.find((b) => b.id === resolved.blockId)?.el;
+        if (!tr) {
+          showAppendAtEnd();
+          return;
+        }
+        if (this.dropTargetId === resolved.blockId && this.dropPlace === resolved.place) return;
+        markDropGap(tr, resolved.place);
         return;
       }
 
-      // Reorder existing preview blocks
-      if (!tr) return;
-      const targetId = tr.getAttribute('data-block-id');
-      if (!targetId || targetId === this.dragSourceId) {
-        this.clearDropIndicators(doc);
+      // Reorder existing preview blocks — same stable geometry zones.
+      event.preventDefault();
+      if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+
+      if (resolved.mode === 'append') {
+        // Outside column while reordering: no gap chrome (keep dragging).
+        if (this.dropTargetId) this.clearDropIndicators(doc);
         this.dropTargetId = null;
         this.dropPlace = null;
         return;
       }
 
-      event.preventDefault();
-      if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
-
-      const rect = tr.getBoundingClientRect();
-      const place = dropPlaceFromY(event.clientY, rect.top, rect.height);
-      if (this.dropTargetId === targetId && this.dropPlace === place) return;
-
-      this.clearDropIndicators(doc);
-      tr.classList.add(place === 'before' ? 'nte-drop-before' : 'nte-drop-after');
-      this.dropTargetId = targetId;
-      this.dropPlace = place;
-    };
-
-    const onDrop = (event: DragEvent): void => {
-      const catalogType = readCatalogType(event);
-      if (catalogType && isCatalogBlockType(catalogType)) {
-        event.preventDefault();
-        event.stopPropagation();
-        const ids = this.session.blocks().map((b) => b.id);
-        let index = ids.length;
-        if (this.dropTargetId && this.dropPlace) {
-          index = insertIndexForDrop(ids, this.dropTargetId, this.dropPlace);
-        }
-        this.session.insertBlockAt(catalogType, index, { revealInPanel: false });
-        this.suppressClickUntil = Date.now() + 400;
-        this.finishDrag(doc);
+      if (resolved.blockId === this.dragSourceId) {
+        if (this.dropTargetId) this.clearDropIndicators(doc);
+        this.dropTargetId = null;
+        this.dropPlace = null;
         return;
       }
 
-      // Fallback: text/plain nte-catalog:* may only be readable on drop.
-      const plain = event.dataTransfer?.getData('text/plain') ?? '';
-      if (plain.startsWith('nte-catalog:')) {
-        const type = plain.slice('nte-catalog:'.length);
-        if (isCatalogBlockType(type)) {
-          event.preventDefault();
-          event.stopPropagation();
-          const ids = this.session.blocks().map((b) => b.id);
-          let index = ids.length;
-          if (this.dropTargetId && this.dropPlace) {
-            index = insertIndexForDrop(ids, this.dropTargetId, this.dropPlace);
-          }
-          this.session.insertBlockAt(type, index, { revealInPanel: false });
-          this.suppressClickUntil = Date.now() + 400;
-          this.finishDrag(doc);
-          return;
-        }
+      const tr = blocks.find((b) => b.id === resolved.blockId)?.el;
+      if (!tr) return;
+      if (this.dropTargetId === resolved.blockId && this.dropPlace === resolved.place) return;
+      markDropGap(tr, resolved.place);
+    };
+
+    const insertCatalogAtCurrentGap = (type: string): void => {
+      if (!isCatalogBlockType(type)) return;
+      const ids = this.session.blocks().map((b) => b.id);
+      let index = ids.length;
+      if (this.dropTargetId && this.dropPlace) {
+        index = insertIndexForDrop(ids, this.dropTargetId, this.dropPlace);
+      }
+      const createdId = this.session.insertBlockAt(type, index, { revealInPanel: false });
+      this.catalogDrag.accept();
+      this.pendingScrollToBlockId = createdId;
+      this.suppressClickUntil = Date.now() + 400;
+    };
+
+    const onDrop = (event: DragEvent): void => {
+      const catalogType = resolveCatalogType(event);
+      if (catalogType && isCatalogBlockType(catalogType)) {
+        event.preventDefault();
+        event.stopPropagation();
+        insertCatalogAtCurrentGap(catalogType);
+        this.finishDrag(doc);
+        return;
       }
 
       if (!this.dragSourceId || !this.dropTargetId || !this.dropPlace) return;
@@ -316,17 +382,18 @@ export class EditorPage {
       if (next) {
         this.session.reorderBlocks(next);
         this.session.selectBlock(this.dragSourceId);
+        this.pendingScrollToBlockId = this.dragSourceId;
       }
       this.suppressClickUntil = Date.now() + 400;
       this.finishDrag(doc);
     };
 
     const onDragLeave = (event: DragEvent): void => {
-      // Leaving the iframe document — clear append hint when relatedTarget is null-ish.
       const related = event.relatedTarget as Node | null;
       if (related && doc.contains(related)) return;
-      if (!doc.body.contains(event.target as Node)) {
-        doc.body.classList.remove('nte-drop-append');
+      // Leaving the iframe entirely — clear gap chrome (cancel still handled on dragend).
+      if (!related || !doc.documentElement.contains(related)) {
+        this.clearDropIndicators(doc);
       }
     };
 
@@ -349,7 +416,6 @@ export class EditorPage {
     this.previewDragEndHandler = onDragEnd;
     this.previewDragLeaveHandler = onDragLeave;
     this.previewDocWired = doc;
-
     // Host-level dragover so catalog drags from the panel are recognized as they enter the iframe.
     // The iframe document still receives the events once the pointer is over it.
   }
@@ -417,10 +483,68 @@ export class EditorPage {
   }
 
   private clearDropIndicators(doc: Document): void {
-    doc.querySelectorAll('tr.nte-block.nte-drop-before, tr.nte-block.nte-drop-after').forEach((el) => {
-      el.classList.remove('nte-drop-before', 'nte-drop-after');
-    });
+    doc
+      .querySelectorAll(
+        'tr.nte-block.nte-drop-before, tr.nte-block.nte-drop-after, tr.nte-block.nte-drop-open-above, tr.nte-block.nte-drop-open-below',
+      )
+      .forEach((el) => {
+        el.classList.remove(
+          'nte-drop-before',
+          'nte-drop-after',
+          'nte-drop-open-above',
+          'nte-drop-open-below',
+        );
+      });
     doc.body.classList.remove('nte-drop-append');
+    doc.body.removeAttribute('data-nte-drop-append-label');
+  }
+
+  private ensureInsertLabel(tr: HTMLElement, text: string): void {
+    const td = tr.querySelector(':scope > td') ?? tr.querySelector('td');
+    if (!td) return;
+    let label = td.querySelector(':scope > .nte-insert-label') as HTMLElement | null;
+    if (!label) {
+      label = tr.ownerDocument!.createElement('div');
+      label.className = 'nte-insert-label';
+      label.setAttribute('aria-hidden', 'true');
+      td.appendChild(label);
+    }
+    label.textContent = text;
+  }
+
+  private autoScrollPreviewNearEdge(doc: Document, clientY: number): void {
+    const view = doc.defaultView;
+    if (!view) return;
+    const frame = this.previewFrame()?.nativeElement;
+    if (!frame) return;
+    const frameRect = frame.getBoundingClientRect();
+    const localY = clientY - frameRect.top;
+    const edge = 48;
+    const step = 18;
+    const root = doc.scrollingElement ?? doc.documentElement;
+    if (!root) return;
+    if (localY < edge) root.scrollTop = Math.max(0, root.scrollTop - step);
+    else if (localY > frameRect.height - edge) root.scrollTop = root.scrollTop + step;
+  }
+
+  private scrollPreviewBlockIntoView(blockId: string, flash: boolean): void {
+    const doc = this.previewFrame()?.nativeElement?.contentDocument;
+    if (!doc) return;
+    const safe = blockId.replace(/[\\"']/g, '');
+    const el = doc.querySelector(`tr.nte-block[data-block-id="${safe}"]`) as HTMLElement | null;
+    if (!el) return;
+    const apply = (): void => {
+      el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      const root = doc.scrollingElement ?? doc.documentElement;
+      this.lastPreviewScrollY = root?.scrollTop ?? 0;
+      if (flash) {
+        el.classList.add('nte-just-inserted');
+        window.setTimeout(() => el.classList.remove('nte-just-inserted'), 600);
+      }
+    };
+    apply();
+    queueMicrotask(apply);
+    requestAnimationFrame(apply);
   }
 
   private injectPreviewChrome(doc: Document): void {

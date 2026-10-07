@@ -50,4 +50,14 @@ describe('SnackbarService', () => {
     svc.dismiss();
     expect(svc.message()).toBeNull();
   });
+
+  it('defaults to a 3s auto-dismiss window', () => {
+    const svc = new SnackbarService();
+    svc.success('Saved');
+    expect(svc.message()?.durationMs).toBe(3000);
+    vi.advanceTimersByTime(2999);
+    expect(svc.message()).not.toBeNull();
+    vi.advanceTimersByTime(1);
+    expect(svc.message()).toBeNull();
+  });
 });

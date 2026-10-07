@@ -39,6 +39,17 @@ describe('NewsletterSession', () => {
     expect(session.panelTab()).toBe('catalog');
   });
 
+  it('insertBlockAt clamps index and can insert in the middle', () => {
+    const ids = session.blocks().map((b) => b.id);
+    const mid = Math.min(2, ids.length);
+    const created = session.insertBlockAt('paragraph', mid, { revealInPanel: false });
+    expect(session.blocks()[mid].id).toBe(created);
+    expect(session.blocks()[mid].type).toBe('paragraph');
+
+    const endId = session.insertBlockAt('divider', 9999, { revealInPanel: false });
+    expect(session.blocks().at(-1)?.id).toBe(endId);
+  });
+
   it('selectBlock stays on the placed tab', () => {
     session.setPanelTab('catalog');
     const id = session.blocks()[0].id;

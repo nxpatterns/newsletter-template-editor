@@ -30,5 +30,6 @@ Feature: App shell layout
     Given I open the home page
     When I toggle the side panel
     Then the side panel should be collapsed
+    And the side panel rail should remain visible
     When I toggle the side panel
     Then the side panel should be expanded

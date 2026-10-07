@@ -97,6 +97,18 @@ Do **not** give the preview host `overflow: auto` and a tall iframe (`min(80vh)`
 - **Tabs:** Current blocks, All blocks, Campaign, Brand, Colors, Legal. Tab chrome uses connected tab shapes (not plain button chips). Emergency overflow on short viewports may use panel scroll as exception.
 - **Field chrome sizes:** user-resized heights (e.g. Campaign inbox preview textarea) persist in `localStorage` (`newsletter-template-editor.field-heights.v1`).
 
+### Catalog drag into preview
+
+- **All blocks** is a palette: drag into the email preview; plain click is inert.
+- Payload: custom MIME `application/x-nte-catalog-type` only (never `text/plain` — browsers would hand it to the address bar / new-tab search).
+- **Drop zones (stable geometry):**
+  - Pointer **inside** `table.email-container` (600px presentation column) → nearest `tr.nte-block` by Y → **Insert here** (gold gap, neighbor rows shift apart, label pill).
+  - Pointer **outside** that column → **Insert at end** floating chip.
+  - Do **not** resolve via `event.target.closest('tr.nte-block')` (nested tables + transform gaps cause flicker).
+- Insert chrome color: gold `#f5c518` (distinct from selected-block turquoise `#20d4c8`).
+- Escape / drop outside app → cancel; catalog card return pulse. Successful insert scrolls the new block into view.
+- Implementation: `preview-dnd.ts` (`resolveDropAtPoint`), `catalog-drag.service.ts`, `editor.page.ts`, `PREVIEW_EDITOR_CHROME` in `shell.ts`.
+
 ### Header
 
 Inspired by image2colors header bar (brand left, actions right), editor-specific content:
@@ -192,7 +204,7 @@ bottom = var(--ds-footer-height) + var(--ds-snackbar-gap) + var(--ds-safe-bottom
 | --- | --- |
 | hidden | not rendered |
 | enter | fade + slight rise (~150–200ms), reduced-motion → instant opacity |
-| visible | auto-dismiss timer default **5s** (later UI-configurable); timer **and** progress animation pause on hover/focus and resume with remaining time |
+| visible | auto-dismiss timer default **3s** (later UI-configurable); timer **and** progress animation pause on hover/focus and resume with remaining time |
 | leave | remove when timer ends or dismiss |
 | replaced | new message replaces current without stacking (v0) |
 

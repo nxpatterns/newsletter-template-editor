@@ -288,11 +288,67 @@ const PREVIEW_EDITOR_CHROME = `
   tr.nte-block.is-dragging {
     opacity: 0.45;
   }
-  tr.nte-block.nte-drop-before > td {
-    box-shadow: inset 0 3px 0 0 #20d4c8 !important;
+  /* Insert gap color = gold highlight (NOT turquoise selection #20d4c8). */
+  tr.nte-block {
+    transition: transform 0.18s ease;
   }
-  tr.nte-block.nte-drop-after > td {
-    box-shadow: inset 0 -3px 0 0 #20d4c8 !important;
+  tr.nte-block.nte-drop-open-above {
+    transform: translateY(-14px);
+  }
+  tr.nte-block.nte-drop-open-below {
+    transform: translateY(14px);
+  }
+  /* Gold insert rail behind the label */
+  tr.nte-block.nte-drop-before > td::before,
+  tr.nte-block.nte-drop-after > td::after {
+    content: '';
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    z-index: 44;
+    height: 3px;
+    border-radius: 999px;
+    background: #f5c518;
+    box-shadow:
+      0 0 0 4px rgba(245, 197, 24, 0.22),
+      0 0 20px rgba(245, 197, 24, 0.45);
+    pointer-events: none;
+  }
+  tr.nte-block.nte-drop-before > td::before { top: -2px; }
+  tr.nte-block.nte-drop-after > td::after { bottom: -2px; }
+  .nte-insert-label {
+    display: none !important;
+    position: absolute;
+    left: 50%;
+    z-index: 48;
+    box-sizing: border-box;
+    max-width: calc(100% - 24px);
+    padding: 0.4rem 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+    font: 800 12px/1.2 system-ui, -apple-system, sans-serif;
+    letter-spacing: 0.03em;
+    text-align: center;
+    white-space: nowrap;
+    color: #1a1200;
+    background: #f5c518;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+    transform: translateX(-50%);
+  }
+  tr.nte-block.nte-drop-before > td .nte-insert-label,
+  tr.nte-block.nte-drop-after > td .nte-insert-label {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+  tr.nte-block.nte-drop-before > td .nte-insert-label {
+    top: 0;
+    transform: translate(-50%, -50%);
+  }
+  tr.nte-block.nte-drop-after > td .nte-insert-label {
+    bottom: 0;
+    transform: translate(-50%, 50%);
   }
   body.nte-is-dnd {
     cursor: grabbing;
@@ -300,9 +356,42 @@ const PREVIEW_EDITOR_CHROME = `
   body.nte-is-catalog-dnd {
     cursor: copy;
   }
+  /* Append-at-end floating chip (label from data-nte-drop-append-label) */
   body.nte-drop-append {
-    outline: 2px dashed #20d4c8;
-    outline-offset: -4px;
+    outline: none;
+  }
+  body.nte-drop-append::after {
+    content: attr(data-nte-drop-append-label);
+    position: fixed;
+    left: 50%;
+    bottom: 18px;
+    z-index: 60;
+    transform: translateX(-50%);
+    box-sizing: border-box;
+    min-width: min(280px, calc(100% - 32px));
+    padding: 0.65rem 1.15rem;
+    border: 2px solid #f5c518;
+    border-radius: 999px;
+    background: #f5c518;
+    color: #1a1200;
+    font: 800 13px/1.2 system-ui, -apple-system, sans-serif;
+    letter-spacing: 0.02em;
+    text-align: center;
+    pointer-events: none;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+  }
+  tr.nte-block.nte-just-inserted > td {
+    animation: nte-insert-flash 0.55s ease;
+  }
+  @keyframes nte-insert-flash {
+    0% { box-shadow: inset 0 0 0 3px rgba(245, 197, 24, 0.95); }
+    100% { box-shadow: inset 0 0 0 2px rgba(32, 212, 200, 0.95); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    tr.nte-block { transition: none; }
+    tr.nte-block.nte-drop-open-above,
+    tr.nte-block.nte-drop-open-below { transform: none; }
+    tr.nte-block.nte-just-inserted > td { animation: none; }
   }
 `;
 

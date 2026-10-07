@@ -44,6 +44,39 @@
   cursor: grabbing;
 }
 
+.catalog-card--dragging {
+  opacity: 0.55;
+  border-color: color-mix(in srgb, var(--ds-accent) 70%, var(--ds-border));
+}
+
+/* Visual “snap back” when Escape / drop-outside cancels the drag. */
+.catalog-card--cancelled {
+  animation: catalog-card-return 0.4s ease;
+}
+
+@keyframes catalog-card-return {
+  0% {
+    transform: scale(0.9);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--ds-accent) 55%, transparent);
+  }
+  45% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--ds-accent) 28%, transparent);
+    border-color: var(--ds-accent);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catalog-card--cancelled {
+    animation: none;
+    outline: 2px solid var(--ds-accent);
+  }
+}
+
 .catalog-card__icon {
   font-size: 1.15rem;
   line-height: 1;

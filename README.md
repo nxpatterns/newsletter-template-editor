@@ -101,6 +101,6 @@ UI chrome specs (snackbar, footer): `docs/concepts/design-system.md`.
 - Angular 22+ (standalone, zoneless, SCSS)
 - `@angular/aria` + `@angular/cdk`
 - Domain core: pure TS renderer + localStorage
-- Design system snackbar (bottom-center, above footer)
+- Design system snackbar (full-width bar above footer, 3s auto-dismiss, pause on hover)
 - Tests: Vitest + playwright-bdd
 - Hosting: GitHub Actions → GitHub Pages (**tag releases only**)

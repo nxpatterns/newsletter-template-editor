@@ -30,4 +30,17 @@ describe('ShellUiService', () => {
     shell.setFieldHeightPx('campaign.preheader', 160);
     expect(shell.getFieldHeightPx('campaign.preheader')).toBe(160);
   });
+
+  it('ignores too-small field heights', () => {
+    shell.setFieldHeightPx('campaign.subject', 20);
+    expect(shell.getFieldHeightPx('campaign.subject')).toBeNull();
+  });
+
+  it('toggles panel collapsed state', () => {
+    const before = shell.panelCollapsed();
+    shell.togglePanel();
+    expect(shell.panelCollapsed()).toBe(!before);
+    shell.togglePanel();
+    expect(shell.panelCollapsed()).toBe(before);
+  });
 });

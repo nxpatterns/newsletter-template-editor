@@ -125,6 +125,8 @@ export const EN: MessageCatalog = {
   'field.ctaLinksJson': 'Links (advanced JSON)',
   'preview.editBlock': 'Edit block',
   'preview.dragBlock': 'Drag to reorder',
+  'preview.dropInsertHere': 'Insert here',
+  'preview.dropInsertAtEnd': 'Insert at end',
   'preview.label': 'Email preview',
   'modal.close': 'Close',
   'modal.save': 'Save',

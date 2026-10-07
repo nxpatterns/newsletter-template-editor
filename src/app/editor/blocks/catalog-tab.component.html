@@ -4,12 +4,15 @@
     @for (type of types; track type) {
       <div
         class="catalog-card"
+        [class.catalog-card--cancelled]="cancelledType() === type"
+        [class.catalog-card--dragging]="catalogDrag.activeType() === type"
         role="listitem"
         draggable="true"
         [attr.data-testid]="'add-block-' + type"
         [attr.aria-label]="label(type)"
         [attr.title]="i18n.t('catalog.dragHint')"
         (dragstart)="onDragStart(type, $event)"
+        (dragend)="onDragEnd(type, $event)"
       >
         <span class="catalog-card__icon" aria-hidden="true" [textContent]="icon(type)"></span>
         <span class="catalog-card__label" [textContent]="label(type)"></span>

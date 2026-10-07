@@ -114,6 +114,11 @@ Then('the side panel should be collapsed', async ({ page }) => {
   expect(expanded).toBe('false');
 });
 
+Then('the side panel rail should remain visible', async ({ page }) => {
+  await expect(page.getByTestId('side-panel-rail')).toBeVisible();
+  await expect(page.getByTestId('side-panel-toggle')).toBeVisible();
+});
+
 Then('the side panel should be expanded', async ({ page }) => {
   const panel = page.getByTestId('side-panel');
   await expect(panel).not.toHaveClass(/collapsed/);
