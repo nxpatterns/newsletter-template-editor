@@ -74,7 +74,7 @@ export class EditorPage {
 
   constructor() {
     afterNextRender(() => {
-      this.session.hydrateFromStorage();
+      void this.session.hydrateFromStorage();
       // Catalog drags start on the host; Escape / drop-outside fire dragend there,
       // not inside the iframe — clear gap chrome so it cannot stick.
       document.addEventListener(

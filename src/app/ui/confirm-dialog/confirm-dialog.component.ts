@@ -22,8 +22,10 @@ export class ConfirmDialogComponent {
   protected readonly confirm = inject(ConfirmDialogService);
 
   private readonly cancelBtn = viewChild<ElementRef<HTMLButtonElement>>('cancelBtn');
+  private readonly inputEl = viewChild<ElementRef<HTMLInputElement>>('promptInput');
 
   protected readonly openVisual = signal(false);
+  protected readonly promptValue = signal('');
   private closing = false;
 
   constructor() {
@@ -31,8 +33,12 @@ export class ConfirmDialogComponent {
       const p = this.confirm.pending();
       if (p) {
         this.closing = false;
+        this.promptValue.set(p.mode === 'prompt' ? p.initialValue : '');
         requestAnimationFrame(() => this.openVisual.set(true));
-        queueMicrotask(() => this.cancelBtn()?.nativeElement.focus());
+        queueMicrotask(() => {
+          if (p.mode === 'prompt') this.inputEl()?.nativeElement.focus();
+          else this.cancelBtn()?.nativeElement.focus();
+        });
       } else {
         this.openVisual.set(false);
       }
@@ -55,13 +61,23 @@ export class ConfirmDialogComponent {
     if (this.confirm.pending()) this.beginClose(false);
   }
 
-  private beginClose(result: boolean): void {
-    if (!this.confirm.pending() || this.closing) return;
+  protected onPromptInput(event: Event): void {
+    this.promptValue.set((event.target as HTMLInputElement).value);
+  }
+
+  private beginClose(ok: boolean): void {
+    const p = this.confirm.pending();
+    if (!p || this.closing) return;
     this.closing = true;
     this.openVisual.set(false);
     window.setTimeout(() => {
       this.closing = false;
-      this.confirm.complete(result);
+      if (p.mode === 'prompt') {
+        const v = this.promptValue().trim();
+        this.confirm.completePrompt(ok && v ? v : null);
+      } else {
+        this.confirm.completeConfirm(ok);
+      }
     }, 200);
   }
 }

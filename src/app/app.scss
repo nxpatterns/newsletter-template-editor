@@ -51,6 +51,23 @@
   line-height: 1.25;
 }
 
+.app-header-doc {
+  margin-block-start: 0.2rem;
+  color: var(--ds-accent);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
+  max-width: min(28rem, 70vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-header-dirty {
+  margin-inline-start: 0.25rem;
+  color: var(--ds-gold, #f5c518);
+}
+
 .app-header-actions {
   display: flex;
   flex-wrap: wrap;

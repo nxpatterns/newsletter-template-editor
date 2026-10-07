@@ -2,7 +2,7 @@
 
 Concept for letting sellers put **their own logo** into the newsletter header without raw URL fiddling, giant attachments, or mail-client rage.
 Audience: non-technical field sellers. English only.
-**Status: agreed (decisions locked 2026-10-07). Implement only after explicit go — after or alongside file-management slices as scheduled.**
+**Status: shipped through v0.1.7/v0.1.8 (Brand upload + export optimize). Preview mouse-resize still optional polish.**
 
 No backend. No `.env`. Client-side only. MIT / static-host friendly.
 Depends on / feeds into `docs/concepts/file-management.md` (document size, recovery quota).

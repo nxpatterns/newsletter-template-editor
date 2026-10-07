@@ -135,6 +135,8 @@ Shared mini-toolbar for a **small** set of surfaces only (brand name, legal noti
 
 ## Implementation order (suggested)
 
+**Next gate after file management (v0.1.8):** start here — not heavy WYSIWYG.
+
 1. **price-box** field split + inspector + render + seed/migrate.
 2. **cta-link-list** row editor (kill JSON UI).
 3. Plain-label cleanup (remove “HTML” from seller copy where fields become plain).

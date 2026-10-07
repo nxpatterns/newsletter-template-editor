@@ -11,13 +11,27 @@
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-title"
-      aria-describedby="confirm-body"
     >
       <header class="confirm-head">
         <h2 id="confirm-title" class="confirm-title" [textContent]="p.title"></h2>
       </header>
       <div class="confirm-body">
-        <p id="confirm-body" class="confirm-text" [textContent]="p.body"></p>
+        @if (p.body) {
+          <p class="confirm-text" [textContent]="p.body"></p>
+        }
+        @if (p.mode === 'prompt') {
+          <label class="confirm-input-label" for="confirm-prompt-input" [textContent]="p.inputLabel"></label>
+          <input
+            #promptInput
+            id="confirm-prompt-input"
+            class="confirm-input"
+            type="text"
+            data-testid="confirm-prompt-input"
+            [value]="promptValue()"
+            (input)="onPromptInput($event)"
+            (keydown.enter)="onConfirm()"
+          />
+        }
       </div>
       <footer class="confirm-foot">
         <button
@@ -32,8 +46,8 @@
           type="button"
           class="confirm-btn"
           data-testid="confirm-ok"
-          [class.confirm-btn--primary]="!p.danger"
-          [class.confirm-btn--danger]="!!p.danger"
+          [class.confirm-btn--primary]="p.mode === 'prompt' || !p.danger"
+          [class.confirm-btn--danger]="p.mode === 'confirm' && !!p.danger"
           [textContent]="p.confirmLabel"
           (click)="onConfirm()"
         ></button>

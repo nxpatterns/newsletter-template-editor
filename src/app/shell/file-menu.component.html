@@ -1,0 +1,64 @@
+<div class="file-menu" #root data-testid="file-menu">
+  <button
+    type="button"
+    class="toolbar-btn file-menu-trigger"
+    data-testid="file-menu-trigger"
+    [attr.aria-expanded]="open()"
+    [attr.aria-label]="i18n.t('file.menu')"
+    [attr.title]="i18n.t('file.menu')"
+    (click)="toggleMenu($event)"
+  >
+    <svg class="toolbar-icon file-menu-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M4 7h16v2H4V7zm0 4h16v2H4v-2zm0 4h16v2H4v-2z" />
+    </svg>
+  </button>
+
+  @if (open()) {
+    <div class="file-menu-panel" role="menu" data-testid="file-menu-panel">
+      <div class="file-menu-section-label" [textContent]="i18n.t('file.sectionCurrent')"></div>
+      <button type="button" class="file-menu-item file-menu-item--muted" role="menuitem" disabled>
+        <span [textContent]="session.displayName()"></span>
+        @if (session.dirty()) {
+          <span class="file-menu-dirty">•</span>
+        }
+      </button>
+      <button type="button" class="file-menu-item" role="menuitem" data-testid="file-rename" (click)="rename()" [textContent]="i18n.t('file.rename')"></button>
+      <button type="button" class="file-menu-item" role="menuitem" data-testid="file-save" (click)="save()" [textContent]="i18n.t('action.save')"></button>
+      <button type="button" class="file-menu-item" role="menuitem" data-testid="file-save-as" (click)="saveAs()" [textContent]="i18n.t('file.saveAs')"></button>
+      <button type="button" class="file-menu-item" role="menuitem" data-testid="file-open-library" (click)="openLibrary()" [textContent]="i18n.t('file.openLibrary')"></button>
+      <button type="button" class="file-menu-item" role="menuitem" data-testid="file-export" (click)="showExport()" [textContent]="i18n.t('file.exportHtml')"></button>
+
+      @if (exportOpen()) {
+        <div class="file-menu-sub" data-testid="file-export-choices">
+          <button type="button" class="file-menu-item" data-testid="file-export-full" (click)="exportHtml('full')" [textContent]="i18n.t('file.exportFull')"></button>
+          <button type="button" class="file-menu-item" data-testid="file-export-listmonk" (click)="exportHtml('listmonk')" [textContent]="i18n.t('file.exportListmonk')"></button>
+        </div>
+      }
+
+      <div class="file-menu-sep"></div>
+      <div class="file-menu-section-label" [textContent]="i18n.t('file.sectionProject')"></div>
+      <button type="button" class="file-menu-item" role="menuitem" data-testid="file-download-project" (click)="downloadProject()" [textContent]="i18n.t('file.downloadProject')"></button>
+      <button type="button" class="file-menu-item" role="menuitem" data-testid="file-open-project" (click)="openProjectPicker()" [textContent]="i18n.t('file.openProject')"></button>
+
+      <div class="file-menu-sep"></div>
+      <button type="button" class="file-menu-item file-menu-item--danger" role="menuitem" data-testid="file-reset" (click)="resetDemo()" [textContent]="i18n.t('action.reset')"></button>
+    </div>
+  }
+
+  <input
+    #projectInput
+    type="file"
+    class="file-menu-hidden-input"
+    accept="application/json,.json"
+    data-testid="file-project-input"
+    (change)="onProjectFile($event)"
+  />
+</div>
+
+<app-library-picker
+  [open]="libraryOpen()"
+  [rows]="libraryRows()"
+  (closed)="closeLibraryPicker()"
+  (picked)="pickLibrary($event)"
+  (deleted)="removeLibrary($event)"
+/>

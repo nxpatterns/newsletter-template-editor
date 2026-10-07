@@ -2,14 +2,24 @@ import { isPlatformBrowser } from '@angular/common';
 import { computed, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import {
   createBlock,
-  loadOrSeed,
-  resetToSeed,
-  saveNewsletter,
+  DEFAULT_DISPLAY_NAME,
   seedNewsletter,
   type Block,
   type Globals,
   type Newsletter,
 } from '../../core';
+import {
+  buildProjectEnvelope,
+  deleteLibraryEntry,
+  getLibraryEntry,
+  listLibrary,
+  migrateLegacyLocalStorageIfNeeded,
+  newLibraryId,
+  parseProjectFile,
+  putLibraryEntry,
+  saveRecovery,
+  type LibraryEntry,
+} from '../../core/persist/idb-docs';
 import { LocaleService } from '../i18n/locale.service';
 import { SnackbarService } from '../ui/snackbar/snackbar.service';
 
@@ -52,7 +62,16 @@ export class NewsletterSession {
   private readonly canUndoSignal = signal(false);
   private readonly canRedoSignal = signal(false);
 
+  private readonly displayNameSignal = signal(DEFAULT_DISPLAY_NAME);
+  private readonly dirtySignal = signal(false);
+  private readonly libraryIdSignal = signal<string | null>(null);
+  private recoveryTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly recoveryDelayMs = 700;
+
   readonly newsletter = this.newsletterSignal.asReadonly();
+  readonly displayName = this.displayNameSignal.asReadonly();
+  readonly dirty = this.dirtySignal.asReadonly();
+  readonly libraryId = this.libraryIdSignal.asReadonly();
   readonly selectedBlockId = this.selectedBlockIdSignal.asReadonly();
   readonly panelTab = this.panelTabSignal.asReadonly();
   /** When set, the block edit modal is open for this id. */
@@ -75,29 +94,133 @@ export class NewsletterSession {
   readonly blocks = computed(() => this.newsletterSignal().blocks);
   readonly globals = computed(() => this.newsletterSignal().globals);
 
-  hydrateFromStorage(): void {
+  async hydrateFromStorage(): Promise<void> {
     if (!isPlatformBrowser(this.platformId)) return;
-    const loaded = loadOrSeed(seedNewsletter);
-    this.newsletterSignal.set(loaded);
-    saveNewsletter(loaded);
-    this.clearHistory();
-    this.ensureSelection(loaded);
+    try {
+      const recovered = await migrateLegacyLocalStorageIfNeeded();
+      if (recovered?.newsletter) {
+        this.applyDocument(recovered.newsletter, {
+          displayName: recovered.displayName || DEFAULT_DISPLAY_NAME,
+          libraryId: recovered.libraryId,
+          dirty: recovered.dirty,
+          clearHistory: true,
+        });
+      } else {
+        const seeded = seedNewsletter();
+        this.applyDocument(seeded, {
+          displayName: DEFAULT_DISPLAY_NAME,
+          libraryId: null,
+          dirty: false,
+          clearHistory: true,
+        });
+        await this.persistRecovery();
+      }
+    } catch {
+      const seeded = seedNewsletter();
+      this.applyDocument(seeded, {
+        displayName: DEFAULT_DISPLAY_NAME,
+        libraryId: null,
+        dirty: false,
+        clearHistory: true,
+      });
+    }
+    this.bindBeforeUnload();
   }
 
-  save(): void {
-    saveNewsletter(this.newsletterSignal());
-    this.snackbar.success(this.i18n.t('snackbar.saved'));
+  /** Explicit library save (overwrite bound entry or create). */
+  async saveToLibrary(opts?: { asNew?: boolean; name?: string }): Promise<boolean> {
+    const name = (opts?.name ?? this.displayNameSignal()).trim() || DEFAULT_DISPLAY_NAME;
+    let id = this.libraryIdSignal();
+    if (opts?.asNew || !id) {
+      id = newLibraryId();
+    }
+    const entry: LibraryEntry = {
+      id,
+      displayName: name,
+      updatedAt: new Date().toISOString(),
+      newsletter: cloneNewsletter(this.newsletterSignal()),
+    };
+    await putLibraryEntry(entry);
+    this.displayNameSignal.set(name);
+    this.libraryIdSignal.set(id);
+    this.dirtySignal.set(false);
+    await this.persistRecovery();
+    this.snackbar.success(this.i18n.t('snackbar.savedNamed').replace('{name}', name));
+    return true;
   }
 
-  resetSeed(): void {
+  async listLibraryEntries(): Promise<LibraryEntry[]> {
+    return listLibrary();
+  }
+
+  async openLibraryEntry(id: string): Promise<boolean> {
+    const entry = await getLibraryEntry(id);
+    if (!entry) return false;
+    this.applyDocument(entry.newsletter, {
+      displayName: entry.displayName,
+      libraryId: entry.id,
+      dirty: false,
+      clearHistory: true,
+    });
+    await this.persistRecovery();
+    return true;
+  }
+
+  async deleteLibrary(id: string): Promise<void> {
+    await deleteLibraryEntry(id);
+    if (this.libraryIdSignal() === id) {
+      this.libraryIdSignal.set(null);
+      this.dirtySignal.set(true);
+      await this.persistRecovery();
+    }
+  }
+
+  setDisplayName(name: string): void {
+    const next = name.trim() || DEFAULT_DISPLAY_NAME;
+    if (next === this.displayNameSignal()) return;
+    this.displayNameSignal.set(next);
+    this.dirtySignal.set(true);
+    this.scheduleRecovery();
+  }
+
+  exportProjectJson(): Blob {
+    const envelope = buildProjectEnvelope(
+      this.newsletterSignal(),
+      this.displayNameSignal(),
+      this.libraryIdSignal(),
+    );
+    return new Blob([JSON.stringify(envelope, null, 2)], { type: 'application/json' });
+  }
+
+  loadProjectJsonText(raw: string): boolean {
+    const parsed = parseProjectFile(raw);
+    if (!parsed) return false;
+    this.applyDocument(parsed.newsletter, {
+      displayName: parsed.displayName,
+      libraryId: null,
+      dirty: true,
+      clearHistory: true,
+    });
+    this.scheduleRecovery();
+    return true;
+  }
+
+  async resetSeed(): Promise<void> {
     this.endCoalesce();
-    this.clearHistory();
-    const next = resetToSeed(seedNewsletter);
-    this.newsletterSignal.set(next);
-    this.editingBlockIdSignal.set(null);
-    this.editBaselineBlock = null;
-    this.ensureSelection(next);
+    const next = seedNewsletter();
+    this.applyDocument(next, {
+      displayName: DEFAULT_DISPLAY_NAME,
+      libraryId: null,
+      dirty: false,
+      clearHistory: true,
+    });
+    await this.persistRecovery();
     this.snackbar.success(this.i18n.t('snackbar.reset'));
+  }
+
+  /** @deprecated use saveToLibrary — kept for any leftover callers */
+  save(): void {
+    void this.saveToLibrary();
   }
 
   setPanelTab(tab: EditorPanelTab): void {
@@ -291,9 +414,11 @@ export class NewsletterSession {
     this.redoStack.push(cloneNewsletter(this.newsletterSignal()));
     const prev = this.undoStack.pop()!;
     this.newsletterSignal.set(prev);
+    this.dirtySignal.set(true);
     this.syncHistoryFlags();
     this.ensureSelection(prev);
     this.syncEditingBlock(prev);
+    this.scheduleRecovery();
   }
 
   redo(): void {
@@ -302,9 +427,11 @@ export class NewsletterSession {
     this.undoStack.push(cloneNewsletter(this.newsletterSignal()));
     const next = this.redoStack.pop()!;
     this.newsletterSignal.set(next);
+    this.dirtySignal.set(true);
     this.syncHistoryFlags();
     this.ensureSelection(next);
     this.syncEditingBlock(next);
+    this.scheduleRecovery();
   }
 
   private mutateImmediate(fn: (n: Newsletter) => Newsletter): void {
@@ -322,6 +449,53 @@ export class NewsletterSession {
       this.pushUndoSnapshot();
     }
     this.newsletterSignal.update(fn);
+    this.dirtySignal.set(true);
+    this.scheduleRecovery();
+  }
+
+  private applyDocument(
+    n: Newsletter,
+    meta: { displayName: string; libraryId: string | null; dirty: boolean; clearHistory: boolean },
+  ): void {
+    this.newsletterSignal.set(n);
+    this.displayNameSignal.set(meta.displayName || DEFAULT_DISPLAY_NAME);
+    this.libraryIdSignal.set(meta.libraryId);
+    this.dirtySignal.set(meta.dirty);
+    this.editingBlockIdSignal.set(null);
+    this.editBaselineBlock = null;
+    if (meta.clearHistory) this.clearHistory();
+    this.ensureSelection(n);
+  }
+
+  private scheduleRecovery(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    if (this.recoveryTimer) clearTimeout(this.recoveryTimer);
+    this.recoveryTimer = setTimeout(() => {
+      this.recoveryTimer = null;
+      void this.persistRecovery();
+    }, this.recoveryDelayMs);
+  }
+
+  private async persistRecovery(): Promise<void> {
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      await saveRecovery({
+        displayName: this.displayNameSignal(),
+        libraryId: this.libraryIdSignal(),
+        dirty: this.dirtySignal(),
+        newsletter: this.newsletterSignal(),
+      });
+    } catch {
+      /* quota / private */
+    }
+  }
+
+  private bindBeforeUnload(): void {
+    window.addEventListener('beforeunload', (event) => {
+      if (!this.dirtySignal()) return;
+      event.preventDefault();
+      event.returnValue = '';
+    });
   }
 
   private pushUndoSnapshot(): void {

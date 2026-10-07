@@ -10,6 +10,7 @@ import {
   LegalModalComponent,
   type LegalModalKind,
 } from './ui/legal-modal/legal-modal.component';
+import { FileMenuComponent } from './shell/file-menu.component';
 import { SnackbarComponent } from './ui/snackbar/snackbar.component';
 
 @Component({
@@ -22,6 +23,7 @@ import { SnackbarComponent } from './ui/snackbar/snackbar.component';
     LegalModalComponent,
     BlockEditModalComponent,
     ConfirmDialogComponent,
+    FileMenuComponent,
   ],
   selector: 'app-root',
   styleUrl: './app.scss',

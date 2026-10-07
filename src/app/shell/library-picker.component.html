@@ -1,0 +1,67 @@
+@if (open()) {
+  <div
+    class="lib-overlay"
+    data-testid="library-picker"
+    [class.is-open]="openVisual()"
+    [class.is-closing]="!openVisual()"
+  >
+    <div class="lib-backdrop" (click)="requestClose()"></div>
+    <div class="lib-dialog" role="dialog" aria-modal="true" aria-labelledby="lib-title">
+      <header class="lib-head">
+        <h2 id="lib-title" class="lib-title" [textContent]="i18n.t('file.libraryTitle')"></h2>
+        <button
+          type="button"
+          class="lib-dismiss"
+          data-testid="library-picker-close"
+          [attr.aria-label]="i18n.t('modal.close')"
+          (click)="requestClose()"
+        >×</button>
+      </header>
+
+      <div class="lib-toolbar">
+        <input
+          type="search"
+          class="lib-search"
+          data-testid="library-search"
+          [attr.placeholder]="i18n.t('file.librarySearch')"
+          [value]="query()"
+          (input)="onQuery($event)"
+        />
+        <label class="lib-sort-wrap">
+          <span class="lib-sort-label" [textContent]="i18n.t('file.librarySort')"></span>
+          <select class="lib-sort" data-testid="library-sort" [value]="sort()" (change)="onSort($event)">
+            <option value="date-desc" [textContent]="i18n.t('file.librarySortDateDesc')"></option>
+            <option value="date-asc" [textContent]="i18n.t('file.librarySortDateAsc')"></option>
+            <option value="name-asc" [textContent]="i18n.t('file.librarySortName')"></option>
+          </select>
+        </label>
+      </div>
+
+      <div class="lib-list" data-testid="library-list">
+        @if (filtered().length === 0) {
+          <p class="lib-empty" [textContent]="i18n.t('file.libraryEmpty')"></p>
+        } @else {
+          @for (row of filtered(); track row.id) {
+            <div class="lib-row">
+              <button type="button" class="lib-pick" data-testid="library-pick" (click)="pick(row.id)">
+                <span class="lib-name" [textContent]="row.displayName"></span>
+                <span class="lib-date" [textContent]="formatDate(row.updatedAt)"></span>
+              </button>
+              <button
+                type="button"
+                class="lib-delete"
+                data-testid="library-delete"
+                [attr.aria-label]="i18n.t('file.delete')"
+                (click)="remove(row.id, $event)"
+              >×</button>
+            </div>
+          }
+        }
+      </div>
+
+      <footer class="lib-foot">
+        <button type="button" class="lib-btn" (click)="requestClose()" [textContent]="i18n.t('modal.cancel')"></button>
+      </footer>
+    </div>
+  </div>
+}

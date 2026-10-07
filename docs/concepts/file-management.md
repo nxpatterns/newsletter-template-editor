@@ -69,25 +69,60 @@ No backend. No `.env`. Client-side only. MIT / static-host friendly.
 
 ### Display name vs file stem
 
-- **Display name** — what the seller sees in the header (e.g. `Q4 Offer – Hotels`). Human string; may contain spaces and punctuation.
-- **File stem** — sanitized form used in downloads: strip path separators, collapse whitespace, remove control chars, limit length, default fallback `newsletter`.
-- **Export prefix** (`globals.exportFileNamePrefix`) — optional product/brand stem for *ListMonk pair* downloads (e.g. `Acme-Listmonk`). Keep as advanced Campaign field; do **not** force sellers to understand it for casual “Export as HTML”.
+- **Display name** — what the seller sees in the UI (may contain spaces, punctuation, local scripts). Editable.
+- **File stem** — always derived for downloads via `sanitizeFileStem(displayName | prefix)` (never trust raw user text as a path segment).
+- **Export prefix** (`globals.exportFileNamePrefix`) — Campaign field for ListMonk pair stems when set.
 
-**Proposed default for casual export filenames:**
-
-```text
-{sanitizedDisplayName}.html
-{sanitizedDisplayName}.pdf
-```
-
-**Proposed default for ListMonk pair** (when we expose both shell + body):
+**Default display name (seed / reset demo)** — locked:
 
 ```text
-{exportFileNamePrefix-or-display}-template.html
-{exportFileNamePrefix-or-display}-body.html
+CloudLib-EU-Example-Newsletter-Template
 ```
 
-Exact pairing labels must be plain language in the menu (see Menu IA).
+(Already ASCII + hyphens; matches stem rules without further mangling.)
+
+**Casual export filenames:**
+
+```text
+{sanitizeFileStem(displayName)}.html
+```
+
+**ListMonk pair:**
+
+```text
+{sanitizeFileStem(prefix || displayName)}-template.html
+{sanitizeFileStem(prefix || displayName)}-body.html
+```
+
+### File stem sanitization (locked approach)
+
+Goal: safe, portable names on Windows/macOS/iOS/Android Downloads folders and mail attachments — without requiring sellers to understand encoding.
+
+Pipeline (pure helper, unit-tested):
+
+1. **NFKC normalize** the string (compatibility decomposition).
+2. **Script / diacritic fold to Latin ASCII where practical:**
+   - German (and similar): `ä→ae`, `ö→oe`, `ü→ue`, `Ä→Ae`, `ß→ss`, …
+   - Turkish: `ı/I → i`, `İ → I` then lower rules carefully; `ş→s`, `ğ→g`, `ç→c`, …
+   - Serbian/Croatian Latin: `č→c`, `ć→c`, `š→s`, `ž→z`, `đ→dj`, …
+   - Use a small explicit map for common European letters + `String#normalize('NFD')` + strip combining marks as a general Latin fallback.
+3. **Non-Latin scripts (Chinese, Arabic, Cyrillic-as-primary, etc.):**
+   - **Do not** invent wrong “phonetic English” by guessing.
+   - After folding, any remaining code point outside `[A-Za-z0-9]` becomes a separator candidate.
+   - If the stem would be **empty** or only separators (e.g. pure CJK/Arabic name): fall back to
+     `Newsletter-Template` plus a short **stable suffix** from a hash of the original display name (e.g. 6 hex chars) so two different Chinese titles do not both become the same file:
+     `Newsletter-Template-a3f2c1`.
+   - Optional later (not v1): a tiny optional transliteration library — only if sellers demand readable Latin from CJK; license must stay MIT.
+4. **Separators:** whitespace and runs of punctuation/`_` → single `-`. No spaces in the stem.
+5. **Casing:** **Pascal-ish path segments** — split on `-`, capitalize each ASCII segment’s first letter, rest lower (or keep existing Camel inside segment if already mixed). Example: `q4 offer hotels` → `Q4-Offer-Hotels`. All-caps acronyms of length 2–4 may stay upper if detected simply; do not over-engineer.
+6. **Strip** leading/trailing `-`, collapse `--` → `-`.
+7. **Forbid** path characters: `/\?%*:|"<>` and control chars — already removed by the ASCII filter.
+8. **Length cap:** ~80 characters for the stem (OS/email-safe); truncate on a `-` boundary when possible.
+9. **Empty after all that** → `Newsletter-Template`.
+
+**Display name is never silently rewritten** in the UI — only the download stem is sanitized. Sellers can keep `Müller Q4` on screen; file becomes `Mueller-Q4.html`.
+
+Exact pairing labels remain plain language in the menu (see Menu IA).
 
 ---
 
@@ -223,15 +258,31 @@ Follow design-system: toolbar flex-wrap; menu panel dismiss control top-end if i
 │   ├── Name: {displayName}          (inline rename or “Rename…”)
 │   ├── Save
 │   ├── Save as…
-│   ├── Open…                        (from library)
+│   ├── Open…                        (from in-browser library — see below)
 │   └── ───
 │   └── Export as HTML…              (choice dialog; no PDF in v1)
 ├── Project
 │   ├── Download project file (.json)
-│   └── Open project file (.json)
+│   └── Open project file (.json)    (from disk — see below)
 └── Danger zone
     └── Reset to demo template…
 ```
+
+### Why two different “Open” entries (not one)
+
+Sellers have **two places** drafts can live. Mixing them in one picker caused the old Dogan confusion.
+
+| Menu item | What it opens | Where data lives | When to use |
+| --- | --- | --- | --- |
+| **Open…** (under Current template) | A **named draft from the in-app library** | IndexedDB in this browser profile | Day-to-day: “the version I saved last Tuesday in the editor” |
+| **Open project file (.json)** (under Project) | A **file from disk / Downloads / USB / mail attachment** | User’s filesystem | Portability: hand off to a colleague, backup, other device, other browser |
+
+Same idea as “Open recent document” vs “Open file…” in office apps — not two competing save systems.
+
+- Library Open → modal list (`displayName` + `updatedAt`, Open / Delete).
+- Project Open → file picker (`accept` application/json / `.json`), parse envelope, dirty confirm first.
+- **Download project file** is the inverse of Project Open (export the JSON source).
+- Do **not** merge into one dialog in v1.
 
 **Export as HTML…** always opens a **short choice dialog** (never silent multi-download):
 
@@ -360,12 +411,20 @@ Suggested order (small PRs):
   - ListMonk pair files: use **prefix if non-empty**, else display name, then sanitize (`…-template.html` / `…-body.html`).
 - **Library “list UI”** means only *how Open presents saved named drafts* in the browser library (IndexedDB) — not a second product concept. Default for v1: **modal picker** (searchable list of `displayName` + `updatedAt`, Open / Delete). Not a permanent side-rail of files. Disk JSON remains separate menu items.
 
-### Still open (minor — resolve at implement kickoff)
+### Locked at review (2026-10-07, post v0.1.7)
 
-- Exact recovery key migration from `nte:newsletter:v1` → IDB envelope shape (include `displayName` + `libraryId` in recovery envelope).
-- Library Open vs “Open project file (.json)”: **two menu entries** (locked preference unless UX test fails).
-- Default `displayName` for seed: e.g. `CloudLib demo` / i18n — pick at implement.
-- Save-as name dialog: reuse confirm shell vs dedicated prompt with text field (need a small name-input modal; confirm dialog is body-only today).
+- Default seed `displayName`: **`CloudLib-EU-Example-Newsletter-Template`**.
+- File stems: **`sanitizeFileStem`** as specified above (no spaces; Latin fold; non-Latin → hash suffix fallback).
+- Library Open and Project JSON Open: **two separate menu entries** (explained above).
+- Recovery migration `nte:newsletter:v1` → IndexedDB envelope **approved** (include `displayName`, `libraryId`, newsletter, timestamps).
+
+### Still open (minor — at implement)
+
+- Save-as overwrite dialog could offer explicit “Save under new name” in one step (Save as menu exists).
+
+### Deferred (separate concept later)
+
+- Undo/Redo **hover labels** (what would undo/redo): requires labeled history entries — not file-management scope; schedule after structure-first slices.
 
 ---
 

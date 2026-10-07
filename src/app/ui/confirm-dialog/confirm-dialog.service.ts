@@ -5,13 +5,29 @@ export interface ConfirmDialogRequest {
   body: string;
   confirmLabel: string;
   cancelLabel: string;
-  /** Prefer danger styling on confirm (replace/clear). */
   danger?: boolean;
 }
 
-interface Pending extends ConfirmDialogRequest {
-  resolve: (value: boolean) => void;
+export interface PromptDialogRequest {
+  title: string;
+  body?: string;
+  inputLabel: string;
+  initialValue: string;
+  confirmLabel: string;
+  cancelLabel: string;
 }
+
+type PendingConfirm = ConfirmDialogRequest & {
+  mode: 'confirm';
+  resolve: (value: boolean) => void;
+};
+
+type PendingPrompt = PromptDialogRequest & {
+  mode: 'prompt';
+  resolve: (value: string | null) => void;
+};
+
+type Pending = PendingConfirm | PendingPrompt;
 
 @Injectable({ providedIn: 'root' })
 export class ConfirmDialogService {
@@ -19,21 +35,39 @@ export class ConfirmDialogService {
 
   readonly pending = this.pendingSignal.asReadonly();
 
-  /** Opens the app confirm modal. Resolves true on confirm, false on cancel/backdrop/escape. */
   confirm(req: ConfirmDialogRequest): Promise<boolean> {
-    const current = this.pendingSignal();
-    if (current) {
-      current.resolve(false);
-    }
+    this.rejectCurrent();
     return new Promise<boolean>((resolve) => {
-      this.pendingSignal.set({ ...req, resolve });
+      this.pendingSignal.set({ ...req, mode: 'confirm', resolve });
     });
   }
 
-  complete(result: boolean): void {
+  prompt(req: PromptDialogRequest): Promise<string | null> {
+    this.rejectCurrent();
+    return new Promise<string | null>((resolve) => {
+      this.pendingSignal.set({ ...req, mode: 'prompt', resolve });
+    });
+  }
+
+  completeConfirm(result: boolean): void {
     const p = this.pendingSignal();
-    if (!p) return;
+    if (!p || p.mode !== 'confirm') return;
     this.pendingSignal.set(null);
     p.resolve(result);
+  }
+
+  completePrompt(result: string | null): void {
+    const p = this.pendingSignal();
+    if (!p || p.mode !== 'prompt') return;
+    this.pendingSignal.set(null);
+    p.resolve(result);
+  }
+
+  private rejectCurrent(): void {
+    const current = this.pendingSignal();
+    if (!current) return;
+    if (current.mode === 'confirm') current.resolve(false);
+    else current.resolve(null);
+    this.pendingSignal.set(null);
   }
 }

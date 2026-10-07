@@ -22,6 +22,12 @@
       <div class="app-header-brand">
         <h1 class="app-header-title" data-testid="app-title" [textContent]="i18n.t('shell.title')"></h1>
         <div class="app-header-subtitle" [textContent]="i18n.t('shell.subtitle')"></div>
+        <div class="app-header-doc" data-testid="doc-name">
+          <span [textContent]="session.displayName()"></span>
+          @if (session.dirty()) {
+            <span class="app-header-dirty" title="Unsaved changes">•</span>
+          }
+        </div>
       </div>
 
       <div class="app-header-actions">
@@ -61,34 +67,6 @@
               <use href="#icon-redo"></use>
             </svg>
           </button>
-          <button
-            type="button"
-            ngToolbarWidget
-            class="toolbar-btn"
-            value="save"
-            data-testid="action-save"
-            [attr.aria-label]="i18n.t('action.save')"
-            [attr.title]="i18n.t('action.save')"
-            (click)="session.save()"
-          >
-            <svg class="toolbar-icon" aria-hidden="true" focusable="false">
-              <use href="#icon-save"></use>
-            </svg>
-          </button>
-          <button
-            type="button"
-            ngToolbarWidget
-            class="toolbar-btn"
-            value="reset"
-            data-testid="action-reset"
-            [attr.aria-label]="i18n.t('action.reset')"
-            [attr.title]="i18n.t('action.reset')"
-            (click)="session.resetSeed()"
-          >
-            <svg class="toolbar-icon" aria-hidden="true" focusable="false">
-              <use href="#icon-reset"></use>
-            </svg>
-          </button>
         </div>
 
         <div class="locale-switch" role="group" [attr.aria-label]="i18n.t('action.locale')">
@@ -111,6 +89,8 @@
             (click)="setLocale('de')"
           ></button>
         </div>
+
+        <app-file-menu />
       </div>
     </div>
   </header>
