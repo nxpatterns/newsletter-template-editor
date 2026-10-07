@@ -116,8 +116,16 @@ export const EN: MessageCatalog = {
   'file.librarySortName': 'Name A–Z',
   'file.libraryEmpty': 'No saved templates yet. Use Save as…',
   'file.exportHtml': 'Export as newsletter template (HTML)…',
-  'file.exportFull': 'Full email (single file)',
-  'file.exportListmonk': 'ListMonk pair (template + body)',
+  'file.exportDialogTitle': 'Export newsletter as HTML',
+  'file.exportDialogLead':
+    'Choose how you will send this message. Both options use the same design — only the file layout changes for different sending tools.',
+  'file.exportFullTitle': 'One complete HTML file',
+  'file.exportFullBody':
+    'Best when you send without a dedicated newsletter tool: open or paste the HTML in Roundcube or another webmail client and send it to your lists. Everything is in a single file.',
+  'file.exportListmonkTitle': 'Two files for Listmonk',
+  'file.exportListmonkBody':
+    'CloudLib.EU sends mail with Listmonk. Listmonk keeps the outer frame and the message content separate, so it needs two files (template/frame and body text). Use this when uploading into Listmonk.',
+  'file.exportDownload': 'Download',
   'file.exportDone': 'HTML downloaded',
   'file.exportFailed': 'HTML export failed',
   'file.downloadProject': 'Export project file (.json)',

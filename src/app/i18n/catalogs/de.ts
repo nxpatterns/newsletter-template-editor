@@ -115,9 +115,17 @@ export const DE: MessageCatalog = {
   'file.librarySortDateAsc': 'Älteste zuerst',
   'file.librarySortName': 'Name A–Z',
   'file.libraryEmpty': 'Noch keine gespeicherten Vorlagen. Speichern unter… verwenden.',
-  'file.exportHtml': 'Als Newsletter Vorlage (HTML) exportieren…',
-  'file.exportFull': 'Vollständige E-Mail (eine Datei)',
-  'file.exportListmonk': 'ListMonk-Paar (Template + Body)',
+  'file.exportHtml': 'Als Newsletter-Vorlage (HTML) exportieren…',
+  'file.exportDialogTitle': 'Newsletter als HTML exportieren',
+  'file.exportDialogLead':
+    'Wählen Sie, wofür Sie die Datei brauchen. Beides ist dieselbe Newsletter-Gestaltung — nur die Dateiform passt zu unterschiedlichen Versandwegen.',
+  'file.exportFullTitle': 'Eine fertige HTML-Datei',
+  'file.exportFullBody':
+    'Ideal, wenn Sie die Mail ohne spezielles Newsletter-Programm verschicken: z. B. in Roundcube oder einem anderen Webmail die HTML-Datei öffnen bzw. den Inhalt einfügen und an Ihre Verteiler senden. Eine Datei, alles drin.',
+  'file.exportListmonkTitle': 'Zwei Dateien für Listmonk',
+  'file.exportListmonkBody':
+    'CloudLib.EU versendet über Listmonk. Listmonk trennt Rahmen und Inhalt und erwartet deshalb zwei getrennte Dateien (Vorlage/Rahmen und eigentlicher Text). Nutzen Sie diese Option, wenn die Dateien in Listmonk hochgeladen werden.',
+  'file.exportDownload': 'Herunterladen',
   'file.exportDone': 'HTML heruntergeladen',
   'file.exportFailed': 'HTML-Export fehlgeschlagen',
   'file.downloadProject': 'Projektdatei exportieren (.json)',

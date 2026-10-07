@@ -1,0 +1,143 @@
+:host { display: contents; }
+
+.ex-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--ds-z-modal-top);
+  display: grid;
+  place-items: center;
+  padding: max(1rem, var(--ds-safe-top)) 1rem max(1rem, var(--ds-safe-bottom));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+.ex-overlay.is-open { opacity: 1; pointer-events: auto; }
+.ex-overlay.is-closing { opacity: 0; pointer-events: none; }
+
+.ex-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--ds-modal-backdrop);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.ex-dialog {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: min(32rem, calc(100vw - 1.25rem));
+  max-height: min(36rem, calc(100dvh - 2rem));
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, #fff 8%, transparent);
+  border-radius: var(--ds-radius);
+  background: var(--ds-glass-surface, var(--ds-bg-panel));
+  color: var(--ds-text);
+  box-shadow: var(--ds-modal-shadow);
+  opacity: 0;
+  transform: translateY(12px) scale(0.98);
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+.ex-overlay.is-open .ex-dialog { opacity: 1; transform: none; }
+
+.ex-head {
+  position: relative;
+  padding: 0.85rem 2.75rem 0.75rem 1.15rem;
+  color: var(--ds-modal-head-color);
+  background: var(--ds-modal-head-bg);
+}
+.ex-title { margin: 0; font-size: 1.1rem; font-weight: 800; }
+.ex-dismiss {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--ds-modal-close-border, rgba(255,255,255,0.35));
+  border-radius: var(--ds-radius);
+  color: inherit;
+  background: var(--ds-modal-close-bg, rgba(255,255,255,0.14));
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.ex-body {
+  overflow: auto;
+  padding: 1rem 1.15rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.ex-lead {
+  margin: 0 0 0.25rem;
+  color: var(--ds-text-muted);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.ex-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  width: 100%;
+  text-align: start;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius);
+  padding: 0.85rem 0.95rem;
+  color: var(--ds-text);
+  background: var(--ds-bg-page);
+  cursor: pointer;
+  font: inherit;
+}
+.ex-option.is-selected {
+  border-color: color-mix(in srgb, var(--ds-accent) 55%, var(--ds-border));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ds-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--ds-accent) 10%, var(--ds-bg-page));
+}
+.ex-option:hover {
+  border-color: color-mix(in srgb, var(--ds-accent) 40%, var(--ds-border));
+}
+.ex-option-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+.ex-option-body {
+  color: var(--ds-text-muted);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+.ex-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.75rem 1.15rem 1rem;
+  border-block-start: 1px solid var(--ds-border);
+}
+.ex-btn {
+  min-block-size: 2.5rem;
+  border-radius: var(--ds-radius);
+  padding: 0.45rem 1rem;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ex-btn--ghost {
+  border: 1px solid var(--ds-border);
+  color: var(--ds-text);
+  background: transparent;
+}
+.ex-btn--primary {
+  border: 1px solid color-mix(in srgb, var(--ds-accent) 45%, transparent);
+  color: var(--ds-bg-page);
+  background: var(--ds-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ex-overlay, .ex-dialog { transition: none; }
+}

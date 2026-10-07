@@ -1,0 +1,52 @@
+@if (open()) {
+  <div
+    class="ex-overlay"
+    data-testid="export-html-dialog"
+    [class.is-open]="openVisual()"
+    [class.is-closing]="!openVisual()"
+  >
+    <div class="ex-backdrop" (click)="requestClose()"></div>
+    <div class="ex-dialog" role="dialog" aria-modal="true" aria-labelledby="ex-title">
+      <header class="ex-head">
+        <h2 id="ex-title" class="ex-title" [textContent]="i18n.t('file.exportDialogTitle')"></h2>
+        <button
+          type="button"
+          class="ex-dismiss"
+          [attr.aria-label]="i18n.t('modal.close')"
+          (click)="requestClose()"
+        >×</button>
+      </header>
+
+      <div class="ex-body">
+        <p class="ex-lead" [textContent]="i18n.t('file.exportDialogLead')"></p>
+
+        <button
+          type="button"
+          class="ex-option"
+          data-testid="export-opt-full"
+          [class.is-selected]="kind() === 'full'"
+          (click)="select('full')"
+        >
+          <span class="ex-option-title" [textContent]="i18n.t('file.exportFullTitle')"></span>
+          <span class="ex-option-body" [textContent]="i18n.t('file.exportFullBody')"></span>
+        </button>
+
+        <button
+          type="button"
+          class="ex-option"
+          data-testid="export-opt-listmonk"
+          [class.is-selected]="kind() === 'listmonk'"
+          (click)="select('listmonk')"
+        >
+          <span class="ex-option-title" [textContent]="i18n.t('file.exportListmonkTitle')"></span>
+          <span class="ex-option-body" [textContent]="i18n.t('file.exportListmonkBody')"></span>
+        </button>
+      </div>
+
+      <footer class="ex-foot">
+        <button type="button" class="ex-btn ex-btn--ghost" (click)="requestClose()" [textContent]="i18n.t('modal.cancel')"></button>
+        <button type="button" class="ex-btn ex-btn--primary" data-testid="export-html-go" (click)="confirm()" [textContent]="i18n.t('file.exportDownload')"></button>
+      </footer>
+    </div>
+  </div>
+}

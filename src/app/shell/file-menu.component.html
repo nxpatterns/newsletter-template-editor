@@ -28,13 +28,6 @@
       <button type="button" class="file-menu-item" role="menuitem" data-testid="file-open-library" (click)="openLibrary()" [textContent]="i18n.t('file.openLibrary')"></button>
       <button type="button" class="file-menu-item" role="menuitem" data-testid="file-export" (click)="showExport()" [textContent]="i18n.t('file.exportHtml')"></button>
 
-      @if (exportOpen()) {
-        <div class="file-menu-sub" data-testid="file-export-choices">
-          <button type="button" class="file-menu-item" data-testid="file-export-full" (click)="exportHtml('full')" [textContent]="i18n.t('file.exportFull')"></button>
-          <button type="button" class="file-menu-item" data-testid="file-export-listmonk" (click)="exportHtml('listmonk')" [textContent]="i18n.t('file.exportListmonk')"></button>
-        </div>
-      }
-
       <div class="file-menu-sep"></div>
       <div class="file-menu-section-label" [textContent]="i18n.t('file.sectionProject')"></div>
       <button type="button" class="file-menu-item" role="menuitem" data-testid="file-download-project" (click)="downloadProject()" [textContent]="i18n.t('file.downloadProject')"></button>
@@ -61,4 +54,10 @@
   (closed)="closeLibraryPicker()"
   (picked)="pickLibrary($event)"
   (deleted)="removeLibrary($event)"
+/>
+
+<app-export-html-dialog
+  [open]="exportOpen()"
+  (closed)="closeExportDialog()"
+  (chosen)="exportHtml($event)"
 />

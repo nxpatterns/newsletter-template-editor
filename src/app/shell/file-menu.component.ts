@@ -5,11 +5,12 @@ import { NewsletterSession } from '../editor/newsletter-session.service';
 import { LocaleService } from '../i18n/locale.service';
 import { ConfirmDialogService } from '../ui/confirm-dialog/confirm-dialog.service';
 import { SnackbarService } from '../ui/snackbar/snackbar.service';
+import { ExportHtmlDialogComponent, type HtmlExportKind } from './export-html-dialog.component';
 import { LibraryPickerComponent } from './library-picker.component';
 
 @Component({
   selector: 'app-file-menu',
-  imports: [LibraryPickerComponent],
+  imports: [LibraryPickerComponent, ExportHtmlDialogComponent],
   templateUrl: './file-menu.component.html',
   styleUrl: './file-menu.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -129,12 +130,16 @@ export class FileMenuComponent {
   }
 
   protected showExport(): void {
+    this.closeMenu();
     this.exportOpen.set(true);
-    this.libraryOpen.set(false);
   }
 
-  protected async exportHtml(kind: 'full' | 'listmonk'): Promise<void> {
-    this.closeMenu();
+  protected closeExportDialog(): void {
+    this.exportOpen.set(false);
+  }
+
+  protected async exportHtml(kind: HtmlExportKind): Promise<void> {
+    this.exportOpen.set(false);
     try {
       const arts = await renderExportOptimized(this.session.newsletter());
       const name = this.session.displayName();
