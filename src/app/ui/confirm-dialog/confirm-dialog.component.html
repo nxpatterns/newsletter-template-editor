@@ -1,0 +1,43 @@
+@if (confirm.pending(); as p) {
+  <div
+    class="confirm-overlay"
+    data-testid="confirm-dialog"
+    [class.is-open]="openVisual()"
+    [class.is-closing]="!openVisual()"
+  >
+    <div class="confirm-backdrop" (click)="onBackdrop()"></div>
+    <div
+      class="confirm-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirm-title"
+      aria-describedby="confirm-body"
+    >
+      <header class="confirm-head">
+        <h2 id="confirm-title" class="confirm-title" [textContent]="p.title"></h2>
+      </header>
+      <div class="confirm-body">
+        <p id="confirm-body" class="confirm-text" [textContent]="p.body"></p>
+      </div>
+      <footer class="confirm-foot">
+        <button
+          #cancelBtn
+          type="button"
+          class="confirm-btn confirm-btn--ghost"
+          data-testid="confirm-cancel"
+          [textContent]="p.cancelLabel"
+          (click)="onCancel()"
+        ></button>
+        <button
+          type="button"
+          class="confirm-btn"
+          data-testid="confirm-ok"
+          [class.confirm-btn--primary]="!p.danger"
+          [class.confirm-btn--danger]="!!p.danger"
+          [textContent]="p.confirmLabel"
+          (click)="onConfirm()"
+        ></button>
+      </footer>
+    </div>
+  </div>
+}

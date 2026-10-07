@@ -9,7 +9,8 @@
       data-testid="g-stars"
       [value]="g.brand.starsText"
       (input)="onBrand('starsText', $event)"
-     (blur)="onFieldBlur()" />
+      (blur)="onFieldBlur()"
+    />
   </div>
   <div class="ed-field">
     <label class="ed-label" for="g-brand-name" [textContent]="i18n.t('brand.nameHtml')"></label>
@@ -20,19 +21,75 @@
       rows="3"
       [value]="g.brand.nameHtml"
       (input)="onBrand('nameHtml', $event)"
-     (blur)="onFieldBlur()"></textarea>
+      (blur)="onFieldBlur()"
+    ></textarea>
   </div>
-  <div class="ed-field">
-    <label class="ed-label" for="g-logo-src" [textContent]="i18n.t('brand.logoSrc')"></label>
-    <input id="g-logo-src" class="ed-input" [value]="g.logo.src" (input)="onLogo('src', $event)"  (blur)="onFieldBlur()" />
+
+  <div class="ed-field logo-block" data-testid="logo-block">
+    <span class="ed-label" [textContent]="i18n.t('brand.logoSection')"></span>
+    <div
+      class="logo-drop"
+      data-testid="logo-drop"
+      [class.is-busy]="busy()"
+      (dragover)="onDragOver($event)"
+      (drop)="onDrop($event)"
+    >
+      @if (g.logo.src) {
+        <img class="logo-thumb" [src]="g.logo.src" [alt]="g.logo.alt || 'Logo'" data-testid="logo-thumb" />
+      } @else {
+        <p class="ed-hint logo-drop-empty" [textContent]="i18n.t('brand.logoDropHint')"></p>
+      }
+      <div class="ed-actions logo-actions">
+        <button
+          type="button"
+          class="ed-btn"
+          data-testid="logo-upload"
+          [disabled]="busy()"
+          [textContent]="i18n.t(g.logo.src ? 'brand.logoReplace' : 'brand.logoUpload')"
+          (click)="pickFile()"
+        ></button>
+        @if (g.logo.src) {
+          <button
+            type="button"
+            class="ed-btn ed-btn--danger"
+            data-testid="logo-clear"
+            [textContent]="i18n.t('brand.logoClear')"
+            (click)="clearLogo()"
+          ></button>
+        }
+      </div>
+      <input
+        #fileInput
+        type="file"
+        class="logo-file-input"
+        accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,.png,.jpg,.jpeg,.webp,.gif,.svg"
+        data-testid="logo-file-input"
+        (change)="onFileSelected($event)"
+      />
+    </div>
   </div>
+
   <div class="ed-field">
     <label class="ed-label" for="g-logo-href" [textContent]="i18n.t('brand.logoHref')"></label>
-    <input id="g-logo-href" class="ed-input" [value]="g.logo.href ?? ''" (input)="onLogo('href', $event)"  (blur)="onFieldBlur()" />
+    <input
+      id="g-logo-href"
+      class="ed-input"
+      data-testid="g-logo-href"
+      [value]="g.logo.href ?? ''"
+      (input)="onLogo('href', $event)"
+      (blur)="onFieldBlur()"
+    />
   </div>
   <div class="ed-field">
     <label class="ed-label" for="g-logo-alt" [textContent]="i18n.t('brand.logoAlt')"></label>
-    <input id="g-logo-alt" class="ed-input" [value]="g.logo.alt ?? ''" (input)="onLogo('alt', $event)"  (blur)="onFieldBlur()" />
+    <input
+      id="g-logo-alt"
+      class="ed-input"
+      data-testid="g-logo-alt"
+      [value]="g.logo.alt ?? ''"
+      (input)="onLogo('alt', $event)"
+      (blur)="onFieldBlur()"
+    />
   </div>
   <div class="ed-field">
     <label class="ed-label" for="g-logo-h" [textContent]="i18n.t('brand.logoHeight')"></label>
@@ -41,9 +98,12 @@
       class="ed-input"
       type="number"
       min="16"
-      max="200"
+      max="480"
+      data-testid="g-logo-h"
       [value]="g.logo.heightPx"
       (input)="onLogoHeight($event)"
-     (blur)="onFieldBlur()" />
+      (blur)="onFieldBlur()"
+    />
+    <p class="ed-hint" [textContent]="i18n.t('brand.logoHeightHint')"></p>
   </div>
 </section>

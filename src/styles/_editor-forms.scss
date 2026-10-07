@@ -112,3 +112,51 @@
   color: var(--ds-danger);
   border-color: color-mix(in srgb, var(--ds-danger) 45%, var(--ds-border));
 }
+
+.ed-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.logo-drop {
+  border: 1px dashed var(--ds-border);
+  border-radius: var(--ds-radius);
+  padding: 0.65rem;
+  background: color-mix(in srgb, var(--ds-bg-page) 80%, var(--ds-bg-panel));
+}
+
+.logo-drop.is-busy {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.logo-thumb {
+  display: block;
+  max-width: 100%;
+  max-height: 5.5rem;
+  width: auto;
+  height: auto;
+  margin-block-end: 0.5rem;
+  object-fit: contain;
+}
+
+.logo-drop-empty {
+  margin-block-end: 0.35rem;
+}
+
+.logo-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.logo-block {
+  position: relative;
+}
+
+.logo-actions {
+  margin-block-start: 0;
+}

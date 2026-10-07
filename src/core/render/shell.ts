@@ -39,7 +39,7 @@ function renderLogo(logo: LogoConfig | undefined): string {
   const alt = escapeAttr(logo.alt || '');
   const widthAttr = logo.widthPx ? ` width="${Math.round(logo.widthPx)}"` : '';
   const imgTag = `<img src="${escapeAttr(logo.src)}" alt="${alt}" height="${h}"${widthAttr} style="display:inline-block;height:${h}px;${
-    logo.widthPx ? `width:${Math.round(logo.widthPx)}px;` : 'max-width:180px;width:auto;'
+logo.widthPx ? `width:${Math.round(logo.widthPx)}px;` : 'max-width:100%;width:auto;'
   }border:0;vertical-align:top">`;
   if (logo.href) {
     return `<a href="${escapeAttr(logo.href)}" target="_blank" style="display:inline-block;border:0">${imgTag}</a>`;

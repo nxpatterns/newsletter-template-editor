@@ -5,6 +5,7 @@ import { APP_VERSION } from '../environments/app-version';
 import { BlockEditModalComponent } from './editor/inspector/block-edit-modal.component';
 import { NewsletterSession } from './editor/newsletter-session.service';
 import { LocaleService } from './i18n/locale.service';
+import { ConfirmDialogComponent } from './ui/confirm-dialog/confirm-dialog.component';
 import {
   LegalModalComponent,
   type LegalModalKind,
@@ -20,6 +21,7 @@ import { SnackbarComponent } from './ui/snackbar/snackbar.component';
     SnackbarComponent,
     LegalModalComponent,
     BlockEditModalComponent,
+    ConfirmDialogComponent,
   ],
   selector: 'app-root',
   styleUrl: './app.scss',

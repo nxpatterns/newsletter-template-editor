@@ -1,3 +1,4 @@
+import { optimizeLogoForHtmlExport } from '../logo/logo-pipeline';
 import type { Newsletter } from '../types';
 import { renderBlocks } from './blocks';
 import { renderExportShell, renderPreviewDoc } from './shell';
@@ -26,6 +27,7 @@ export function renderPreview(newsletter: Newsletter): string {
   return resolveListMonkForPreview(doc, newsletter.globals.campaignSubject || 'Newsletter preview');
 }
 
+/** Sync export using current globals (preview-quality logo master). Prefer `renderExportOptimized` for downloads. */
 export function renderExport(newsletter: Newsletter): ExportArtifacts {
   const body = renderBlocks(newsletter.blocks, {
     globals: newsletter.globals,
@@ -40,7 +42,18 @@ export function renderExport(newsletter: Newsletter): ExportArtifacts {
   return { full, body, standardTemplate };
 }
 
+/** HTML export with logo scaled/compressed to the current display size. */
+export async function renderExportOptimized(newsletter: Newsletter): Promise<ExportArtifacts> {
+  const logo = await optimizeLogoForHtmlExport(newsletter.globals.logo);
+  const prepared: Newsletter = {
+    ...newsletter,
+    globals: { ...newsletter.globals, logo },
+  };
+  return renderExport(prepared);
+}
+
 export { renderBlocks, renderExportShell, renderPreviewDoc };
 export type { RenderContext } from './blocks';
 export { FONT_PRESETS, fontStack } from './utils';
 export type { RenderMode } from './utils';
+// renderExportOptimized is exported above
