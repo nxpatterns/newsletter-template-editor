@@ -20,7 +20,7 @@ export const DE: MessageCatalog = {
   'footer.about': 'Über',
   'footer.version': 'Anwendungsversion',
   'snackbar.saved': 'Newsletter lokal gespeichert',
-  'snackbar.reset': 'Demo-Seed wiederhergestellt',
+  'snackbar.reset': 'Ursprüngliche Demo-Newsletter-Vorlage wiederhergestellt',
   'snackbar.dismiss': 'Schließen',
   'panel.placeholder': 'Seitenpanel (Blöcke & Inspector) — folgt als Nächstes.',
   'panel.hint': 'Bei breiten Screens angedockt; bei schmalen als Overlay.',
@@ -33,10 +33,12 @@ export const DE: MessageCatalog = {
   'panel.tab.brand': 'Marke',
   'panel.tab.colors': 'Farben',
   'panel.tab.legal': 'Legal',
-  'placed.hint': 'Bausteine in dieser E-Mail, von oben nach unten. Mit ⋮⋮ ziehen zum Umsortieren. Derselbe Typ darf mehrfach vorkommen.',
+  'placed.hint':
+    'Bausteine in dieser E-Mail, von oben nach unten. Mit ⋮⋮ ziehen zum Umsortieren. Derselbe Typ darf mehrfach vorkommen.',
   'placed.empty': 'Noch nichts hier. Unter „Alle Bausteine“ eine Karte in die Vorschau ziehen.',
   'placed.drag': 'Ziehen zum Umsortieren',
-  'catalog.hint': 'Karte in die E-Mail-Vorschau ziehen und dort ablegen, wo sie hin soll. Klick macht hier nichts (Baustein-Editor kommt später). Derselbe Typ geht auch mehrmals.',
+  'catalog.hint':
+    'Karte in die E-Mail-Vorschau ziehen und dort ablegen, wo sie hin soll. Klick macht hier nichts (Baustein-Editor kommt später). Derselbe Typ geht auch mehrmals.',
   'catalog.dragHint': 'In die Vorschau ziehen zum Einfügen',
   'preview.deleteBlock': 'Baustein löschen',
   'blocks.select': 'Block auswählen',

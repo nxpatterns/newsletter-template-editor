@@ -20,7 +20,7 @@ export const EN: MessageCatalog = {
   'footer.about': 'About',
   'footer.version': 'Application version',
   'snackbar.saved': 'Newsletter saved locally',
-  'snackbar.reset': 'Demo seed restored',
+  'snackbar.reset': 'Original Demo Newsletter Template Restored',
   'snackbar.dismiss': 'Dismiss',
   'panel.placeholder': 'Side panel (blocks & inspector) — coming next.',
   'panel.hint': 'Docked on wide screens; overlay toggle on narrow ones.',
@@ -33,10 +33,12 @@ export const EN: MessageCatalog = {
   'panel.tab.brand': 'Brand',
   'panel.tab.colors': 'Colors',
   'panel.tab.legal': 'Legal',
-  'placed.hint': 'Blocks already in this email, top to bottom. Drag ⋮⋮ to reorder. The same type can appear more than once.',
+  'placed.hint':
+    'Blocks already in this email, top to bottom. Drag ⋮⋮ to reorder. The same type can appear more than once.',
   'placed.empty': 'Nothing here yet. Open “All blocks” and drag a card into the preview.',
   'placed.drag': 'Drag to reorder',
-  'catalog.hint': 'Drag a card into the email preview to place it where you want. Click does nothing here (block editor comes later). Same type can be added more than once.',
+  'catalog.hint':
+    'Drag a card into the email preview to place it where you want. Click does nothing here (block editor comes later). Same type can be added more than once.',
   'catalog.dragHint': 'Drag into the preview to insert',
   'preview.deleteBlock': 'Delete block',
   'blocks.select': 'Select block',
