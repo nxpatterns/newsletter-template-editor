@@ -29,6 +29,16 @@ describe('NewsletterSession', () => {
     expect(session.panelTab()).toBe('placed');
   });
 
+  it('insertBlockAt can keep the catalog tab open', () => {
+    session.setPanelTab('catalog');
+    const before = session.blocks().length;
+    const id = session.insertBlockAt('divider', 0, { revealInPanel: false });
+    expect(session.blocks().length).toBe(before + 1);
+    expect(session.blocks()[0].id).toBe(id);
+    expect(session.selectedBlockId()).toBe(id);
+    expect(session.panelTab()).toBe('catalog');
+  });
+
   it('selectBlock stays on the placed tab', () => {
     session.setPanelTab('catalog');
     const id = session.blocks()[0].id;

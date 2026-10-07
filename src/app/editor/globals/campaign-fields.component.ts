@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FONT_PRESETS, type FontFamilyPreset } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
+import { PersistHeightDirective } from '../../ui/persist-height.directive';
 import { NewsletterSession } from '../newsletter-session.service';
 
 const FONT_OPTIONS: { value: FontFamilyPreset; label: string }[] = [
@@ -13,6 +14,7 @@ const FONT_OPTIONS: { value: FontFamilyPreset; label: string }[] = [
 
 @Component({
   selector: 'app-campaign-fields',
+  imports: [PersistHeightDirective],
   templateUrl: './campaign-fields.component.html',
   styleUrl: './globals-forms.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

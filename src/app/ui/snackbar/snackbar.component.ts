@@ -1,4 +1,5 @@
 import { Component, HostListener, inject } from '@angular/core';
+import { LocaleService } from '../../i18n/locale.service';
 import { SnackbarService } from './snackbar.service';
 
 @Component({
@@ -8,6 +9,11 @@ import { SnackbarService } from './snackbar.service';
 })
 export class SnackbarComponent {
   protected readonly snackbar = inject(SnackbarService);
+  private readonly i18n = inject(LocaleService);
+
+  protected get dismissLabel(): string {
+    return this.i18n.t('snackbar.dismiss');
+  }
 
   protected dismiss(): void {
     this.snackbar.dismiss();

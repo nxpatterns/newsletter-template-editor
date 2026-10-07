@@ -104,9 +104,10 @@ export class NewsletterSession {
     this.panelTabSignal.set(tab);
   }
 
-  selectBlock(id: string | null): void {
+  selectBlock(id: string | null, opts?: { revealInPanel?: boolean }): void {
     this.selectedBlockIdSignal.set(id);
-    if (id) this.panelTabSignal.set('placed');
+    // Preview / list selection opens Current blocks; catalog DnD must not steal the tab.
+    if (id && opts?.revealInPanel !== false) this.panelTabSignal.set('placed');
   }
 
   /** Select + open the shared block edit modal. */
@@ -159,13 +160,32 @@ export class NewsletterSession {
     this.saveBlockEditor();
   }
 
+  /** Append a block (programmatic / tests). Selects it and reveals Current blocks. */
   addBlock(type: Block['type']): void {
+    this.insertBlockAt(type, this.newsletterSignal().blocks.length, { revealInPanel: true });
+  }
+
+  /**
+   * Insert a catalog block at index (0 = top).
+   * Catalog drag-and-drop should pass revealInPanel: false so the All-blocks tab stays put.
+   */
+  insertBlockAt(
+    type: Block['type'],
+    index: number,
+    opts?: { revealInPanel?: boolean },
+  ): string {
+    let createdId = '';
     this.mutateImmediate((n) => {
       const block = createBlock(type);
+      createdId = block.id;
+      const blocks = [...n.blocks];
+      const at = Math.max(0, Math.min(index, blocks.length));
+      blocks.splice(at, 0, block);
       this.selectedBlockIdSignal.set(block.id);
-      this.panelTabSignal.set('placed');
-      return { ...n, blocks: [...n.blocks, block] };
+      if (opts?.revealInPanel !== false) this.panelTabSignal.set('placed');
+      return { ...n, blocks };
     });
+    return createdId;
   }
 
   removeBlock(id: string): void {

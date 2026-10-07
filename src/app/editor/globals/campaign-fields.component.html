@@ -5,9 +5,10 @@
     <label class="ed-label" for="g-preheader" [textContent]="i18n.t('campaign.preheader')"></label>
     <textarea
       id="g-preheader"
-      class="ed-textarea"
+      class="ed-textarea ed-textarea--resizable"
       data-testid="g-preheader"
       rows="3"
+      appPersistHeight="campaign.preheader"
       [value]="g.preheader"
       (input)="onString('preheader', $event)"
      (blur)="onFieldBlur()"></textarea>

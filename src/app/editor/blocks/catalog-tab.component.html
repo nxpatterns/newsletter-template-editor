@@ -2,18 +2,20 @@
   <p class="ed-hint" [textContent]="i18n.t('catalog.hint')"></p>
   <div class="catalog-grid" role="list" data-testid="block-catalog">
     @for (type of types; track type) {
-      <button
-        type="button"
+      <div
         class="catalog-card"
         role="listitem"
+        draggable="true"
         [attr.data-testid]="'add-block-' + type"
         [attr.aria-label]="label(type)"
-        (click)="add(type)"
+        [attr.title]="i18n.t('catalog.dragHint')"
+        (dragstart)="onDragStart(type, $event)"
       >
         <span class="catalog-card__icon" aria-hidden="true" [textContent]="icon(type)"></span>
         <span class="catalog-card__label" [textContent]="label(type)"></span>
         <span class="catalog-card__hint" [textContent]="hint(type)"></span>
-      </button>
+        <span class="catalog-card__drag" aria-hidden="true">⋮⋮</span>
+      </div>
     }
   </div>
 </section>

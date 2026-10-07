@@ -3,93 +3,142 @@
 }
 
 .snackbar {
+  /* Dismiss hit target — keep in sync with .snackbar__dismiss top/right. */
+  --snackbar-dismiss-size: 2.5rem;
+  --snackbar-dismiss-inset: 0.45rem;
+
   position: fixed;
   z-index: var(--ds-z-snackbar);
-  left: 50%;
-  bottom: calc(
-    var(--ds-footer-height) + var(--ds-snackbar-gap) + var(--ds-safe-bottom)
-  );
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  bottom: calc(var(--ds-footer-height) + var(--ds-snackbar-gap) + var(--ds-safe-bottom));
   display: flex;
-  align-items: flex-start;
-  gap: 0.65rem;
+  flex-direction: column;
   box-sizing: border-box;
-  width: min(28rem, calc(100vw - 2rem));
+  width: 100%;
   margin: 0;
-  padding: 0.75rem 0.75rem 0.75rem 0.85rem;
-  border: 1px solid var(--ds-border);
-  border-radius: var(--ds-radius);
-  background: var(--ds-bg-panel);
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-block-start: 1px solid color-mix(in srgb, #fff 14%, var(--ds-border));
+  border-radius: 0;
   color: var(--ds-text);
-  box-shadow: 0 8px 28px rgb(0 0 0 / 45%);
+  /* Solid single surface — no gradient. Slightly distinct from panel for contrast. */
+  background: var(--ds-bg-snackbar);
+  box-shadow: 0 -10px 28px rgb(0 0 0 / 40%);
   animation: snackbar-in 180ms ease-out;
 }
 
-.snackbar__tone {
-  flex: 0 0 0.35rem;
-  align-self: stretch;
-  min-height: 1.25rem;
-  border-radius: 999px;
-  background: var(--ds-accent);
-}
-
-.snackbar--success .snackbar__tone {
-  background: var(--ds-success);
-}
-
-.snackbar--error .snackbar__tone {
-  background: var(--ds-danger);
+.snackbar__inner {
+  box-sizing: border-box;
+  width: 100%;
+  /* Reserve a stable right gutter so multi-line text never sits under the fixed ×. */
+  padding:
+    0.85rem
+    calc(var(--snackbar-dismiss-inset) + var(--snackbar-dismiss-size) + 0.65rem)
+    0.85rem
+    calc(var(--snackbar-dismiss-inset) + var(--snackbar-dismiss-size) + 0.65rem);
 }
 
 .snackbar__text {
-  flex: 1 1 auto;
-  margin: 0;
-  font-size: 0.9rem;
+  margin: 0 auto;
+  max-width: min(40rem, 100%);
+  font-size: clamp(0.95rem, 0.9rem + 0.25vw, 1.05rem);
+  font-weight: 700;
   line-height: 1.35;
+  letter-spacing: -0.01em;
+  text-align: center;
   overflow-wrap: anywhere;
 }
 
+/*
+  Stable dismiss corner (UX lock):
+  Always top-right of THIS snackbar bar — independent of text length / wrap.
+  Full-width bars + fixed inset ⇒ stacked toasts share the same click X for rapid dismiss.
+*/
 .snackbar__dismiss {
-  flex: 0 0 auto;
+  position: absolute;
+  top: var(--snackbar-dismiss-inset);
+  inset-inline-end: var(--snackbar-dismiss-inset);
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 2.75rem;
-  min-height: 2.75rem;
-  margin: -0.35rem -0.25rem -0.35rem 0;
-  border: 0;
+  width: var(--snackbar-dismiss-size);
+  height: var(--snackbar-dismiss-size);
+  min-width: var(--snackbar-dismiss-size);
+  min-height: var(--snackbar-dismiss-size);
+  border: 1px solid color-mix(in srgb, #fff 32%, transparent);
   border-radius: var(--ds-radius);
   padding: 0;
   font-size: 1.35rem;
   line-height: 1;
-  color: var(--ds-text-muted);
-  background: transparent;
+  color: #fff;
+  background: color-mix(in srgb, #000 22%, transparent);
   cursor: pointer;
 }
 
 .snackbar__dismiss:hover {
-  color: var(--ds-text);
-  background: color-mix(in srgb, var(--ds-accent) 12%, transparent);
+  background: color-mix(in srgb, #000 38%, transparent);
 }
 
 .snackbar__dismiss:focus-visible {
-  outline: 2px solid var(--ds-accent);
+  outline: 2px solid #fff;
   outline-offset: 2px;
+}
+
+.snackbar__progress {
+  display: block;
+  width: 100%;
+  height: 0.28rem;
+  transform-origin: left center;
+  background: color-mix(in srgb, #fff 78%, var(--ds-accent));
+  animation-name: snackbar-progress;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+.snackbar--success .snackbar__progress {
+  background: color-mix(in srgb, var(--ds-success) 75%, #fff);
+}
+
+.snackbar--error .snackbar__progress {
+  background: color-mix(in srgb, var(--ds-danger) 80%, #fff);
+}
+
+.snackbar__progress.is-paused,
+.snackbar--paused .snackbar__progress {
+  animation-play-state: paused;
 }
 
 @keyframes snackbar-in {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(0.5rem);
+    transform: translateY(0.5rem);
   }
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes snackbar-progress {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .snackbar {
     animation: none;
+  }
+
+  .snackbar__progress {
+    animation: none;
+    transform: scaleX(1);
+    opacity: 0.85;
   }
 }

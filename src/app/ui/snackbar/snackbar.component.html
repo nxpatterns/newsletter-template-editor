@@ -4,6 +4,7 @@
     [class.snackbar--success]="msg.tone === 'success'"
     [class.snackbar--error]="msg.tone === 'error'"
     [class.snackbar--info]="msg.tone === 'info'"
+    [class.snackbar--paused]="snackbar.timerPaused()"
     [attr.role]="msg.tone === 'error' ? 'alert' : 'status'"
     [attr.aria-live]="msg.tone === 'error' ? 'assertive' : 'polite'"
     data-testid="app-snackbar"
@@ -12,15 +13,26 @@
     (focusin)="snackbar.pauseTimer()"
     (focusout)="snackbar.resumeTimer()"
   >
-    <span class="snackbar__tone" aria-hidden="true"></span>
-    <p class="snackbar__text">{{ msg.text }}</p>
     <button
       type="button"
       class="snackbar__dismiss"
-      aria-label="Dismiss"
+      data-testid="app-snackbar-dismiss"
+      [attr.aria-label]="dismissLabel"
       (click)="dismiss()"
     >
       ×
     </button>
+    <div class="snackbar__inner">
+      <p class="snackbar__text">{{ msg.text }}</p>
+    </div>
+    @if (msg.durationMs > 0) {
+      <div
+        class="snackbar__progress"
+        aria-hidden="true"
+        data-testid="app-snackbar-progress"
+        [class.is-paused]="snackbar.timerPaused()"
+        [style.animation-duration.ms]="msg.durationMs"
+      ></div>
+    }
   </div>
 }

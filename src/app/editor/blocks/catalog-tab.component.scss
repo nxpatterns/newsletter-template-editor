@@ -12,6 +12,7 @@
 }
 
 .catalog-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -23,8 +24,10 @@
   font: inherit;
   color: var(--ds-text);
   background: color-mix(in srgb, var(--ds-accent) 7%, var(--ds-bg-panel));
-  cursor: pointer;
+  cursor: grab;
   text-align: start;
+  user-select: none;
+  touch-action: none;
 }
 
 .catalog-card:hover {
@@ -38,7 +41,7 @@
 }
 
 .catalog-card:active {
-  transform: translateY(1px);
+  cursor: grabbing;
 }
 
 .catalog-card__icon {
@@ -56,4 +59,16 @@
   color: var(--ds-text-muted);
   font-size: 0.68rem;
   line-height: 1.3;
+  padding-inline-end: 1.1rem;
+}
+
+.catalog-card__drag {
+  position: absolute;
+  top: 0.4rem;
+  inset-inline-end: 0.4rem;
+  font-size: 0.75rem;
+  letter-spacing: -0.08em;
+  color: color-mix(in srgb, var(--ds-accent) 70%, var(--ds-text-muted));
+  opacity: 0.85;
+  pointer-events: none;
 }

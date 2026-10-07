@@ -25,4 +25,9 @@ describe('ShellUiService', () => {
     shell.setPanelWidthPx(420);
     expect(shell.panelWidthPx()).toBe(420);
   });
+
+  it('persists field heights', () => {
+    shell.setFieldHeightPx('campaign.preheader', 160);
+    expect(shell.getFieldHeightPx('campaign.preheader')).toBe(160);
+  });
 });

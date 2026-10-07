@@ -35,12 +35,11 @@ Then('the snackbar should be fixed above the footer', async ({ page }) => {
   // Snackbar bottom edge sits above footer top edge
   expect(box!.y + box!.height).toBeLessThanOrEqual(footerBox!.y + 1);
 
-  // Roughly centered horizontally in the viewport
+  // Full-width bar across the viewport
   const viewport = page.viewportSize();
   expect(viewport).toBeTruthy();
-  const centerX = box!.x + box!.width / 2;
-  const viewportCenter = viewport!.width / 2;
-  expect(Math.abs(centerX - viewportCenter)).toBeLessThan(viewport!.width * 0.15);
+  expect(box!.width).toBeGreaterThan(viewport!.width * 0.9);
+  await expect(page.getByTestId('app-snackbar-progress')).toBeVisible();
 });
 
 Then('the page scroll position should be unchanged', async ({ page }) => {

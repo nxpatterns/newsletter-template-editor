@@ -28,6 +28,22 @@ describe('SnackbarService', () => {
     expect(svc.message()).toBeNull();
   });
 
+  it('pause freezes remaining time and resume continues', () => {
+    const svc = new SnackbarService();
+    svc.info('Hello', 1000);
+    vi.advanceTimersByTime(400);
+    svc.pauseTimer();
+    expect(svc.timerPaused()).toBe(true);
+    vi.advanceTimersByTime(2000);
+    expect(svc.message()).not.toBeNull();
+    svc.resumeTimer();
+    expect(svc.timerPaused()).toBe(false);
+    vi.advanceTimersByTime(599);
+    expect(svc.message()).not.toBeNull();
+    vi.advanceTimersByTime(2);
+    expect(svc.message()).toBeNull();
+  });
+
   it('dismiss clears current message', () => {
     const svc = new SnackbarService();
     svc.error('Boom');

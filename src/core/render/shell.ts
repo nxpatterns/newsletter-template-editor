@@ -182,7 +182,7 @@ const PREVIEW_EDITOR_CHROME = `
   /* Slightly widen the outer email frame padding so drag/edit/index can sit beside the 600px column when the iframe is wide enough. */
   table.email-bg > tbody > tr > td.email-bg {
     padding-left: 48px !important;
-    padding-right: 88px !important;
+    padding-right: 128px !important;
   }
   tr.nte-block > td {
     position: relative;
@@ -204,6 +204,7 @@ const PREVIEW_EDITOR_CHROME = `
   /* Shared chrome chip look — all sit OUTSIDE the block box */
   .nte-drag-handle,
   .nte-edit-btn,
+  .nte-delete-btn,
   .nte-block-index {
     display: none !important;
     position: absolute;
@@ -222,7 +223,7 @@ const PREVIEW_EDITOR_CHROME = `
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
     pointer-events: auto;
   }
-  /* Hover: index only. Selected: drag + edit + index. */
+  /* Hover: index only. Selected: drag + index + edit + delete. */
   tr.nte-block:hover > td .nte-block-index,
   tr.nte-block.is-selected > td .nte-block-index {
     display: inline-flex !important;
@@ -230,7 +231,8 @@ const PREVIEW_EDITOR_CHROME = `
     justify-content: center;
   }
   tr.nte-block.is-selected > td .nte-drag-handle,
-  tr.nte-block.is-selected > td .nte-edit-btn {
+  tr.nte-block.is-selected > td .nte-edit-btn,
+  tr.nte-block.is-selected > td .nte-delete-btn {
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
@@ -246,12 +248,14 @@ const PREVIEW_EDITOR_CHROME = `
   .nte-drag-handle:active { cursor: grabbing; }
   .nte-drag-handle:hover,
   .nte-edit-btn:hover { background: #a8e2ff; }
+  .nte-delete-btn:hover { background: #ff9a6b; }
   .nte-drag-handle:focus-visible,
-  .nte-edit-btn:focus-visible {
+  .nte-edit-btn:focus-visible,
+  .nte-delete-btn:focus-visible {
     outline: 2px solid #ffffff;
     outline-offset: 2px;
   }
-  /* Right of box: number, then edit */
+  /* Right of box: number, edit, delete */
   .nte-block-index {
     left: auto;
     right: -42px;
@@ -265,6 +269,16 @@ const PREVIEW_EDITOR_CHROME = `
     left: auto;
     right: -80px;
     font-size: 15px;
+    cursor: pointer;
+  }
+  .nte-delete-btn {
+    left: auto;
+    right: -118px;
+    font-size: 18px;
+    font-weight: 800;
+    color: #2a1008;
+    border-color: rgba(255, 140, 90, 0.95);
+    background: #ff8c4a;
     cursor: pointer;
   }
   tr.nte-block.is-selected > td .nte-block-index {
@@ -282,6 +296,13 @@ const PREVIEW_EDITOR_CHROME = `
   }
   body.nte-is-dnd {
     cursor: grabbing;
+  }
+  body.nte-is-catalog-dnd {
+    cursor: copy;
+  }
+  body.nte-drop-append {
+    outline: 2px dashed #20d4c8;
+    outline-offset: -4px;
   }
 `;
 

@@ -27,8 +27,36 @@ Then('I should see the block catalog cards', async ({ page }) => {
   await expect(page.getByTestId('add-block-divider')).toBeVisible();
 });
 
-When('I add a divider from the catalog', async ({ page }) => {
+When('I note the placed block count', async ({ page }) => {
+  await page.getByTestId('panel-tab-placed').click();
+  const count = await page.locator('[data-testid="block-list"] > li').count();
+  await page.evaluate((n) => {
+    (window as unknown as { __nteBlockCount?: number }).__nteBlockCount = n;
+  }, count);
+  await page.getByTestId('panel-tab-catalog').click();
+});
+
+When('I click a divider catalog card', async ({ page }) => {
   await page.getByTestId('add-block-divider').click();
+});
+
+Then('the catalog tab should stay selected', async ({ page }) => {
+  await expect(page.getByTestId('panel-tab-catalog')).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByTestId('catalog-tab')).toBeVisible();
+});
+
+Then('the placed block count should be unchanged', async ({ page }) => {
+  const before = await page.evaluate(
+    () => (window as unknown as { __nteBlockCount?: number }).__nteBlockCount ?? -1,
+  );
+  await page.getByTestId('panel-tab-placed').click();
+  const after = await page.locator('[data-testid="block-list"] > li').count();
+  expect(after).toBe(before);
+});
+
+Then('the divider catalog card should be draggable', async ({ page }) => {
+  const card = page.getByTestId('add-block-divider');
+  await expect(card).toHaveAttribute('draggable', 'true');
 });
 
 When('I open the placed blocks tab', async ({ page }) => {

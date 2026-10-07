@@ -10,14 +10,18 @@ Feature: Editor side panel
     When I open the catalog tab
     Then I should see the block catalog cards
 
-  Scenario: Adding the same section type twice is allowed
+  Scenario: Catalog cards do not insert on click
     Given I open the home page
     When I open the catalog tab
-    And I add a divider from the catalog
-    And I open the catalog tab
-    And I add a divider from the catalog
-    And I open the placed blocks tab
-    Then the placed list should contain at least 2 dividers
+    And I note the placed block count
+    And I click a divider catalog card
+    Then the catalog tab should stay selected
+    And the placed block count should be unchanged
+
+  Scenario: Catalog cards are draggable palette items
+    Given I open the home page
+    When I open the catalog tab
+    Then the divider catalog card should be draggable
 
   Scenario: Editing a hero label updates the preview
     Given I open the home page

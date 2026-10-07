@@ -2,6 +2,8 @@
 :root {
   --ds-bg-page: #060b14;
   --ds-bg-panel: #0c1628;
+  /* Solid toast surface — one step lighter/cooler than panel for contrast, no gradients. */
+  --ds-bg-snackbar: #123a5c;
   --ds-border: #1a3050;
   --ds-accent: #7ecfff;
   --ds-text: #e8f4ff;

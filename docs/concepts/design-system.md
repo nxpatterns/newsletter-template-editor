@@ -9,6 +9,15 @@ Rules:
 - **This document** is English only; no numbering in section titles.
 - **Product UI** is bilingual: `en` (default) + `de`, locale persisted — copy in the app goes through i18n keys (see guidelines). Specs here describe behaviour/placement, not DE/EN string tables.
 
+### Stable dismiss controls (UX lock)
+
+For anything the user can close (snackbar, modal, drawer, future stacked toasts, …):
+
+- Put the dismiss control in a **fixed corner of that surface** — default **top-end (top-right in LTR)**.
+- Position must **not** depend on message length, line wrap, or content height.
+- Same family of surfaces must share the **same inset / size**, so when several appear (or replace each other), the user can dismiss with repeated clicks **without moving the pointer**.
+- Content must leave a reserved gutter so text never sits under the control.
+
 ---
 
 ## Tokens (app chrome)
@@ -16,7 +25,8 @@ Rules:
 | Token | Value | Use |
 | --- | --- | --- |
 | `--ds-bg-page` | `#060b14` | App page background |
-| `--ds-bg-panel` | `#0c1628` | Panels, snackbar surface, chrome bars |
+| `--ds-bg-panel` | `#0c1628` | Panels, chrome bars |
+| `--ds-bg-snackbar` | `#123a5c` | Snackbar solid surface (one step off panel; high contrast vs page) |
 | `--ds-border` | `#1a3050` | Subtle borders |
 | `--ds-accent` | `#7ecfff` | Focus, links, accents |
 | `--ds-text` | `#e8f4ff` | Primary text |
@@ -79,11 +89,13 @@ Do **not** give the preview host `overflow: auto` and a tall iframe (`min(80vh)`
 
 ### Side panel behaviour
 
-- **Wide:** docked right column; collapsible to a thin handle (show/hide).
+- **Wide:** docked right column; collapsible.
 - **Narrow:** not stacked under the preview. **Show/hide overlay/drawer** over the preview (`--ds-z-panel-overlay`).
-- **Resize:** user-draggable left edge. Width clamped from `--ds-panel-width` (min, `21rem` / 336px default) to **50% of the browser viewport width**. Persist open width in `localStorage` (`newsletter-template-editor.side-panel-width.v1`). Collapse still uses the thin strip; resize handle is hidden while collapsed.
-- **Tabs:** Current blocks (list + inline inspector), All blocks, Campaign, Brand, Colors, Legal. Collapse control shares the tab toolbar. Tab chrome uses connected tab shapes (not plain button chips). Emergency overflow on short viewports may use panel scroll as exception.
-- Collapse control remains old-style `»` with width animation.
+- **Collapse rail:** always-visible leftmost column inside the side panel (`side-panel-rail`) with a **prominent ice-blue `»` toggle** (high contrast, not muted chrome). The rail stays when the panel body is collapsed so sellers can still find the control.
+- **Mobile default:** when no stored collapse preference exists and the viewport is below `--ds-side-by-side-min`, start **collapsed**.
+- **Resize:** user-draggable left edge. Width clamped from `--ds-panel-width` (min, `21rem` / 336px default) to **50% of the browser viewport width**. Persist open width in `localStorage` (`newsletter-template-editor.side-panel-width.v1`). Resize handle is hidden while collapsed.
+- **Tabs:** Current blocks, All blocks, Campaign, Brand, Colors, Legal. Tab chrome uses connected tab shapes (not plain button chips). Emergency overflow on short viewports may use panel scroll as exception.
+- **Field chrome sizes:** user-resized heights (e.g. Campaign inbox preview textarea) persist in `localStorage` (`newsletter-template-editor.field-heights.v1`).
 
 ### Header
 
@@ -157,31 +169,31 @@ Short, professional feedback after user actions (Save, Reset seed, export, error
 ### Placement
 
 - **Viewport:** `position: fixed` — **never** in normal document flow (no layout shift, no scroll-to-bottom).
-- **Horizontal:** centered (`left: 50%` + `translateX(-50%)`), max-width ~min(28rem, calc(100vw - 2rem)).
+- **Horizontal:** **full viewport width** (edge to edge), same visual weight as modal headers — not a small floating chip.
 - **Vertical:** bottom of the **visual viewport**, **above** the version footer:
 
 ```text
 bottom = var(--ds-footer-height) + var(--ds-snackbar-gap) + var(--ds-safe-bottom)
 ```
 
-- Stack sits above footer on all breakpoints; if multiple messages, stack upward with `0.5rem` gap (newest on top or single-slot replace — v0 uses **single slot**, replace-in-place).
+- Single slot, replace-in-place (v0).
 
 ### Anatomy
 
-- Surface: `--ds-bg-panel`, border `--ds-border`, radius `--ds-radius`, light shadow.
-- Optional leading status bar/dot: success | info | error (color tokens).
-- Message text (one line preferred; wrap up to 3 lines).
-- Optional dismiss control (icon button, aria-label “Dismiss”).
-- Role: `status` for info/success (polite); `alert` for error (assertive). Also mirror via CDK `LiveAnnouncer` when useful.
+- Surface: **solid** `--ds-bg-snackbar` (no gradient). Text `--ds-text`.
+- Message centered (`text-align: center`, readable max-width); may wrap to multiple lines.
+- **Dismiss ×:** absolutely pinned **top-end** of the bar (see Stable dismiss controls). Not in the text flow.
+- **Progress strip** along the bottom edge: depletes left→right over the auto-dismiss duration so users see that the bar will leave on its own. Tone tints the progress only (success/error), not the whole bar.
+- Role: `status` for info/success (polite); `alert` for error (assertive).
 
 ### States
 
 | State | Behavior |
 | --- | --- |
-| hidden | `aria-hidden`, not focusable, no pointer events |
+| hidden | not rendered |
 | enter | fade + slight rise (~150–200ms), reduced-motion → instant opacity |
-| visible | auto-dismiss timer (default **4s** info/success, **6s** error); timer pauses on hover/focus |
-| leave | fade out (~150ms) then remove |
+| visible | auto-dismiss timer default **5s** (later UI-configurable); timer **and** progress animation pause on hover/focus and resume with remaining time |
+| leave | remove when timer ends or dismiss |
 | replaced | new message replaces current without stacking (v0) |
 
 ### Motion

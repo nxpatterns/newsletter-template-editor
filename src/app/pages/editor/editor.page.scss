@@ -35,9 +35,10 @@
 }
 
 .side-panel {
+  --nte-panel-rail-width: 2.75rem;
   position: relative;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   flex: 0 0 auto;
   width: var(--ds-panel-width);
   min-width: var(--ds-panel-width);
@@ -58,8 +59,8 @@
 }
 
 .side-panel.collapsed {
-  width: 2.25rem;
-  min-width: 2.25rem;
+  width: var(--nte-panel-rail-width);
+  min-width: var(--nte-panel-rail-width);
 }
 
 .side-panel.collapsed .side-panel-resizer {
@@ -95,23 +96,53 @@
   pointer-events: none;
 }
 
+.side-panel-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 0 0 var(--nte-panel-rail-width);
+  width: var(--nte-panel-rail-width);
+  min-width: var(--nte-panel-rail-width);
+  min-height: 0;
+  padding: 0.55rem 0.3rem;
+  border-inline-end: 1px solid color-mix(in srgb, var(--ds-accent) 28%, var(--ds-border));
+  background:
+    linear-gradient(180deg, rgba(126, 207, 255, 0.16), transparent 42%),
+    color-mix(in srgb, var(--ds-bg-page) 40%, var(--ds-bg-panel));
+}
+
+.side-panel.collapsed .side-panel-rail {
+  border-inline-end: 0;
+  width: 100%;
+  flex-basis: 100%;
+}
+
 .side-panel-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 2.15rem;
+  height: 2.15rem;
+  min-width: 2.15rem;
+  min-height: 2.15rem;
   flex-shrink: 0;
-  margin: 0.4rem auto;
-  border: 1px solid var(--ds-border);
+  margin: 0;
+  border: 1px solid color-mix(in srgb, var(--ds-accent) 65%, #fff);
   border-radius: var(--ds-radius);
   padding: 0;
-  font: inherit;
-  line-height: 1;
-  color: var(--ds-text-muted);
-  background: transparent;
+  font: 800 1.15rem/1 system-ui, -apple-system, sans-serif;
+  color: #061018;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 55%),
+    var(--ds-accent);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 6px 16px rgba(0, 20, 40, 0.35);
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .side-panel-toggle--collapsed {
@@ -119,12 +150,16 @@
 }
 
 .side-panel-toggle:hover {
-  color: var(--ds-text);
-  background: color-mix(in srgb, var(--ds-accent) 12%, var(--ds-bg-panel));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.38), transparent 55%),
+    #a8e2ff;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.45) inset,
+    0 8px 18px rgba(0, 30, 50, 0.45);
 }
 
 .side-panel-toggle:focus-visible {
-  outline: 2px solid var(--ds-accent);
+  outline: 2px solid #fff;
   outline-offset: 2px;
 }
 

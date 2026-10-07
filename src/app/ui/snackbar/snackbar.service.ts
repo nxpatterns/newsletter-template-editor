@@ -9,31 +9,38 @@ export interface SnackbarMessage {
   durationMs: number;
 }
 
+/** Default auto-dismiss. UI-configurable later. */
+export const SNACKBAR_DEFAULT_DURATION_MS = 3000;
+
 const DEFAULT_DURATION: Record<SnackbarTone, number> = {
-  info: 4000,
-  success: 4000,
-  error: 6000,
+  info: SNACKBAR_DEFAULT_DURATION_MS,
+  success: SNACKBAR_DEFAULT_DURATION_MS,
+  error: SNACKBAR_DEFAULT_DURATION_MS,
 };
 
 @Injectable({ providedIn: 'root' })
 export class SnackbarService {
   private seq = 0;
   private hideTimer: ReturnType<typeof setTimeout> | null = null;
+  private remainingMs = 0;
+  private startedAt = 0;
+  private paused = false;
 
   /** Single-slot current message (null = hidden). */
   readonly message = signal<SnackbarMessage | null>(null);
 
-  show(
-    text: string,
-    tone: SnackbarTone = 'info',
-    durationMs = DEFAULT_DURATION[tone],
-  ): void {
+  /** true while hover/focus pauses the countdown (drives progress animation). */
+  readonly timerPaused = signal(false);
+
+  show(text: string, tone: SnackbarTone = 'info', durationMs = DEFAULT_DURATION[tone]): void {
     this.clearTimer();
+    this.paused = false;
+    this.timerPaused.set(false);
     const id = ++this.seq;
-    this.message.set({ id, text, tone, durationMs });
-    if (durationMs > 0) {
-      this.hideTimer = setTimeout(() => this.dismiss(id), durationMs);
-    }
+    const ms = durationMs > 0 ? durationMs : 0;
+    this.remainingMs = ms;
+    this.message.set({ id, text, tone, durationMs: ms });
+    if (ms > 0) this.armTimer(id, ms);
   }
 
   success(text: string, durationMs?: number): void {
@@ -53,21 +60,44 @@ export class SnackbarService {
     if (!current) return;
     if (id !== undefined && current.id !== id) return;
     this.clearTimer();
+    this.paused = false;
+    this.timerPaused.set(false);
+    this.remainingMs = 0;
     this.message.set(null);
   }
 
-  /** Pause auto-dismiss while hovered/focused. */
+  /** Pause auto-dismiss while hovered/focused; keeps remaining time. */
   pauseTimer(): void {
-    this.clearTimer();
-  }
-
-  /** Resume auto-dismiss from full duration of current message. */
-  resumeTimer(): void {
+    if (this.paused) return;
     const current = this.message();
     if (!current || current.durationMs <= 0) return;
+    if (this.startedAt > 0) {
+      const elapsed = Date.now() - this.startedAt;
+      this.remainingMs = Math.max(0, this.remainingMs - elapsed);
+    }
     this.clearTimer();
-    const id = current.id;
-    this.hideTimer = setTimeout(() => this.dismiss(id), current.durationMs);
+    this.paused = true;
+    this.timerPaused.set(true);
+  }
+
+  /** Resume auto-dismiss with the leftover duration. */
+  resumeTimer(): void {
+    if (!this.paused) return;
+    this.paused = false;
+    this.timerPaused.set(false);
+    const current = this.message();
+    if (!current || this.remainingMs <= 0) {
+      if (current) this.dismiss(current.id);
+      return;
+    }
+    this.armTimer(current.id, this.remainingMs);
+  }
+
+  private armTimer(id: number, ms: number): void {
+    this.clearTimer();
+    this.startedAt = Date.now();
+    this.remainingMs = ms;
+    this.hideTimer = setTimeout(() => this.dismiss(id), ms);
   }
 
   private clearTimer(): void {
@@ -75,5 +105,6 @@ export class SnackbarService {
       clearTimeout(this.hideTimer);
       this.hideTimer = null;
     }
+    this.startedAt = 0;
   }
 }

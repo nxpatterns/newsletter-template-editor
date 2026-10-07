@@ -32,21 +32,24 @@
       (pointercancel)="onResizePointerUp($event)"
     ></button>
 
-    <!-- Collapsed: only the reopen control. Open: full panel (toggle lives in the tab strip). -->
-    @if (shellUi.panelCollapsed()) {
+    <!-- Always-visible rail so the toggle stays discoverable when the panel is closed. -->
+    <div class="side-panel-rail" data-testid="side-panel-rail">
       <button
         type="button"
-        class="side-panel-toggle side-panel-toggle--collapsed"
+        class="side-panel-toggle"
+        [class.side-panel-toggle--collapsed]="shellUi.panelCollapsed()"
         id="side-toggle"
         data-testid="side-panel-toggle"
         [attr.title]="i18n.t('action.panelToggle')"
         [attr.aria-label]="i18n.t('action.panelToggle')"
-        aria-expanded="false"
+        [attr.aria-expanded]="!shellUi.panelCollapsed()"
         (click)="shellUi.togglePanel()"
       >
         »
       </button>
-    } @else {
+    </div>
+
+    @if (!shellUi.panelCollapsed()) {
       <div class="side-panel-body">
         <app-editor-panel />
       </div>

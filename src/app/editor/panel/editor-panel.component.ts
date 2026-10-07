@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Tab, TabContent, TabList, TabPanel, Tabs } from '@angular/aria/tabs';
 import { LocaleService } from '../../i18n/locale.service';
-import { ShellUiService } from '../../shell/shell-ui.service';
 import { CatalogTabComponent } from '../blocks/catalog-tab.component';
 import { PlacedBlocksTabComponent } from '../blocks/placed-blocks-tab.component';
 import { BrandFieldsComponent } from '../globals/brand-fields.component';
@@ -44,7 +43,6 @@ const TABS: { value: EditorPanelTab; labelKey: string; line2Key?: string }[] = [
 export class EditorPanelComponent {
   protected readonly i18n = inject(LocaleService);
   protected readonly session = inject(NewsletterSession);
-  protected readonly shellUi = inject(ShellUiService);
   protected readonly tabs = TABS;
 
   protected onTabChange(value: string | undefined): void {
