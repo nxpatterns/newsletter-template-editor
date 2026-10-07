@@ -10,8 +10,14 @@ When('I note the page scroll position', async ({ page }) => {
   }, y);
 });
 
-When('I click the Save action', async ({ page }) => {
-  await page.getByTestId('action-save').click();
+When('I save the template from the file menu', async ({ page }) => {
+  await page.getByTestId('file-menu-trigger').click();
+  await page.getByTestId('file-save').click();
+  // Fresh sessions have no library binding → Save opens Save as prompt.
+  const dialog = page.getByTestId('confirm-dialog');
+  await expect(dialog).toBeVisible();
+  await page.getByTestId('confirm-ok').click();
+  await expect(dialog).toBeHidden();
 });
 
 Then('I should see a snackbar with text {string}', async ({ page }, text: string) => {
