@@ -232,9 +232,35 @@ function renderBenefitsList(b: BenefitsListBlock, ctx: RenderContext): string {
   );
 }
 
+function composeStrikeLine(b: PriceBoxBlock): string {
+  if (!b.strikeEnabled) return '';
+  const money = `${b.currency}${b.strikeAmount}`.trim();
+  return [b.strikeLabel.trim(), money, b.periodLabel.trim()].filter(Boolean).join(' ');
+}
+
 function renderPriceBox(b: PriceBoxBlock, ctx: RenderContext): string {
   const font = fontStack(ctx.globals);
   const gold = escapeAttr(ctx.globals.goldColor);
+  const strikeLine = composeStrikeLine(b);
+  const strikeHtml = strikeLine
+    ? `
+              <p style="font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#02fdfb;margin:0 0 4px 0;text-decoration:line-through" class="text-price-strike">
+                <span data-field="strikeLabel">${escapeHtml(b.strikeLabel)}</span>${
+                  b.strikeLabel.trim() ? ' ' : ''
+                }<span data-field="currency">${escapeHtml(b.currency)}</span><span data-field="strikeAmount">${escapeHtml(
+                  b.strikeAmount,
+                )}</span>${
+                  b.periodLabel.trim()
+                    ? ` <span data-field="periodLabel">${escapeHtml(b.periodLabel)}</span>`
+                    : ''
+                }
+              </p>`
+    : '';
+  const periodHtml = b.periodLabel.trim()
+    ? ` <span data-field="periodLabel" style="font-size:16px;font-weight:300;color:#4a6a88" class="text-price-sub">${escapeHtml(
+        b.periodLabel,
+      )}</span>`
+    : '';
   return rowWrap(
     b,
     ctx,
@@ -246,12 +272,11 @@ function renderPriceBox(b: PriceBoxBlock, ctx: RenderContext): string {
               <p style="font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:#060d1a;background-color:${gold};display:inline;padding:3px 10px;text-transform:uppercase;margin:0 0 14px 0">
                 <span data-field="badge">${escapeHtml(b.badge)}</span>
               </p>
-              <br /><br />
-              <p style="font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#02fdfb;margin:0 0 4px 0;text-decoration:line-through" class="text-price-strike">
-                <span data-field="strike">${escapeHtml(b.strike)}</span>
-              </p>
+              <br /><br />${strikeHtml}
               <p style="font-family:Helvetica,Arial,sans-serif;font-size:38px;font-weight:700;color:#ffffff;margin:0 0 6px 0;line-height:1.1" class="text-price-main">
-                <span data-field="mainPriceHtml">${b.mainPriceHtml}</span>
+                <span data-field="currency" style="font-size:16px;vertical-align:super;padding-right:4px;color:${gold}">${escapeHtml(
+                  b.currency,
+                )}</span><span data-field="amount">${escapeHtml(b.amount)}</span>${periodHtml}
               </p>
               <p style="font-family:${font};font-size:14px;color:#72bde9;margin:0 0 10px 0;line-height:22px" class="text-price-detail">
                 <span data-field="details">${escapeHtml(b.details)}</span>

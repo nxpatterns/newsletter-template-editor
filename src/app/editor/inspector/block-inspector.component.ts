@@ -42,6 +42,11 @@ export class BlockInspectorComponent {
     this.session.updateBlock(id, { items }, 'coalesce');
   }
 
+  protected onBool(id: string, key: string, event: Event): void {
+    const value = (event.target as HTMLInputElement).checked;
+    this.session.updateBlock(id, { [key]: value } as never, 'immediate');
+  }
+
   protected ctaLinksJson(block: CtaLinkListBlock): string {
     return JSON.stringify(block.items, null, 2);
   }

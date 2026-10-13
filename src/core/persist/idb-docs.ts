@@ -1,6 +1,7 @@
 import { CURRENT_SCHEMA_VERSION, type Newsletter } from '../types';
 import { DEFAULT_DISPLAY_NAME } from '../file/sanitize-stem';
 import { STORAGE_KEY, type StoredEnvelope, loadNewsletter } from './storage';
+import { normalizeNewsletter } from './normalize-newsletter';
 
 const DB_NAME = 'nte-docs';
 const DB_VERSION = 1;
@@ -167,7 +168,7 @@ export function parseProjectFile(raw: string): {
       const p = parsed as ProjectFileEnvelope;
       if (!p.newsletter?.globals || !Array.isArray(p.newsletter.blocks)) return null;
       return {
-        newsletter: p.newsletter,
+        newsletter: normalizeNewsletter(p.newsletter),
         displayName: p.displayName || DEFAULT_DISPLAY_NAME,
         libraryId: p.libraryId ?? null,
       };
@@ -175,11 +176,15 @@ export function parseProjectFile(raw: string): {
     if (parsed && typeof parsed === 'object' && 'newsletter' in parsed) {
       const e = parsed as StoredEnvelope;
       if (!e.newsletter?.globals) return null;
-      return { newsletter: e.newsletter, displayName: DEFAULT_DISPLAY_NAME, libraryId: null };
+      return {
+        newsletter: normalizeNewsletter(e.newsletter),
+        displayName: DEFAULT_DISPLAY_NAME,
+        libraryId: null,
+      };
     }
     if (parsed && typeof parsed === 'object' && 'globals' in parsed && 'blocks' in parsed) {
       return {
-        newsletter: parsed as Newsletter,
+        newsletter: normalizeNewsletter(parsed as Newsletter),
         displayName: DEFAULT_DISPLAY_NAME,
         libraryId: null,
       };

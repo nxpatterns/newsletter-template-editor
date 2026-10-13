@@ -28,6 +28,12 @@ Required locally, in order:
 
 Do not tag, push a release commit, or rely on CI alone if either command fails or was skipped. CI is confirmation, not the first time the suite runs.
 
+## Absolute rule — build after substantive changes
+
+**After substantive code changes: verify the project builds before calling the work done.**
+
+Run a local compile (`ng build` / the project’s usual build) and fix failures first. Do not treat unit/BDD runs or a running dev server as a substitute when TypeScript or imports may have broken. Skip only for trivial non-compile edits (copy-only i18n, comments) when clearly no graph change.
+
 ## Absolute rule — effort matches the task
 
 **Spend the minimum work that correctly finishes the request. Cheap tasks must stay cheap.**

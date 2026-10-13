@@ -126,8 +126,18 @@ export interface BenefitsListBlock extends BlockBase {
 export interface PriceBoxBlock extends BlockBase {
   type: 'price-box';
   badge: string;
-  strike: string;
-  mainPriceHtml: string;
+  /** Currency symbol or short code (€, $, CHF, …). */
+  currency: string;
+  /** Main price number/text (e.g. 99). */
+  amount: string;
+  /** Unit / period after the amount (e.g. netto / Jahr). */
+  periodLabel: string;
+  /** When false, the strike line is omitted from the render. */
+  strikeEnabled: boolean;
+  /** Optional was-price amount. */
+  strikeAmount: string;
+  /** Optional was-price prefix (e.g. Statt, Was). */
+  strikeLabel: string;
   details: string;
   fine: string;
 }
@@ -196,8 +206,12 @@ export function createBlock(type: Block['type']): Block {
         id,
         type,
         badge: 'Offer',
-        strike: 'Was €199 / year',
-        mainPriceHtml: '€99 <span style="font-size:16px;font-weight:300">/ year</span>',
+        currency: '€',
+        amount: '99',
+        periodLabel: '/ year',
+        strikeEnabled: true,
+        strikeAmount: '199',
+        strikeLabel: 'Was',
         details: 'No auto-renew · Cancel anytime',
         fine: 'Limited availability.',
       };

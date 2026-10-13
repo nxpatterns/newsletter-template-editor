@@ -183,26 +183,69 @@
           />
         </div>
         <div class="ed-field">
-          <label class="ed-label" for="insp-p-strike" [textContent]="i18n.t('field.priceStrike')"></label>
+          <label class="ed-label" for="insp-p-currency" [textContent]="i18n.t('field.priceCurrency')"></label>
           <input
-            id="insp-p-strike"
+            id="insp-p-currency"
             class="ed-input"
-            [value]="block.strike"
-            (input)="onText(block.id, 'strike', $event)"
+            [value]="block.currency"
+            (input)="onText(block.id, 'currency', $event)"
+            (blur)="onFieldBlur()"
+          />
+          <p class="ed-hint" [textContent]="i18n.t('field.priceCurrencyHint')"></p>
+        </div>
+        <div class="ed-field">
+          <label class="ed-label" for="insp-p-amount" [textContent]="i18n.t('field.priceAmount')"></label>
+          <input
+            id="insp-p-amount"
+            class="ed-input"
+            [value]="block.amount"
+            (input)="onText(block.id, 'amount', $event)"
             (blur)="onFieldBlur()"
           />
         </div>
         <div class="ed-field">
-          <label class="ed-label" for="insp-p-main" [textContent]="i18n.t('field.priceMain')"></label>
-          <textarea
-            id="insp-p-main"
-            class="ed-textarea"
-            rows="2"
-            [value]="block.mainPriceHtml"
-            (input)="onText(block.id, 'mainPriceHtml', $event)"
+          <label class="ed-label" for="insp-p-period" [textContent]="i18n.t('field.pricePeriod')"></label>
+          <input
+            id="insp-p-period"
+            class="ed-input"
+            [value]="block.periodLabel"
+            (input)="onText(block.id, 'periodLabel', $event)"
             (blur)="onFieldBlur()"
-          ></textarea>
+          />
+          <p class="ed-hint" [textContent]="i18n.t('field.pricePeriodHint')"></p>
         </div>
+        <div class="ed-field ed-field--check">
+          <label class="ed-check">
+            <input
+              type="checkbox"
+              [checked]="block.strikeEnabled"
+              (change)="onBool(block.id, 'strikeEnabled', $event)"
+            />
+            <span [textContent]="i18n.t('field.priceStrikeEnabled')"></span>
+          </label>
+        </div>
+        @if (block.strikeEnabled) {
+          <div class="ed-field">
+            <label class="ed-label" for="insp-p-strike-label" [textContent]="i18n.t('field.priceStrikeLabel')"></label>
+            <input
+              id="insp-p-strike-label"
+              class="ed-input"
+              [value]="block.strikeLabel"
+              (input)="onText(block.id, 'strikeLabel', $event)"
+              (blur)="onFieldBlur()"
+            />
+          </div>
+          <div class="ed-field">
+            <label class="ed-label" for="insp-p-strike-amount" [textContent]="i18n.t('field.priceStrikeAmount')"></label>
+            <input
+              id="insp-p-strike-amount"
+              class="ed-input"
+              [value]="block.strikeAmount"
+              (input)="onText(block.id, 'strikeAmount', $event)"
+              (blur)="onFieldBlur()"
+            />
+          </div>
+        }
         <div class="ed-field">
           <label class="ed-label" for="insp-p-det" [textContent]="i18n.t('field.priceDetails')"></label>
           <input

@@ -3,6 +3,7 @@ import { computed, inject, Injectable, PLATFORM_ID, signal } from '@angular/core
 import {
   createBlock,
   DEFAULT_DISPLAY_NAME,
+  normalizeNewsletter,
   seedNewsletter,
   type Block,
   type Globals,
@@ -457,14 +458,15 @@ export class NewsletterSession {
     n: Newsletter,
     meta: { displayName: string; libraryId: string | null; dirty: boolean; clearHistory: boolean },
   ): void {
-    this.newsletterSignal.set(n);
+    const normalized = normalizeNewsletter(n);
+    this.newsletterSignal.set(normalized);
     this.displayNameSignal.set(meta.displayName || DEFAULT_DISPLAY_NAME);
     this.libraryIdSignal.set(meta.libraryId);
     this.dirtySignal.set(meta.dirty);
     this.editingBlockIdSignal.set(null);
     this.editBaselineBlock = null;
     if (meta.clearHistory) this.clearHistory();
-    this.ensureSelection(n);
+    this.ensureSelection(normalized);
   }
 
   private scheduleRecovery(): void {
