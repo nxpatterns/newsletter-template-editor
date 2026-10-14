@@ -5,17 +5,25 @@ import {
   createBlock,
   emptyCtaLinkListItem,
   type BenefitsListBlock,
+  type ChapterBandBlock,
   type CtaLinkListBlock,
+  type HeroBlock,
   type Newsletter,
   type PriceBoxBlock,
+  type PullQuoteBlock,
+  type StatBoxBlock,
 } from '../types';
 import { renderExport, renderPreview } from '../render';
 import { seedNewsletter } from '../seed';
 import {
   normalizeBenefitsListBlock,
+  normalizeChapterBandBlock,
   normalizeCtaLinkListBlock,
+  normalizeHeroBlock,
   normalizeNewsletter,
   normalizePriceBoxBlock,
+  normalizePullQuoteBlock,
+  normalizeStatBoxBlock,
   splitPriceLine,
 } from './normalize-newsletter';
 
@@ -231,6 +239,101 @@ describe('normalizeCtaLinkListBlock', () => {
     expect(list.type).toBe('cta-link-list');
     expect(list.items[0].icon).toBe(CTA_LINK_DEFAULT_ICON);
     expect(list.items[0].label).toBe('Only title');
+  });
+});
+
+describe('normalizeHeroBlock', () => {
+  it('migrates legacy headlineHtml to plain headline', () => {
+    const next = normalizeHeroBlock({
+      id: 'h1',
+      label: 'Intro',
+      headlineHtml: '<em>How do you enter?</em>',
+    });
+    expect(next).toEqual({
+      id: 'h1',
+      type: 'hero',
+      label: 'Intro',
+      headline: 'How do you enter?',
+    });
+    expect('headlineHtml' in next).toBe(false);
+  });
+
+  it('keeps plain headline without re-stripping', () => {
+    const next = normalizeHeroBlock({
+      id: 'h2',
+      label: 'L',
+      headline: 'A < B always',
+    });
+    expect(next.headline).toBe('A < B always');
+  });
+});
+
+describe('hero render', () => {
+  it('escapes plain headline and keeps italic via CSS class', () => {
+    const n = seedNewsletter();
+    const hero = n.blocks.find((b) => b.type === 'hero') as HeroBlock;
+    hero.headline = 'Safe <em>not markup</em> & done';
+    const html = renderExport(n).full;
+    expect(html).toContain('data-field="headline"');
+    expect(html).toContain('Safe &lt;em&gt;not markup&lt;/em&gt; &amp; done');
+    expect(html).not.toContain('headlineHtml');
+    expect(html).toContain('hero-headline');
+    expect(html).toMatch(/font-style:\s*italic/);
+  });
+
+  it('createBlock defaults to plain headline', () => {
+    const block = createBlock('hero') as HeroBlock;
+    expect(block.headline).toBe('New headline');
+    expect((block as { headlineHtml?: string }).headlineHtml).toBeUndefined();
+  });
+});
+
+describe('chapter / quote / stat plain-up', () => {
+  it('migrates legacy titleHtml html geoHtml fields', () => {
+    expect(
+      normalizeChapterBandBlock({
+        id: 'ch1',
+        titleHtml: '<strong>Chapter</strong>',
+      }),
+    ).toEqual({ id: 'ch1', type: 'chapter-band', title: 'Chapter' });
+
+    expect(
+      normalizePullQuoteBlock({
+        id: 'q1',
+        html: '„Line one<br>Line two“',
+      }),
+    ).toEqual({ id: 'q1', type: 'pull-quote', quote: '„Line one\nLine two“' });
+
+    expect(
+      normalizeStatBoxBlock({
+        id: 's1',
+        number: '10',
+        label: 'Units',
+        geoHtml: 'AT<br>DE',
+      }),
+    ).toEqual({ id: 's1', type: 'stat-box', number: '10', label: 'Units', geo: 'AT\nDE' });
+  });
+
+  it('renders escaped plain fields and geo line breaks from seed', () => {
+    const n = seedNewsletter();
+    const html = renderExport(n).full;
+    expect(html).toContain('data-field="title"');
+    expect(html).toContain('data-field="quote"');
+    expect(html).toContain('data-field="geo"');
+    expect(html).toContain('Österreich · Deutschland<br>Schweiz · Südtirol');
+    expect(html).not.toContain('titleHtml');
+    expect(html).not.toContain('geoHtml');
+
+    const quote = n.blocks.find((b) => b.type === 'pull-quote') as PullQuoteBlock;
+    quote.quote = 'Safe <b>x</b>';
+    const escaped = renderExport(n).full;
+    expect(escaped).toContain('Safe &lt;b&gt;x&lt;/b&gt;');
+  });
+
+  it('createBlock defaults use plain fields', () => {
+    expect((createBlock('chapter-band') as ChapterBandBlock).title).toBe('Chapter title');
+    expect((createBlock('pull-quote') as PullQuoteBlock).quote).toContain('memorable');
+    expect((createBlock('stat-box') as StatBoxBlock).geo).toContain('Region');
   });
 });
 

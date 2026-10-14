@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "globals": {
-    "preheader": "Ihre Kunden sind nicht naiv. Sie vergleichen. Schnell. Still. Und meistens ohne zweite Chance. \n\nWas sieht jemand, der Ihren Betrieb online findet? Ein Logo, eine Adresse – oder Ihren Betrieb, betretbar in 3D?\n\n22.000 Unternehmen in neun Ländern haben das bereits geändert – mit 3D-Rundgängen, die man direkt über Google und Social Media betreten kann.",
+    "preheader": "Ihre Kunden sind nicht naiv. Sie vergleichen. Schnell. Still. Und meistens ohne zweite Chance. \n\nWas sieht jemand, der Ihren Betrieb online findet? Ein Logo, eine Adresse - oder Ihren Betrieb, betretbar in 3D?\n\n22.000 Unternehmen in neun Ländern haben das bereits geändert - mit 3D-Rundgängen, die man direkt über Google und Social Media betreten kann.",
     "fontFamily": "Georgia",
     "accentColor": "#7ecfff",
     "goldColor": "#f5c518",
@@ -32,7 +32,7 @@
     },
     "exportFileNamePrefix": "CloudLib-Listmonk",
     "legal": {
-      "noticeHtml": "Sie erhalten diese E‑Mail, weil Sie im Kontext Ihrer 360°‑Präsenz mit uns in Verbindung stehen. Eine Abmeldung ist jederzeit über den Link im Footer möglich.",
+      "noticeHtml": "Sie erhalten diese E-Mail, weil Sie im Kontext Ihrer 360°-Präsenz mit uns in Verbindung stehen. Eine Abmeldung ist jederzeit über den Link im Footer möglich.",
       "companyLine": "Take Marco GmbH · cloudlib.eu",
       "privacyLabel": "Datenschutz",
       "privacyHref": "https://cloudlib.eu/home/privacy",
@@ -47,17 +47,17 @@
       "id": "bmo8rynqo-1",
       "type": "hero",
       "label": "Die Frage ist ernst gemeint. Jeden Tag tun es Tausende:",
-      "headlineHtml": "<em>Wie betritt man Ihren Betrieb, wenn die Tür geschlossen ist?</em>"
+      "headline": "Wie betritt man Ihren Betrieb, wenn die Tür geschlossen ist?"
     },
     {
       "id": "bmo8rynqo-2",
       "type": "chapter-band",
-      "titleHtml": "Eine von beiden Antworten kostet Sie Umsatz"
+      "title": "Eine von beiden Antworten kostet Sie Umsatz"
     },
     {
       "id": "bmo91avmn-1",
       "type": "pull-quote",
-      "html": "„Zeigt sich Ihr Betrieb, oder der Ihres Mitbewerbers?\""
+      "quote": "„Zeigt sich Ihr Betrieb, oder der Ihres Mitbewerbers?\""
     },
     {
       "id": "bmo8rynqo-3",
@@ -67,34 +67,34 @@
     {
       "id": "bmo91hc4d-1",
       "type": "pull-quote",
-      "html": "„Lange bevor der Kunde Ihre Tür öffnet, fällt die Entscheidung online.\""
+      "quote": "„Lange bevor der Kunde Ihre Tür öffnet, fällt die Entscheidung online.\""
     },
     {
       "id": "bmo8rynqo-5",
       "type": "chapter-band",
-      "titleHtml": "Ihre Reichweite. Unser Job."
+      "title": "Ihre Reichweite. Unser Job."
     },
     {
       "id": "bmo8rynqo-6",
       "type": "paragraph",
-      "html": "<span style=\"color:rgb(235,241,250)\"><strong>cloudlib.eu</strong></span> ist kein gewöhnliches Branchenverzeichnis.<br>Es ist die einzige internationale Plattform, die ausschließlich Betriebe mit 360°-Aufnahmen sichtbar macht – und damit der Startpunkt für alles, was Reichweite schafft.<br><br>Über 22.000 Unternehmen in 9 Ländern nutzen <strong>cloudlib.eu</strong> bereits erfolgreich, um ihre Umsätze zu steigern. Denn aus einem Eintrag werden Google Street Views, Werbevideos, Social-Media-Kanäle und messbare Aufmerksamkeit.<br><br><span style=\"font-size:26px\"><em>Sie müssen nicht nach Online-Multiplikatoren suchen; wir bringen Sichtbarkeit direkt zu Ihnen.</em></span>"
+      "html": "<span style=\"color:rgb(235,241,250)\"><strong>cloudlib.eu</strong></span> ist kein gewöhnliches Branchenverzeichnis.<br>Es ist die einzige internationale Plattform, die ausschließlich Betriebe mit 360°-Aufnahmen sichtbar macht - und damit der Startpunkt für alles, was Reichweite schafft.<br><br>Über 22.000 Unternehmen in 9 Ländern nutzen <strong>cloudlib.eu</strong> bereits erfolgreich, um ihre Umsätze zu steigern. Denn aus einem Eintrag werden Google Street Views, Werbevideos, Social-Media-Kanäle und messbare Aufmerksamkeit.<br><br><span style=\"font-size:26px\"><em>Sie müssen nicht nach Online-Multiplikatoren suchen; wir bringen Sichtbarkeit direkt zu Ihnen.</em></span>"
     },
     {
       "id": "bmo8rynqo-7",
       "type": "stat-box",
       "number": "22.000+",
       "label": "3D Touren online",
-      "geoHtml": "Österreich · Deutschland<br>Schweiz · Südtirol<br>Schweden · Belgien<br>Niederlande · Liechtenstein<br>Luxemburg +++"
+      "geo": "Österreich · Deutschland\nSchweiz · Südtirol\nSchweden · Belgien\nNiederlande · Liechtenstein\nLuxemburg +++"
     },
     {
       "id": "bmo8rynqo-8",
       "type": "chapter-band",
-      "titleHtml": "Was das für Sie bedeutet"
+      "title": "Was das für Sie bedeutet"
     },
     {
       "id": "bmo8rynqo-9",
       "type": "paragraph",
-      "html": "<span style=\"color:rgb(50,187,255)\">Ihre Fotos werden zu virtuellen Rundgängen, und auf Wunsch zu noch viel mehr: Werbevideos, Social-Media-Inhalte und professionelle Online-Auftritte.</span><br><br>Ihre Sichtbarkeit wächst auf einem zweiten, unabhängigen Kanal — <strong>zusätzlich zu Google, nicht statt Google.</strong>"
+      "html": "<span style=\"color:rgb(50,187,255)\">Ihre Fotos werden zu virtuellen Rundgängen, und auf Wunsch zu noch viel mehr: Werbevideos, Social-Media-Inhalte und professionelle Online-Auftritte.</span><br><br>Ihre Sichtbarkeit wächst auf einem zweiten, unabhängigen Kanal - <strong>zusätzlich zu Google, nicht statt Google.</strong>"
     },
     {
       "id": "bmo8rynqo-a",
@@ -114,14 +114,14 @@
         },
         {
           "icon": "›",
-          "text": "Persönliche Einrichtung durch unser Team — Sie konfigurieren nichts selbst"
+          "text": "Persönliche Einrichtung durch unser Team - Sie konfigurieren nichts selbst"
         }
       ]
     },
     {
       "id": "bmo8rynqo-b",
       "type": "price-box",
-      "badge": "Einführungsangebot  –  50% Rabatt",
+      "badge": "Einführungsangebot - 50% Rabatt",
       "currency": "€",
       "amount": "99",
       "periodLabel": "netto / Jahr",
@@ -134,12 +134,12 @@
     {
       "id": "bmo8rynqo-c",
       "type": "chapter-band",
-      "titleHtml": "Machen Sie sich selbst ein Bild"
+      "title": "Machen Sie sich selbst ein Bild"
     },
     {
       "id": "bmo8rynqo-d",
       "type": "paragraph",
-      "html": "Besuchen Sie <strong>cloudlib.eu</strong> und sehen Sie, wie andere Unternehmen bereits präsentiert werden. Suchen Sie nach Branchen oder Regionen — der Eindruck spricht für sich."
+      "html": "Besuchen Sie <strong>cloudlib.eu</strong> und sehen Sie, wie andere Unternehmen bereits präsentiert werden. Suchen Sie nach Branchen oder Regionen - der Eindruck spricht für sich."
     },
     {
       "id": "bmo8rynqo-e",
@@ -154,14 +154,14 @@
         {
           "icon": "→",
           "label": "Termin vereinbaren:",
-          "intro": "Wir rufen Sie zurück —",
+          "intro": "Wir rufen Sie zurück - ",
           "linkText": "Termin buchen",
           "href": "https://cloudlib.eu/home/contact"
         },
         {
           "icon": "•",
           "label": "Direkt antworten:",
-          "intro": "Eine kurze Rückmeldung genügt — wir melden uns umgehend",
+          "intro": "Eine kurze Rückmeldung genügt - wir melden uns umgehend",
           "linkText": "",
           "href": ""
         }

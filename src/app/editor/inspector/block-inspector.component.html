@@ -24,8 +24,8 @@
             class="ed-textarea"
             data-testid="insp-hero-headline"
             rows="3"
-            [value]="block.headlineHtml"
-            (input)="onText(block.id, 'headlineHtml', $event)"
+            [value]="block.headline"
+            (input)="onText(block.id, 'headline', $event)"
             (blur)="onFieldBlur()"
           ></textarea>
         </div>
@@ -106,8 +106,8 @@
             id="insp-chapter"
             class="ed-textarea"
             rows="2"
-            [value]="block.titleHtml"
-            (input)="onText(block.id, 'titleHtml', $event)"
+            [value]="block.title"
+            (input)="onText(block.id, 'title', $event)"
             (blur)="onFieldBlur()"
           ></textarea>
         </div>
@@ -119,8 +119,8 @@
             id="insp-quote"
             class="ed-textarea"
             rows="3"
-            [value]="block.html"
-            (input)="onText(block.id, 'html', $event)"
+            [value]="block.quote"
+            (input)="onText(block.id, 'quote', $event)"
             (blur)="onFieldBlur()"
           ></textarea>
         </div>
@@ -148,12 +148,20 @@
         </div>
         <div class="ed-field">
           <label class="ed-label" for="insp-stat-g" [textContent]="i18n.t('field.statGeo')"></label>
+          <p
+            id="insp-stat-g-help"
+            class="ed-field-help"
+            [textContent]="i18n.t('field.statGeoHint')"
+          ></p>
           <textarea
             id="insp-stat-g"
-            class="ed-textarea"
-            rows="3"
-            [value]="block.geoHtml"
-            (input)="onText(block.id, 'geoHtml', $event)"
+            class="ed-textarea ed-textarea--resizable ed-textarea--tall"
+            data-testid="insp-stat-geo"
+            rows="7"
+            appPersistHeight="stat.geo"
+            [attr.aria-describedby]="'insp-stat-g-help'"
+            [value]="block.geo"
+            (input)="onText(block.id, 'geo', $event)"
             (blur)="onFieldBlur()"
           ></textarea>
         </div>

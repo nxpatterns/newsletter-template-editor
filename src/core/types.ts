@@ -87,7 +87,8 @@ export interface DividerBlock extends BlockBase {
 export interface HeroBlock extends BlockBase {
   type: 'hero';
   label: string;
-  headlineHtml: string;
+  /** Plain headline; renderer escapes and owns layout/italic. */
+  headline: string;
 }
 
 export interface ParagraphBlock extends BlockBase {
@@ -103,19 +104,22 @@ export interface CtaButtonBlock extends BlockBase {
 
 export interface ChapterBandBlock extends BlockBase {
   type: 'chapter-band';
-  titleHtml: string;
+  /** Plain chapter title; renderer escapes. */
+  title: string;
 }
 
 export interface PullQuoteBlock extends BlockBase {
   type: 'pull-quote';
-  html: string;
+  /** Plain quote body; italic via CSS. */
+  quote: string;
 }
 
 export interface StatBoxBlock extends BlockBase {
   type: 'stat-box';
   number: string;
   label: string;
-  geoHtml: string;
+  /** Plain extras / side text (regions, notes, …); newlines → `<br>` at render. */
+  geo: string;
 }
 
 export interface BenefitsListItem {
@@ -253,17 +257,17 @@ export function createBlock(type: Block['type']): Block {
     case 'divider':
       return { id, type, style: 'thin' };
     case 'hero':
-      return { id, type, label: 'Your intro', headlineHtml: '<em>New headline</em>' };
+      return { id, type, label: 'Your intro', headline: 'New headline' };
     case 'paragraph':
       return { id, type, html: 'New paragraph.' };
     case 'cta-button':
       return { id, type, text: 'Learn more', href: 'https://example.com' };
     case 'chapter-band':
-      return { id, type, titleHtml: 'Chapter title' };
+      return { id, type, title: 'Chapter title' };
     case 'pull-quote':
-      return { id, type, html: '\u201cA memorable line.\u201d' };
+      return { id, type, quote: '\u201cA memorable line.\u201d' };
     case 'stat-box':
-      return { id, type, number: '1.000+', label: 'Metric label', geoHtml: 'Region A · Region B' };
+      return { id, type, number: '1.000+', label: 'Metric label', geo: 'Region A · Region B' };
     case 'benefits-list':
       return {
         id,

@@ -55,6 +55,19 @@
   font-weight: 600;
 }
 
+/*
+ * Field help sits under the label (before the control).
+ * Must not look like another label — different weight, italic, accent-tinted color.
+ */
+.ed-field-help {
+  margin: 0 0 0.15rem;
+  color: color-mix(in srgb, var(--ds-accent) 42%, var(--ds-text));
+  font-size: 0.72rem;
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.35;
+}
+
 .ed-input,
 .ed-textarea,
 .ed-select {
@@ -71,6 +84,11 @@
 .ed-textarea {
   min-height: 3.5rem;
   resize: vertical;
+}
+
+/* Default tall multi-line fields (e.g. stat extras) — avoid tiny boxes for multi-line copy. */
+.ed-textarea--tall {
+  min-height: 9.5rem;
 }
 
 .ed-input:focus-visible,

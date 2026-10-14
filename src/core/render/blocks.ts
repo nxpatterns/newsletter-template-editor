@@ -16,6 +16,7 @@ import {
   attrHref,
   escapeAttr,
   escapeHtml,
+  plainTextToHtml,
   resolveHref,
   type RenderMode,
 } from './utils';
@@ -85,7 +86,7 @@ function renderHero(b: HeroBlock, ctx: RenderContext): string {
           <span data-field="label">${escapeHtml(b.label)}</span>
         </p>
         <h1 class="mobile-font-large text-heading hero-headline">
-          <span data-field="headlineHtml" class="hero-headline-inner">${b.headlineHtml}</span>
+          <span data-field="headline" class="hero-headline-inner">${plainTextToHtml(b.headline)}</span>
         </h1>
       `,
     ),
@@ -138,7 +139,7 @@ function renderChapterBand(b: ChapterBandBlock, ctx: RenderContext): string {
     `
       <td bgcolor="#060e1a" class="mobile-padding chapter-bg block-pad-chapter">
         <p class="chapter-title text-gold text-chapter-label">
-          <span data-field="titleHtml">${b.titleHtml}</span>
+          <span data-field="title">${plainTextToHtml(b.title)}</span>
         </p>
       </td>
     `,
@@ -158,7 +159,7 @@ function renderPullQuote(b: PullQuoteBlock, ctx: RenderContext): string {
             <td class="pull-quote-bar" width="3">&nbsp;</td>
             <td class="pull-quote-body-cell">
               <p class="pull-quote">
-                <span data-field="html">${b.html}</span>
+                <span data-field="quote">${plainTextToHtml(b.quote)}</span>
               </p>
             </td>
           </tr>
@@ -191,7 +192,7 @@ function renderStatBox(b: StatBoxBlock, ctx: RenderContext): string {
                   </td>
                   <td class="stat-col-geo">
                     <p class="stat-geo text-geo">
-                      <span data-field="geoHtml">${b.geoHtml}</span>
+                      <span data-field="geo">${plainTextToHtml(b.geo)}</span>
                     </p>
                   </td>
                 </tr>

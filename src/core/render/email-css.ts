@@ -200,6 +200,7 @@ export function emailDocumentCss(globals: Globals): string {
     color: var(--email-heading);
     margin: 0;
     font-weight: 400;
+    font-style: italic;
   }
   .hero-headline-inner { font-size: 26px; }
 

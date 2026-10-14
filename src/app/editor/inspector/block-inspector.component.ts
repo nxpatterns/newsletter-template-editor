@@ -15,12 +15,14 @@ import {
   type DividerBlock,
 } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
+import { PersistHeightDirective } from '../../ui/persist-height.directive';
 import { NewsletterSession } from '../newsletter-session.service';
 
 type IconPickerKind = 'cta' | 'benefit';
 
 @Component({
   selector: 'app-block-inspector',
+  imports: [PersistHeightDirective],
   templateUrl: './block-inspector.component.html',
   styleUrl: './block-inspector.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

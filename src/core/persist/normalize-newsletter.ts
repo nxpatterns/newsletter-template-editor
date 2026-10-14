@@ -7,10 +7,14 @@ import {
   type BenefitsListBlock,
   type BenefitsListItem,
   type Block,
+  type ChapterBandBlock,
   type CtaLinkListBlock,
   type CtaLinkListItem,
+  type HeroBlock,
   type Newsletter,
   type PriceBoxBlock,
+  type PullQuoteBlock,
+  type StatBoxBlock,
 } from '../types';
 
 /** Strip tags / collapse whitespace for legacy HTML price blobs. */
@@ -21,6 +25,42 @@ export function plainFromHtml(html: string): string {
     .replace(/&nbsp;/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+/** Strip tags but keep line breaks from `<br>` / paragraph ends (geo, quotes). */
+export function plainMultilineFromHtml(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n[ \t]+/g, '\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function pickPlainField(
+  plain: unknown,
+  legacyHtml: unknown,
+  multiline = false,
+): string {
+  const fromHtml = multiline ? plainMultilineFromHtml : plainFromHtml;
+  if (typeof plain === 'string' && legacyHtml === undefined) {
+    return plain;
+  }
+  if (typeof legacyHtml === 'string') {
+    return fromHtml(legacyHtml);
+  }
+  if (typeof plain === 'string') {
+    return fromHtml(plain);
+  }
+  return '';
 }
 
 /** Currency symbols/codes recognized during legacy price migration. */
@@ -169,6 +209,64 @@ export function normalizePriceBoxBlock(raw: LegacyPriceRaw, fallbackId = ''): Pr
   };
 }
 
+/** Map legacy headlineHtml onto plain headline storage. */
+export function normalizeHeroBlock(
+  raw: Record<string, unknown> & { id?: unknown; label?: unknown; headline?: unknown; headlineHtml?: unknown },
+  fallbackId = '',
+): HeroBlock {
+  const id = typeof raw.id === 'string' && raw.id ? raw.id : fallbackId;
+  const label = typeof raw.label === 'string' ? raw.label : '';
+  const headline = pickPlainField(raw.headline, raw.headlineHtml);
+  return { id, type: 'hero', label, headline };
+}
+
+/** Map legacy titleHtml onto plain title. */
+export function normalizeChapterBandBlock(
+  raw: Record<string, unknown> & { id?: unknown; title?: unknown; titleHtml?: unknown },
+  fallbackId = '',
+): ChapterBandBlock {
+  const id = typeof raw.id === 'string' && raw.id ? raw.id : fallbackId;
+  return {
+    id,
+    type: 'chapter-band',
+    title: pickPlainField(raw.title, raw.titleHtml),
+  };
+}
+
+/** Map legacy html onto plain quote. */
+export function normalizePullQuoteBlock(
+  raw: Record<string, unknown> & { id?: unknown; quote?: unknown; html?: unknown },
+  fallbackId = '',
+): PullQuoteBlock {
+  const id = typeof raw.id === 'string' && raw.id ? raw.id : fallbackId;
+  return {
+    id,
+    type: 'pull-quote',
+    quote: pickPlainField(raw.quote, raw.html, true),
+  };
+}
+
+/** Map legacy geoHtml onto plain geo (keeps breaks). */
+export function normalizeStatBoxBlock(
+  raw: Record<string, unknown> & {
+    id?: unknown;
+    number?: unknown;
+    label?: unknown;
+    geo?: unknown;
+    geoHtml?: unknown;
+  },
+  fallbackId = '',
+): StatBoxBlock {
+  const id = typeof raw.id === 'string' && raw.id ? raw.id : fallbackId;
+  return {
+    id,
+    type: 'stat-box',
+    number: typeof raw.number === 'string' ? raw.number : '',
+    label: typeof raw.label === 'string' ? raw.label : '',
+    geo: pickPlainField(raw.geo, raw.geoHtml, true),
+  };
+}
+
 /** Migrate legacy string[] benefits and ensure icon + text rows (min one). */
 export function normalizeBenefitsListBlock(
   raw: Record<string, unknown> & { id?: unknown; items?: unknown },
@@ -229,6 +327,18 @@ export function normalizeCtaLinkListBlock(
 
 function normalizeBlocks(blocks: Block[]): Block[] {
   return blocks.map((block) => {
+    if (block.type === 'hero') {
+      return normalizeHeroBlock(block as unknown as Record<string, unknown>, block.id);
+    }
+    if (block.type === 'chapter-band') {
+      return normalizeChapterBandBlock(block as unknown as Record<string, unknown>, block.id);
+    }
+    if (block.type === 'pull-quote') {
+      return normalizePullQuoteBlock(block as unknown as Record<string, unknown>, block.id);
+    }
+    if (block.type === 'stat-box') {
+      return normalizeStatBoxBlock(block as unknown as Record<string, unknown>, block.id);
+    }
     if (block.type === 'price-box') {
       return normalizePriceBoxBlock(block as unknown as LegacyPriceRaw, block.id);
     }

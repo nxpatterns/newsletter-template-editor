@@ -46,6 +46,11 @@ export function escapeHtml(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
+/** Escape plain seller text and turn newlines into email line breaks. */
+export function plainTextToHtml(s: string): string {
+  return escapeHtml(s).replace(/\r\n|\r|\n/g, '<br>');
+}
+
 /**
  * Attribute escaping for plain URLs / text.
  * Do NOT run this on already-built `{{ TrackLink "url" }}` values —
