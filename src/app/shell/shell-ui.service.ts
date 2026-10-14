@@ -4,6 +4,14 @@ import { computed, inject, Injectable, PLATFORM_ID, signal } from '@angular/core
 const PANEL_COLLAPSED_KEY = 'newsletter-template-editor.side-panel-collapsed.v1';
 const PANEL_WIDTH_KEY = 'newsletter-template-editor.side-panel-width.v1';
 const FIELD_HEIGHTS_KEY = 'newsletter-template-editor.field-heights.v1';
+const BLOCK_MODAL_GEO_KEY = 'newsletter-template-editor.block-edit-modal-geo.v1';
+
+export interface BlockModalGeometry {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 
 /** Matches `--ds-panel-width: 21rem` at default root font size. */
 export const PANEL_WIDTH_MIN_PX = 336;
@@ -19,6 +27,7 @@ export class ShellUiService {
   private readonly collapsedSignal = signal(false);
   private readonly widthPxSignal = signal(PANEL_WIDTH_DEFAULT_PX);
   private readonly fieldHeightsSignal = signal<Record<string, number>>({});
+  private readonly blockModalGeoSignal = signal<Record<string, BlockModalGeometry>>({});
 
   /** true = panel body hidden (old-style collapse). */
   readonly panelCollapsed = this.collapsedSignal.asReadonly();
@@ -50,6 +59,7 @@ export class ShellUiService {
     }
 
     this.fieldHeightsSignal.set(this.readFieldHeights());
+    this.blockModalGeoSignal.set(this.readBlockModalGeo());
   }
 
   togglePanel(): void {
@@ -87,6 +97,57 @@ export class ShellUiService {
       localStorage.setItem(FIELD_HEIGHTS_KEY, JSON.stringify(map));
     } catch {
       // quota / private mode
+    }
+  }
+
+  /** Last dialog position/size for a block type key (e.g. `paragraph`). */
+  getBlockModalGeometry(blockType: string): BlockModalGeometry | null {
+    const g = this.blockModalGeoSignal()[blockType];
+    if (!g) return null;
+    if (![g.x, g.y, g.w, g.h].every((n) => Number.isFinite(n))) return null;
+    return { ...g };
+  }
+
+  setBlockModalGeometry(blockType: string, geo: BlockModalGeometry): void {
+    if (!blockType) return;
+    const next: BlockModalGeometry = {
+      x: Math.round(geo.x),
+      y: Math.round(geo.y),
+      w: Math.round(geo.w),
+      h: Math.round(geo.h),
+    };
+    if (next.w < 320 || next.h < 240) return;
+    const map = { ...this.blockModalGeoSignal(), [blockType]: next };
+    this.blockModalGeoSignal.set(map);
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      localStorage.setItem(BLOCK_MODAL_GEO_KEY, JSON.stringify(map));
+    } catch {
+      // quota / private mode
+    }
+  }
+
+  private readBlockModalGeo(): Record<string, BlockModalGeometry> {
+    try {
+      const raw = localStorage.getItem(BLOCK_MODAL_GEO_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw) as Record<string, unknown>;
+      if (!parsed || typeof parsed !== 'object') return {};
+      const out: Record<string, BlockModalGeometry> = {};
+      for (const [key, value] of Object.entries(parsed)) {
+        if (!key || !value || typeof value !== 'object') continue;
+        const v = value as Record<string, unknown>;
+        const x = Number(v['x']);
+        const y = Number(v['y']);
+        const w = Number(v['w']);
+        const h = Number(v['h']);
+        if ([x, y, w, h].every((n) => Number.isFinite(n)) && w >= 320 && h >= 240) {
+          out[key] = { x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h) };
+        }
+      }
+      return out;
+    } catch {
+      return {};
     }
   }
 

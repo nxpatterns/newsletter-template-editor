@@ -12,9 +12,20 @@
       role="dialog"
       aria-modal="true"
       aria-labelledby="block-edit-title"
+      [style.left]="dialogStyle().left"
+      [style.top]="dialogStyle().top"
+      [style.width]="dialogStyle().width"
+      [style.height]="dialogStyle().height"
     >
-      <header class="block-edit-head">
+      <header
+        class="block-edit-head"
+        (pointerdown)="onHeadPointerDown($event)"
+        (pointermove)="onHeadPointerMove($event)"
+        (pointerup)="onPointerUp($event)"
+        (pointercancel)="onPointerUp($event)"
+      >
         <h2 id="block-edit-title" class="block-edit-title" [textContent]="titleText()"></h2>
+        <span class="block-edit-drag-hint" aria-hidden="true">⋮⋮</span>
       </header>
 
       <div class="block-edit-body">
@@ -38,6 +49,16 @@
           (click)="requestSave()"
         ></button>
       </footer>
+
+      <div
+        class="block-edit-resize"
+        aria-hidden="true"
+        title="Resize"
+        (pointerdown)="onResizePointerDown($event)"
+        (pointermove)="onResizePointerMove($event)"
+        (pointerup)="onPointerUp($event)"
+        (pointercancel)="onPointerUp($event)"
+      ></div>
     </div>
   </div>
 }

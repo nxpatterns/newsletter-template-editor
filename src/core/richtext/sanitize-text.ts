@@ -17,7 +17,15 @@ export function isSuspiciousChar(ch: string): boolean {
   return SUSPICIOUS_CHAR_RE.test(ch);
 }
 
-/** Normalize seller/AI plaintext: strip invisibles, dashes, spaces. */
+/**
+ * Soft normalize for live editor storage: NFC only + drop NULs.
+ * Keeps AI/invisible watermarks so “AI chars” can highlight them until Clear.
+ */
+export function preserveEditorText(input: string): string {
+  return input.normalize('NFC').replace(/\u0000/g, '');
+}
+
+/** Full hygiene: strip invisibles, dashes, spaces. Use on Clear + email export. */
 export function cleanPlainText(input: string): string {
   let s = input.normalize('NFC');
   s = s.replace(INVISIBLE_RE, '');
@@ -34,6 +42,20 @@ export function cleanPlainText(input: string): string {
   s = s.replace(/[^\S\n\r]+/g, ' ');
   return s;
 }
+
+/** Sample paste payload with representative watermark / invisible code points. */
+export const AI_WATERMARK_SAMPLE =
+  'Short AI sample with watermarks: ' +
+  'zero\u200Bwidth\u200B, ' +
+  'BOM\uFEFF here, ' +
+  'soft\u00ADhyphen, ' +
+  'nbsp\u00A0space, ' +
+  'em\u2014dash, ' +
+  'en\u2013dash, ' +
+  'fancy\u201Cquotes\u201D, ' +
+  'bidi\u202Eforce, ' +
+  'join\u2060er, ' +
+  'math\u205Fspace.';
 
 export function countSuspiciousChars(input: string): number {
   const m = input.match(SUSPICIOUS_CHAR_RE);

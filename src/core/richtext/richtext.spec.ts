@@ -1,7 +1,15 @@
 import { normalizeParagraphBlock, seedNewsletter } from '../index';
+import { AI_WATERMARK_FIXTURE } from './fixtures/ai-watermark-sample';
+import { richDocFromEditorRoot } from './from-editor-dom';
 import { richDocFromHtml } from './from-html';
+import {
+  cleanAiCharsOnDoc,
+  clearMarksOnDoc,
+  compactDoc,
+  plainTextToRichDoc,
+} from './model';
 import { cleanPlainText, countSuspiciousChars } from './sanitize-text';
-import { richDocToHtml } from './to-html';
+import { richDocPlainText, richDocSuspiciousCount, richDocToHtml } from './to-html';
 
 describe('cleanPlainText', () => {
   it('strips zero-width and normalizes dashes', () => {
@@ -31,6 +39,119 @@ describe('richDocFromHtml', () => {
     const t = doc[0].children[0];
     expect(t.type).toBe('text');
     if (t.type === 'text') expect(t.marks?.color).toBe('accent');
+  });
+});
+
+describe('clearMarksOnDoc', () => {
+  it('keeps links while dropping other marks and cleaning text', () => {
+    const doc = clearMarksOnDoc([
+      {
+        type: 'p',
+        color: 'accent',
+        children: [
+          {
+            type: 'text',
+            text: 'Hello\u200B',
+            marks: {
+              bold: true,
+              color: 'gold',
+              link: { href: 'https://cloudlib.eu', target: '_blank' },
+            },
+          },
+        ],
+      },
+    ]);
+    const t = doc[0].children[0];
+    expect(doc[0].color).toBeUndefined();
+    expect(t.type).toBe('text');
+    if (t.type === 'text') {
+      expect(t.text).toBe('Hello');
+      expect(t.marks?.bold).toBeUndefined();
+      expect(t.marks?.color).toBeUndefined();
+      expect(t.marks?.link?.href).toBe('https://cloudlib.eu');
+    }
+  });
+});
+
+describe('cleanAiCharsOnDoc', () => {
+  it('cleans text but preserves marks and links', () => {
+    const raw = 'A\u200BB';
+    const doc = cleanAiCharsOnDoc([
+      {
+        type: 'p',
+        color: 'heading',
+        children: [
+          {
+            type: 'text',
+            text: raw,
+            marks: { italic: true, link: { href: 'https://x.test' } },
+          },
+        ],
+      },
+    ]);
+    expect(doc[0].color).toBe('heading');
+    const t = doc[0].children[0];
+    expect(t.type).toBe('text');
+    if (t.type === 'text') {
+      expect(t.text).toBe('AB');
+      expect(t.marks?.italic).toBe(true);
+      expect(t.marks?.link?.href).toBe('https://x.test');
+    }
+    expect(richDocSuspiciousCount(doc)).toBe(0);
+  });
+
+  it('does not invent blank paragraphs from the AI watermark fixture', () => {
+    expect(countSuspiciousChars(AI_WATERMARK_FIXTURE)).toBeGreaterThan(0);
+    const pasted = plainTextToRichDoc(AI_WATERMARK_FIXTURE);
+    expect(richDocSuspiciousCount(pasted)).toBeGreaterThan(0);
+    const cleaned = cleanAiCharsOnDoc(pasted);
+    expect(richDocSuspiciousCount(cleaned)).toBe(0);
+    // No empty paragraphs / br-only rows after clean.
+    for (const p of cleaned) {
+      expect(p.children.some((c) => c.type === 'text' && c.text.trim().length > 0)).toBe(true);
+    }
+    const plain = richDocPlainText(cleaned);
+    // At most one blank line between blocks (no 3+ consecutive newlines).
+    expect(plain).not.toMatch(/\n{3,}/);
+    expect(plain).toMatch(/zerowidth/i);
+    expect(plain).toMatch(/Notes:/i);
+  });
+});
+
+describe('compactDoc', () => {
+  it('drops empty paragraphs and collapses br runs', () => {
+    const doc = compactDoc([
+      { type: 'p', children: [{ type: 'text', text: 'A' }] },
+      { type: 'p', children: [{ type: 'br' }] },
+      { type: 'p', children: [{ type: 'text', text: '' }] },
+      {
+        type: 'p',
+        children: [
+          { type: 'text', text: 'B' },
+          { type: 'br' },
+          { type: 'br' },
+          { type: 'br' },
+          { type: 'text', text: 'C' },
+        ],
+      },
+    ]);
+    expect(doc.length).toBe(2);
+    const second = doc[1].children.filter((c) => c.type === 'br');
+    expect(second.length).toBe(1);
+  });
+});
+
+describe('editor DOM round-trip after AI clean', () => {
+  it('repaint stays free of empty gap paragraphs', () => {
+    const pasted = plainTextToRichDoc(AI_WATERMARK_FIXTURE);
+    const cleaned = cleanAiCharsOnDoc(pasted);
+    const html = richDocToHtml(cleaned, { forEditor: true });
+    const root = document.createElement('div');
+    root.innerHTML = html;
+    const again = richDocFromEditorRoot(root);
+    expect(again.length).toBe(cleaned.length);
+    expect(richDocPlainText(again)).not.toMatch(/\n{3,}/);
+    expect(richDocSuspiciousCount(again)).toBe(0);
   });
 });
 

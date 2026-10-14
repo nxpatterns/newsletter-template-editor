@@ -28,9 +28,15 @@ export class LocaleService {
     this.apply(initial, false);
   }
 
-  t(key: string): string {
+  t(key: string, params?: Record<string, string | number>): string {
     const catalog = CATALOGS[this.localeSignal()];
-    return catalog[key] ?? CATALOGS.en[key] ?? key;
+    let msg = catalog[key] ?? CATALOGS.en[key] ?? key;
+    if (params) {
+      for (const [k, v] of Object.entries(params)) {
+        msg = msg.replaceAll(`{${k}}`, String(v));
+      }
+    }
+    return msg;
   }
 
   setLocale(next: Locale): void {

@@ -1,24 +1,53 @@
 <div class="rt-kit" data-testid="paragraph-lite-editor">
   <div class="rt-toolbar" role="toolbar" [attr.aria-label]="i18n.t('rt.toolbar')">
-    <button type="button" class="ed-btn" [title]="i18n.t('rt.bold')" (mousedown)="$event.preventDefault()" (click)="toggleMark('bold')">
+    <button
+      type="button"
+      class="ed-btn"
+      [title]="i18n.t('action.undo')"
+      [disabled]="!canUndo()"
+      (mousedown)="captureSelection($event)"
+      (click)="undo()"
+    >
+      ↶
+    </button>
+    <button
+      type="button"
+      class="ed-btn"
+      [title]="i18n.t('action.redo')"
+      [disabled]="!canRedo()"
+      (mousedown)="captureSelection($event)"
+      (click)="redo()"
+    >
+      ↷
+    </button>
+    <span class="rt-sep" aria-hidden="true"></span>
+    <button type="button" class="ed-btn" [title]="i18n.t('rt.bold')" (mousedown)="captureSelection($event)" (click)="toggleMark('bold')">
       <strong>B</strong>
     </button>
-    <button type="button" class="ed-btn" [title]="i18n.t('rt.italic')" (mousedown)="$event.preventDefault()" (click)="toggleMark('italic')">
+    <button type="button" class="ed-btn" [title]="i18n.t('rt.italic')" (mousedown)="captureSelection($event)" (click)="toggleMark('italic')">
       <em>I</em>
     </button>
-    <button type="button" class="ed-btn" [title]="i18n.t('rt.strike')" (mousedown)="$event.preventDefault()" (click)="toggleMark('strikeThrough')">
+    <button type="button" class="ed-btn" [title]="i18n.t('rt.strike')" (mousedown)="captureSelection($event)" (click)="toggleMark('strikeThrough')">
       <s>S</s>
     </button>
-    <button type="button" class="ed-btn" [title]="i18n.t('rt.sup')" (mousedown)="$event.preventDefault()" (click)="toggleMark('superscript')">
+    <button type="button" class="ed-btn" [title]="i18n.t('rt.sup')" (mousedown)="captureSelection($event)" (click)="toggleMark('superscript')">
       x²
     </button>
-    <button type="button" class="ed-btn" [title]="i18n.t('rt.sub')" (mousedown)="$event.preventDefault()" (click)="toggleMark('subscript')">
+    <button type="button" class="ed-btn" [title]="i18n.t('rt.sub')" (mousedown)="captureSelection($event)" (click)="toggleMark('subscript')">
       x₂
+    </button>
+    <button type="button" class="ed-btn" [title]="i18n.t('rt.mono')" (mousedown)="captureSelection($event)" (click)="toggleMono()">
+      <span class="rt-mono-label">M</span>
     </button>
     <span class="rt-sep" aria-hidden="true"></span>
     <label class="rt-select-wrap">
-      <span class="ed-label" [textContent]="i18n.t('rt.size')"></span>
-      <select class="ed-select rt-select" (change)="applySize($any($event.target).value)" (mousedown)="$event.stopPropagation()">
+      <span class="ed-label" [textContent]="i18n.t('rt.appearance')"></span>
+      <select
+        class="ed-select rt-select"
+        (change)="applySize($any($event.target).value, $any($event.target))"
+        (mousedown)="captureSelection()"
+      >
+        <option value="" disabled selected [textContent]="i18n.t('rt.appearance')"></option>
         @for (s of sizes; track s) {
           <option [value]="s" [textContent]="i18n.t('rt.size.' + s)"></option>
         }
@@ -26,30 +55,23 @@
     </label>
     <label class="rt-select-wrap">
       <span class="ed-label" [textContent]="i18n.t('rt.color')"></span>
-      <select class="ed-select rt-select" (change)="applyColor($any($event.target).value)" (mousedown)="$event.stopPropagation()">
-        @for (c of colors; track c) {
-          <option [value]="c" [textContent]="i18n.t('rt.color.' + c)"></option>
-        }
-      </select>
-    </label>
-    <label class="rt-select-wrap">
-      <span class="ed-label" [textContent]="i18n.t('rt.paraColor')"></span>
       <select
         class="ed-select rt-select"
-        (change)="applyParagraphColor($any($event.target).value)"
-        (mousedown)="$event.stopPropagation()"
+        data-testid="rt-color-select"
+        (change)="onColorChange($event)"
+        (mousedown)="captureSelection()"
       >
-        <option value="" [textContent]="i18n.t('rt.paraColor.default')"></option>
+        <option value="" disabled selected [textContent]="i18n.t('rt.color')"></option>
         @for (c of colors; track c) {
           <option [value]="c" [textContent]="i18n.t('rt.color.' + c)"></option>
         }
       </select>
     </label>
     <span class="rt-sep" aria-hidden="true"></span>
-    <button type="button" class="ed-btn" [title]="i18n.t('rt.link')" (mousedown)="$event.preventDefault()" (click)="openLink()">
+    <button type="button" class="ed-btn" [title]="i18n.t('rt.link')" (mousedown)="captureSelection($event)" (click)="openLink()">
       🔗
     </button>
-    <button type="button" class="ed-btn" [title]="i18n.t('rt.unlink')" (mousedown)="$event.preventDefault()" (click)="removeLink()">
+    <button type="button" class="ed-btn" [title]="i18n.t('rt.unlink')" (mousedown)="captureSelection($event)" (click)="removeLink()">
       ⛓
     </button>
     <button type="button" class="ed-btn" [title]="i18n.t('rt.clear')" (mousedown)="$event.preventDefault()" (click)="clearFormatting()">
@@ -58,16 +80,23 @@
     <button
       type="button"
       class="ed-btn"
-      [class.is-active]="showSuspicious()"
-      [title]="i18n.t('rt.showSuspicious')"
+      data-testid="rt-remove-ai-chars"
+      [title]="i18n.t('rt.removeAiChars')"
+      [disabled]="suspiciousCount() === 0"
       (mousedown)="$event.preventDefault()"
-      (click)="toggleSuspicious()"
-    >
-      {{ i18n.t('rt.showSuspiciousShort') }}
-      @if (suspiciousCount() > 0) {
-        <span class="rt-badge" [textContent]="suspiciousCount()"></span>
-      }
-    </button>
+      (click)="removeAiChars()"
+      [textContent]="i18n.t('rt.removeAiChars')"
+    ></button>
+    <button
+      type="button"
+      class="ed-btn"
+      data-testid="rt-code-view"
+      [class.is-active]="codeView()"
+      [title]="i18n.t('rt.codeView')"
+      (mousedown)="$event.preventDefault()"
+      (click)="toggleCodeView()"
+      [textContent]="i18n.t('rt.codeViewShort')"
+    ></button>
   </div>
 
   @if (linkOpen()) {
@@ -104,6 +133,18 @@
   }
 
   <p class="ed-field-help" [textContent]="i18n.t('rt.help')"></p>
+  <p
+    class="rt-ai-status"
+    [class.rt-ai-status--found]="suspiciousCount() > 0"
+    [class.rt-ai-status--ok]="suspiciousCount() === 0"
+    data-testid="rt-ai-status"
+    role="status"
+    [textContent]="
+      suspiciousCount() > 0
+        ? i18n.t('rt.aiStatus.found', { n: suspiciousCount() })
+        : i18n.t('rt.aiStatus.none')
+    "
+  ></p>
 
   <div
     #editor
@@ -112,10 +153,25 @@
     contenteditable="true"
     role="textbox"
     aria-multiline="true"
+    [hidden]="codeView()"
     [attr.aria-label]="i18n.t('field.paragraphHtml')"
     (click)="onEditorClick($event)"
+    (mouseup)="captureSelection()"
+    (keyup)="captureSelection()"
     (input)="onEditorInput()"
     (paste)="onPaste($event)"
-    (keydown)="insertSoftBreak($event)"
+    (keydown)="onEditorKeydown($event)"
   ></div>
+
+  @if (codeView()) {
+    <pre
+      class="rt-code"
+      data-testid="rt-code-panel"
+      tabindex="0"
+      role="textbox"
+      aria-readonly="true"
+      [attr.aria-label]="i18n.t('rt.codeView')"
+      [textContent]="codeText()"
+    ></pre>
+  }
 </div>

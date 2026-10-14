@@ -9,16 +9,18 @@ import {
   type RichMarks,
   type RichParagraphNode,
 } from './model';
-import { cleanPlainText } from './sanitize-text';
+import { preserveEditorText } from './sanitize-text';
 
 function marksFromClassList(el: HTMLElement, base: RichMarks = {}): RichMarks {
   const m: RichMarks = { ...base };
   const tag = el.tagName.toLowerCase();
+  const cls = typeof el.className === 'string' ? el.className : '';
   if (tag === 'strong' || tag === 'b') m.bold = true;
   if (tag === 'em' || tag === 'i') m.italic = true;
   if (tag === 's' || tag === 'strike' || tag === 'del') m.strike = true;
   if (tag === 'sup') m.sup = true;
   if (tag === 'sub') m.sub = true;
+  if (tag === 'code' || cls.includes('rt-mono')) m.mono = true;
   if (tag === 'a') {
     const href = (el.getAttribute('href') || '').trim();
     if (href && !/^javascript:/i.test(href)) {
@@ -28,7 +30,6 @@ function marksFromClassList(el: HTMLElement, base: RichMarks = {}): RichMarks {
       };
     }
   }
-  const cls = typeof el.className === 'string' ? el.className : '';
   for (const size of ['lead', 'callout', 'fine', 'caption', 'body'] as const) {
     if (cls.includes(`rt-size-${size}`)) m.size = size === 'body' ? undefined : size;
   }
@@ -46,7 +47,7 @@ function marksFromClassList(el: HTMLElement, base: RichMarks = {}): RichMarks {
 
 function walk(node: Node, marks: RichMarks, into: RichInline[]): void {
   if (node.nodeType === Node.TEXT_NODE) {
-    const text = cleanPlainText(node.textContent ?? '');
+    const text = preserveEditorText(node.textContent ?? '');
     if (text) {
       into.push({
         type: 'text',

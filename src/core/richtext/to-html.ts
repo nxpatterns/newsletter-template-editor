@@ -41,16 +41,25 @@ function openMarks(m?: RichMarks): { open: string; close: string } {
   if (marks.strike) push('s');
   if (marks.sup) push('sup');
   if (marks.sub) push('sub');
+  if (marks.mono) push('code', ' class="rt-mono"');
   return { open, close };
 }
 
-function renderInlines(children: RichInline[], highlightSuspicious: boolean): string {
+function renderInlines(
+  children: RichInline[],
+  opts: { highlightSuspicious?: boolean; forEditor?: boolean; cleanExport?: boolean },
+): string {
   return children
     .map((n) => {
       if (n.type === 'br') return '<br>';
-      const text = cleanPlainText(n.text);
+      // Editor keeps raw (incl. watermarks); export/preview email cleans.
+      const text = opts.forEditor
+        ? n.text
+        : opts.cleanExport !== false
+          ? cleanPlainText(n.text)
+          : n.text;
       const { open, close } = openMarks(n.marks);
-      const body = highlightSuspicious
+      const body = opts.highlightSuspicious
         ? highlightSuspiciousHtml(text, escapeHtml)
         : escapeHtml(text);
       return `${open}${body}${close}`;
@@ -64,6 +73,8 @@ export interface RichHtmlOptions {
   highlightSuspicious?: boolean;
   /** Editor mode adds contenteditable-friendly classes. */
   forEditor?: boolean;
+  /** When false, skip cleanPlainText (default true for mail render). */
+  cleanExport?: boolean;
 }
 
 /** Render rich doc to classed HTML fragment (one or more `<p class="paragraph-body">`). */
@@ -83,7 +94,11 @@ function renderParagraph(p: RichParagraphNode, index: number, opts: RichHtmlOpti
     opts.dataField && index === 0 ? ` data-field="${opts.dataField}"` : '';
   const dataP = opts.forEditor ? ` data-rt-p="${index}"` : '';
   const colorAttr = p.color ? ` data-rt-color="${p.color}"` : '';
-  const inner = renderInlines(p.children, !!opts.highlightSuspicious);
+  const inner = renderInlines(p.children, {
+    highlightSuspicious: !!opts.highlightSuspicious,
+    forEditor: !!opts.forEditor,
+    cleanExport: opts.cleanExport,
+  });
   return `<p class="${cls}"${dataField}${dataP}${colorAttr}>${inner || '<br>'}</p>`;
 }
 

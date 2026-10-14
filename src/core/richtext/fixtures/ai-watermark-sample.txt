@@ -1,0 +1,8 @@
+Short AI sample with watermarks (paste into Paragraph editor, then click "AI chars"):
+
+zero​width​, BOM﻿ here, soft­hyphen, nbsp space, em—dash, en–dash, fancy“quotes”, bidi‮force, join⁠er, math space.
+
+Notes:
+- Invisible / format characters are embedded between the words above.
+- Typing by hand will not create them; only paste (or the Sample AI button) will.
+- Clear formatting removes marks and cleans these characters.

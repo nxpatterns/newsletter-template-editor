@@ -218,10 +218,23 @@ export function emailDocumentCss(globals: Globals): string {
   .rt-size-callout { font-size: 26px; line-height: 36px; }
   .rt-size-fine { font-size: 14px; line-height: 22px; }
   .rt-size-caption { font-size: 12px; line-height: 18px; }
-  a.rt-link { color: var(--email-accent); text-decoration: underline; }
+  /* Ice-blue links: no underline at rest; underline on hover/focus only. */
+  a.rt-link {
+    color: var(--email-accent);
+    text-decoration: none;
+    margin: 0 0.12em;
+  }
+  a.rt-link:hover,
+  a.rt-link:focus {
+    text-decoration: underline;
+  }
   .paragraph-body strong { font-weight: 700; }
   .paragraph-body em { font-style: italic; }
   .paragraph-body s { text-decoration: line-through; }
+  .paragraph-body code.rt-mono, .rt-mono {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.95em;
+  }
 
   /* CTA button */
   .cta-button-cell { background-color: #1d6bb8; }

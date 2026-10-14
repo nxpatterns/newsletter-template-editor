@@ -40,10 +40,11 @@ Git anchor: export inliner landed as `feat(render): implement CSS inliner for em
 
 - Select block in list or preview → highlight only.
 - Edit opens only via ✎ (list or preview) → shared **edit modal**.
-- Modal: larger dialog, live preview while typing, footer **Cancel** / **Save**.
+- Modal: larger dialog (drag header, resize corner; geometry per block type in localStorage), live preview while typing, footer **Cancel** / **Save**.
 - Cancel restores the block snapshot from modal open and drops undo entries created during that edit.
 - Save keeps live edits and closes.
-- Escape and backdrop act as Cancel.
+- Escape acts as Cancel. **Backdrop click does not dismiss** — exit must be intentional (Cancel / Save / Escape).
+- Open focus: Cancel is focused **once** when a given edit session opens; typing must not re-steal focus.
 
 ## Principle: structure first, rich text second
 
@@ -102,11 +103,12 @@ Fix the model before introducing a text editor.
 | Strikethrough | |
 | Superscript | Best-effort in email clients |
 | Subscript | Best-effort in email clients |
-| Semantic size | See size tokens below |
-| Theme color | Swatches from Colors / campaign tokens only — no free hex |
-| Link | Selection = default label; URL field; open target (see links) |
+| Appearance (semantic size) | Toolbar label **Appearance** / **Darstellung**; see size tokens below |
+| Theme color | **One** Color control: non-collapsed selection → span color; collapsed caret → paragraph base color. Swatches only — no free hex |
+| Link | Selection = default label; URL field; open target (see links). Apply **replaces** the selection (no duplicate text) |
+| Mono | Monospace face mark |
 
-**Not allowed:** underline; arbitrary font-family per span; free font-size px; free hex.
+**Not allowed:** underline as a mark; arbitrary font-family per span; free font-size px; free hex.
 
 #### Semantic size tokens
 
@@ -124,9 +126,10 @@ Paid **block editor** (future product): operators may redefine how large each to
 
 #### Links
 
-- Apply to selected text (label prefilled from selection; editable).
+- Apply to selected text (label prefilled from selection; editable). Click an existing link in the editor to edit it.
 - URL required for a real link; strip `javascript:` and empty hrefs.
 - **Open target:** default `_blank` (+ `rel="noopener noreferrer"` on render). Optional same-tab `_self` for browser-view edge cases. Native mail clients often ignore target; still useful for “view in browser”.
+- **Chrome / email CSS:** ice-blue / accent link color; **no underline at rest**; underline on `:hover` / `:focus-visible`; light spacing so links do not glue to adjacent words.
 - Link appearance comes from theme/link slot; applying paragraph base color must **not** clobber link styling.
 
 #### Paragraph-level base color
@@ -143,15 +146,16 @@ Cascade (high wins):
 
 Changing a paragraph’s base color must **not** overwrite existing span marks (bold/italic/strike/sup/sub/size/link/span-color). It only fills the “unmarked color” layer for that `p`.
 
-#### Sanitizer and clean-text (day one)
+#### Sanitizer and clean-text (shipped)
 
 Product-strength feature, not a polish pass:
 
-- On paste and on save: strip invisible / bidi / BOM / zero-width / soft-hyphen junk; normalize NBSP to space; strip disallowed tags and styles.
-- Normalize fancy punctuation policy (e.g. em/en dashes → ASCII hyphen) consistently with seed hygiene.
+- On paste: multi-line plain text becomes a structured `RichDoc` (`plainTextToRichDoc`); empty browser `<p><br></p>` rows are dropped by `compactDoc`.
+- On clean / export: strip invisible / bidi / BOM / zero-width / soft-hyphen junk; normalize NBSP to space; fancy dashes/quotes → ASCII where policy says so.
 - Keep only plaintext code points plus allowed structure/marks.
-- **Clear formatting** — drop marks on selection or block per action scope.
-- **Show / highlight suspicious characters** (AI / invisible / disallowed) from the first ship of the kit — diagnose before clean.
+- **Clear formatting** — drops style marks (bold/italic/strike/sup/sub/mono/size/color) and paragraph base color; **keeps links**; may clean AI junk as a side effect. Confirm dialog before clear.
+- **AI watermark UX:** live status line under help (`rt-ai-status`, prominent `--found` state) with count; dedicated **Remove AI Chars** button (preserves marks and links). No Sample AI product button; no DOM-tearing “highlight” toggle.
+- Fixture for tests/manual paste: `src/core/richtext/fixtures/ai-watermark-sample.*` (docs/fixtures is a convenience copy only).
 
 #### Storage and migration
 
@@ -162,7 +166,9 @@ Product-strength feature, not a polish pass:
 #### Editor chrome
 
 - Lite toolbar in the **edit modal** only (never inside the preview iframe).
-- Implementation preference: `contenteditable` + commands + sanitize; MIT editor library only if that fails product needs.
+- Implementation: `contenteditable` + commands + mark tree serialize (`richDocFromEditorRoot` / `richDocToHtml`); selection captured before toolbar selects so Appearance/Color/Link re-apply reliably.
+- Local **undo/redo** inside the paragraph editor (toolbar + ⌘/Ctrl+Z); independent of shell document undo while the modal is open.
+- Read-only **Code** view: classed HTML produced by the model (selectable to copy; not editable; no paste into code).
 - Live preview as shipped for other blocks.
 
 ### chapter-band

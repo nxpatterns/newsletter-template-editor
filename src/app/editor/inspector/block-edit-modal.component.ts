@@ -9,8 +9,14 @@ import {
   viewChild,
 } from '@angular/core';
 import { LocaleService } from '../../i18n/locale.service';
+import { ShellUiService } from '../../shell/shell-ui.service';
 import { NewsletterSession } from '../newsletter-session.service';
 import { BlockInspectorComponent } from './block-inspector.component';
+
+const DEFAULT_W = 720;
+const DEFAULT_H = 560;
+const MIN_W = 360;
+const MIN_H = 280;
 
 @Component({
   selector: 'app-block-edit-modal',
@@ -20,18 +26,29 @@ import { BlockInspectorComponent } from './block-inspector.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '(document:keydown.escape)': 'onEscape()',
+    '(window:resize)': 'onWindowResize()',
   },
 })
 export class BlockEditModalComponent {
   protected readonly i18n = inject(LocaleService);
   protected readonly session = inject(NewsletterSession);
+  private readonly shellUi = inject(ShellUiService);
 
   private readonly cancelBtn = viewChild<ElementRef<HTMLButtonElement>>('cancelBtn');
 
-  /** Drives enter/leave CSS classes. Kept true while dialog is mounted. */
   protected readonly openVisual = signal(false);
   private closing = false;
   private closeAction: 'save' | 'cancel' = 'cancel';
+
+  protected readonly geo = signal({ x: 80, y: 80, w: DEFAULT_W, h: DEFAULT_H });
+
+  private drag:
+    | { mode: 'move'; ox: number; oy: number; sx: number; sy: number }
+    | { mode: 'resize'; ox: number; oy: number; sw: number; sh: number }
+    | null = null;
+
+  /** Last block id that received open-once Cancel focus (avoid steal on re-runs). */
+  private focusedOpenId: string | null = null;
 
   protected readonly titleText = computed(() => {
     const block = this.session.editingBlock();
@@ -43,20 +60,53 @@ export class BlockEditModalComponent {
     return n > 0 ? `${n} · ${typeLabel}` : typeLabel;
   });
 
+  protected readonly dialogStyle = computed(() => {
+    const g = this.geo();
+    return {
+      left: `${g.x}px`,
+      top: `${g.y}px`,
+      width: `${g.w}px`,
+      height: `${g.h}px`,
+    };
+  });
+
   constructor() {
     effect(() => {
       const id = this.session.editingBlockId();
-      if (id) {
-        this.closing = false;
-        this.closeAction = 'cancel';
-        requestAnimationFrame(() => this.openVisual.set(true));
-        queueMicrotask(() => this.cancelBtn()?.nativeElement.focus());
+      const block = this.session.editingBlock();
+      if (!id || !block) {
+        this.focusedOpenId = null;
+        return;
       }
+      // Open chrome only when the edit session id changes — not on every
+      // editingBlock() content update (typing would re-run this effect).
+      if (id === this.focusedOpenId) return;
+      this.focusedOpenId = id;
+      this.closing = false;
+      this.closeAction = 'cancel';
+      this.restoreGeometry(block.type);
+      requestAnimationFrame(() => this.openVisual.set(true));
+      queueMicrotask(() => this.cancelBtn()?.nativeElement.focus());
     });
   }
 
+  /** Outside click must not dismiss — only Cancel / Save / Escape. */
   protected onBackdropClick(): void {
-    this.requestCancel();
+    /* intentional no-op */
+  }
+
+  /** Keep dialog inside the viewport after zoom / window resize. */
+  protected onWindowResize(): void {
+    if (!this.session.editingBlockId()) return;
+    const g = this.geo();
+    const w = Math.max(MIN_W, Math.min(g.w, window.innerWidth - 16));
+    const h = Math.max(MIN_H, Math.min(g.h, window.innerHeight - 16));
+    this.geo.set({
+      w,
+      h,
+      x: this.clampX(g.x, w),
+      y: this.clampY(g.y, h),
+    });
   }
 
   protected requestCancel(): void {
@@ -71,8 +121,106 @@ export class BlockEditModalComponent {
     if (this.session.editingBlockId()) this.requestCancel();
   }
 
+  protected onHeadPointerDown(event: PointerEvent): void {
+    if (event.button !== 0) return;
+    const target = event.target as HTMLElement;
+    if (target.closest('button')) return;
+    const g = this.geo();
+    this.drag = { mode: 'move', ox: event.clientX, oy: event.clientY, sx: g.x, sy: g.y };
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+    event.preventDefault();
+  }
+
+  protected onResizePointerDown(event: PointerEvent): void {
+    if (event.button !== 0) return;
+    const g = this.geo();
+    this.drag = { mode: 'resize', ox: event.clientX, oy: event.clientY, sw: g.w, sh: g.h };
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  protected onHeadPointerMove(event: PointerEvent): void {
+    if (!this.drag || this.drag.mode !== 'move') return;
+    const dx = event.clientX - this.drag.ox;
+    const dy = event.clientY - this.drag.oy;
+    const g = this.geo();
+    this.geo.set({
+      ...g,
+      x: this.clampX(this.drag.sx + dx, g.w),
+      y: this.clampY(this.drag.sy + dy, g.h),
+    });
+  }
+
+  protected onResizePointerMove(event: PointerEvent): void {
+    if (!this.drag || this.drag.mode !== 'resize') return;
+    const dx = event.clientX - this.drag.ox;
+    const dy = event.clientY - this.drag.oy;
+    const g = this.geo();
+    const w = Math.max(MIN_W, Math.min(window.innerWidth - 16, this.drag.sw + dx));
+    const h = Math.max(MIN_H, Math.min(window.innerHeight - 16, this.drag.sh + dy));
+    this.geo.set({
+      ...g,
+      w,
+      h,
+      x: this.clampX(g.x, w),
+      y: this.clampY(g.y, h),
+    });
+  }
+
+  protected onPointerUp(event: PointerEvent): void {
+    if (!this.drag) return;
+    this.drag = null;
+    try {
+      (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
+    } catch {
+      /* already released */
+    }
+    this.persistGeometry();
+  }
+
+  private restoreGeometry(blockType: string): void {
+    const saved = this.shellUi.getBlockModalGeometry(blockType);
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    if (saved) {
+      this.geo.set({
+        w: Math.max(MIN_W, Math.min(saved.w, vw - 16)),
+        h: Math.max(MIN_H, Math.min(saved.h, vh - 16)),
+        x: this.clampX(saved.x, saved.w),
+        y: this.clampY(saved.y, saved.h),
+      });
+      return;
+    }
+    const w = Math.min(DEFAULT_W, vw - 32);
+    const h = Math.min(DEFAULT_H, vh - 32);
+    this.geo.set({
+      w,
+      h,
+      x: Math.max(16, Math.round((vw - w) / 2)),
+      y: Math.max(16, Math.round((vh - h) / 2)),
+    });
+  }
+
+  private persistGeometry(): void {
+    const block = this.session.editingBlock();
+    if (!block) return;
+    this.shellUi.setBlockModalGeometry(block.type, this.geo());
+  }
+
+  private clampX(x: number, w: number): number {
+    const max = Math.max(8, window.innerWidth - w - 8);
+    return Math.min(max, Math.max(8, Math.round(x)));
+  }
+
+  private clampY(y: number, h: number): number {
+    const max = Math.max(8, window.innerHeight - h - 8);
+    return Math.min(max, Math.max(8, Math.round(y)));
+  }
+
   private beginClose(action: 'save' | 'cancel'): void {
     if (!this.session.editingBlockId() || this.closing) return;
+    this.persistGeometry();
     this.closing = true;
     this.closeAction = action;
     this.openVisual.set(false);

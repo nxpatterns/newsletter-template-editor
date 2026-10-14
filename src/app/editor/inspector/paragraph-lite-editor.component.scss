@@ -94,19 +94,81 @@
   font-size: 0.8em;
 }
 
+.rt-mono-label,
+.rt-editor .rt-mono,
+.rt-editor code.rt-mono {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.95em;
+}
+
 .rt-editor .rt-suspicious {
   outline: 1px dashed color-mix(in srgb, var(--ds-danger, #c44) 70%, transparent);
   background: color-mix(in srgb, #f5c518 35%, transparent);
 }
 
-/* Links are editable chrome, not navigation, inside the modal editor. */
+/* Ice-blue links: spacing + underline only on hover/focus. */
 .rt-editor a.rt-link {
   cursor: pointer;
-  text-decoration: underline;
-  color: var(--ds-accent, #1d6bb8);
+  text-decoration: none;
+  color: var(--ds-accent, #7ecfff);
+  margin: 0 0.12em;
 }
 
-.rt-editor a.rt-link:hover {
-  outline: 1px dotted var(--ds-accent, #1d6bb8);
+.rt-editor a.rt-link:hover,
+.rt-editor a.rt-link:focus-visible {
+  text-decoration: underline;
+  outline: 1px dotted var(--ds-accent, #7ecfff);
   outline-offset: 1px;
+}
+
+.rt-ai-status {
+  margin: 0.15rem 0 0.25rem;
+  padding: 0.4rem 0.55rem;
+  border-radius: var(--ds-radius, 6px);
+  font-size: 0.86rem;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+.rt-ai-status--found {
+  color: #ef86fd;
+  background: color-mix(in srgb, #ef86fd 12%, transparent);
+  border: 1px solid color-mix(in srgb, #ef86fd 45%, transparent);
+}
+
+.rt-ai-status--ok {
+  color: var(--ds-text-muted, #7a9ab8);
+  font-weight: 500;
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+/* Read-only code panel: selectable for copy, not editable. */
+.rt-code {
+  margin: 0;
+  min-height: 10rem;
+  max-height: 22rem;
+  overflow: auto;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius);
+  background: color-mix(in srgb, var(--ds-bg-panel, #0c1628) 92%, #000);
+  color: var(--ds-text, #d8eeff);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+  user-select: text;
+  cursor: text;
+}
+
+.rt-code:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 1px;
+}
+
+.rt-toolbar .ed-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
