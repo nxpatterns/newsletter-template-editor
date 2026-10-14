@@ -13,16 +13,18 @@ import {
   type CtaLinkListBlock,
   type CtaLinkListItem,
   type DividerBlock,
+  type RichDoc,
 } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
 import { PersistHeightDirective } from '../../ui/persist-height.directive';
 import { NewsletterSession } from '../newsletter-session.service';
+import { ParagraphLiteEditorComponent } from './paragraph-lite-editor.component';
 
 type IconPickerKind = 'cta' | 'benefit';
 
 @Component({
   selector: 'app-block-inspector',
-  imports: [PersistHeightDirective],
+  imports: [PersistHeightDirective, ParagraphLiteEditorComponent],
   templateUrl: './block-inspector.component.html',
   styleUrl: './block-inspector.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -50,6 +52,10 @@ export class BlockInspectorComponent {
 
   protected onFieldBlur(): void {
     this.session.endCoalesce();
+  }
+
+  protected onParagraphBody(id: string, body: RichDoc): void {
+    this.session.updateBlock(id, { body } as never, 'coalesce');
   }
 
   protected onDividerStyle(id: string, event: Event): void {

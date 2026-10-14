@@ -245,7 +245,7 @@ Rules shared by all kit surfaces:
 2. Plain-label cleanup (remove “HTML” from seller copy) — **done**.
 3. Benefits list editor — **done**.
 4. Hero / chapter / quote / stat **plain-up** — **done** (paragraph deferred to lite kit).
-5. **Paragraph lite rich-text kit** (model + modal editor + sanitize + migrate seed `html`) — **next**.
+5. **Paragraph lite rich-text kit** (model + modal editor + sanitize + migrate seed `html`) — **done** (core on disk).
 6. Reuse kit on brand name / legal notice only if still required.
 7. Email colors data model — separate large track; `email-colors.md` when scheduled (paragraph size/color tokens plug into slots).
 8. Paid block editor product — explicitly **out of scope** until scheduled.

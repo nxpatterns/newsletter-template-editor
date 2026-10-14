@@ -1,4 +1,5 @@
 export * from './types';
+export * from './richtext';
 export * from './brand/defaults';
 export * from './seed';
 export * from './render';
@@ -9,6 +10,7 @@ export {
   normalizeCtaLinkListBlock,
   normalizeHeroBlock,
   normalizeNewsletter,
+  normalizeParagraphBlock,
   normalizePriceBoxBlock,
   normalizePullQuoteBlock,
   normalizeStatBoxBlock,

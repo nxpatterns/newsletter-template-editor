@@ -1,5 +1,15 @@
 /** Newsletter document model — JSON is source of truth; HTML is generated. */
 
+import { emptyRichDoc, type RichDoc } from './richtext/model';
+
+export type {
+  RichColorToken,
+  RichDoc,
+  RichMarks,
+  RichParagraphNode,
+  RichSizeToken,
+} from './richtext/model';
+
 export type FontFamilyPreset =
   | 'Georgia'
   | 'Times-New-Roman'
@@ -93,7 +103,8 @@ export interface HeroBlock extends BlockBase {
 
 export interface ParagraphBlock extends BlockBase {
   type: 'paragraph';
-  html: string;
+  /** Lite rich-text document (paragraph nodes + marks). */
+  body: RichDoc;
 }
 
 export interface CtaButtonBlock extends BlockBase {
@@ -259,7 +270,7 @@ export function createBlock(type: Block['type']): Block {
     case 'hero':
       return { id, type, label: 'Your intro', headline: 'New headline' };
     case 'paragraph':
-      return { id, type, html: 'New paragraph.' };
+      return { id, type, body: emptyRichDoc('New paragraph.') };
     case 'cta-button':
       return { id, type, text: 'Learn more', href: 'https://example.com' };
     case 'chapter-band':
@@ -300,7 +311,7 @@ export function createBlock(type: Block['type']): Block {
           {
             icon: CTA_LINK_DEFAULT_ICON,
             label: 'Book a call:',
-            intro: 'We will call you back —',
+            intro: 'We will call you back -',
             linkText: 'Schedule',
             href: 'https://example.com/contact',
           },

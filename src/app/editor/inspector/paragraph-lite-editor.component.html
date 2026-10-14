@@ -1,0 +1,121 @@
+<div class="rt-kit" data-testid="paragraph-lite-editor">
+  <div class="rt-toolbar" role="toolbar" [attr.aria-label]="i18n.t('rt.toolbar')">
+    <button type="button" class="ed-btn" [title]="i18n.t('rt.bold')" (mousedown)="$event.preventDefault()" (click)="toggleMark('bold')">
+      <strong>B</strong>
+    </button>
+    <button type="button" class="ed-btn" [title]="i18n.t('rt.italic')" (mousedown)="$event.preventDefault()" (click)="toggleMark('italic')">
+      <em>I</em>
+    </button>
+    <button type="button" class="ed-btn" [title]="i18n.t('rt.strike')" (mousedown)="$event.preventDefault()" (click)="toggleMark('strikeThrough')">
+      <s>S</s>
+    </button>
+    <button type="button" class="ed-btn" [title]="i18n.t('rt.sup')" (mousedown)="$event.preventDefault()" (click)="toggleMark('superscript')">
+      x²
+    </button>
+    <button type="button" class="ed-btn" [title]="i18n.t('rt.sub')" (mousedown)="$event.preventDefault()" (click)="toggleMark('subscript')">
+      x₂
+    </button>
+    <span class="rt-sep" aria-hidden="true"></span>
+    <label class="rt-select-wrap">
+      <span class="ed-label" [textContent]="i18n.t('rt.size')"></span>
+      <select class="ed-select rt-select" (change)="applySize($any($event.target).value)" (mousedown)="$event.stopPropagation()">
+        @for (s of sizes; track s) {
+          <option [value]="s" [textContent]="i18n.t('rt.size.' + s)"></option>
+        }
+      </select>
+    </label>
+    <label class="rt-select-wrap">
+      <span class="ed-label" [textContent]="i18n.t('rt.color')"></span>
+      <select class="ed-select rt-select" (change)="applyColor($any($event.target).value)" (mousedown)="$event.stopPropagation()">
+        @for (c of colors; track c) {
+          <option [value]="c" [textContent]="i18n.t('rt.color.' + c)"></option>
+        }
+      </select>
+    </label>
+    <label class="rt-select-wrap">
+      <span class="ed-label" [textContent]="i18n.t('rt.paraColor')"></span>
+      <select
+        class="ed-select rt-select"
+        (change)="applyParagraphColor($any($event.target).value)"
+        (mousedown)="$event.stopPropagation()"
+      >
+        <option value="" [textContent]="i18n.t('rt.paraColor.default')"></option>
+        @for (c of colors; track c) {
+          <option [value]="c" [textContent]="i18n.t('rt.color.' + c)"></option>
+        }
+      </select>
+    </label>
+    <span class="rt-sep" aria-hidden="true"></span>
+    <button type="button" class="ed-btn" [title]="i18n.t('rt.link')" (mousedown)="$event.preventDefault()" (click)="openLink()">
+      🔗
+    </button>
+    <button type="button" class="ed-btn" [title]="i18n.t('rt.unlink')" (mousedown)="$event.preventDefault()" (click)="removeLink()">
+      ⛓
+    </button>
+    <button type="button" class="ed-btn" [title]="i18n.t('rt.clear')" (mousedown)="$event.preventDefault()" (click)="clearFormatting()">
+      ✎∅
+    </button>
+    <button
+      type="button"
+      class="ed-btn"
+      [class.is-active]="showSuspicious()"
+      [title]="i18n.t('rt.showSuspicious')"
+      (mousedown)="$event.preventDefault()"
+      (click)="toggleSuspicious()"
+    >
+      {{ i18n.t('rt.showSuspiciousShort') }}
+      @if (suspiciousCount() > 0) {
+        <span class="rt-badge" [textContent]="suspiciousCount()"></span>
+      }
+    </button>
+  </div>
+
+  @if (linkOpen()) {
+    <div class="rt-link-popover" data-testid="rt-link-popover">
+      <label class="ed-label" for="rt-link-label" [textContent]="i18n.t('rt.linkLabel')"></label>
+      <input
+        id="rt-link-label"
+        class="ed-input"
+        type="text"
+        data-testid="rt-link-label"
+        [value]="linkLabel()"
+        (input)="linkLabel.set($any($event.target).value)"
+      />
+      <label class="ed-label" for="rt-link-href" [textContent]="i18n.t('rt.linkHref')"></label>
+      <input
+        id="rt-link-href"
+        class="ed-input"
+        type="url"
+        data-testid="rt-link-href"
+        [value]="linkHref()"
+        (input)="linkHref.set($any($event.target).value)"
+      />
+      <label class="ed-label" for="rt-link-target" [textContent]="i18n.t('rt.linkTarget')"></label>
+      <select id="rt-link-target" class="ed-select" [value]="linkTarget()" (change)="linkTarget.set($any($event.target).value)">
+        <option value="_blank" [textContent]="i18n.t('rt.linkTarget.blank')"></option>
+        <option value="_self" [textContent]="i18n.t('rt.linkTarget.self')"></option>
+      </select>
+      <div class="ed-actions">
+        <button type="button" class="ed-btn" data-testid="rt-link-apply" (click)="applyLink()" [textContent]="i18n.t('rt.linkApply')"></button>
+        <button type="button" class="ed-btn" (click)="removeLink()" [textContent]="i18n.t('rt.unlink')"></button>
+        <button type="button" class="ed-btn" (click)="cancelLink()" [textContent]="i18n.t('modal.cancel')"></button>
+      </div>
+    </div>
+  }
+
+  <p class="ed-field-help" [textContent]="i18n.t('rt.help')"></p>
+
+  <div
+    #editor
+    class="rt-editor ed-textarea"
+    data-testid="insp-paragraph-html"
+    contenteditable="true"
+    role="textbox"
+    aria-multiline="true"
+    [attr.aria-label]="i18n.t('field.paragraphHtml')"
+    (click)="onEditorClick($event)"
+    (input)="onEditorInput()"
+    (paste)="onPaste($event)"
+    (keydown)="insertSoftBreak($event)"
+  ></div>
+</div>

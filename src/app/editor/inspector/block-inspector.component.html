@@ -32,16 +32,11 @@
       }
       @case ('paragraph') {
         <div class="ed-field">
-          <label class="ed-label" for="insp-para" [textContent]="i18n.t('field.paragraphHtml')"></label>
-          <textarea
-            id="insp-para"
-            class="ed-textarea"
-            data-testid="insp-paragraph-html"
-            rows="5"
-            [value]="block.html"
-            (input)="onText(block.id, 'html', $event)"
-            (blur)="onFieldBlur()"
-          ></textarea>
+          <label class="ed-label" [textContent]="i18n.t('field.paragraphHtml')"></label>
+          <app-paragraph-lite-editor
+            [doc]="block.body"
+            (docChange)="onParagraphBody(block.id, $event)"
+          />
         </div>
       }
       @case ('cta-button') {

@@ -204,14 +204,24 @@ export function emailDocumentCss(globals: Globals): string {
   }
   .hero-headline-inner { font-size: 26px; }
 
-  /* Paragraph */
+  /* Paragraph + lite rich-text size tokens */
+  .paragraph-block { }
   .paragraph-body {
     font-family: var(--email-font);
     font-size: 17px;
     line-height: 30px;
     color: var(--email-body);
-    margin: 0;
+    margin: 0 0 16px 0;
   }
+  .paragraph-body:last-child { margin-bottom: 0; }
+  .rt-size-lead { font-size: 20px; line-height: 32px; }
+  .rt-size-callout { font-size: 26px; line-height: 36px; }
+  .rt-size-fine { font-size: 14px; line-height: 22px; }
+  .rt-size-caption { font-size: 12px; line-height: 18px; }
+  a.rt-link { color: var(--email-accent); text-decoration: underline; }
+  .paragraph-body strong { font-weight: 700; }
+  .paragraph-body em { font-style: italic; }
+  .paragraph-body s { text-decoration: line-through; }
 
   /* CTA button */
   .cta-button-cell { background-color: #1d6bb8; }

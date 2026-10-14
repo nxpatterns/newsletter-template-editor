@@ -12,6 +12,7 @@ import type {
   PullQuoteBlock,
   StatBoxBlock,
 } from '../types';
+import { richDocToHtml } from '../richtext/to-html';
 import {
   attrHref,
   escapeAttr,
@@ -94,19 +95,8 @@ function renderHero(b: HeroBlock, ctx: RenderContext): string {
 }
 
 function renderParagraph(b: ParagraphBlock, ctx: RenderContext): string {
-  return rowWrap(
-    b,
-    ctx,
-    contentTd(
-      ctx,
-      'block-pad-md',
-      `
-        <p class="paragraph-body text-body">
-          <span data-field="html">${b.html}</span>
-        </p>
-      `,
-    ),
-  );
+  const inner = richDocToHtml(b.body, { dataField: 'body' });
+  return rowWrap(b, ctx, contentTd(ctx, 'block-pad-md paragraph-block', inner));
 }
 
 function renderCtaButton(b: CtaButtonBlock, ctx: RenderContext): string {

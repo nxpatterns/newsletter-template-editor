@@ -12,10 +12,13 @@ import {
   type CtaLinkListItem,
   type HeroBlock,
   type Newsletter,
+  type ParagraphBlock,
   type PriceBoxBlock,
   type PullQuoteBlock,
   type StatBoxBlock,
 } from '../types';
+import { ensureRichDoc } from '../richtext/from-html';
+import { emptyRichDoc } from '../richtext/model';
 
 /** Strip tags / collapse whitespace for legacy HTML price blobs. */
 export function plainFromHtml(html: string): string {
@@ -209,6 +212,24 @@ export function normalizePriceBoxBlock(raw: LegacyPriceRaw, fallbackId = ''): Pr
   };
 }
 
+/** Map legacy html string onto rich `body` document. */
+export function normalizeParagraphBlock(
+  raw: Record<string, unknown> & { id?: unknown; body?: unknown; html?: unknown },
+  fallbackId = '',
+): ParagraphBlock {
+  const id = typeof raw.id === 'string' && raw.id ? raw.id : fallbackId;
+  if (Array.isArray(raw.body)) {
+    return { id, type: 'paragraph', body: ensureRichDoc(raw.body) };
+  }
+  if (typeof raw.html === 'string') {
+    return { id, type: 'paragraph', body: ensureRichDoc(raw.html) };
+  }
+  if (typeof raw.body === 'string') {
+    return { id, type: 'paragraph', body: ensureRichDoc(raw.body) };
+  }
+  return { id, type: 'paragraph', body: emptyRichDoc() };
+}
+
 /** Map legacy headlineHtml onto plain headline storage. */
 export function normalizeHeroBlock(
   raw: Record<string, unknown> & { id?: unknown; label?: unknown; headline?: unknown; headlineHtml?: unknown },
@@ -327,6 +348,9 @@ export function normalizeCtaLinkListBlock(
 
 function normalizeBlocks(blocks: Block[]): Block[] {
   return blocks.map((block) => {
+    if (block.type === 'paragraph') {
+      return normalizeParagraphBlock(block as unknown as Record<string, unknown>, block.id);
+    }
     if (block.type === 'hero') {
       return normalizeHeroBlock(block as unknown as Record<string, unknown>, block.id);
     }
