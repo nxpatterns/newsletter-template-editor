@@ -1,57 +1,219 @@
 @let g = session.globals();
+@let blocks = session.blocks();
 
-<section data-testid="colors-fields">
-  <div class="ed-field-row">
-    <div class="ed-field">
-      <label class="ed-label" for="g-accent" [textContent]="i18n.t('colors.accent')"></label>
-      <div class="ed-color">
-        <input id="g-accent" type="color" data-testid="g-accent" [value]="g.accentColor" (input)="onColor('accentColor', $event)"  (blur)="onFieldBlur()" />
-        <input class="ed-input" [value]="g.accentColor" (input)="onColor('accentColor', $event)"  (blur)="onFieldBlur()" />
-      </div>
-    </div>
-    <div class="ed-field">
-      <label class="ed-label" for="g-gold" [textContent]="i18n.t('colors.gold')"></label>
-      <div class="ed-color">
-        <input id="g-gold" type="color" data-testid="g-gold" [value]="g.goldColor" (input)="onColor('goldColor', $event)"  (blur)="onFieldBlur()" />
-        <input class="ed-input" [value]="g.goldColor" (input)="onColor('goldColor', $event)"  (blur)="onFieldBlur()" />
+<section class="colors-tab" data-testid="colors-fields">
+  <div class="colors-acc colors-acc--section" [class.is-open]="isSectionOpen('palette')" data-testid="colors-section-palette">
+    <h2 class="colors-acc-h">
+      <button
+        type="button"
+        class="colors-acc-trigger"
+        data-testid="colors-acc-palette"
+        [attr.aria-expanded]="isSectionOpen('palette')"
+        aria-controls="colors-acc-panel-palette"
+        id="colors-acc-btn-palette"
+        (click)="toggleSection('palette')"
+      >
+        <span class="colors-acc-chevron" aria-hidden="true"></span>
+        <span class="colors-acc-title" [textContent]="i18n.t('colors.paletteTitle')"></span>
+      </button>
+    </h2>
+    <div
+      class="colors-acc-panel"
+      id="colors-acc-panel-palette"
+      role="region"
+      aria-labelledby="colors-acc-btn-palette"
+      [attr.inert]="isSectionOpen('palette') ? null : ''"
+    >
+      <div class="colors-acc-panel-inner colors-acc-panel-inner--pad">
+        <p class="ed-hint colors-section-hint" [textContent]="i18n.t('colors.paletteHint')"></p>
+        <div
+          class="palette-grid"
+          data-testid="colors-palette-grid"
+          role="group"
+          [attr.aria-label]="i18n.t('colors.paletteTitle')"
+        >
+          @for (token of paletteTokens; track token.key) {
+            <div class="palette-cell">
+              <label class="ed-label" [attr.for]="'g-' + token.key" [textContent]="i18n.t(token.labelKey)"></label>
+              <div class="palette-controls">
+                <input
+                  class="palette-swatch"
+                  [id]="'g-' + token.key"
+                  type="color"
+                  [attr.data-testid]="token.testId"
+                  [value]="g[token.key]"
+                  (input)="onColor(token.key, $event)"
+                  (blur)="onFieldBlur()"
+                />
+                <input
+                  class="ed-input palette-hex"
+                  [attr.aria-label]="i18n.t(token.labelKey)"
+                  [value]="g[token.key]"
+                  (input)="onColor(token.key, $event)"
+                  (blur)="onFieldBlur()"
+                />
+              </div>
+            </div>
+          }
+        </div>
       </div>
     </div>
   </div>
-  <div class="ed-field-row">
-    <div class="ed-field">
-      <label class="ed-label" for="g-body" [textContent]="i18n.t('colors.bodyText')"></label>
-      <div class="ed-color">
-        <input id="g-body" type="color" [value]="g.bodyTextColor" (input)="onColor('bodyTextColor', $event)"  (blur)="onFieldBlur()" />
-        <input class="ed-input" [value]="g.bodyTextColor" (input)="onColor('bodyTextColor', $event)"  (blur)="onFieldBlur()" />
+
+  <div class="colors-shell" data-testid="colors-shell-accordions">
+    <div class="colors-acc" [class.is-open]="isOpen('shell-header')">
+      <h3 class="colors-acc-h">
+        <button
+          type="button"
+          class="colors-acc-trigger"
+          data-testid="colors-acc-header"
+          [attr.aria-expanded]="isOpen('shell-header')"
+          aria-controls="colors-acc-panel-header"
+          id="colors-acc-btn-header"
+          (click)="toggle('shell-header')"
+        >
+          <span class="colors-acc-chevron" aria-hidden="true"></span>
+          <span class="colors-acc-title" [textContent]="i18n.t('colors.mailHeader')"></span>
+          <span class="colors-acc-meta" [textContent]="i18n.t('colors.shellMeta')"></span>
+        </button>
+      </h3>
+      <div
+        class="colors-acc-panel"
+        id="colors-acc-panel-header"
+        role="region"
+        aria-labelledby="colors-acc-btn-header"
+        [attr.inert]="isOpen('shell-header') ? null : ''"
+      >
+        <div class="colors-acc-panel-inner">
+          <p class="colors-acc-note" [textContent]="i18n.t('colors.structurePreview')"></p>
+          <ul class="slot-list">
+            @for (slotKey of headerSlots; track slotKey) {
+              <li class="slot-row">
+                <span class="slot-label" [textContent]="i18n.t(slotKey)"></span>
+                <span class="slot-swatch is-placeholder" aria-hidden="true"></span>
+                <span class="slot-value" [textContent]="i18n.t('colors.slotPlaceholder')"></span>
+              </li>
+            }
+          </ul>
+        </div>
       </div>
     </div>
-    <div class="ed-field">
-      <label class="ed-label" for="g-heading" [textContent]="i18n.t('colors.heading')"></label>
-      <div class="ed-color">
-        <input id="g-heading" type="color" [value]="g.headingColor" (input)="onColor('headingColor', $event)"  (blur)="onFieldBlur()" />
-        <input class="ed-input" [value]="g.headingColor" (input)="onColor('headingColor', $event)"  (blur)="onFieldBlur()" />
+
+    <div class="colors-acc" [class.is-open]="isOpen('shell-footer')">
+      <h3 class="colors-acc-h">
+        <button
+          type="button"
+          class="colors-acc-trigger"
+          data-testid="colors-acc-footer"
+          [attr.aria-expanded]="isOpen('shell-footer')"
+          aria-controls="colors-acc-panel-footer"
+          id="colors-acc-btn-footer"
+          (click)="toggle('shell-footer')"
+        >
+          <span class="colors-acc-chevron" aria-hidden="true"></span>
+          <span class="colors-acc-title" [textContent]="i18n.t('colors.mailFooter')"></span>
+          <span class="colors-acc-meta" [textContent]="i18n.t('colors.shellMeta')"></span>
+        </button>
+      </h3>
+      <div
+        class="colors-acc-panel"
+        id="colors-acc-panel-footer"
+        role="region"
+        aria-labelledby="colors-acc-btn-footer"
+        [attr.inert]="isOpen('shell-footer') ? null : ''"
+      >
+        <div class="colors-acc-panel-inner">
+          <p class="colors-acc-note" [textContent]="i18n.t('colors.structurePreview')"></p>
+          <ul class="slot-list">
+            @for (slotKey of footerSlots; track slotKey) {
+              <li class="slot-row">
+                <span class="slot-label" [textContent]="i18n.t(slotKey)"></span>
+                <span class="slot-swatch is-placeholder" aria-hidden="true"></span>
+                <span class="slot-value" [textContent]="i18n.t('colors.slotPlaceholder')"></span>
+              </li>
+            }
+          </ul>
+        </div>
       </div>
     </div>
   </div>
-  <div class="ed-field-row">
-    <div class="ed-field">
-      <label class="ed-label" for="g-page-bg" [textContent]="i18n.t('colors.pageBg')"></label>
-      <div class="ed-color">
-        <input id="g-page-bg" type="color" data-testid="g-page-bg" [value]="g.pageBgColor" (input)="onColor('pageBgColor', $event)"  (blur)="onFieldBlur()" />
-        <input class="ed-input" [value]="g.pageBgColor" (input)="onColor('pageBgColor', $event)"  (blur)="onFieldBlur()" />
-      </div>
-    </div>
-    <div class="ed-field">
-      <label class="ed-label" for="g-content-bg" [textContent]="i18n.t('colors.contentBg')"></label>
-      <div class="ed-color">
-        <input
-          id="g-content-bg"
-          type="color"
-          data-testid="g-content-bg"
-          [value]="g.contentBgColor"
-          (input)="onColor('contentBgColor', $event)"
-         (blur)="onFieldBlur()" />
-        <input class="ed-input" [value]="g.contentBgColor" (input)="onColor('contentBgColor', $event)"  (blur)="onFieldBlur()" />
+
+  <div class="colors-acc colors-acc--section" [class.is-open]="isSectionOpen('blocks')" data-testid="colors-section-blocks">
+    <h2 class="colors-acc-h">
+      <button
+        type="button"
+        class="colors-acc-trigger"
+        data-testid="colors-acc-blocks"
+        [attr.aria-expanded]="isSectionOpen('blocks')"
+        aria-controls="colors-acc-panel-blocks"
+        id="colors-acc-btn-blocks"
+        (click)="toggleSection('blocks')"
+      >
+        <span class="colors-acc-chevron" aria-hidden="true"></span>
+        <span class="colors-acc-title" [textContent]="i18n.t('colors.blocksSection')"></span>
+        @if (blocks.length > 0) {
+          <span class="colors-acc-count" aria-hidden="true" [textContent]="blocks.length"></span>
+        }
+      </button>
+    </h2>
+    <div
+      class="colors-acc-panel"
+      id="colors-acc-panel-blocks"
+      role="region"
+      aria-labelledby="colors-acc-btn-blocks"
+      [attr.inert]="isSectionOpen('blocks') ? null : ''"
+    >
+      <div class="colors-acc-panel-inner colors-acc-panel-inner--pad">
+        <p class="ed-hint colors-section-hint" [textContent]="i18n.t('colors.blocksHint')"></p>
+
+        @if (blocks.length === 0) {
+          <p class="colors-empty" [textContent]="i18n.t('colors.blocksEmpty')"></p>
+        } @else {
+          <div class="colors-block-list" data-testid="colors-block-accordions">
+            @for (block of blocks; track block.id; let i = $index) {
+              @let accId = 'block-' + block.id;
+              <div class="colors-acc colors-acc--nested" [class.is-open]="isOpen(accId)">
+                <h3 class="colors-acc-h">
+                  <button
+                    type="button"
+                    class="colors-acc-trigger"
+                    [attr.data-testid]="'colors-acc-block-' + block.id"
+                    [attr.aria-expanded]="isOpen(accId)"
+                    [attr.aria-controls]="'colors-acc-panel-' + block.id"
+                    [attr.id]="'colors-acc-btn-' + block.id"
+                    (click)="toggle(accId)"
+                  >
+                    <span class="colors-acc-chevron" aria-hidden="true"></span>
+                    <span class="colors-acc-index" aria-hidden="true" [textContent]="i + 1"></span>
+                    <span class="colors-acc-icon" aria-hidden="true" [textContent]="icon(block.type)"></span>
+                    <span class="colors-acc-title" [textContent]="blockLabel(block.type)"></span>
+                    <span class="colors-acc-meta" [textContent]="i18n.t('colors.blockMeta')"></span>
+                  </button>
+                </h3>
+                <div
+                  class="colors-acc-panel"
+                  [attr.id]="'colors-acc-panel-' + block.id"
+                  role="region"
+                  [attr.aria-labelledby]="'colors-acc-btn-' + block.id"
+                  [attr.inert]="isOpen(accId) ? null : ''"
+                >
+                  <div class="colors-acc-panel-inner">
+                    <p class="colors-acc-note" [textContent]="i18n.t('colors.structurePreview')"></p>
+                    <ul class="slot-list">
+                      @for (slotKey of slotsFor(block.type); track slotKey) {
+                        <li class="slot-row">
+                          <span class="slot-label" [textContent]="i18n.t(slotKey)"></span>
+                          <span class="slot-swatch is-placeholder" aria-hidden="true"></span>
+                          <span class="slot-value" [textContent]="i18n.t('colors.slotPlaceholder')"></span>
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
       </div>
     </div>
   </div>
