@@ -1,8 +1,10 @@
 import {
+  BENEFIT_DEFAULT_ICON,
   CTA_LINK_DEFAULT_ICON,
   CTA_LINK_ICONS,
   createBlock,
   emptyCtaLinkListItem,
+  type BenefitsListBlock,
   type CtaLinkListBlock,
   type Newsletter,
   type PriceBoxBlock,
@@ -10,6 +12,7 @@ import {
 import { renderExport, renderPreview } from '../render';
 import { seedNewsletter } from '../seed';
 import {
+  normalizeBenefitsListBlock,
   normalizeCtaLinkListBlock,
   normalizeNewsletter,
   normalizePriceBoxBlock,
@@ -132,7 +135,8 @@ describe('price-box render', () => {
     const price = n.blocks.find((b) => b.type === 'price-box') as PriceBoxBlock;
     price.strikeEnabled = false;
     const html = renderExport(n).full;
-    expect(html).not.toContain('text-price-strike');
+    expect(html).not.toContain('class="price-strike');
+    expect(html).not.toContain('data-field="strikeAmount"');
     expect(html).toContain('data-field="amount">99<');
   });
 
@@ -227,6 +231,57 @@ describe('normalizeCtaLinkListBlock', () => {
     expect(list.type).toBe('cta-link-list');
     expect(list.items[0].icon).toBe(CTA_LINK_DEFAULT_ICON);
     expect(list.items[0].label).toBe('Only title');
+  });
+});
+
+describe('normalizeBenefitsListBlock', () => {
+  it('migrates legacy string[] items to icon+text rows', () => {
+    const next = normalizeBenefitsListBlock({
+      id: 'b1',
+      items: ['One', 'Two'],
+    });
+    expect(next.items).toEqual([
+      { icon: BENEFIT_DEFAULT_ICON, text: 'One' },
+      { icon: BENEFIT_DEFAULT_ICON, text: 'Two' },
+    ]);
+  });
+
+  it('keeps custom icons and at least one row', () => {
+    const next = normalizeBenefitsListBlock({
+      id: 'b2',
+      items: [{ icon: '★', text: 'Star perk' }],
+    });
+    expect(next.items[0].icon).toBe('★');
+    expect(normalizeBenefitsListBlock({ id: 'b3' }).items.length).toBe(1);
+  });
+});
+
+describe('benefits-list render', () => {
+  it('renders per-row icons from seed', () => {
+    const n = seedNewsletter();
+    const html = renderExport(n).full;
+    expect(html).toMatch(/data-item-key="icon"[^>]*>›\s*</);
+    expect(html).toMatch(/data-item-key="text"[^>]*>\s*Dedizierter Unternehmenseintrag/);
+  });
+
+  it('uses stylesheet classes instead of per-cell layout inline styles', () => {
+    const n = seedNewsletter();
+    const html = renderExport(n).full;
+    expect(html).toContain('class="benefit-row"');
+    expect(html).toContain('class="benefit-row-cell"');
+    expect(html).toContain('benefit-icon text-benefit-icon');
+    expect(html).toContain('benefit-text text-benefit');
+    expect(html).toContain('.benefit-row-cell');
+    expect(html).not.toMatch(
+      /data-item-key="icon"[^>]*style="color:#4db8ff;font-size:14px/,
+    );
+    expect(html).not.toMatch(/data-item-key="text"[^>]*style="font-family:/);
+  });
+
+  it('createBlock uses structured benefit rows', () => {
+    const block = createBlock('benefits-list') as BenefitsListBlock;
+    expect(block.items[0].icon).toBe(BENEFIT_DEFAULT_ICON);
+    expect(block.items[0].text).toBe('Benefit one');
   });
 });
 

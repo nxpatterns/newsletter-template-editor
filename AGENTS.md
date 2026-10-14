@@ -34,6 +34,17 @@ Do not tag, push a release commit, or rely on CI alone if either command fails o
 
 Run a local compile (`ng build` / the project’s usual build) and fix failures first. Do not treat unit/BDD runs or a running dev server as a substitute when TypeScript or imports may have broken. Skip only for trivial non-compile edits (copy-only i18n, comments) when clearly no graph change.
 
+## Absolute rule — email styles: classes in source, inline only at HTML export
+
+**Author newsletter markup with CSS/SCSS classes. Do not hand-write layout/typography as long `style="…"` strings in renderer source.**
+
+- **App / renderer source / preview:** semantic classes + a real stylesheet (or generated CSS from one definition). Preview may keep a `<style>` block.
+- **HTML export only:** if email clients require it, **bake** styles in at export time (CSS inliner → element `style` attributes; `bgcolor` where needed). Inlining is an export pipeline step, not a coding style for block templates.
+- **Allowed exceptions in source:** minimal attributes email hard-requires even before inlining (e.g. `bgcolor` dual-write with class-driven background) — never dump full per-row layout CSS inline “because email”.
+- **Do not** regress fixed blocks (e.g. benefits list) back to per-cell inline layout dumps.
+
+When touching `src/core/render/`, prefer classes in `darkModeCss` / shared email CSS and keep export inlining as a future or dedicated export path — not copy-pasted styles in every `render*` function.
+
 ## Absolute rule — effort matches the task
 
 **Spend the minimum work that correctly finishes the request. Cheap tasks must stay cheap.**

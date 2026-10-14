@@ -1,62 +1,30 @@
 import type { Globals, LogoConfig } from '../types';
+import { emailDocumentCss } from './email-css';
 import { attrHref, escapeAttr, escapeHtml, fontStack, resolveHref, type RenderMode } from './utils';
 
-export function darkModeCss(globals: Globals): string {
-  const pageBg = globals.pageBgColor;
-  const contentBg = globals.contentBgColor;
-  return `
-  :root { color-scheme: light dark; }
-  body, table, td, a { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
-  table, td { mso-table-lspace:0pt; mso-table-rspace:0pt; }
-  img { -ms-interpolation-mode:bicubic; border:0; outline:none; text-decoration:none; }
-  table { border-collapse:collapse !important; }
-  body { margin:0 !important; padding:0 !important; width:100% !important; background-color:${pageBg} !important; }
-  @media (prefers-color-scheme: dark) {
-    body, .email-bg, .footer-bg { background-color:${pageBg} !important; }
-    .header-bg, .content-bg { background-color:${contentBg} !important; }
-    .chapter-bg, .stat-box-bg { background-color:#060e1a !important; }
-    .price-box-bg { background-color:#060d1a !important; }
-    .text-body { color:${globals.bodyTextColor} !important; }
-    .text-heading { color:${globals.headingColor} !important; }
-    .text-accent { color:${globals.accentColor} !important; }
-    .text-gold, .text-chapter-label { color:${globals.goldColor} !important; }
-    .text-dim { color:#4a6a88 !important; }
-    .text-stat { color:${globals.accentColor} !important; }
-    .text-price-main { color:#ffffff !important; }
-    .text-cta-body { color:#3a6080 !important; }
-  }
-  @media screen and (max-width: 600px) {
-    .email-container { width:100% !important; }
-    .mobile-padding { padding:28px 20px !important; }
-    .mobile-font-large { font-size:26px !important; line-height:36px !important; }
-  }
-  `;
-}
+export { emailDocumentCss, darkModeCss } from './email-css';
 
 function renderLogo(logo: LogoConfig | undefined): string {
   if (!logo || !logo.src) return '';
   const h = Math.max(16, Math.round(logo.heightPx || 48));
   const alt = escapeAttr(logo.alt || '');
   const widthAttr = logo.widthPx ? ` width="${Math.round(logo.widthPx)}"` : '';
-  const imgTag = `<img src="${escapeAttr(logo.src)}" alt="${alt}" height="${h}"${widthAttr} style="display:inline-block;height:${h}px;${
-logo.widthPx ? `width:${Math.round(logo.widthPx)}px;` : 'max-width:100%;width:auto;'
-  }border:0;vertical-align:top">`;
+  const wCss = logo.widthPx ? `${Math.round(logo.widthPx)}px` : 'auto';
+  const imgTag = `<img src="${escapeAttr(logo.src)}" alt="${alt}" height="${h}"${widthAttr} class="email-logo" style="--logo-h:${h}px;--logo-w:${wCss}">`;
   if (logo.href) {
-    return `<a href="${escapeAttr(logo.href)}" target="_blank" style="display:inline-block;border:0">${imgTag}</a>`;
+    return `<a href="${escapeAttr(logo.href)}" target="_blank" class="email-logo-link">${imgTag}</a>`;
   }
   return imgTag;
 }
 
 export function renderHeader(globals: Globals, mode: RenderMode, bodyInner: string): string {
-  const font = fontStack(globals);
   const messageHref = mode === 'export' ? '{{ MessageURL }}' : '#';
   const logoHtml = renderLogo(globals.logo);
   const pageBg = escapeAttr(globals.pageBgColor);
   const contentBg = escapeAttr(globals.contentBgColor);
-  const gold = escapeAttr(globals.goldColor);
   const starsText = escapeHtml(globals.brand?.starsText || '');
   const starsRow = starsText
-    ? `<p style="font-family:${font};font-size:11px;color:${gold};letter-spacing:5px;margin:0 0 10px 0;line-height:1" class="text-gold" data-field="brand.starsText">${starsText}</p>`
+    ? `<p class="brand-stars text-gold" data-field="brand.starsText">${starsText}</p>`
     : '';
   const brandName = globals.brand?.nameHtml || '';
   const legal = globals.legal;
@@ -69,28 +37,29 @@ export function renderHeader(globals: Globals, mode: RenderMode, bodyInner: stri
   const companyName = escapeHtml(legal.companyName || '');
   const companySiteLabel = escapeHtml(legal.companyWebsiteLabel || '');
   const companyRow = companySiteHref && companySiteLabel
-    ? `${companyName}${companyName ? '&nbsp;·&nbsp;' : ''}<a href="${companySiteHref}" target="_blank" style="color:#4a6a88;text-decoration:underline" data-field="legal.companyWebsiteLabel">${companySiteLabel}</a>`
+    ? `${companyName}${companyName ? '&nbsp;·&nbsp;' : ''}<a href="${companySiteHref}" target="_blank" class="email-footer-link" data-field="legal.companyWebsiteLabel">${companySiteLabel}</a>`
     : companyName;
+  const viewInBrowserClass = logoHtml
+    ? 'view-in-browser view-in-browser--after-logo'
+    : 'view-in-browser';
 
   return `
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" bgcolor="${pageBg}" class="email-bg" style="background-color:${pageBg}">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" bgcolor="${pageBg}" class="email-bg">
       <tr>
-        <td align="center" bgcolor="${pageBg}" class="email-bg" style="padding:28px 16px;background-color:${pageBg}">
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="email-container" style="max-width:600px">
+        <td align="center" bgcolor="${pageBg}" class="email-bg email-outer-pad">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="email-container">
             <tr>
-              <td bgcolor="${contentBg}" style="background-color:${contentBg};padding:32px 48px 28px 48px" class="mobile-padding header-bg">
+              <td bgcolor="${contentBg}" class="mobile-padding header-bg">
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                   <tr>
-                    <td valign="top" style="vertical-align:top">
+                    <td valign="top" class="v-top">
                       ${starsRow}
                       <span data-field="brand.nameHtml">${brandName}</span>
                     </td>
-                    <td align="right" valign="top" style="vertical-align:top;text-align:right">
+                    <td align="right" valign="top" class="t-right">
                       ${logoHtml}
-                      <p style="font-family:${font};font-size:10px;color:#1e3a5c;letter-spacing:2px;text-transform:uppercase;margin:${
-                        logoHtml ? '8px' : '0'
-                      } 0 0 0;line-height:18px">
-                        <a href="${messageHref}" target="_blank" style="color:#1e3a5c;text-decoration:none">${escapeHtml(
+                      <p class="${viewInBrowserClass}">
+                        <a href="${messageHref}" target="_blank" class="email-muted-link">${escapeHtml(
                           legal.viewInBrowserLabel,
                         )}</a>
                       </p>
@@ -101,37 +70,37 @@ export function renderHeader(globals: Globals, mode: RenderMode, bodyInner: stri
             </tr>
             ${bodyInner}
             <tr>
-              <td bgcolor="${pageBg}" style="background-color:${pageBg};padding:28px 48px" class="mobile-padding footer-bg">
-                <p style="font-family:'Trebuchet MS',Tahoma,Verdana,Arial;font-size:14px;line-height:20px;color:#4a6a88;margin:0;letter-spacing:2px" class="text-dim" data-field="legal.noticeHtml">
+              <td bgcolor="${pageBg}" class="mobile-padding footer-bg footer-notice-pad">
+                <p class="footer-notice text-dim" data-field="legal.noticeHtml">
                   ${legal.noticeHtml}
                 </p>
               </td>
             </tr>
             <tr>
-              <td bgcolor="${pageBg}" style="background-color:${pageBg};padding:0 48px 36px 48px" class="mobile-padding footer-bg">
+              <td bgcolor="${pageBg}" class="mobile-padding footer-bg footer-meta-pad">
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-                  <tr><td style="height:1px;background-color:#0c1a2e;font-size:0;line-height:0">&nbsp;</td></tr>
+                  <tr><td class="footer-rule-cell">&nbsp;</td></tr>
                 </table>
-                <p style="font-family:${font};font-size:11px;color:#1a3050;margin:18px 0 0 0;text-align:center;letter-spacing:3px">
-                  <span style="color:${gold};font-size:9px" class="text-gold">${starsText || '★ ★ ★ ★ ★ ★'}</span>
+                <p class="footer-stars-line">
+                  <span class="footer-stars-glyph text-gold">${starsText || '★ ★ ★ ★ ★ ★'}</span>
                 </p>
-                <p style="font-family:${font};font-size:12px;color:#4a6a88;margin:10px 0 0 0;text-align:center" class="text-dim" data-field="legal.companyName">
+                <p class="footer-company text-dim" data-field="legal.companyName">
                   ${companyRow}
                 </p>
-                <p style="font-family:${font};font-size:12px;margin:8px 0 0 0;text-align:center">
-                  <a href="${privacyHref}" target="_blank" style="color:#4a6a88;text-decoration:underline">${escapeHtml(
+                <p class="footer-links">
+                  <a href="${privacyHref}" target="_blank" class="email-footer-link">${escapeHtml(
                     legal.privacyLabel,
                   )}</a>
                   &nbsp;|&nbsp;
-                  <a href="${imprintHref}" target="_blank" style="color:#4a6a88;text-decoration:underline">${escapeHtml(
+                  <a href="${imprintHref}" target="_blank" class="email-footer-link">${escapeHtml(
                     legal.imprintLabel,
                   )}</a>
                   &nbsp;|&nbsp;
-                  <a href="${unsubHref}" target="_blank" style="color:#4a6a88;text-decoration:underline">${escapeHtml(
+                  <a href="${unsubHref}" target="_blank" class="email-footer-link">${escapeHtml(
                     legal.unsubscribeLabel,
                   )}</a>
                   &nbsp;|&nbsp;
-                  <a href="${messageHref}" target="_blank" style="color:#4a6a88;text-decoration:underline">${escapeHtml(
+                  <a href="${messageHref}" target="_blank" class="email-footer-link">${escapeHtml(
                     legal.viewInBrowserLabel,
                   )}</a>
                 </p>
@@ -157,12 +126,10 @@ export function renderExportShell(globals: Globals, bodyInner: string): string {
   <meta name="color-scheme" content="light dark" />
   <meta name="supported-color-schemes" content="light dark" />
   <title>{{ .Campaign.Subject }}</title>
-  <style>${darkModeCss(globals)}</style>
+  <style>${emailDocumentCss(globals)}</style>
 </head>
-<body bgcolor="${pageBg}" style="margin:0;padding:0;background-color:${pageBg};font-family:${font}">
-  <div style="display:none;color:${pageBg};line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden">
-    ${preheader}&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌
-  </div>
+<body bgcolor="${pageBg}" class="email-body" style="--email-page-bg:${pageBg};font-family:${font}">
+  <div class="preheader-hide">${preheader}&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌</div>
   ${header}
   {{ TrackView }}
 </body>
@@ -407,10 +374,10 @@ export function renderPreviewDoc(globals: Globals, bodyInner: string, subject: s
   <meta name="color-scheme" content="light dark" />
   <meta name="supported-color-schemes" content="light dark" />
   <title>${escapeHtml(subject || 'Preview')}</title>
-  <style>${darkModeCss(globals)}${PREVIEW_EDITOR_CHROME}</style>
+  <style>${emailDocumentCss(globals)}${PREVIEW_EDITOR_CHROME}</style>
 </head>
-<body bgcolor="${pageBg}" style="margin:0;padding:0;background-color:${pageBg};font-family:${font}">
-  <div style="display:none;max-height:0;overflow:hidden">${preheader}</div>
+<body bgcolor="${pageBg}" class="email-body" style="--email-page-bg:${pageBg};font-family:${font}">
+  <div class="preheader-hide">${preheader}</div>
   ${header}
 </body>
 </html>`;

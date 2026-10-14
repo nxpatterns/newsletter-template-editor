@@ -118,9 +118,22 @@ export interface StatBoxBlock extends BlockBase {
   geoHtml: string;
 }
 
+export interface BenefitsListItem {
+  /** Single email-safe glyph before the benefit text (same picker as CTA links). */
+  icon: string;
+  text: string;
+}
+
+/** Default chevron used in the CloudLib benefits render. */
+export const BENEFIT_DEFAULT_ICON = '›';
+
+export function emptyBenefitsListItem(): BenefitsListItem {
+  return { icon: BENEFIT_DEFAULT_ICON, text: '' };
+}
+
 export interface BenefitsListBlock extends BlockBase {
   type: 'benefits-list';
-  items: string[];
+  items: BenefitsListItem[];
 }
 
 export interface PriceBoxBlock extends BlockBase {
@@ -155,7 +168,7 @@ export interface CtaLinkListItem {
 export const CTA_LINK_DEFAULT_ICON = '→';
 
 /**
- * Curated email-safe single-character icons for CTA link rows.
+ * Curated email-safe single-character icons for list rows (CTA links, benefits).
  * Prefer plain symbols that survive common clients (no emoji skin tones).
  */
 export const CTA_LINK_ICONS: readonly string[] = [
@@ -252,7 +265,15 @@ export function createBlock(type: Block['type']): Block {
     case 'stat-box':
       return { id, type, number: '1.000+', label: 'Metric label', geoHtml: 'Region A · Region B' };
     case 'benefits-list':
-      return { id, type, items: ['Benefit one', 'Benefit two', 'Benefit three'] };
+      return {
+        id,
+        type,
+        items: [
+          { icon: BENEFIT_DEFAULT_ICON, text: 'Benefit one' },
+          { icon: BENEFIT_DEFAULT_ICON, text: 'Benefit two' },
+          { icon: BENEFIT_DEFAULT_ICON, text: 'Benefit three' },
+        ],
+      };
     case 'price-box':
       return {
         id,

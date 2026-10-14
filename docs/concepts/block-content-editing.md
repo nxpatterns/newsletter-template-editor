@@ -85,8 +85,10 @@ Fix the model before introducing a text editor.
 
 ### benefits-list
 
-- Structured: one benefit per line → `items: string[]`.
-- Keep this pattern; UI can later become a small list editor (add/remove/reorder rows) instead of a textarea.
+- **Row editor** (shipped): each row = icon + text (same email-safe icon grid as CTA link list).
+- Add / remove / reorder; at least one row remains.
+- Legacy `items: string[]` migrates via `normalizeBenefitsListBlock` (default icon `›`).
+- Email look stays benefits-style (larger type / spacing) — editor chrome mirrors the link-list row UI.
 
 ### cta-button
 
@@ -141,7 +143,7 @@ Shared mini-toolbar for a **small** set of surfaces only (brand name, legal noti
 
 1. **cta-link-list** row editor (kill JSON UI) — **done** (icon + structured rows).
 2. Plain-label cleanup (remove “HTML” from seller copy) — **done** (field/brand/legal labels + paragraph hint; export/about copy still may say HTML).
-3. Benefits list editor (optional polish) — **next** structure polish.
+3. Benefits list editor — **done** (icon + text rows, shared icon grid).
 4. Light rich-text kit only for brand name / legal notice if still required.
 5. Email colors — separate large track; only from `email-colors.md` when scheduled.
 6. Hero / paragraph / chapter / quote / stat **model** plain-up (storage + renderer) — separate from label-only cleanup when scheduled.

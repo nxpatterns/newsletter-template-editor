@@ -16,7 +16,6 @@ import {
   attrHref,
   escapeAttr,
   escapeHtml,
-  fontStack,
   resolveHref,
   type RenderMode,
 } from './utils';
@@ -31,6 +30,12 @@ function contentBg(ctx: RenderContext): string {
   return escapeAttr(ctx.globals.contentBgColor);
 }
 
+/** Dual-write bgcolor + class-driven background (email client exception). */
+function contentTd(ctx: RenderContext, extraClass: string, inner: string): string {
+  const bg = contentBg(ctx);
+  return `<td bgcolor="${bg}" class="mobile-padding content-bg ${extraClass}">${inner}</td>`;
+}
+
 function rowWrap(block: Block, ctx: RenderContext, innerTdHtml: string): string {
   if (!ctx.annotate) return `<tr>${innerTdHtml}</tr>`;
   return `<tr class="nte-block" data-block-id="${escapeAttr(block.id)}" data-block-type="${escapeAttr(block.type)}">${innerTdHtml}</tr>`;
@@ -41,20 +46,20 @@ function renderDivider(b: DividerBlock, ctx: RenderContext): string {
   let inner = '';
   if (b.style === 'thin') {
     inner = `
-      <td style="background-color:${bg};padding:0 48px" class="content-bg">
+      <td bgcolor="${bg}" class="content-bg block-pad-x">
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-          <tr><td style="height:1px;background-color:#1a3050;font-size:0;line-height:0">&nbsp;</td></tr>
+          <tr><td class="divider-line">&nbsp;</td></tr>
         </table>
       </td>
     `;
   } else if (b.style === 'accent-double') {
     inner = `
-      <td style="background-color:${bg};padding:0 48px" class="content-bg">
+      <td bgcolor="${bg}" class="content-bg block-pad-x">
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
           <tr>
-            <td style="height:3px;background-color:${bg};font-size:0;line-height:0">&nbsp;</td>
-            <td style="width:80px;height:3px;background-color:#1e6bb8;font-size:0;line-height:0" width="80">&nbsp;</td>
-            <td style="width:120px;height:3px;background-color:${escapeAttr(ctx.globals.accentColor)};font-size:0;line-height:0" width="120">&nbsp;</td>
+            <td class="divider-accent-gap">&nbsp;</td>
+            <td class="divider-accent-mid" width="80">&nbsp;</td>
+            <td class="divider-accent-end" width="120">&nbsp;</td>
           </tr>
         </table>
       </td>
@@ -62,75 +67,77 @@ function renderDivider(b: DividerBlock, ctx: RenderContext): string {
   } else {
     const h = Math.max(1, b.heightPx ?? 24);
     inner = `
-      <td style="background-color:${bg};padding:0;height:${h}px;font-size:0;line-height:0" class="content-bg" height="${h}">&nbsp;</td>
+      <td bgcolor="${bg}" class="content-bg divider-spacer" height="${h}" style="--divider-h:${h}px">&nbsp;</td>
     `;
   }
   return rowWrap(b, ctx, inner);
 }
 
 function renderHero(b: HeroBlock, ctx: RenderContext): string {
-  const font = fontStack(ctx.globals);
   return rowWrap(
     b,
     ctx,
-    `
-      <td style="background-color:${contentBg(ctx)};padding:52px 48px 48px 48px" class="mobile-padding content-bg">
-        <p style="font-family:${font};font-size:14px;color:${escapeAttr(ctx.globals.goldColor)};letter-spacing:2px;margin:0 0 28px 0" class="text-gold">
+    contentTd(
+      ctx,
+      'block-pad-hero',
+      `
+        <p class="hero-label text-gold">
           <span data-field="label">${escapeHtml(b.label)}</span>
         </p>
-        <h1 class="mobile-font-large text-heading" style="font-family:${font};color:${escapeAttr(ctx.globals.headingColor)};margin:0;font-weight:400">
-          <span data-field="headlineHtml" style="font-size:26px">${b.headlineHtml}</span>
+        <h1 class="mobile-font-large text-heading hero-headline">
+          <span data-field="headlineHtml" class="hero-headline-inner">${b.headlineHtml}</span>
         </h1>
-      </td>
-    `,
+      `,
+    ),
   );
 }
 
 function renderParagraph(b: ParagraphBlock, ctx: RenderContext): string {
-  const font = fontStack(ctx.globals);
   return rowWrap(
     b,
     ctx,
-    `
-      <td style="background-color:${contentBg(ctx)};padding:24px 48px" class="mobile-padding content-bg">
-        <p style="font-family:${font};font-size:17px;line-height:30px;color:${escapeAttr(ctx.globals.bodyTextColor)};margin:0" class="text-body">
+    contentTd(
+      ctx,
+      'block-pad-md',
+      `
+        <p class="paragraph-body text-body">
           <span data-field="html">${b.html}</span>
         </p>
-      </td>
-    `,
+      `,
+    ),
   );
 }
 
 function renderCtaButton(b: CtaButtonBlock, ctx: RenderContext): string {
-  const font = fontStack(ctx.globals);
   const href = resolveHref(b.href, ctx.mode);
   return rowWrap(
     b,
     ctx,
-    `
-      <td style="background-color:${contentBg(ctx)};padding:24px 48px" class="mobile-padding content-bg">
+    contentTd(
+      ctx,
+      'block-pad-md',
+      `
         <table role="presentation" cellspacing="0" cellpadding="0" border="0">
           <tr>
-            <td style="background-color:#1d6bb8">
-              <a href="${attrHref(href, ctx.mode)}" target="_blank" style="display:inline-block;padding:18px 48px;font-family:${font};font-size:13px;font-weight:700;color:#ffffff;text-decoration:none;text-transform:uppercase">
+            <td class="cta-button-cell" bgcolor="#1d6bb8">
+              <a href="${attrHref(href, ctx.mode)}" target="_blank" class="cta-button-link">
                 <span data-field="text">${escapeHtml(b.text)}</span>
               </a>
             </td>
           </tr>
         </table>
-      </td>
-    `,
+      `,
+    ),
   );
 }
 
 function renderChapterBand(b: ChapterBandBlock, ctx: RenderContext): string {
-  const font = fontStack(ctx.globals);
   return rowWrap(
     b,
     ctx,
     `
-      <td bgcolor="#060e1a" style="background-color:#060e1a;padding:16px 48px" class="mobile-padding chapter-bg">
-        <p style="font-family:${font};font-size:14px;color:${escapeAttr(ctx.globals.goldColor)};letter-spacing:2px;margin:0" class="text-gold text-chapter-label">
+      <td bgcolor="#060e1a" class="mobile-padding chapter-bg block-pad-chapter">
+        <p class="chapter-title text-gold text-chapter-label">
           <span data-field="titleHtml">${b.titleHtml}</span>
         </p>
       </td>
@@ -139,51 +146,51 @@ function renderChapterBand(b: ChapterBandBlock, ctx: RenderContext): string {
 }
 
 function renderPullQuote(b: PullQuoteBlock, ctx: RenderContext): string {
-  const font = fontStack(ctx.globals);
-  const accent = escapeAttr(ctx.globals.accentColor);
   return rowWrap(
     b,
     ctx,
-    `
-      <td style="background-color:${contentBg(ctx)};padding:20px 48px" class="mobile-padding content-bg">
+    contentTd(
+      ctx,
+      'block-pad-sm',
+      `
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
           <tr>
-            <td style="width:3px;background-color:${accent}" width="3">&nbsp;</td>
-            <td style="padding:16px 0 16px 22px">
-              <p class="pull-quote" style="font-family:${font};font-size:22px;line-height:34px;color:#c8dff0;margin:0;font-style:italic">
+            <td class="pull-quote-bar" width="3">&nbsp;</td>
+            <td class="pull-quote-body-cell">
+              <p class="pull-quote">
                 <span data-field="html">${b.html}</span>
               </p>
             </td>
           </tr>
         </table>
-      </td>
-    `,
+      `,
+    ),
   );
 }
 
 function renderStatBox(b: StatBoxBlock, ctx: RenderContext): string {
-  const font = fontStack(ctx.globals);
-  const accent = escapeAttr(ctx.globals.accentColor);
   return rowWrap(
     b,
     ctx,
-    `
-      <td style="background-color:${contentBg(ctx)};padding:20px 48px" class="mobile-padding content-bg">
+    contentTd(
+      ctx,
+      'block-pad-sm',
+      `
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
           <tr>
-            <td bgcolor="#060e1a" style="background-color:#060e1a;padding:28px 32px" class="chapter-bg stat-box-bg">
+            <td bgcolor="#060e1a" class="chapter-bg stat-box-bg stat-box-inner">
               <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                 <tr>
-                  <td style="vertical-align:top;width:50%" width="50%">
-                    <p style="font-family:${font};font-size:42px;color:${accent};margin:0 0 4px 0;font-weight:400;line-height:1" class="text-stat">
+                  <td class="stat-col-num" width="50%">
+                    <p class="stat-number text-stat">
                       <span data-field="number">${escapeHtml(b.number)}</span>
                     </p>
-                    <p style="font-family:${font};font-size:13px;color:#3e84c6;margin:0;text-transform:uppercase;letter-spacing:2px" class="text-geo">
+                    <p class="stat-label">
                       <span data-field="label">${escapeHtml(b.label)}</span>
                     </p>
                   </td>
-                  <td style="vertical-align:top;padding-left:24px;border-left:1px solid #0e1e34">
-                    <p style="font-family:${font};font-size:13px;color:${escapeAttr(ctx.globals.bodyTextColor)};margin:0 0 6px 0;line-height:22px" class="text-geo">
+                  <td class="stat-col-geo">
+                    <p class="stat-geo text-geo">
                       <span data-field="geoHtml">${b.geoHtml}</span>
                     </p>
                   </td>
@@ -192,43 +199,55 @@ function renderStatBox(b: StatBoxBlock, ctx: RenderContext): string {
             </td>
           </tr>
         </table>
-      </td>
-    `,
+      `,
+    ),
   );
 }
 
 function renderBenefitsList(b: BenefitsListBlock, ctx: RenderContext): string {
-  const font = fontStack(ctx.globals);
   const rows = b.items
-    .map(
-      (item, index) => `
-        <tr>
-          <td style="padding:14px 0;border-bottom:1px solid #0a1828">
+    .map((item, index) => {
+      const icon = item.icon?.trim() || '›';
+      return `
+        <tr class="benefit-row">
+          <td class="benefit-row-cell">
             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
               <tr>
-                <td style="width:18px;vertical-align:top;padding-top:3px">
-                  <span style="color:#4db8ff;font-size:14px;font-family:Helvetica,Arial,sans-serif">›</span>
+                <td class="benefit-icon-cell">
+                  <span
+                    class="benefit-icon text-benefit-icon"
+                    data-field="items"
+                    data-item-index="${index}"
+                    data-item-key="icon"
+                  >${escapeHtml(icon)}</span>
                 </td>
-                <td style="font-family:${font};font-size:16px;color:#b9f2ff">
-                  <span data-field="items" data-item-index="${index}">${escapeHtml(item)}</span>
+                <td class="benefit-text-cell">
+                  <span
+                    class="benefit-text text-benefit"
+                    data-field="items"
+                    data-item-index="${index}"
+                    data-item-key="text"
+                  >${escapeHtml(item.text)}</span>
                 </td>
               </tr>
             </table>
           </td>
         </tr>
-      `,
-    )
+      `;
+    })
     .join('');
   return rowWrap(
     b,
     ctx,
-    `
-      <td style="background-color:${contentBg(ctx)};padding:20px 48px" class="mobile-padding content-bg">
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+    contentTd(
+      ctx,
+      'benefits-list-block',
+      `
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="benefits-list-table">
           ${rows}
         </table>
-      </td>
-    `,
+      `,
+    ),
   );
 }
 
@@ -239,77 +258,79 @@ function composeStrikeLine(b: PriceBoxBlock): string {
 }
 
 function renderPriceBox(b: PriceBoxBlock, ctx: RenderContext): string {
-  const font = fontStack(ctx.globals);
-  const gold = escapeAttr(ctx.globals.goldColor);
   const strikeLine = composeStrikeLine(b);
   const strikeHtml = strikeLine
     ? `
-              <p style="font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#02fdfb;margin:0 0 4px 0;text-decoration:line-through" class="text-price-strike">
+              <p class="price-strike text-price-strike">
                 <span data-field="strikeLabel">${escapeHtml(b.strikeLabel)}</span>${
                   b.strikeLabel.trim() ? ' ' : ''
                 }<span data-field="currency">${escapeHtml(b.currency)}</span><span data-field="strikeAmount">${escapeHtml(
                   b.strikeAmount,
                 )}</span>${
                   b.periodLabel.trim()
-                    ? ` <span data-field="periodLabel">${escapeHtml(b.periodLabel)}</span>`
+                    ? ` <span data-field="periodLabel" class="price-period text-price-sub">${escapeHtml(b.periodLabel)}</span>`
                     : ''
                 }
               </p>`
     : '';
   const periodHtml = b.periodLabel.trim()
-    ? ` <span data-field="periodLabel" style="font-size:16px;font-weight:300;color:#4a6a88" class="text-price-sub">${escapeHtml(
-        b.periodLabel,
-      )}</span>`
+    ? ` <span data-field="periodLabel" class="price-period text-price-sub">${escapeHtml(b.periodLabel)}</span>`
     : '';
   return rowWrap(
     b,
     ctx,
-    `
-      <td style="background-color:${contentBg(ctx)};padding:20px 48px" class="mobile-padding content-bg">
+    contentTd(
+      ctx,
+      'price-box-outer',
+      `
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
           <tr>
-            <td bgcolor="#060d1a" style="background-color:#060d1a;border:1px solid #111d33;border-top:3px solid ${gold};padding:24px 28px" class="chapter-bg price-box-bg">
-              <p style="font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:#060d1a;background-color:${gold};display:inline;padding:3px 10px;text-transform:uppercase;margin:0 0 14px 0">
+            <td bgcolor="#060d1a" class="chapter-bg price-box-bg price-box-inner">
+              <p class="price-badge">
                 <span data-field="badge">${escapeHtml(b.badge)}</span>
               </p>
               <br /><br />${strikeHtml}
-              <p style="font-family:Helvetica,Arial,sans-serif;font-size:38px;font-weight:700;color:#ffffff;margin:0 0 6px 0;line-height:1.1" class="text-price-main">
-                <span data-field="currency" style="font-size:16px;vertical-align:super;padding-right:4px;color:${gold}">${escapeHtml(
-                  b.currency,
-                )}</span><span data-field="amount">${escapeHtml(b.amount)}</span>${periodHtml}
+              <p class="price-main text-price-main">
+                <span data-field="currency" class="price-currency">${escapeHtml(b.currency)}</span><span data-field="amount">${escapeHtml(
+                  b.amount,
+                )}</span>${periodHtml}
               </p>
-              <p style="font-family:${font};font-size:14px;color:#72bde9;margin:0 0 10px 0;line-height:22px" class="text-price-detail">
+              <p class="price-details text-price-detail">
                 <span data-field="details">${escapeHtml(b.details)}</span>
               </p>
-              <p style="font-family:${font};font-size:13px;color:#2c4d66;margin:0;line-height:20px;font-style:italic" class="text-price-fine">
+              <p class="price-fine text-price-fine">
                 <span data-field="fine">${escapeHtml(b.fine)}</span>
               </p>
             </td>
           </tr>
         </table>
-      </td>
-    `,
+      `,
+    ),
   );
 }
 
+function ctaRowCellClass(index: number, total: number): string {
+  if (total <= 1) return 'cta-link-row-cell cta-link-row-cell--only';
+  if (index === 0) return 'cta-link-row-cell cta-link-row-cell--first';
+  if (index === total - 1) return 'cta-link-row-cell cta-link-row-cell--last';
+  return 'cta-link-row-cell';
+}
+
 function renderCtaLinkList(b: CtaLinkListBlock, ctx: RenderContext): string {
-  const font = fontStack(ctx.globals);
-  const accent = escapeAttr(ctx.globals.accentColor);
+  const total = b.items.length;
   const rows = b.items
     .map((item, index) => {
       const href = item.href ? resolveHref(item.href, ctx.mode) : '';
       const link =
         item.linkText && href
-          ? `<a href="${attrHref(href, ctx.mode)}" target="_blank" style="color:${accent};text-decoration:underline"><span data-field="items" data-item-index="${index}" data-item-key="linkText">${escapeHtml(item.linkText)}</span></a>`
+          ? `<a href="${attrHref(href, ctx.mode)}" target="_blank" class="cta-link-anchor"><span data-field="items" data-item-index="${index}" data-item-key="linkText">${escapeHtml(item.linkText)}</span></a>`
           : '';
-      const border = index === b.items.length - 1 ? '' : 'border-bottom:1px solid #0a1828';
-      const pad = index === 0 ? 'padding:0 0 14px 0' : index === b.items.length - 1 ? 'padding:14px 0 0 0' : 'padding:14px 0';
       return `
-        <tr>
-          <td style="${pad};${border}">
-            <p style="font-family:${font};font-size:14px;line-height:24px;color:#3a6080;margin:0" class="text-cta-body">
-              <span data-field="items" data-item-index="${index}" data-item-key="icon" style="color:${accent};margin-right:8px">${escapeHtml(item.icon || '→')}</span>
-              <strong style="color:#5a8aaa"><span data-field="items" data-item-index="${index}" data-item-key="label">${escapeHtml(item.label)}</span></strong>
+        <tr class="cta-link-row">
+          <td class="${ctaRowCellClass(index, total)}">
+            <p class="cta-link-body text-cta-body">
+              <span data-field="items" data-item-index="${index}" data-item-key="icon" class="cta-link-icon">${escapeHtml(item.icon || '→')}</span>
+              <strong class="cta-link-label"><span data-field="items" data-item-index="${index}" data-item-key="label">${escapeHtml(item.label)}</span></strong>
               <span data-field="items" data-item-index="${index}" data-item-key="intro">${item.intro ? ` ${escapeHtml(item.intro)} ` : ' '}</span>
               ${link}
             </p>
@@ -321,13 +342,15 @@ function renderCtaLinkList(b: CtaLinkListBlock, ctx: RenderContext): string {
   return rowWrap(
     b,
     ctx,
-    `
-      <td style="background-color:${contentBg(ctx)};padding:20px 48px" class="mobile-padding content-bg">
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+    contentTd(
+      ctx,
+      'cta-links-block',
+      `
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="cta-links-table">
           ${rows}
         </table>
-      </td>
-    `,
+      `,
+    ),
   );
 }
 

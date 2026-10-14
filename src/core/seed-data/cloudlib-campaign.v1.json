@@ -100,10 +100,22 @@
       "id": "bmo8rynqo-a",
       "type": "benefits-list",
       "items": [
-        "Dedizierter Unternehmenseintrag auf cloudlib.eu",
-        "Virtuelle Rundgänge aus Ihren bestehenden oder neu erstellten 360°-Aufnahmen",
-        "Aufbereitung für Werbevideos und Social-Media-Plattformen",
-        "Persönliche Einrichtung durch unser Team — Sie konfigurieren nichts selbst"
+        {
+          "icon": "›",
+          "text": "Dedizierter Unternehmenseintrag auf cloudlib.eu"
+        },
+        {
+          "icon": "›",
+          "text": "Virtuelle Rundgänge aus Ihren bestehenden oder neu erstellten 360°-Aufnahmen"
+        },
+        {
+          "icon": "›",
+          "text": "Aufbereitung für Werbevideos und Social-Media-Plattformen"
+        },
+        {
+          "icon": "›",
+          "text": "Persönliche Einrichtung durch unser Team — Sie konfigurieren nichts selbst"
+        }
       ]
     },
     {

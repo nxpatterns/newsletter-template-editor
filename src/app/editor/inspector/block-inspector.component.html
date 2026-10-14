@@ -159,16 +159,104 @@
         </div>
       }
       @case ('benefits-list') {
-        <div class="ed-field">
-          <label class="ed-label" for="insp-benefits" [textContent]="i18n.t('field.benefitsItems')"></label>
-          <textarea
-            id="insp-benefits"
-            class="ed-textarea"
-            rows="5"
-            [value]="block.items.join('\n')"
-            (input)="onBenefits(block.id, $event)"
-            (blur)="onFieldBlur()"
-          ></textarea>
+        <p class="ed-hint" [textContent]="i18n.t('field.benefitsHint')"></p>
+        <div class="list-rows" data-testid="benefits-rows">
+          @for (item of block.items; track $index; let i = $index; let first = $first; let last = $last) {
+            <article class="list-row" [attr.data-testid]="'benefit-row-' + i">
+              <header class="list-row-head">
+                <span class="list-row-index" [textContent]="benefitRowLabel(i)"></span>
+                <div class="list-row-actions">
+                  <button
+                    type="button"
+                    class="ed-btn"
+                    [disabled]="first"
+                    [attr.aria-label]="i18n.t('field.benefitMoveUp')"
+                    [title]="i18n.t('field.benefitMoveUp')"
+                    (click)="moveBenefitItem(block.id, i, -1)"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    class="ed-btn"
+                    [disabled]="last"
+                    [attr.aria-label]="i18n.t('field.benefitMoveDown')"
+                    [title]="i18n.t('field.benefitMoveDown')"
+                    (click)="moveBenefitItem(block.id, i, 1)"
+                  >
+                    ↓
+                  </button>
+                  <button
+                    type="button"
+                    class="ed-btn ed-btn--danger"
+                    [disabled]="block.items.length <= 1"
+                    [attr.aria-label]="i18n.t('field.benefitRemove')"
+                    [title]="i18n.t('field.benefitRemove')"
+                    (click)="removeBenefitItem(block.id, i)"
+                  >
+                    ×
+                  </button>
+                </div>
+              </header>
+
+              <div class="list-row-main">
+                <div class="row-icon-wrap">
+                  <span class="ed-label" [textContent]="i18n.t('field.benefitIcon')"></span>
+                  <button
+                    type="button"
+                    class="row-icon-btn"
+                    [attr.aria-expanded]="isIconPickerOpen('benefit', i)"
+                    [attr.aria-label]="i18n.t('field.benefitIconPick')"
+                    [title]="i18n.t('field.benefitIconPick')"
+                    (click)="toggleIconPicker('benefit', i, $event)"
+                  >
+                    <span class="row-icon-glyph" [textContent]="item.icon || '›'"></span>
+                  </button>
+                  @if (isIconPickerOpen('benefit', i)) {
+                    <div
+                      class="row-icon-popup"
+                      role="listbox"
+                      [attr.aria-label]="i18n.t('field.benefitIconPick')"
+                      (click)="$event.stopPropagation()"
+                    >
+                      @for (glyph of listIcons; track glyph) {
+                        <button
+                          type="button"
+                          class="row-icon-option"
+                          role="option"
+                          [class.is-active]="(item.icon || '›') === glyph"
+                          [attr.aria-selected]="(item.icon || '›') === glyph"
+                          (click)="pickBenefitIcon(block.id, i, glyph, $event)"
+                        >
+                          <span [textContent]="glyph"></span>
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+
+                <div class="ed-field list-row-title">
+                  <label class="ed-label" [attr.for]="'insp-benefit-text-' + i" [textContent]="i18n.t('field.benefitText')"></label>
+                  <input
+                    class="ed-input"
+                    [id]="'insp-benefit-text-' + i"
+                    [value]="item.text"
+                    (input)="onBenefitText(block.id, i, $event)"
+                    (blur)="onFieldBlur()"
+                  />
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+        <div class="ed-actions">
+          <button
+            type="button"
+            class="ed-btn"
+            data-testid="benefit-add"
+            [textContent]="i18n.t('field.benefitAdd')"
+            (click)="addBenefitItem(block.id)"
+          ></button>
         </div>
       }
       @case ('price-box') {
@@ -270,12 +358,12 @@
       }
       @case ('cta-link-list') {
         <p class="ed-hint" [textContent]="i18n.t('field.ctaLinksHint')"></p>
-        <div class="cta-rows" data-testid="cta-link-rows">
+        <div class="list-rows" data-testid="cta-link-rows">
           @for (item of block.items; track $index; let i = $index; let first = $first; let last = $last) {
-            <article class="cta-row" [attr.data-testid]="'cta-link-row-' + i">
-              <header class="cta-row-head">
-                <span class="cta-row-index" [textContent]="ctaRowLabel(i)"></span>
-                <div class="cta-row-actions">
+            <article class="list-row" [attr.data-testid]="'cta-link-row-' + i">
+              <header class="list-row-head">
+                <span class="list-row-index" [textContent]="ctaRowLabel(i)"></span>
+                <div class="list-row-actions">
                   <button
                     type="button"
                     class="ed-btn"
@@ -309,30 +397,30 @@
                 </div>
               </header>
 
-              <div class="cta-row-main">
-                <div class="cta-icon-wrap">
+              <div class="list-row-main">
+                <div class="row-icon-wrap">
                   <span class="ed-label" [textContent]="i18n.t('field.ctaLinkIcon')"></span>
                   <button
                     type="button"
-                    class="cta-icon-btn"
-                    [attr.aria-expanded]="iconPickerIndex === i"
+                    class="row-icon-btn"
+                    [attr.aria-expanded]="isIconPickerOpen('cta', i)"
                     [attr.aria-label]="i18n.t('field.ctaLinkIconPick')"
                     [title]="i18n.t('field.ctaLinkIconPick')"
-                    (click)="toggleIconPicker(i, $event)"
+                    (click)="toggleIconPicker('cta', i, $event)"
                   >
-                    <span class="cta-icon-glyph" [textContent]="item.icon || '→'"></span>
+                    <span class="row-icon-glyph" [textContent]="item.icon || '→'"></span>
                   </button>
-                  @if (iconPickerIndex === i) {
+                  @if (isIconPickerOpen('cta', i)) {
                     <div
-                      class="cta-icon-popup"
+                      class="row-icon-popup"
                       role="listbox"
                       [attr.aria-label]="i18n.t('field.ctaLinkIconPick')"
                       (click)="$event.stopPropagation()"
                     >
-                      @for (glyph of ctaLinkIcons; track glyph) {
+                      @for (glyph of listIcons; track glyph) {
                         <button
                           type="button"
-                          class="cta-icon-option"
+                          class="row-icon-option"
                           role="option"
                           [class.is-active]="(item.icon || '→') === glyph"
                           [attr.aria-selected]="(item.icon || '→') === glyph"
@@ -345,7 +433,7 @@
                   }
                 </div>
 
-                <div class="ed-field cta-row-title">
+                <div class="ed-field list-row-title">
                   <label class="ed-label" [attr.for]="'insp-cta-label-' + i" [textContent]="i18n.t('field.ctaLinkLabel')"></label>
                   <input
                     class="ed-input"

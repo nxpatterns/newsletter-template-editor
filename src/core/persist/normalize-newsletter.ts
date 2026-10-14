@@ -1,7 +1,11 @@
 import {
+  BENEFIT_DEFAULT_ICON,
   CTA_LINK_DEFAULT_ICON,
   CURRENT_SCHEMA_VERSION,
+  emptyBenefitsListItem,
   emptyCtaLinkListItem,
+  type BenefitsListBlock,
+  type BenefitsListItem,
   type Block,
   type CtaLinkListBlock,
   type CtaLinkListItem,
@@ -165,6 +169,38 @@ export function normalizePriceBoxBlock(raw: LegacyPriceRaw, fallbackId = ''): Pr
   };
 }
 
+/** Migrate legacy string[] benefits and ensure icon + text rows (min one). */
+export function normalizeBenefitsListBlock(
+  raw: Record<string, unknown> & { id?: unknown; items?: unknown },
+  fallbackId = '',
+): BenefitsListBlock {
+  const id = typeof raw.id === 'string' && raw.id ? raw.id : fallbackId;
+  const source = Array.isArray(raw.items) ? raw.items : [];
+  const items: BenefitsListItem[] = source.map((entry) => {
+    if (typeof entry === 'string') {
+      return { icon: BENEFIT_DEFAULT_ICON, text: entry };
+    }
+    if (!entry || typeof entry !== 'object') return emptyBenefitsListItem();
+    const row = entry as Record<string, unknown>;
+    const iconRaw = typeof row['icon'] === 'string' ? (row['icon'] as string).trim() : '';
+    const text =
+      typeof row['text'] === 'string'
+        ? (row['text'] as string)
+        : typeof row['label'] === 'string'
+          ? (row['label'] as string)
+          : '';
+    return {
+      icon: iconRaw || BENEFIT_DEFAULT_ICON,
+      text,
+    };
+  });
+  return {
+    id,
+    type: 'benefits-list',
+    items: items.length > 0 ? items : [emptyBenefitsListItem()],
+  };
+}
+
 /** Ensure CTA link rows have icon + plain fields; keep at least one row. */
 export function normalizeCtaLinkListBlock(
   raw: Record<string, unknown> & { id?: unknown; items?: unknown },
@@ -198,6 +234,9 @@ function normalizeBlocks(blocks: Block[]): Block[] {
     }
     if (block.type === 'cta-link-list') {
       return normalizeCtaLinkListBlock(block as unknown as Record<string, unknown>, block.id);
+    }
+    if (block.type === 'benefits-list') {
+      return normalizeBenefitsListBlock(block as unknown as Record<string, unknown>, block.id);
     }
     return block;
   });
