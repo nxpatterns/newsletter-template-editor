@@ -38,3 +38,30 @@ Feature: Editor side panel
     Given I open the home page
     When I resize the side panel toward half the viewport
     Then the side panel width should be within the allowed range
+
+  Scenario: CTA link list uses a structured row editor
+    Given I open the home page
+    When I open the link list block editor
+    Then the block edit modal should be fully visible in the viewport
+    And I should see the CTA link row editor without a JSON textarea
+    When I add a CTA link row titled "Follow-up call"
+    And I save the block edit modal
+    Then the preview frame should contain "Follow-up call"
+
+  Scenario: Tall CTA editor keeps the dialog head reachable
+    Given I open the home page
+    When I open the link list block editor
+    And I add several empty CTA link rows totaling at least 6
+    Then the block edit modal should be fully visible in the viewport
+    And the block edit modal head should stay within the viewport
+    And the block edit modal should stack above the app header
+
+  Scenario: Preview stays on the link list after save
+    Given I open the home page
+    When I select the link list block
+    Then the preview should show the selected block in view
+    When I open the link list block editor
+    And I rename the first CTA link row title to "Stay put title"
+    And I save the block edit modal
+    Then the preview frame should contain "Stay put title"
+    And the preview should show the selected block in view

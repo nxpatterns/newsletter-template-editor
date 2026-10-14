@@ -1,10 +1,13 @@
 import {
+  CTA_LINK_DEFAULT_ICON,
+  CTA_LINK_ICONS,
   createBlock,
+  emptyCtaLinkListItem,
   type CtaLinkListBlock,
   type Newsletter,
   type PriceBoxBlock,
 } from '../types';
-import { renderExport } from '../render';
+import { renderExport, renderPreview } from '../render';
 import { seedNewsletter } from '../seed';
 import {
   normalizeCtaLinkListBlock,
@@ -145,6 +148,30 @@ describe('price-box render', () => {
   });
 });
 
+describe('cta link icon palette', () => {
+  it('exposes about thirty email-safe glyphs and a default', () => {
+    expect(CTA_LINK_DEFAULT_ICON).toBe('→');
+    expect(CTA_LINK_ICONS.length).toBeGreaterThanOrEqual(28);
+    expect(CTA_LINK_ICONS.length).toBeLessThanOrEqual(36);
+    expect(new Set(CTA_LINK_ICONS).size).toBe(CTA_LINK_ICONS.length);
+    expect(CTA_LINK_ICONS).toContain(CTA_LINK_DEFAULT_ICON);
+    for (const glyph of CTA_LINK_ICONS) {
+      expect(glyph.length).toBeGreaterThan(0);
+      expect(glyph.length).toBeLessThanOrEqual(2);
+    }
+  });
+
+  it('emptyCtaLinkListItem starts blank with default icon', () => {
+    expect(emptyCtaLinkListItem()).toEqual({
+      icon: CTA_LINK_DEFAULT_ICON,
+      label: '',
+      intro: '',
+      linkText: '',
+      href: '',
+    });
+  });
+});
+
 describe('normalizeCtaLinkListBlock', () => {
   it('fills missing icons and keeps fields', () => {
     const next = normalizeCtaLinkListBlock({
@@ -168,6 +195,39 @@ describe('normalizeCtaLinkListBlock', () => {
     expect(next.items[0].icon).toBe('→');
     expect(next.items[0].label).toBe('');
   });
+
+  it('preserves many rows and custom icons', () => {
+    const items = Array.from({ length: 8 }, (_, i) => ({
+      icon: i % 2 === 0 ? '★' : '•',
+      label: `Row ${i + 1}`,
+      intro: i === 0 ? 'Intro' : '',
+      linkText: i === 1 ? 'Go' : '',
+      href: i === 1 ? 'https://example.com' : '',
+    }));
+    const next = normalizeCtaLinkListBlock({ id: 'c-many', items });
+    expect(next.items.length).toBe(8);
+    expect(next.items[0].icon).toBe('★');
+    expect(next.items[7].label).toBe('Row 8');
+  });
+
+  it('runs through normalizeNewsletter for legacy seed rows without icon', () => {
+    const legacy = {
+      schemaVersion: 1,
+      globals: seedNewsletter().globals,
+      blocks: [
+        {
+          id: 'legacy-cta',
+          type: 'cta-link-list',
+          items: [{ label: 'Only title', intro: '', linkText: '', href: '' }],
+        },
+      ],
+    } as unknown as Newsletter;
+    const normalized = normalizeNewsletter(legacy);
+    const list = normalized.blocks[0] as CtaLinkListBlock;
+    expect(list.type).toBe('cta-link-list');
+    expect(list.items[0].icon).toBe(CTA_LINK_DEFAULT_ICON);
+    expect(list.items[0].label).toBe('Only title');
+  });
 });
 
 describe('cta-link-list render', () => {
@@ -182,5 +242,37 @@ describe('cta-link-list render', () => {
   it('createBlock includes default icon', () => {
     const block = createBlock('cta-link-list') as CtaLinkListBlock;
     expect(block.items[0].icon).toBe('→');
+  });
+
+  it('omits anchor when link text or href is empty', () => {
+    const n = seedNewsletter();
+    const list = n.blocks.find((b) => b.type === 'cta-link-list') as CtaLinkListBlock;
+    list.items = [
+      {
+        icon: '★',
+        label: 'Title only',
+        intro: 'No link here',
+        linkText: '',
+        href: '',
+      },
+      {
+        icon: '→',
+        label: 'With link:',
+        intro: 'Click',
+        linkText: 'Open',
+        href: 'https://cloudlib.eu',
+      },
+    ];
+    const html = renderPreview(n);
+    expect(html).toMatch(/data-item-key="icon"[^>]*>★</);
+    expect(html).toContain('data-item-key="label">Title only<');
+    expect(html).toContain('data-item-key="linkText">Open<');
+    expect(html).toContain('https://cloudlib.eu');
+    // First row must not invent a link from empty fields.
+    const firstRowSlice = html.slice(
+      html.indexOf('Title only') - 200,
+      html.indexOf('Title only') + 200,
+    );
+    expect(firstRowSlice).not.toMatch(/<a\s/i);
   });
 });

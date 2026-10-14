@@ -140,10 +140,11 @@ Shared mini-toolbar for a **small** set of surfaces only (brand name, legal noti
 ## Implementation order
 
 1. **cta-link-list** row editor (kill JSON UI) — **done** (icon + structured rows).
-2. Plain-label cleanup (remove “HTML” from seller copy where fields are plain) — **next**.
-3. Benefits list editor (optional polish).
+2. Plain-label cleanup (remove “HTML” from seller copy) — **done** (field/brand/legal labels + paragraph hint; export/about copy still may say HTML).
+3. Benefits list editor (optional polish) — **next** structure polish.
 4. Light rich-text kit only for brand name / legal notice if still required.
 5. Email colors — separate large track; only from `email-colors.md` when scheduled.
+6. Hero / paragraph / chapter / quote / stat **model** plain-up (storage + renderer) — separate from label-only cleanup when scheduled.
 
 Already shipped (do not re-open as “next”): file management v1, logo upload, price-box field split.
 

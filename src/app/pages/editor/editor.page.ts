@@ -63,6 +63,8 @@ export class EditorPage {
   /** Last known preview document scroll (restored after srcdoc reloads). */
   private lastPreviewScrollY = 0;
   private previewScrollHandler: (() => void) | null = null;
+  /** Ignore scroll capture while restoring / until layout settles (avoids clobbering Y with 0). */
+  private ignorePreviewScrollCaptureUntil = 0;
   /** After catalog insert, scroll this block into view once the iframe reloads. */
   private pendingScrollToBlockId: string | null = null;
 
@@ -105,6 +107,8 @@ export class EditorPage {
 
   /** iframe finished loading/parsing srcdoc — wire block chrome from the host. */
   protected onPreviewLoad(): void {
+    // Capture before bind: a fresh document reports scrollTop 0 and must not wipe Y.
+    const savedY = this.lastPreviewScrollY;
     this.wirePreviewDocument();
     this.applySelectedClass(this.session.selectedBlockId());
     if (this.pendingScrollToBlockId) {
@@ -112,7 +116,8 @@ export class EditorPage {
       this.pendingScrollToBlockId = null;
       this.scrollPreviewBlockIntoView(id, true);
     } else {
-      this.restorePreviewScroll();
+      // Live modal typing reloads srcdoc often — restore Y instantly (no smooth scroll).
+      this.restorePreviewScroll(savedY);
     }
   }
 
@@ -456,24 +461,27 @@ export class EditorPage {
       this.previewDocWired.removeEventListener('scroll', this.previewScrollHandler, true);
     }
     const onScroll = (): void => {
+      if (Date.now() < this.ignorePreviewScrollCaptureUntil) return;
       const root = doc.scrollingElement ?? doc.documentElement;
-      this.lastPreviewScrollY = root?.scrollTop ?? doc.body?.scrollTop ?? 0;
+      const y = root?.scrollTop ?? doc.body?.scrollTop ?? 0;
+      this.lastPreviewScrollY = y;
     };
     doc.addEventListener('scroll', onScroll, true);
     this.previewScrollHandler = onScroll;
-    onScroll();
+    // Do not sample scrollTop here — new srcdoc documents start at 0 and would clobber saved Y.
   }
 
-  private restorePreviewScroll(): void {
-    const y = this.lastPreviewScrollY;
+  private restorePreviewScroll(y = this.lastPreviewScrollY): void {
     if (y <= 0) return;
     const doc = this.previewFrame()?.nativeElement?.contentDocument;
     if (!doc) return;
+    this.ignorePreviewScrollCaptureUntil = Date.now() + 200;
     const apply = (): void => {
       const root = doc.scrollingElement ?? doc.documentElement;
       if (root) root.scrollTop = y;
       if (doc.body) doc.body.scrollTop = y;
       doc.defaultView?.scrollTo(0, y);
+      this.lastPreviewScrollY = y;
     };
     apply();
     queueMicrotask(apply);
@@ -544,13 +552,18 @@ export class EditorPage {
     if (!el) return;
     const reduceMotion =
       typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.ignorePreviewScrollCaptureUntil = Date.now() + (reduceMotion ? 200 : 450);
     const apply = (): void => {
       el.scrollIntoView({
         block: 'center',
         behavior: reduceMotion ? 'auto' : 'smooth',
       });
       const root = doc.scrollingElement ?? doc.documentElement;
-      this.lastPreviewScrollY = root?.scrollTop ?? 0;
+      // Prefer measured Y; if smooth scroll has not settled yet, keep prior saved Y.
+      const measured = root?.scrollTop ?? 0;
+      if (measured > 0 || this.lastPreviewScrollY <= 0) {
+        this.lastPreviewScrollY = measured;
+      }
       if (flash) {
         el.classList.add('nte-just-inserted');
         window.setTimeout(() => el.classList.remove('nte-just-inserted'), 600);
@@ -559,6 +572,12 @@ export class EditorPage {
     apply();
     queueMicrotask(apply);
     requestAnimationFrame(apply);
+    // Smooth scroll settles later — sample final Y once capture is allowed again.
+    window.setTimeout(() => {
+      const root = doc.scrollingElement ?? doc.documentElement;
+      const y = root?.scrollTop ?? doc.body?.scrollTop ?? 0;
+      if (y > 0) this.lastPreviewScrollY = y;
+    }, reduceMotion ? 50 : 400);
   }
 
   private injectPreviewChrome(doc: Document): void {

@@ -129,3 +129,135 @@ Then('the side panel width should be within the allowed range', async ({ page })
   expect(metrics!.width).toBeGreaterThanOrEqual(336 - 2);
   expect(metrics!.width).toBeLessThanOrEqual(metrics!.viewport * 0.5 + 2);
 });
+
+async function findLinkListSelect(page: import('@playwright/test').Page) {
+  await page.getByTestId('panel-tab-placed').click();
+  const list = page.getByTestId('block-list');
+  await expect(list).toBeVisible();
+  const items = list.locator('li');
+  const count = await items.count();
+  for (let i = 0; i < count; i++) {
+    const item = items.nth(i);
+    const label = await item.locator('.placed-label').innerText();
+    if (/link\s*list|linkliste/i.test(label)) {
+      return item;
+    }
+  }
+  throw new Error('Link list block not found in placed list');
+}
+
+When('I select the link list block', async ({ page }) => {
+  const item = await findLinkListSelect(page);
+  await item.locator('[data-testid^="select-block-"]').click();
+  await expect(item.locator('[data-testid^="select-block-"]')).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  // Allow smooth preview scroll to settle.
+  await page.waitForTimeout(500);
+});
+
+When('I open the link list block editor', async ({ page }) => {
+  const item = await findLinkListSelect(page);
+  await item.locator('[data-testid^="edit-block-"]').click();
+  await expect(page.getByTestId('block-edit-modal')).toBeVisible();
+  await expect(page.getByTestId('block-edit-modal')).toHaveClass(/is-open/);
+});
+
+Then('I should see the CTA link row editor without a JSON textarea', async ({ page }) => {
+  const modal = page.getByTestId('block-edit-modal');
+  await expect(modal.getByTestId('cta-link-rows')).toBeVisible();
+  await expect(modal.getByTestId('cta-link-row-0')).toBeVisible();
+  await expect(modal.getByTestId('cta-link-add')).toBeVisible();
+  await expect(modal.locator('#insp-cta-links')).toHaveCount(0);
+  await expect(modal.locator('textarea')).toHaveCount(0);
+});
+
+When('I add a CTA link row titled {string}', async ({ page }, title: string) => {
+  const modal = page.getByTestId('block-edit-modal');
+  const before = await modal.locator('[data-testid^="cta-link-row-"]').count();
+  await modal.getByTestId('cta-link-add').click();
+  const rows = modal.locator('[data-testid^="cta-link-row-"]');
+  await expect(rows).toHaveCount(before + 1);
+  const last = rows.nth(before);
+  await last.locator('input.ed-input').first().fill(title);
+  await last.locator('input.ed-input').first().blur();
+});
+
+When('I add several empty CTA link rows totaling at least {int}', async ({ page }, minRows: number) => {
+  const modal = page.getByTestId('block-edit-modal');
+  const rows = modal.locator('[data-testid^="cta-link-row-"]');
+  let count = await rows.count();
+  while (count < minRows) {
+    await modal.getByTestId('cta-link-add').click();
+    count = await rows.count();
+  }
+  expect(count).toBeGreaterThanOrEqual(minRows);
+});
+
+When('I rename the first CTA link row title to {string}', async ({ page }, title: string) => {
+  const modal = page.getByTestId('block-edit-modal');
+  const first = modal.getByTestId('cta-link-row-0');
+  const titleInput = first.locator('input.ed-input').first();
+  await titleInput.fill(title);
+  await titleInput.blur();
+});
+
+When('I save the block edit modal', async ({ page }) => {
+  await page.getByTestId('block-edit-save').click();
+  await expect(page.getByTestId('block-edit-modal')).toHaveCount(0, { timeout: 5000 });
+  // Smooth scroll-after-save settle.
+  await page.waitForTimeout(500);
+});
+
+Then('the block edit modal should be fully visible in the viewport', async ({ page }) => {
+  const box = await page.getByTestId('block-edit-modal').locator('.block-edit-dialog').boundingBox();
+  expect(box).toBeTruthy();
+  const viewport = page.viewportSize();
+  expect(viewport).toBeTruthy();
+  expect(box!.y).toBeGreaterThanOrEqual(-1);
+  expect(box!.x).toBeGreaterThanOrEqual(-1);
+  expect(box!.y + box!.height).toBeLessThanOrEqual(viewport!.height + 1);
+  expect(box!.x + box!.width).toBeLessThanOrEqual(viewport!.width + 1);
+});
+
+Then('the block edit modal head should stay within the viewport', async ({ page }) => {
+  const head = page.getByTestId('block-edit-modal').locator('.block-edit-head');
+  await expect(head).toBeVisible();
+  const box = await head.boundingBox();
+  expect(box).toBeTruthy();
+  expect(box!.y).toBeGreaterThanOrEqual(0);
+  expect(box!.y + box!.height).toBeLessThanOrEqual((page.viewportSize()?.height ?? 0) + 1);
+});
+
+Then('the block edit modal should stack above the app header', async ({ page }) => {
+  const layers = await page.evaluate(() => {
+    const modal = document.querySelector('[data-testid="block-edit-modal"]') as HTMLElement | null;
+    const header = document.querySelector('.app-header') as HTMLElement | null;
+    if (!modal || !header) return null;
+    const modalZ = Number.parseInt(getComputedStyle(modal).zIndex, 10);
+    const headerZ = Number.parseInt(getComputedStyle(header).zIndex, 10);
+    return { modalZ, headerZ };
+  });
+  expect(layers).toBeTruthy();
+  expect(layers!.modalZ).toBeGreaterThan(layers!.headerZ);
+});
+
+Then('the preview should show the selected block in view', async ({ page }) => {
+  const result = await page.evaluate(() => {
+    const frame = document.querySelector('[data-testid="preview-frame"]') as HTMLIFrameElement | null;
+    const doc = frame?.contentDocument;
+    if (!doc) return { ok: false, reason: 'no-doc' };
+    const selected = doc.querySelector('tr.nte-block.is-selected') as HTMLElement | null;
+    if (!selected) return { ok: false, reason: 'no-selected' };
+    const root = (doc.scrollingElement ?? doc.documentElement) as HTMLElement;
+    const viewTop = root.scrollTop;
+    const viewBottom = viewTop + (frame?.clientHeight ?? root.clientHeight);
+    const top = selected.offsetTop;
+    const bottom = top + selected.offsetHeight;
+    // Allow partial visibility near edges; reject only when fully outside.
+    const visible = bottom > viewTop + 8 && top < viewBottom - 8;
+    return { ok: visible, viewTop, viewBottom, top, bottom, reason: visible ? 'ok' : 'out-of-view' };
+  });
+  expect(result.ok, `preview selected block not in view (${result.reason})`).toBe(true);
+});

@@ -67,6 +67,62 @@ describe('NewsletterSession', () => {
     expect(session.editingBlockId()).toBeNull();
   });
 
+  it('saveBlockEditor requests preview scroll back to the edited block', () => {
+    const cta = session.blocks().find((b) => b.type === 'cta-link-list');
+    expect(cta).toBeTruthy();
+    const tokenBefore = session.previewScrollToken();
+    session.openBlockEditor(cta!.id);
+    session.updateBlock(
+      cta!.id,
+      {
+        items: [
+          {
+            icon: '→',
+            label: 'Edited title',
+            intro: 'Desc',
+            linkText: '',
+            href: '',
+          },
+        ],
+      },
+      'coalesce',
+    );
+    session.saveBlockEditor();
+    expect(session.editingBlockId()).toBeNull();
+    expect(session.previewScrollBlockId()).toBe(cta!.id);
+    expect(session.previewScrollToken()).toBeGreaterThan(tokenBefore);
+  });
+
+  it('updates cta-link-list rows without dropping icons', () => {
+    const cta = session.blocks().find((b) => b.type === 'cta-link-list');
+    expect(cta).toBeTruthy();
+    session.updateBlock(cta!.id, {
+      items: [
+        {
+          icon: '★',
+          label: 'Book',
+          intro: 'We call',
+          linkText: 'Go',
+          href: 'https://example.com',
+        },
+        {
+          icon: '•',
+          label: 'Reply',
+          intro: '',
+          linkText: '',
+          href: '',
+        },
+      ],
+    });
+    const next = session.blocks().find((b) => b.id === cta!.id);
+    expect(next?.type).toBe('cta-link-list');
+    if (next?.type === 'cta-link-list') {
+      expect(next.items.length).toBe(2);
+      expect(next.items[0].icon).toBe('★');
+      expect(next.items[1].label).toBe('Reply');
+    }
+  });
+
   it('cancelBlockEditor restores the block snapshot', () => {
     const hero = session.blocks().find((b) => b.type === 'hero');
     expect(hero).toBeTruthy();

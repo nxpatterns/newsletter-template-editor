@@ -291,9 +291,12 @@ export class NewsletterSession {
   /** Keep live edits and close the modal. */
   saveBlockEditor(): void {
     this.endCoalesce();
+    const id = this.editingBlockIdSignal();
     this.editBaselineBlock = null;
     this.editUndoDepth = 0;
     this.editingBlockIdSignal.set(null);
+    // Stay on the block that was just edited (preview may have reloaded during live typing).
+    if (id) this.requestPreviewScroll(id);
   }
 
   closeBlockEditor(): void {
