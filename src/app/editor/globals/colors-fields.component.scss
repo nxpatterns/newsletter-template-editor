@@ -12,7 +12,15 @@
 }
 
 .colors-section-hint {
-  margin: 0 0 0.55rem;
+  display: block;
+  margin: 0 0 0.75rem;
+  color: var(--ds-text-muted);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .palette-grid {
@@ -79,10 +87,6 @@
   font-size: 0.82rem;
 }
 
-.colors-acc-panel-inner--pad {
-  padding: 0.15rem 0.55rem 0.65rem;
-}
-
 .colors-acc-count {
   display: inline-flex;
   flex: 0 0 auto;
@@ -116,7 +120,8 @@
   border: 1px solid var(--ds-border);
   border-radius: var(--ds-radius);
   background: color-mix(in srgb, var(--ds-bg-page) 55%, var(--ds-bg-panel));
-  overflow: clip;
+  /* Do not clip open body — height is driven by max-height on the panel. */
+  overflow: visible;
 }
 
 .colors-acc.is-open {
@@ -221,23 +226,37 @@
   text-transform: uppercase;
 }
 
+/*
+ * Height animation: max-height (not grid 0fr/1fr).
+ * 1fr under height:auto parents often resolves too small and clips multi-line hints
+ * mid-glyph — see docs/sessions/errors/used-color-blocks-error.png.
+ */
 .colors-acc-panel {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.28s ease;
+  display: block;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition:
+    max-height 0.32s ease,
+    opacity 0.22s ease;
 }
 
-.colors-acc.is-open .colors-acc-panel {
-  grid-template-rows: 1fr;
+.colors-acc.is-open > .colors-acc-panel {
+  /* Large enough for long block lists + slot rows; still animates from 0. */
+  max-height: 200rem;
+  opacity: 1;
 }
 
 .colors-acc-panel-inner {
-  min-height: 0;
-  overflow: hidden;
+  border-block-start: 1px solid transparent;
 }
 
-.colors-acc.is-open .colors-acc-panel-inner {
-  border-block-start: 1px solid color-mix(in srgb, var(--ds-border) 85%, transparent);
+.colors-acc.is-open > .colors-acc-panel > .colors-acc-panel-inner {
+  border-block-start-color: color-mix(in srgb, var(--ds-border) 85%, transparent);
+}
+
+.colors-acc-panel-inner--pad {
+  padding: 0.5rem 0.65rem 0.85rem;
 }
 
 .colors-acc-note {
@@ -303,5 +322,9 @@
   .colors-acc-chevron,
   .colors-acc-panel {
     transition: none;
+  }
+
+  .colors-acc.is-open > .colors-acc-panel {
+    max-height: none;
   }
 }

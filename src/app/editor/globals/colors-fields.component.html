@@ -2,16 +2,16 @@
 @let blocks = session.blocks();
 
 <section class="colors-tab" data-testid="colors-fields">
-  <div class="colors-acc colors-acc--section" [class.is-open]="isSectionOpen('palette')" data-testid="colors-section-palette">
+  <div class="colors-acc colors-acc--section" [class.is-open]="isOpen('palette')" data-testid="colors-section-palette">
     <h2 class="colors-acc-h">
       <button
         type="button"
         class="colors-acc-trigger"
         data-testid="colors-acc-palette"
-        [attr.aria-expanded]="isSectionOpen('palette')"
+        [attr.aria-expanded]="isOpen('palette')"
         aria-controls="colors-acc-panel-palette"
         id="colors-acc-btn-palette"
-        (click)="toggleSection('palette')"
+        (click)="toggle('palette')"
       >
         <span class="colors-acc-chevron" aria-hidden="true"></span>
         <span class="colors-acc-title" [textContent]="i18n.t('colors.paletteTitle')"></span>
@@ -22,7 +22,7 @@
       id="colors-acc-panel-palette"
       role="region"
       aria-labelledby="colors-acc-btn-palette"
-      [attr.inert]="isSectionOpen('palette') ? null : ''"
+      [attr.inert]="isOpen('palette') ? null : ''"
     >
       <div class="colors-acc-panel-inner colors-acc-panel-inner--pad">
         <p class="ed-hint colors-section-hint" [textContent]="i18n.t('colors.paletteHint')"></p>
@@ -138,16 +138,16 @@
     </div>
   </div>
 
-  <div class="colors-acc colors-acc--section" [class.is-open]="isSectionOpen('blocks')" data-testid="colors-section-blocks">
+  <div class="colors-acc colors-acc--section" [class.is-open]="isOpen('blocks')" data-testid="colors-section-blocks">
     <h2 class="colors-acc-h">
       <button
         type="button"
         class="colors-acc-trigger"
         data-testid="colors-acc-blocks"
-        [attr.aria-expanded]="isSectionOpen('blocks')"
+        [attr.aria-expanded]="isOpen('blocks')"
         aria-controls="colors-acc-panel-blocks"
         id="colors-acc-btn-blocks"
-        (click)="toggleSection('blocks')"
+        (click)="toggle('blocks')"
       >
         <span class="colors-acc-chevron" aria-hidden="true"></span>
         <span class="colors-acc-title" [textContent]="i18n.t('colors.blocksSection')"></span>
@@ -161,7 +161,7 @@
       id="colors-acc-panel-blocks"
       role="region"
       aria-labelledby="colors-acc-btn-blocks"
-      [attr.inert]="isSectionOpen('blocks') ? null : ''"
+      [attr.inert]="isOpen('blocks') ? null : ''"
     >
       <div class="colors-acc-panel-inner colors-acc-panel-inner--pad">
         <p class="ed-hint colors-section-hint" [textContent]="i18n.t('colors.blocksHint')"></p>
@@ -181,7 +181,7 @@
                     [attr.aria-expanded]="isOpen(accId)"
                     [attr.aria-controls]="'colors-acc-panel-' + block.id"
                     [attr.id]="'colors-acc-btn-' + block.id"
-                    (click)="toggle(accId)"
+                    (click)="onBlockAccClick(block.id)"
                   >
                     <span class="colors-acc-chevron" aria-hidden="true"></span>
                     <span class="colors-acc-index" aria-hidden="true" [textContent]="i + 1"></span>

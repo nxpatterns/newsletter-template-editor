@@ -93,6 +93,14 @@ export class EditorPage {
       void this.previewSrcdoc();
       queueMicrotask(() => this.applySelectedClass(id));
     });
+
+    // Panel / colors selection → smooth scroll in the preview iframe (not on every srcdoc rewrite).
+    effect(() => {
+      const token = this.session.previewScrollToken();
+      const id = this.session.previewScrollBlockId();
+      if (!token || !id) return;
+      queueMicrotask(() => this.scrollPreviewBlockIntoView(id, false));
+    });
   }
 
   /** iframe finished loading/parsing srcdoc — wire block chrome from the host. */
@@ -191,7 +199,8 @@ export class EditorPage {
       event.preventDefault();
       event.stopPropagation();
       const id = tr.getAttribute('data-block-id');
-      if (id) this.session.selectBlock(id);
+      // In-iframe pick: stay on current panel tab; still scroll smoothly if needed.
+      if (id) this.session.selectBlock(id, { revealInPanel: false, scrollPreview: true });
     };
 
     const onDragStart = (event: DragEvent): void => {
@@ -533,8 +542,13 @@ export class EditorPage {
     const safe = blockId.replace(/[\\"']/g, '');
     const el = doc.querySelector(`tr.nte-block[data-block-id="${safe}"]`) as HTMLElement | null;
     if (!el) return;
+    const reduceMotion =
+      typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     const apply = (): void => {
-      el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      el.scrollIntoView({
+        block: 'center',
+        behavior: reduceMotion ? 'auto' : 'smooth',
+      });
       const root = doc.scrollingElement ?? doc.documentElement;
       this.lastPreviewScrollY = root?.scrollTop ?? 0;
       if (flash) {

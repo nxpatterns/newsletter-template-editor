@@ -10,26 +10,16 @@ type CampaignColorKey = Extract<
   'accentColor' | 'goldColor' | 'bodyTextColor' | 'headingColor' | 'pageBgColor' | 'contentBgColor'
 >;
 
-/** Section accordions whose open state is UI-only (localStorage, never exported). */
-type SectionId = 'palette' | 'blocks';
-
 interface PaletteToken {
   key: CampaignColorKey;
   labelKey: string;
   testId: string;
 }
 
-interface SectionPrefs {
-  palette: boolean;
-  blocks: boolean;
-}
-
-const SECTION_PREFS_KEY = 'newsletter-template-editor.colors-sections.v1';
-
-const DEFAULT_SECTIONS: SectionPrefs = {
-  palette: true,
-  blocks: false,
-};
+/** UI-only open accordion ids (localStorage). Never part of project export. */
+const OPEN_PREFS_KEY = 'newsletter-template-editor.colors-open.v2';
+/** Legacy key from first section prefs — ignored after v2. */
+const LEGACY_SECTION_KEY = 'newsletter-template-editor.colors-sections.v1';
 
 /** Display-only slot rows for structure preview (not wired to the model yet). */
 const SHELL_SLOTS: Record<'header' | 'footer', readonly string[]> = {
@@ -113,23 +103,11 @@ export class ColorsFieldsComponent {
   protected readonly headerSlots = SHELL_SLOTS.header;
   protected readonly footerSlots = SHELL_SLOTS.footer;
 
-  /** Persisted section open flags (palette / blocks). */
-  private readonly sections = signal<SectionPrefs>(this.readSections());
-
-  /** Ephemeral nested accordion ids (shell rows, individual blocks). */
-  private readonly openIds = signal<ReadonlySet<string>>(new Set());
-
-  protected isSectionOpen(id: SectionId): boolean {
-    return this.sections()[id];
-  }
-
-  protected toggleSection(id: SectionId): void {
-    this.sections.update((prev) => {
-      const next = { ...prev, [id]: !prev[id] };
-      this.writeSections(next);
-      return next;
-    });
-  }
+  /**
+   * All Colors-tab accordion ids that are open.
+   * Default: empty (everything closed). User toggles are persisted in localStorage.
+   */
+  private readonly openIds = signal<ReadonlySet<string>>(this.readOpenIds());
 
   protected isOpen(id: string): boolean {
     return this.openIds().has(id);
@@ -140,8 +118,15 @@ export class ColorsFieldsComponent {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
+      this.writeOpenIds(next);
       return next;
     });
+  }
+
+  /** Open/close nested block accordion and scroll the preview to that block. */
+  protected onBlockAccClick(blockId: string): void {
+    this.toggle(`block-${blockId}`);
+    this.session.selectBlock(blockId, { revealInPanel: false, scrollPreview: true });
   }
 
   protected blockLabel(type: Block['type']): string {
@@ -165,25 +150,26 @@ export class ColorsFieldsComponent {
     this.session.endCoalesce();
   }
 
-  private readSections(): SectionPrefs {
-    if (!isPlatformBrowser(this.platformId)) return { ...DEFAULT_SECTIONS };
+  private readOpenIds(): ReadonlySet<string> {
+    if (!isPlatformBrowser(this.platformId)) return new Set();
     try {
-      const raw = localStorage.getItem(SECTION_PREFS_KEY);
-      if (!raw) return { ...DEFAULT_SECTIONS };
-      const parsed = JSON.parse(raw) as Partial<SectionPrefs>;
-      return {
-        palette: typeof parsed.palette === 'boolean' ? parsed.palette : DEFAULT_SECTIONS.palette,
-        blocks: typeof parsed.blocks === 'boolean' ? parsed.blocks : DEFAULT_SECTIONS.blocks,
-      };
+      const raw = localStorage.getItem(OPEN_PREFS_KEY);
+      if (!raw) return new Set();
+      const parsed = JSON.parse(raw) as unknown;
+      if (!Array.isArray(parsed)) return new Set();
+      const ids = parsed.filter((x): x is string => typeof x === 'string' && x.length > 0 && x.length < 120);
+      return new Set(ids);
     } catch {
-      return { ...DEFAULT_SECTIONS };
+      return new Set();
     }
   }
 
-  private writeSections(next: SectionPrefs): void {
+  private writeOpenIds(next: ReadonlySet<string>): void {
     if (!isPlatformBrowser(this.platformId)) return;
     try {
-      localStorage.setItem(SECTION_PREFS_KEY, JSON.stringify(next));
+      localStorage.setItem(OPEN_PREFS_KEY, JSON.stringify([...next]));
+      // Drop legacy section prefs so an old palette:true cannot surprise later code paths.
+      localStorage.removeItem(LEGACY_SECTION_KEY);
     } catch {
       // quota / private mode
     }

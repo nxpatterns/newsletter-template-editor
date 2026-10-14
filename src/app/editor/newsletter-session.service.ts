@@ -51,6 +51,9 @@ export class NewsletterSession {
   private readonly selectedBlockIdSignal = signal<string | null>(null);
   private readonly panelTabSignal = signal<EditorPanelTab>('placed');
   private readonly editingBlockIdSignal = signal<string | null>(null);
+  /** Monotonic token so re-selecting the same block still triggers a preview scroll. */
+  private readonly previewScrollTokenSignal = signal(0);
+  private readonly previewScrollBlockIdSignal = signal<string | null>(null);
   /** Snapshot of the block when the edit modal opened (for Cancel). */
   private editBaselineBlock: Block | null = null;
   /** Undo-stack depth when the modal opened — cancel trims entries pushed during edit. */
@@ -77,6 +80,8 @@ export class NewsletterSession {
   readonly panelTab = this.panelTabSignal.asReadonly();
   /** When set, the block edit modal is open for this id. */
   readonly editingBlockId = this.editingBlockIdSignal.asReadonly();
+  readonly previewScrollToken = this.previewScrollTokenSignal.asReadonly();
+  readonly previewScrollBlockId = this.previewScrollBlockIdSignal.asReadonly();
   readonly canUndo = this.canUndoSignal.asReadonly();
   readonly canRedo = this.canRedoSignal.asReadonly();
 
@@ -228,10 +233,21 @@ export class NewsletterSession {
     this.panelTabSignal.set(tab);
   }
 
-  selectBlock(id: string | null, opts?: { revealInPanel?: boolean }): void {
+  selectBlock(
+    id: string | null,
+    opts?: { revealInPanel?: boolean; scrollPreview?: boolean },
+  ): void {
     this.selectedBlockIdSignal.set(id);
     // Preview / list selection opens Current blocks; catalog DnD must not steal the tab.
     if (id && opts?.revealInPanel !== false) this.panelTabSignal.set('placed');
+    // Ask the editor page to smoothly scroll the iframe to this block (panel / colors picks).
+    if (id && opts?.scrollPreview !== false) this.requestPreviewScroll(id);
+  }
+
+  /** Bumps a token the editor page watches to scroll the preview to a block. */
+  requestPreviewScroll(id: string): void {
+    this.previewScrollBlockIdSignal.set(id);
+    this.previewScrollTokenSignal.update((n) => n + 1);
   }
 
   /** Select + open the shared block edit modal. */

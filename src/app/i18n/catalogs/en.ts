@@ -144,8 +144,8 @@ export const EN: MessageCatalog = {
 
   'colors.paletteTitle': 'Campaign palette',
   'colors.paletteHint': 'Shared colors for this email. Wider panel → more columns.',
-  'colors.mailHeader': 'Mail header',
-  'colors.mailFooter': 'Mail footer',
+  'colors.mailHeader': 'Email header',
+  'colors.mailFooter': 'Email footer',
   'colors.shellMeta': 'Shell',
   'colors.blocksSection': 'Used block colors',
   'colors.blocksHint': 'Same order as the email. Only blocks currently in the message.',

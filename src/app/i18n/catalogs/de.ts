@@ -144,8 +144,8 @@ export const DE: MessageCatalog = {
 
   'colors.paletteTitle': 'Kampagnen-Palette',
   'colors.paletteHint': 'Gemeinsame Farben dieser E-Mail. Breiteres Panel → mehr Spalten.',
-  'colors.mailHeader': 'Mail-Kopf',
-  'colors.mailFooter': 'Mail-Fuß',
+  'colors.mailHeader': 'Kopfzeile der E-Mail',
+  'colors.mailFooter': 'Fußzeile der E-Mail',
   'colors.shellMeta': 'Rahmen',
   'colors.blocksSection': 'Farben genutzter Bausteine',
   'colors.blocksHint': 'Gleiche Reihenfolge wie die E-Mail. Nur Bausteine, die aktuell in der Nachricht stehen.',
