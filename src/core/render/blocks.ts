@@ -308,9 +308,9 @@ function renderCtaLinkList(b: CtaLinkListBlock, ctx: RenderContext): string {
         <tr>
           <td style="${pad};${border}">
             <p style="font-family:${font};font-size:14px;line-height:24px;color:#3a6080;margin:0" class="text-cta-body">
-              <span style="color:${accent};margin-right:8px">→</span>
+              <span data-field="items" data-item-index="${index}" data-item-key="icon" style="color:${accent};margin-right:8px">${escapeHtml(item.icon || '→')}</span>
               <strong style="color:#5a8aaa"><span data-field="items" data-item-index="${index}" data-item-key="label">${escapeHtml(item.label)}</span></strong>
-              <span data-field="items" data-item-index="${index}" data-item-key="intro"> ${escapeHtml(item.intro)} </span>
+              <span data-field="items" data-item-index="${index}" data-item-key="intro">${item.intro ? ` ${escapeHtml(item.intro)} ` : ' '}</span>
               ${link}
             </p>
           </td>

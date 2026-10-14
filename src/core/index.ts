@@ -4,6 +4,7 @@ export * from './seed';
 export * from './render';
 export * from './persist/storage';
 export {
+  normalizeCtaLinkListBlock,
   normalizeNewsletter,
   normalizePriceBoxBlock,
   plainFromHtml,

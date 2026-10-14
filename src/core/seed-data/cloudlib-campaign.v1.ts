@@ -145,12 +145,14 @@ export const CLOUDLIB_CAMPAIGN_V1 = {
       "type": "cta-link-list",
       "items": [
         {
+          "icon": "→",
           "label": "Termin vereinbaren:",
           "intro": "Wir rufen Sie zurück —",
           "linkText": "Termin buchen",
           "href": "https://cloudlib.eu/home/contact"
         },
         {
+          "icon": "•",
           "label": "Direkt antworten:",
           "intro": "Eine kurze Rückmeldung genügt — wir melden uns umgehend",
           "linkText": "",

@@ -95,10 +95,10 @@ Fix the model before introducing a text editor.
 
 ### cta-link-list
 
-- Replace JSON textarea with **row editor**: each row = label, intro, link text, href.
-- Add / remove / reorder rows in the modal.
+- **Row editor** (shipped): each row = icon, label (title), intro (optional description), link text + href (optional link).
+- Icon: single email-safe glyph from a fixed ~30-character picker grid (no free text / emoji free-for-all).
+- Add / remove / reorder rows in the modal; at least one row always remains.
 - Advanced JSON is not seller-facing.
-- **Next structure-first implementation item.**
 
 ### price-box (shipped structured fields)
 
@@ -139,8 +139,8 @@ Shared mini-toolbar for a **small** set of surfaces only (brand name, legal noti
 
 ## Implementation order
 
-1. **cta-link-list** row editor (kill JSON UI) — **next**.
-2. Plain-label cleanup (remove “HTML” from seller copy where fields are plain).
+1. **cta-link-list** row editor (kill JSON UI) — **done** (icon + structured rows).
+2. Plain-label cleanup (remove “HTML” from seller copy where fields are plain) — **next**.
 3. Benefits list editor (optional polish).
 4. Light rich-text kit only for brand name / legal notice if still required.
 5. Email colors — separate large track; only from `email-colors.md` when scheduled.

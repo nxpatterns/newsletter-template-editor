@@ -143,10 +143,62 @@ export interface PriceBoxBlock extends BlockBase {
 }
 
 export interface CtaLinkListItem {
+  /** Single email-safe glyph before the title (inspector picker). */
+  icon: string;
   label: string;
   intro: string;
   linkText: string;
   href: string;
+}
+
+/** Default bullet glyph for new / legacy CTA link rows. */
+export const CTA_LINK_DEFAULT_ICON = '→';
+
+/**
+ * Curated email-safe single-character icons for CTA link rows.
+ * Prefer plain symbols that survive common clients (no emoji skin tones).
+ */
+export const CTA_LINK_ICONS: readonly string[] = [
+  '→',
+  '←',
+  '↑',
+  '↓',
+  '⇒',
+  '•',
+  '●',
+  '○',
+  '■',
+  '□',
+  '◆',
+  '◇',
+  '★',
+  '☆',
+  '✓',
+  '✔',
+  '✗',
+  '+',
+  '–',
+  '=',
+  '*',
+  '›',
+  '»',
+  '·',
+  '|',
+  '#',
+  '@',
+  '~',
+  '>',
+  '/',
+] as const;
+
+export function emptyCtaLinkListItem(): CtaLinkListItem {
+  return {
+    icon: CTA_LINK_DEFAULT_ICON,
+    label: '',
+    intro: '',
+    linkText: '',
+    href: '',
+  };
 }
 
 export interface CtaLinkListBlock extends BlockBase {
@@ -221,6 +273,7 @@ export function createBlock(type: Block['type']): Block {
         type,
         items: [
           {
+            icon: CTA_LINK_DEFAULT_ICON,
             label: 'Book a call:',
             intro: 'We will call you back —',
             linkText: 'Schedule',

@@ -1,6 +1,10 @@
 import {
+  CTA_LINK_DEFAULT_ICON,
   CURRENT_SCHEMA_VERSION,
+  emptyCtaLinkListItem,
   type Block,
+  type CtaLinkListBlock,
+  type CtaLinkListItem,
   type Newsletter,
   type PriceBoxBlock,
 } from '../types';
@@ -161,10 +165,41 @@ export function normalizePriceBoxBlock(raw: LegacyPriceRaw, fallbackId = ''): Pr
   };
 }
 
+/** Ensure CTA link rows have icon + plain fields; keep at least one row. */
+export function normalizeCtaLinkListBlock(
+  raw: Record<string, unknown> & { id?: unknown; items?: unknown },
+  fallbackId = '',
+): CtaLinkListBlock {
+  const id = typeof raw.id === 'string' && raw.id ? raw.id : fallbackId;
+  const source = Array.isArray(raw.items) ? raw.items : [];
+  const items: CtaLinkListItem[] = source.map((entry) => {
+    if (!entry || typeof entry !== 'object') return emptyCtaLinkListItem();
+    const row = entry as Record<string, unknown>;
+    const iconRaw = typeof row['icon'] === 'string' ? (row['icon'] as string).trim() : '';
+    return {
+      icon: iconRaw || CTA_LINK_DEFAULT_ICON,
+      label: typeof row['label'] === 'string' ? (row['label'] as string) : '',
+      intro: typeof row['intro'] === 'string' ? (row['intro'] as string) : '',
+      linkText: typeof row['linkText'] === 'string' ? (row['linkText'] as string) : '',
+      href: typeof row['href'] === 'string' ? (row['href'] as string) : '',
+    };
+  });
+  return {
+    id,
+    type: 'cta-link-list',
+    items: items.length > 0 ? items : [emptyCtaLinkListItem()],
+  };
+}
+
 function normalizeBlocks(blocks: Block[]): Block[] {
   return blocks.map((block) => {
-    if (block.type !== 'price-box') return block;
-    return normalizePriceBoxBlock(block as unknown as LegacyPriceRaw, block.id);
+    if (block.type === 'price-box') {
+      return normalizePriceBoxBlock(block as unknown as LegacyPriceRaw, block.id);
+    }
+    if (block.type === 'cta-link-list') {
+      return normalizeCtaLinkListBlock(block as unknown as Record<string, unknown>, block.id);
+    }
+    return block;
   });
 }
 

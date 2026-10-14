@@ -1,7 +1,13 @@
-import { createBlock, type Newsletter, type PriceBoxBlock } from '../types';
+import {
+  createBlock,
+  type CtaLinkListBlock,
+  type Newsletter,
+  type PriceBoxBlock,
+} from '../types';
 import { renderExport } from '../render';
 import { seedNewsletter } from '../seed';
 import {
+  normalizeCtaLinkListBlock,
   normalizeNewsletter,
   normalizePriceBoxBlock,
   splitPriceLine,
@@ -136,5 +142,45 @@ describe('price-box render', () => {
       expect(block.strikeEnabled).toBe(true);
       expect((block as { mainPriceHtml?: string }).mainPriceHtml).toBeUndefined();
     }
+  });
+});
+
+describe('normalizeCtaLinkListBlock', () => {
+  it('fills missing icons and keeps fields', () => {
+    const next = normalizeCtaLinkListBlock({
+      id: 'c1',
+      items: [{ label: 'Call', intro: 'Soon', linkText: 'Go', href: 'https://x.test' }],
+    });
+    expect(next.items).toEqual([
+      {
+        icon: '→',
+        label: 'Call',
+        intro: 'Soon',
+        linkText: 'Go',
+        href: 'https://x.test',
+      },
+    ]);
+  });
+
+  it('keeps at least one empty row when items missing', () => {
+    const next = normalizeCtaLinkListBlock({ id: 'c2' });
+    expect(next.items.length).toBe(1);
+    expect(next.items[0].icon).toBe('→');
+    expect(next.items[0].label).toBe('');
+  });
+});
+
+describe('cta-link-list render', () => {
+  it('renders per-row icons from seed', () => {
+    const n = seedNewsletter();
+    const html = renderExport(n).full;
+    expect(html).toMatch(/data-item-key="icon"[^>]*>→</);
+    expect(html).toMatch(/data-item-key="icon"[^>]*>•</);
+    expect(html).toContain('data-item-key="label">Termin vereinbaren:<');
+  });
+
+  it('createBlock includes default icon', () => {
+    const block = createBlock('cta-link-list') as CtaLinkListBlock;
+    expect(block.items[0].icon).toBe('→');
   });
 });

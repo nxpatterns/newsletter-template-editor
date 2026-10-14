@@ -269,16 +269,138 @@
         </div>
       }
       @case ('cta-link-list') {
-        <div class="ed-field">
-          <label class="ed-label" for="insp-cta-links" [textContent]="i18n.t('field.ctaLinksJson')"></label>
-          <textarea
-            id="insp-cta-links"
-            class="ed-textarea"
-            rows="6"
-            [value]="ctaLinksJson(block)"
-            (input)="onCtaLinksJson(block.id, $event)"
-            (blur)="onFieldBlur()"
-          ></textarea>
+        <p class="ed-hint" [textContent]="i18n.t('field.ctaLinksHint')"></p>
+        <div class="cta-rows" data-testid="cta-link-rows">
+          @for (item of block.items; track $index; let i = $index; let first = $first; let last = $last) {
+            <article class="cta-row" [attr.data-testid]="'cta-link-row-' + i">
+              <header class="cta-row-head">
+                <span class="cta-row-index" [textContent]="ctaRowLabel(i)"></span>
+                <div class="cta-row-actions">
+                  <button
+                    type="button"
+                    class="ed-btn"
+                    [disabled]="first"
+                    [attr.aria-label]="i18n.t('field.ctaLinkMoveUp')"
+                    [title]="i18n.t('field.ctaLinkMoveUp')"
+                    (click)="moveCtaItem(block.id, i, -1)"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    class="ed-btn"
+                    [disabled]="last"
+                    [attr.aria-label]="i18n.t('field.ctaLinkMoveDown')"
+                    [title]="i18n.t('field.ctaLinkMoveDown')"
+                    (click)="moveCtaItem(block.id, i, 1)"
+                  >
+                    ↓
+                  </button>
+                  <button
+                    type="button"
+                    class="ed-btn ed-btn--danger"
+                    [disabled]="block.items.length <= 1"
+                    [attr.aria-label]="i18n.t('field.ctaLinkRemove')"
+                    [title]="i18n.t('field.ctaLinkRemove')"
+                    (click)="removeCtaItem(block.id, i)"
+                  >
+                    ×
+                  </button>
+                </div>
+              </header>
+
+              <div class="cta-row-main">
+                <div class="cta-icon-wrap">
+                  <span class="ed-label" [textContent]="i18n.t('field.ctaLinkIcon')"></span>
+                  <button
+                    type="button"
+                    class="cta-icon-btn"
+                    [attr.aria-expanded]="iconPickerIndex === i"
+                    [attr.aria-label]="i18n.t('field.ctaLinkIconPick')"
+                    [title]="i18n.t('field.ctaLinkIconPick')"
+                    (click)="toggleIconPicker(i, $event)"
+                  >
+                    <span class="cta-icon-glyph" [textContent]="item.icon || '→'"></span>
+                  </button>
+                  @if (iconPickerIndex === i) {
+                    <div
+                      class="cta-icon-popup"
+                      role="listbox"
+                      [attr.aria-label]="i18n.t('field.ctaLinkIconPick')"
+                      (click)="$event.stopPropagation()"
+                    >
+                      @for (glyph of ctaLinkIcons; track glyph) {
+                        <button
+                          type="button"
+                          class="cta-icon-option"
+                          role="option"
+                          [class.is-active]="(item.icon || '→') === glyph"
+                          [attr.aria-selected]="(item.icon || '→') === glyph"
+                          (click)="pickCtaIcon(block.id, i, glyph, $event)"
+                        >
+                          <span [textContent]="glyph"></span>
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+
+                <div class="ed-field cta-row-title">
+                  <label class="ed-label" [attr.for]="'insp-cta-label-' + i" [textContent]="i18n.t('field.ctaLinkLabel')"></label>
+                  <input
+                    class="ed-input"
+                    [id]="'insp-cta-label-' + i"
+                    [value]="item.label"
+                    (input)="onCtaItemText(block.id, i, 'label', $event)"
+                    (blur)="onFieldBlur()"
+                  />
+                </div>
+              </div>
+
+              <div class="ed-field">
+                <label class="ed-label" [attr.for]="'insp-cta-intro-' + i" [textContent]="i18n.t('field.ctaLinkIntro')"></label>
+                <input
+                  class="ed-input"
+                  [id]="'insp-cta-intro-' + i"
+                  [value]="item.intro"
+                  (input)="onCtaItemText(block.id, i, 'intro', $event)"
+                  (blur)="onFieldBlur()"
+                />
+              </div>
+
+              <div class="ed-field-row">
+                <div class="ed-field">
+                  <label class="ed-label" [attr.for]="'insp-cta-link-text-' + i" [textContent]="i18n.t('field.ctaLinkText')"></label>
+                  <input
+                    class="ed-input"
+                    [id]="'insp-cta-link-text-' + i"
+                    [value]="item.linkText"
+                    (input)="onCtaItemText(block.id, i, 'linkText', $event)"
+                    (blur)="onFieldBlur()"
+                  />
+                </div>
+                <div class="ed-field">
+                  <label class="ed-label" [attr.for]="'insp-cta-href-' + i" [textContent]="i18n.t('field.ctaLinkHref')"></label>
+                  <input
+                    class="ed-input"
+                    [id]="'insp-cta-href-' + i"
+                    [value]="item.href"
+                    (input)="onCtaItemText(block.id, i, 'href', $event)"
+                    (blur)="onFieldBlur()"
+                  />
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+        <div class="ed-actions">
+          <button
+            type="button"
+            class="ed-btn"
+            data-testid="cta-link-add"
+            [textContent]="i18n.t('field.ctaLinkAdd')"
+            (click)="addCtaItem(block.id)"
+          ></button>
         </div>
       }
     }
