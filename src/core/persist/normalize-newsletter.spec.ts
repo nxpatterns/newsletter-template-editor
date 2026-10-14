@@ -264,18 +264,15 @@ describe('benefits-list render', () => {
     expect(html).toMatch(/data-item-key="text"[^>]*>\s*Dedizierter Unternehmenseintrag/);
   });
 
-  it('uses stylesheet classes instead of per-cell layout inline styles', () => {
+  it('keeps benefit class hooks and inlines layout on export', () => {
     const n = seedNewsletter();
     const html = renderExport(n).full;
-    expect(html).toContain('class="benefit-row"');
-    expect(html).toContain('class="benefit-row-cell"');
-    expect(html).toContain('benefit-icon text-benefit-icon');
-    expect(html).toContain('benefit-text text-benefit');
-    expect(html).toContain('.benefit-row-cell');
-    expect(html).not.toMatch(
-      /data-item-key="icon"[^>]*style="color:#4db8ff;font-size:14px/,
-    );
-    expect(html).not.toMatch(/data-item-key="text"[^>]*style="font-family:/);
+    expect(html).toContain('benefit-row');
+    expect(html).toContain('benefit-row-cell');
+    expect(html).toContain('benefit-icon');
+    expect(html).toContain('benefit-text');
+    // Inliner bakes typography onto the text span / cells.
+    expect(html).toMatch(/font-size:\s*16px/);
   });
 
   it('createBlock uses structured benefit rows', () => {

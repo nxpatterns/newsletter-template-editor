@@ -79,17 +79,16 @@ describe('renderExport', () => {
     expect(html).toContain('bgcolor=');
   });
 
-  it('authors blocks with classes rather than per-cell layout style dumps', () => {
+  it('exports inlined styles while keeping semantic classes', () => {
     const html = renderExport(seedNewsletter()).full;
-    expect(html).toContain('class="hero-label text-gold"');
-    expect(html).toContain('class="paragraph-body text-body"');
-    expect(html).toContain('class="cta-button-link"');
+    expect(html).toContain('hero-label');
+    expect(html).toContain('paragraph-body');
+    expect(html).toContain('cta-button-link');
     expect(html).toContain('price-box-inner');
-    expect(html).toContain('class="cta-link-body text-cta-body"');
-    expect(html).toContain('.block-pad-hero');
-    // No classic per-row padding/color style dumps on CTA link cells.
-    expect(html).not.toMatch(/style="padding:14px 0;border-bottom:1px solid #0a1828"/);
-    expect(html).not.toMatch(/style="font-family:[^"]+;font-size:14px;line-height:24px;color:#3a6080/);
+    expect(html).toContain('cta-link-body');
+    // Export pipeline bakes class CSS onto elements.
+    expect(html).toMatch(/padding:\s*52px 48px 48px 48px/);
+    expect(html).toContain('prefers-color-scheme: dark');
   });
 
   it('keeps TrackLink quotes intact on CTA href', () => {

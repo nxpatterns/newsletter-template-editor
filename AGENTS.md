@@ -43,7 +43,7 @@ Run a local compile (`ng build` / the project’s usual build) and fix failures 
 - **Allowed exceptions in source:** minimal attributes email hard-requires even before inlining (e.g. `bgcolor` dual-write with class-driven background) — never dump full per-row layout CSS inline “because email”.
 - **Do not** regress fixed blocks (e.g. benefits list) back to per-cell inline layout dumps.
 
-When touching `src/core/render/`, prefer classes in `darkModeCss` / shared email CSS and keep export inlining as a future or dedicated export path — not copy-pasted styles in every `render*` function.
+When touching `src/core/render/`, prefer classes in `email-css.ts` / shared email CSS. Export runs `inlineEmailCss` / `inlineEmailCssFragment` in `renderExport` — do not copy-paste layout styles into every `render*` function.
 
 ## Absolute rule — effort matches the task
 
