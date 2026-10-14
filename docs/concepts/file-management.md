@@ -1,46 +1,22 @@
 # File management
 
-Concept for how operators open, name, keep, and export newsletter work in this editor.
+How sellers open, name, keep, and export newsletter work in this editor.
 Audience: non-technical field sellers. English only.
-**Status: agreed (decisions locked 2026-10-07). Implement only after explicit go.**
+**Status: shipped through v0.2.2** for library, recovery, HTML export, and single-template project transfer. Update this doc when product decisions change.
 
-This is **priority zero** before more structured-field / WYSIWYG work.
 No backend. No `.env`. Client-side only. MIT / static-host friendly.
 
----
-
-## Problem we are solving
-
-### What failed in the old Dogan editor
-
-- Toolbar mixed **version identity**, **save semantics**, **preview toggles**, and **export** in one crowded row.
-- Controls like “Speichern”, a free “Versionsname” field, a version `<select>`, and poorly labelled actions felt like a catastrophe to sellers.
-- Missing the only question that matters when a name already exists:
-
-> Do you want to **overwrite** the loaded template, or **save under a new name**?
-
-- HTML and PDF export **worked**, but buttons were easy to miss and labels did not say *what* you get.
-- Server-backed version list + Puppeteer PDF are **not** available in this MIT static product.
-
-### What exists today (v0.1.7)
-
-- One `localStorage` key (`nte:newsletter:v1`) holding a single `StoredEnvelope` (newsletter JSON + `savedAt`).
-- Header **Save** = write that slot + snackbar; **Reset** = seed CloudLib demo again.
-- `globals.exportFileNamePrefix` (default `CloudLib-Listmonk`) already exists for filename stems.
-- Renderer: `renderExport()` (sync) + **`renderExportOptimized()`** (async logo crush for HTML downloads).
-- Logo upload in Brand tab (master embed + display size); replace/clear via **app confirm dialog** (`ConfirmDialogService`) — reuse this for Save overwrite / dirty guards (no `window.confirm`).
-- No Open/Save-as-to-disk, no multi-draft library, no HTML download menu yet; recovery still localStorage-only (logo embeds make **IndexedDB recovery urgent** in the first file-management slices).
-
----
+Related: `email-colors.md` (colors inside the document), `logo-upload.md` (embed size / quota), `design-system.md` (chrome), `block-content-editing.md`.
 
 ## Goals
 
-- Sellers think in **named templates on their machine**, not “localStorage blobs”.
-- One clear place for **file / export** actions: header **overflow (hamburger) menu**, far right (after locale).
+- Sellers think in **named templates on their machine**, not storage internals.
+- One place for file / export actions: header **overflow (hamburger) menu**, far right (after locale).
 - Export filenames follow the **current template display name** (after rename, use the new name).
 - Never silently overwrite a differently named draft without an explicit choice.
 - Autosave may protect against browser crash; it must **not** replace conscious “this is my file”.
-- Stay pure client-side; degrade gracefully on Safari / iOS / Firefox where File System Access is weak or absent.
+- Stay pure client-side; degrade gracefully where File System Access is weak or absent.
+- Moving work to another machine uses **export current template** / **open exported template** (full document including colors when colors ship).
 
 ## Non-goals
 
@@ -48,44 +24,33 @@ No backend. No `.env`. Client-side only. MIT / static-host friendly.
 - Server-side PDF (Puppeteer) in the default product path.
 - Git-style version DAG or branch UI for sellers.
 - Teaching ListMonk’s template/body split as the primary mental model in the chrome (power users still get the right downloads).
+- Multi-template bulk export/import in v1 (deferred — see Later).
 
----
-
-## Core model: what is a “document”?
-
-### Source of truth
+## Document model
 
 | Layer | Role | First-class? |
 | --- | --- | --- |
-| **Newsletter JSON** (`Newsletter`) | Editable document. Schema-versioned. Includes globals + blocks. Logo may embed base64. | **Yes — primary file** |
-| **Working session meta** | Display name, dirty flag, optional last disk path/handle, last export stem, `savedAt` | Yes (session + optional library index) |
-| **ListMonk shell HTML** | Generated from JSON | Export artifact |
-| **ListMonk body HTML** | Generated from JSON | Export artifact |
-| **Full standalone HTML** | Generated from JSON (share / archive / print-friendly) | Export artifact |
-| **PDF** | Raster/layout snapshot of preview-quality HTML | Export artifact (see PDF section) |
-| **Browser autosave slot** | Crash recovery only | Not a “file” sellers manage |
+| **Newsletter JSON** (`Newsletter`) | Editable document. Schema-versioned. Globals + blocks (+ future color chapter). Logo may embed base64. | **Yes — primary** |
+| **Working session meta** | Display name, dirty flag, library binding, timestamps, optional last file name | Yes |
+| **ListMonk shell / body HTML**, **full HTML** | Generated outputs | Export artifacts |
+| **PDF** | Deferred until product unlock | Not offered in menu yet |
+| **Browser recovery slot** | Crash recovery only | Not a seller “file” |
 
-**Rule:** JSON is always recoverable truth. HTML/PDF are **outputs**. Never edit export HTML back into the model as the normal path (import JSON only for round-trip).
+**Rule:** JSON is recoverable truth. HTML/PDF are **outputs**. Normal round-trip is open/export **template** files, not edit export HTML back into the model.
 
 ### Display name vs file stem
 
-- **Display name** — what the seller sees in the UI (may contain spaces, punctuation, local scripts). Editable.
-- **File stem** — always derived for downloads via `sanitizeFileStem(displayName | prefix)` (never trust raw user text as a path segment).
+- **Display name** — what the seller sees (spaces, punctuation, local scripts allowed). Editable.
+- **File stem** — derived via `sanitizeFileStem` for downloads (never trust raw user text as a path segment).
 - **Export prefix** (`globals.exportFileNamePrefix`) — Campaign field for ListMonk pair stems when set.
 
-**Default display name (seed / reset demo)** — locked:
+**Default display name (seed / reset demo):**
 
 ```text
 CloudLib-EU-Example-Newsletter-Template
 ```
 
-(Already ASCII + hyphens; matches stem rules without further mangling.)
-
-**Casual export filenames:**
-
-```text
-{sanitizeFileStem(displayName)}.html
-```
+**Casual export filenames:** `{sanitizeFileStem(displayName)}.html`
 
 **ListMonk pair:**
 
@@ -94,127 +59,104 @@ CloudLib-EU-Example-Newsletter-Template
 {sanitizeFileStem(prefix || displayName)}-body.html
 ```
 
-### File stem sanitization (locked approach)
-
-Goal: safe, portable names on Windows/macOS/iOS/Android Downloads folders and mail attachments — without requiring sellers to understand encoding.
+### File stem sanitization
 
 Pipeline (pure helper, unit-tested):
 
-1. **NFKC normalize** the string (compatibility decomposition).
-2. **Script / diacritic fold to Latin ASCII where practical:**
-   - German (and similar): `ä→ae`, `ö→oe`, `ü→ue`, `Ä→Ae`, `ß→ss`, …
-   - Turkish: `ı/I → i`, `İ → I` then lower rules carefully; `ş→s`, `ğ→g`, `ç→c`, …
-   - Serbian/Croatian Latin: `č→c`, `ć→c`, `š→s`, `ž→z`, `đ→dj`, …
-   - Use a small explicit map for common European letters + `String#normalize('NFD')` + strip combining marks as a general Latin fallback.
-3. **Non-Latin scripts (Chinese, Arabic, Cyrillic-as-primary, etc.):**
-   - **Do not** invent wrong “phonetic English” by guessing.
-   - After folding, any remaining code point outside `[A-Za-z0-9]` becomes a separator candidate.
-   - If the stem would be **empty** or only separators (e.g. pure CJK/Arabic name): fall back to
-     `Newsletter-Template` plus a short **stable suffix** from a hash of the original display name (e.g. 6 hex chars) so two different Chinese titles do not both become the same file:
-     `Newsletter-Template-a3f2c1`.
-   - Optional later (not v1): a tiny optional transliteration library — only if sellers demand readable Latin from CJK; license must stay MIT.
-4. **Separators:** whitespace and runs of punctuation/`_` → single `-`. No spaces in the stem.
-5. **Casing:** **Pascal-ish path segments** — split on `-`, capitalize each ASCII segment’s first letter, rest lower (or keep existing Camel inside segment if already mixed). Example: `q4 offer hotels` → `Q4-Offer-Hotels`. All-caps acronyms of length 2–4 may stay upper if detected simply; do not over-engineer.
-6. **Strip** leading/trailing `-`, collapse `--` → `-`.
-7. **Forbid** path characters: `/\?%*:|"<>` and control chars — already removed by the ASCII filter.
-8. **Length cap:** ~80 characters for the stem (OS/email-safe); truncate on a `-` boundary when possible.
-9. **Empty after all that** → `Newsletter-Template`.
+1. NFKC normalize.
+2. Script / diacritic fold to Latin ASCII where practical (German, Turkish, common European maps; NFD + strip combining marks as fallback).
+3. Non-Latin primary scripts: remaining non-`[A-Za-z0-9]` → separators; if stem empty → `Newsletter-Template` + short stable hash suffix of the original display name.
+4. Whitespace and punctuation runs → single `-`. No spaces in the stem.
+5. Pascal-ish segments on `-` (e.g. `q4 offer hotels` → `Q4-Offer-Hotels`).
+6. Strip leading/trailing `-`, collapse `--`.
+7. Forbid path/control characters (already removed by ASCII filter).
+8. Length cap ~80 characters; truncate on `-` when possible.
+9. Empty → `Newsletter-Template`.
 
-**Display name is never silently rewritten** in the UI — only the download stem is sanitized. Sellers can keep `Müller Q4` on screen; file becomes `Mueller-Q4.html`.
+**Display name is never silently rewritten** in the UI — only the download stem is sanitized.
 
-Exact pairing labels remain plain language in the menu (see Menu IA).
-
----
-
-## Mental model for sellers
+## Mental model
 
 ```text
 I am working on ONE current template.
 It has a name.
 I can rename it.
-I can export the current template as HTML or PDF (name follows).
-I can keep copies under other names / on disk without losing the one I have open.
+I can export it as HTML (name follows).
+I can export this template to move it to another computer or browser.
+I can keep copies under other names in this browser’s library.
 The app may remember my last work when I reopen the browser — that is recovery, not my filing cabinet.
 ```
 
-Avoid: multiple primary verbs that all mean “persist something somewhere” (`Aktualisieren`, `Mit Name`, `Speichern`, `Download` mixed without a dialog).
-
----
-
-## Session state (proposed)
-
-Extend beyond bare `Newsletter` with a thin **document session** (still client-only):
+## Session state
 
 | Field | Meaning |
 | --- | --- |
 | `newsletter` | Current JSON |
 | `displayName` | Seller-facing name |
-| `dirty` | True after edits since last **explicit** save (disk or named library entry) |
+| `dirty` | True after edits since last explicit save (prefer dirty on rename too) |
 | `autosavedAt` | Last crash-recovery write |
 | `lastExplicitSaveAt` | Last Save / Save as / library write |
 | `origin` | `seed` \| `autosave` \| `library` \| `disk` |
 | `libraryId` | If bound to a named library entry |
 | `diskFileName` | Last downloaded / opened file name if known |
-| `fileHandle` | Optional File System Access handle when available (not serializable to JSON; keep in memory + IndexedDB if we adopt handles later) |
-
-`dirty` must flip on content edits; rename-only may be dirty for library binding but not for “content lost” warnings — decide in implementation: **prefer dirty on rename too** so Save is never ambiguous.
-
----
+| `fileHandle` | Optional FSA handle in memory only when available |
 
 ## Persistence layers
 
-### Crash recovery (localStorage / IndexedDB)
+### Crash recovery (IndexedDB)
 
-- Keep a single **recovery** slot (migrate today’s `nte:newsletter:v1`).
-- Write debounced on edit (e.g. 500–1000 ms) **without** snackbar spam.
-- On load: restore recovery if present; show name in header.
-- Recovery is **not** multi-version history.
+- Single recovery slot (legacy `nte:newsletter:v1` localStorage migrated once).
+- Debounced write on edit **without** snackbar spam.
+- Recovery is not multi-version history.
+- Large logo embeds require IndexedDB (not localStorage alone).
 
-**Quota risk:** base64 logos + long HTML-ish fields can blow past ~5 MB localStorage. Prefer **IndexedDB** for recovery envelope once logo upload ships (or sooner). Concept dependency: `logo-upload.md`.
+### Named library (IndexedDB)
 
-### Named library (optional v1 slice)
+Each entry:
 
-In-browser list of named drafts (IndexedDB), each:
+- `id`, `displayName`, `updatedAt`, `newsletter`
+- **`createdWithAppVersion`** — app/package version that last wrote this entry (e.g. `0.2.2`). Shown in the Open library list next to date/time. Not a “template version” the seller manages; rename does not clear it — refresh on each successful library write from the running app.
 
-- `id`, `displayName`, `updatedAt`, `newsletter` (or pointer)
+UX: Open from library (modal), Save / Save as, Delete with irreversible confirm.
 
-UX:
+### Disk transfer (explicit)
 
-- Open from library
-- Save (overwrite bound entry if named + confirm if needed)
-- Save as (new name → new entry)
-- Delete entry
-
-This replaces the old server version `<select>` with something that stays offline.
-
-**Decision (2026-10-07):** **In-browser library (IndexedDB) + disk export/open in v1**, plus crash recovery. Do not rebuild the old select+name+save row. Library is the seller-facing “named versions”; disk JSON is portability/backup.
-
-### Disk files (explicit)
-
-| Action | Behavior |
+| Menu action (seller copy) | Behavior |
 | --- | --- |
-| **Download project (JSON)** | Always available. Blob download of envelope + name + schema. |
-| **Open project (JSON)** | `<input type=file accept=…>` + parse/migrate. If current `dirty`, confirm discard/export first. |
-| **Save to disk (FSA)** | Where `showSaveFilePicker` exists: write JSON; keep handle for true Save. Fallback = download. |
-| **Open from disk (FSA)** | Where `showOpenFilePicker` exists; else file input. |
+| **Export current template** | Download one envelope for the **open** template. Always available. No “.json” in the label. |
+| **Open exported template** | File picker → parse/migrate. If current `dirty`, confirm discard first. |
 
-Never require FSA for core workflows.
+Never require File System Access for core workflows. FSA Save/Open may exist as progressive enhancement; fallback remains download + file input.
 
----
+## Project file envelope
 
-## Save semantics (the dialog we missed)
+```text
+{
+  kind: 'nte-project'
+  schemaVersion: number          // document data shape
+  createdWithAppVersion: string  // app that wrote the file (package version)
+  displayName: string
+  libraryId: string | null
+  newsletter: Newsletter         // includes colors once email-colors ships
+  exportedAt: iso
+}
+```
 
-When the user chooses **Save** / **Save as** / closes with dirty / opens another file:
+- **v1 = current template only** (not the whole library).
+- Open accepts: `nte-project` envelope, legacy recovery-style `{ newsletter }`, or bare `Newsletter`.
+- Always run `normalizeNewsletter` on open.
+- When email-colors ships: envelope carries palette + shell + **used** definition styles inside `newsletter` (see `email-colors.md`). Content-only sellers still get matching colors on another machine via this file.
+- `createdWithAppVersion` is metadata for support and the library list — not a second schema. Older files without it: omit or show “unknown” in UI; still open if schema normalize succeeds.
+- `schemaVersion` stays the data-contract version; sellers never manage it.
 
-### If unbound or “Save as”
+## Save semantics
+
+### Unbound or Save as
 
 - Ask for **name** (prefill current display name).
-- Create new library entry and/or download JSON under that stem.
-- Bind session to that name; clear dirty.
+- Create new library entry; bind session; clear dirty.
 
-### If bound to an existing name
-
-Show a clear choice dialog (plain language, two primary actions + cancel):
+### Bound to an existing name
 
 ```text
 Title: Save template
@@ -222,230 +164,120 @@ Body:  “{displayName}” already exists as the current template.
 [ Overwrite ]   [ Save under a new name… ]   [ Cancel ]
 ```
 
-- **Overwrite** — write library entry / disk handle; snackbar “Saved “{name}””.
-- **Save under a new name…** — name field → new identity; leave old entry untouched.
-- **Cancel** — no write.
-
 Do **not** split this into mysterious toolbar buttons. One Save affordance → smart dialog when needed.
 
-### Header Save button vs menu
+### Header vs menu
 
-**Decision (2026-10-07):**
+- Toolbar: **Undo / Redo only**.
+- Hamburger (**rightmost**, after locale): all file + export + reset-to-demo.
 
-- Toolbar: **Undo / Redo only** (remove Save and Reset icons from the toolbar).
-- Hamburger (**rightmost** control, after locale): **all** file + export + reset-to-demo.
-- One Save meaning only — the menu item runs the overwrite / save-as dialog pipeline.
-
----
-
-## Header chrome and hamburger menu
-
-### Placement
-
-Far **right** of the header, **after** the locale switch (or immediately before locale if locale must stay outermost — **prefer menu as rightmost control** so “files/export” is a stable corner).
-
-```text
-[ Brand ]     [ Undo Redo ]     [ DE | EN ]  [ ☰ ]
-```
-
-Follow design-system: toolbar flex-wrap; menu panel dismiss control top-end if it is a sheet on mobile.
-
-### Menu information architecture (proposed)
+## Hamburger menu IA
 
 ```text
 ☰ Menu
 ├── Current template
-│   ├── Name: {displayName}          (inline rename or “Rename…”)
+│   ├── Name: {displayName}          (Rename…)
 │   ├── Save
 │   ├── Save as…
-│   ├── Open…                        (from in-browser library — see below)
-│   └── ───
-│   └── Export as HTML…              (choice dialog; no PDF in v1)
-├── Project
-│   ├── Download project file (.json)
-│   └── Open project file (.json)    (from disk — see below)
+│   ├── Open…                        (in-browser library)
+│   └── Export as newsletter template (HTML)…
+├── Transfer
+│   ├── Export current template
+│   └── Open exported template…
 └── Danger zone
     └── Reset to demo template…
 ```
 
-### Why two different “Open” entries (not one)
+Section label **Transfer** (or keep “Project” if copy already shipped — prefer **Transfer** when next touching i18n so sellers do not hear “project/JSON”). Implementation may still use `kind: 'nte-project'` internally.
 
-Sellers have **two places** drafts can live. Mixing them in one picker caused the old Dogan confusion.
+### Why two different Open entries
 
-| Menu item | What it opens | Where data lives | When to use |
-| --- | --- | --- | --- |
-| **Open…** (under Current template) | A **named draft from the in-app library** | IndexedDB in this browser profile | Day-to-day: “the version I saved last Tuesday in the editor” |
-| **Open project file (.json)** (under Project) | A **file from disk / Downloads / USB / mail attachment** | User’s filesystem | Portability: hand off to a colleague, backup, other device, other browser |
+| Menu item | Opens | Where data lives |
+| --- | --- | --- |
+| **Open…** | Named draft from **this browser’s library** | IndexedDB |
+| **Open exported template…** | File from disk / USB / mail | Filesystem |
 
-Same idea as “Open recent document” vs “Open file…” in office apps — not two competing save systems.
+Do **not** merge into one dialog in v1.
 
-- Library Open → modal list (`displayName` + `updatedAt`, Open / Delete).
-- Project Open → file picker (`accept` application/json / `.json`), parse envelope, dirty confirm first.
-- **Download project file** is the inverse of Project Open (export the JSON source).
-- Do **not** merge into one dialog in v1.
+### Library picker
 
-**Export as HTML…** always opens a **short choice dialog** (never silent multi-download):
+- Modal: search, sort by date/name, scroll list, Open / Delete.
+- Each row shows **display name**, **updated date/time**, and **app version** that last saved it (`createdWithAppVersion`), e.g. to the right of the timestamp: `v0.2.2`.
+- Delete copy must state the action is irreversible.
+
+### HTML export
+
+Always a short choice dialog (never silent multi-download):
 
 ```text
 Export as HTML
-○ Full email (single file) — share / archive / open in browser
-○ ListMonk pair (template + body) — paste into ListMonk
+○ One complete HTML file — Roundcube / share / archive
+○ Two files for Listmonk — template + body
 [ Download ]
 ```
 
-**Decision (2026-10-07):** always ask; no one-click default that hides the second path.
-Old product auto-downloaded shell + body with fixed CloudLib filenames; that surprised people. Named, chosen, explained.
+Naming:
 
-**Export as PDF…** — **not in v1 menu.** Deferred until a good client-side approach exists (no Puppeteer, no backend). Do not show a dead menu item.
+1. Start from **current display name** (shown name wins even if not library-saved yet).
+2. Empty name → `exportFileNamePrefix` → fallback stem.
+3. Full HTML → display name stem. ListMonk pair → prefix if non-empty, else display name.
+4. No date suffix by default.
 
-### Naming on export
+### PDF
 
-1. Start from **current display name** (after rename, that string wins).
-2. If display name empty → fall back to `exportFileNamePrefix` → fall back to `newsletter`.
-3. Sanitize to file stem.
-4. Optionally append short date for PDF only if we want sortability — **default no date** so re-export replaces cleanly in Downloads; sellers who want versions change the **name**.
-
-**Tricky case:** user renames in header but does not Save. Export **still** uses the name currently shown (export is about the working copy, not last library write).
-
-**Tricky case:** ListMonk pair + custom prefix. If prefix is set and differs from display name, prefer:
-
-- Full HTML / PDF → **display name**
-- ListMonk pair → **prefix** if non-empty, else display name  
-
-Document this in UI hints so it is not magic.
-
----
-
-## PDF without a backend
-
-Old stack: `POST /api/pdf` + Puppeteer. **Out of scope** for static MIT build.
-
-### Options
-
-| Approach | Pros | Cons |
-| --- | --- | --- |
-| **A. Browser print** (`window.print` on preview HTML) | Zero deps; best native quality | User must pick “Save as PDF”; inconsistent chrome; harder autofile name |
-| **B. Client library** (e.g. html2canvas + jsPDF) | One-click download | Heavy; CSS/email table fidelity often poor; dark backgrounds tricky |
-| **C. Embed print-friendly window + guided UI** | Honest UX; name suggestion copied | Not one pure blob download everywhere |
-| **D. Defer PDF** | Focus HTML + JSON first | Sellers lose a loved button |
-
-**Decision (2026-10-07):** **Omit PDF from the product menu for now.** HTML + JSON + library only. Revisit later with a dedicated client approach if needed.  
-Do **not** reintroduce a Node/Puppeteer PDF service into this repo.  
-Do **not** ship a placeholder PDF item that confuses sellers.
-
----
+**Not in the menu** until an explicit unlock (lab + concept patch). Session work under `docs/sessions/pdf-export/`. No Puppeteer in this product. No dead placeholder menu item.
 
 ## Dirty navigation guards
 
-Before: Open, Reset to demo, load library entry, browser tab close:
+Before Open, Reset to demo, load library entry, browser tab close:
 
-- If `dirty` → confirm: Stay / Discard / Save first (Save runs normal pipeline).
-- `beforeunload` when dirty (browser-native).
+- If `dirty` → confirm: Stay / Discard / Save first.
+- `beforeunload` when dirty.
 
----
+## i18n and copy
 
-## Relationship to existing Save / Reset
+- Plain verbs: Save, Save as, Open, Export, Rename, Reset demo.
+- No “.json” in seller-facing labels.
+- Preferred transfer labels (DE/EN catalogs):
 
-| Today | Future |
-| --- | --- |
-| Save icon → localStorage + snackbar | Save → recovery write + optional library/disk overwrite flow + snackbar |
-| Reset → seed + snackbar | Move under menu only; confirm if dirty; still available for demo |
-| No export | Hamburger HTML export (choice dialog); no PDF v1 |
-| Single slot | Recovery + **IndexedDB library** + disk JSON |
+| Key role | EN | DE |
+| --- | --- | --- |
+| Export current | Export current template | Aktuelle Vorlage exportieren |
+| Open exported | Open exported template… | Exportierte Vorlage öffnen… |
+| Snackbar exported | Template exported | Vorlage exportiert |
+| Snackbar opened | Template opened | Vorlage geöffnet |
 
-Autosave recovery should **not** toast on every keystroke.
+## Testing (minimum)
 
----
-
-## i18n and copy principles
-
-- Menu labels plain: “Export as HTML”, not “Download artifacts”.
-- Prefer verbs sellers use: Save, Save as, Open, Export, Rename, Reset demo.
-- DE/EN via existing catalogs; no raw HTML words in seller-facing export names unless technical ListMonk dialog needs them — then “ListMonk template (shell)” / “ListMonk body”.
-
----
-
-## Testing (minimum when implementing)
-
-- BDD: menu opens; Export HTML downloads a blob whose name contains sanitized display name.
+- Menu opens; HTML export blob name contains sanitized display name.
 - Rename then export → new stem.
 - Dirty Open → confirm path.
-- Save overwrite vs save-as leaves two library entries when library exists.
+- Save overwrite vs save-as leaves two library entries when appropriate.
 - Recovery restore after reload.
-- Quota / large logo: graceful error snackbar (coord with logo concept).
-- No page scroll jump when menu opens (shell locks).
+- Export current template / open round-trip preserves newsletter (and colors once implemented).
+- Library row can show app version when field present.
+- Quota / large logo: graceful error (coord with logo concept).
+- No page scroll jump when menu opens.
 
----
+## Later (not now)
 
-## Implementation slices (after approval only)
-
-Suggested order (small PRs):
-
-1. Document session: `displayName`, `dirty`; show name in header; debounced recovery.
-2. IndexedDB **library** CRUD + migrate off single localStorage-only mental model (recovery may move to IDB early).
-3. Hamburger shell + menu IA; strip Save/Reset from toolbar (Undo/Redo only); design-system note.
-4. Save / Save as / Open dialogs (overwrite vs new name) bound to library.
-5. HTML export choice dialog (full vs ListMonk pair) + filename helper + snackbar.
-6. Disk JSON download/open (portability) + dirty guards + `beforeunload`.
-7. No PDF slice until a later concept revision.
-8. Coordinate logo embed quota with `logo-upload.md`.
-
----
-
-## Decisions locked (2026-10-07)
-
-| Topic | Choice |
-| --- | --- |
-| Named drafts | **IndexedDB library + disk JSON** in v1 (+ crash recovery) |
-| Toolbar | **Undo / Redo only** |
-| File / export / reset | **Hamburger, rightmost** (after locale) |
-| HTML export | **Always short dialog:** Full email **or** ListMonk pair |
-| PDF | **Omit menu item** until a solid client solution exists |
-| Reset | Menu only, with dirty confirm |
-| IndexedDB | **Now** (library requires it; helps logo quota later) |
-
-### Locked product facts (not open)
-
-- **`exportFileNamePrefix`:** already a Campaign-tab field (default `CloudLib-Listmonk` in seed/defaults). **Keep it.** Naming rules:
-  - Full HTML (and future PDF): **display name** of the current template.
-  - ListMonk pair files: use **prefix if non-empty**, else display name, then sanitize (`…-template.html` / `…-body.html`).
-- **Library “list UI”** means only *how Open presents saved named drafts* in the browser library (IndexedDB) — not a second product concept. Default for v1: **modal picker** (searchable list of `displayName` + `updatedAt`, Open / Delete). Not a permanent side-rail of files. Disk JSON remains separate menu items.
-
-### Locked at review (2026-10-07, post v0.1.7)
-
-- Default seed `displayName`: **`CloudLib-EU-Example-Newsletter-Template`**.
-- File stems: **`sanitizeFileStem`** as specified above (no spaces; Latin fold; non-Latin → hash suffix fallback).
-- Library Open and Project JSON Open: **two separate menu entries** (explained above).
-- Recovery migration `nte:newsletter:v1` → IndexedDB envelope **approved** (include `displayName`, `libraryId`, newsletter, timestamps).
-
-### Still open (minor — at implement)
-
-- Save-as overwrite dialog could offer explicit “Save under new name” in one step (Save as menu exists).
-
-### Deferred (separate concept later)
-
-- Undo/Redo **hover labels** (what would undo/redo): requires labeled history entries — not file-management scope; schedule after structure-first slices.
-
----
+- Export **all** saved library templates, or a **multi-select** of them; import all or selected. Same mental model as current transfer, wider scope.
+- Optional FSA “true Save” polish where supported.
+- PDF menu after product unlock path in next-session / pdf-export sessions.
 
 ## Locks
 
 - No backend file API / no Puppeteer in this product.
 - JSON is source of truth; HTML is export; PDF not offered until revisited.
-- No old-style multi-button save row (`Aktualisieren` / `mit Name` chaos).
+- No old-style multi-button save row.
 - Overwrite vs new name is always an explicit choice when it matters.
 - Export uses the **currently shown** template name.
-- Hamburger (rightmost) holds file + HTML export + reset; toolbar is undo/redo only.
+- Hamburger (rightmost) holds file + HTML export + transfer + reset; toolbar is undo/redo only.
 - HTML export always asks Full vs ListMonk pair.
-- v1 library lives in IndexedDB; disk JSON is backup/portability.
+- Library lives in IndexedDB; disk transfer is portability/backup.
+- **v1 disk transfer = current template only.**
+- Envelope stores `createdWithAppVersion` (app build), distinct from `schemaVersion`.
+- Library list shows date/time and app version when known.
+- Seller labels: no file-extension jargon.
+- When colors ship: transfer includes document color state per `email-colors.md`.
 - Spec before code; update this doc if product decisions change.
-
----
-
-## Related
-
-- `docs/sessions/next-session.md` — priority zero handoff
-- `docs/concepts/logo-upload.md` — binary size vs recovery quota
-- `docs/concepts/block-content-editing.md` — structure-first editing
-- `docs/concepts/design-system.md` — header, snackbar, dismiss rules
-- Code today: `src/core/persist/storage.ts`, `src/core/render/index.ts` (`renderExport`), `src/app/app.html` header toolbar

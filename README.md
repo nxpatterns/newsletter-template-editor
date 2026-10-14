@@ -94,13 +94,13 @@ Actions → **Release Deployment** → `workflow_dispatch` (uses `package.json` 
 Repo settings: **Pages → Source = GitHub Actions**.  
 Pages 404 troubleshooting: `docs/knowledge-corner/GitHub-Deployments/ReadMe.md`.
 
-UI chrome specs (snackbar, footer): `docs/concepts/design-system.md`.
+Product concepts: `docs/concepts/` (file management, email colors, block editing, logo, design system).
 
 ## Stack
 
 - Angular 22+ (standalone, zoneless, SCSS)
 - `@angular/aria` + `@angular/cdk`
-- Domain core: pure TS renderer + localStorage
+- Domain core: pure TS renderer + IndexedDB library/recovery
 - Design system snackbar (full-width bar above footer, 3s auto-dismiss, pause on hover)
 - Tests: Vitest + playwright-bdd
 - Hosting: GitHub Actions → GitHub Pages (**tag releases only**)

@@ -4,6 +4,8 @@ Concept for how operators edit block and brand content in the newsletter templat
 Audience: non-technical field sellers. English only.
 Source of truth remains JSON blocks + globals; HTML is always generated.
 
+Related: `email-colors.md` (mail colors), `file-management.md`, `logo-upload.md`, `design-system.md`.
+
 ## Goals
 
 - Sellers never need to write or understand HTML for routine edits.
@@ -16,8 +18,9 @@ Source of truth remains JSON blocks + globals; HTML is always generated.
 - Full word-processor editing inside the preview iframe.
 - Arbitrary HTML authoring for every field.
 - Server-side document conversion.
+- Email color editing outside the Colors tab (see `email-colors.md`).
 
-## Editing shell (already shipped)
+## Editing shell (shipped)
 
 - Select block in list or preview → highlight only.
 - Edit opens only via ✎ (list or preview) → shared **edit modal**.
@@ -44,8 +47,8 @@ Fix the model before introducing a text editor.
 | --- | --- |
 | Campaign | Plain: preheader, subject (preview), font preset, export prefix |
 | Brand | Plain stars line; brand name may later get **light** marks (family/size/weight/color on selection) |
-| Logo | Today: URL + href + alt + height. Next: file upload → small base64 (SVG→JPEG→PNG), size warnings |
-| Colors | Semantic labels (Accent, Highlight, Body text, …) — not color names as product meaning. One palette tab only |
+| Logo | File upload → master embed + display size (`logo-upload.md`). No seller-facing raw URL/base64 field |
+| Colors | Colors tab only — semantic campaign tokens today; full slot system per `email-colors.md` (concept). No free hex in block inspectors |
 | Legal | Mostly plain labels/URLs; notice may later share the same light rich-text kit as brand name |
 
 ## Per-block editing model
@@ -60,7 +63,7 @@ Fix the model before introducing a text editor.
 
 - Plain: `label`.
 - Headline: start as plain or single-line with optional **light** marks later (bold/italic only). Avoid free HTML textarea long-term.
-- Renderer owns layout and colors from globals.
+- Renderer owns layout; colors from document color system / globals.
 
 ### paragraph
 
@@ -82,7 +85,7 @@ Fix the model before introducing a text editor.
 
 ### benefits-list
 
-- Already structured: one benefit per line → `items: string[]`.
+- Structured: one benefit per line → `items: string[]`.
 - Keep this pattern; UI can later become a small list editor (add/remove/reorder rows) instead of a textarea.
 
 ### cta-button
@@ -95,10 +98,11 @@ Fix the model before introducing a text editor.
 - Replace JSON textarea with **row editor**: each row = label, intro, link text, href.
 - Add / remove / reorder rows in the modal.
 - Advanced JSON is not seller-facing.
+- **Next structure-first implementation item.**
 
-### price-box (priority reshape)
+### price-box (shipped structured fields)
 
-Replace HTML price blob with atomic fields:
+Atomic fields (v0.2.2+):
 
 | Field | Role | Example |
 | --- | --- | --- |
@@ -111,7 +115,7 @@ Replace HTML price blob with atomic fields:
 | `details` | Plain supporting line | No auto-renew |
 | `fine` | Plain fine print | Limited availability |
 
-Renderer composes typography and colors. Migration: parse legacy `mainPriceHtml` / `strike` once into fields, or map seed defaults and keep a short compatibility path in storage migrate.
+Renderer composes typography and colors. Legacy `mainPriceHtml` / `strike` migrate via `normalize-newsletter`.
 
 ## Light rich-text kit (if needed later)
 
@@ -133,17 +137,15 @@ Shared mini-toolbar for a **small** set of surfaces only (brand name, legal noti
 - Live preview on input; Cancel / Save as shipped.
 - Undo/Redo remain global in the app header (usable above the modal).
 
-## Implementation order (suggested)
+## Implementation order
 
-**Next gate after file management (v0.1.8):** start here — not heavy WYSIWYG.
+1. **cta-link-list** row editor (kill JSON UI) — **next**.
+2. Plain-label cleanup (remove “HTML” from seller copy where fields are plain).
+3. Benefits list editor (optional polish).
+4. Light rich-text kit only for brand name / legal notice if still required.
+5. Email colors — separate large track; only from `email-colors.md` when scheduled.
 
-1. **price-box** field split + inspector + render + seed/migrate.
-2. **cta-link-list** row editor (kill JSON UI).
-3. Plain-label cleanup (remove “HTML” from seller copy where fields become plain).
-4. Benefits list editor (optional polish).
-5. Logo upload pipeline.
-6. Light rich-text kit only for brand name / legal notice if still required.
-7. Export download and remaining queue items.
+Already shipped (do not re-open as “next”): file management v1, logo upload, price-box field split.
 
 ## Locks
 

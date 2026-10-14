@@ -114,12 +114,13 @@ Do **not** give the preview host `overflow: auto` and a tall iframe (`min(80vh)`
 Inspired by image2colors header bar (brand left, actions right), editor-specific content:
 
 ```text
-[ Brand: title + subtitle ]   [ Toolbar actions — flex wrap ]   [ Locale DE|EN ]
+[ Brand: title + subtitle ]   [ Undo / Redo — flex wrap ]   [ Locale DE|EN ]  [ ☰ file menu ]
 ```
 
 - One bar on iPad/desktop when space allows; toolbar **flex-wrap**s on narrow widths (not a second permanent toolbar row unless wrap requires it).
 - Shell/work layout uses **CSS Grid**; header action cluster uses **Flexbox** + wrap.
-- No theme toggle in v0 (Glacier dark only).
+- Toolbar actions: **Undo / Redo only**. All save / open / export / reset live in the **hamburger**, **rightmost** after locale (`file-management.md`).
+- No theme toggle in v0 (Glacier dark only). Email Dark/Light starter lives on the Colors tab when email-colors ships — not app chrome.
 - Safe-area: `padding-top: var(--ds-safe-top)`.
 
 ### Footer
@@ -252,7 +253,7 @@ Product: **English (default)** and **German**; choice stored in `localStorage` a
 
 ### Placement
 
-- **Header, far end (right in LTR)** — after toolbar actions.
+- **Header, near the end (right in LTR)** — after toolbar actions, **before** the file hamburger (hamburger stays rightmost).
 - Compact control showing the **other** locale or active `EN`/`DE` toggle (touch target ≥ 44×44 CSS px).
 - Must not introduce a second page scrollbar or cover the snackbar.
 - Clear selected state (`aria-pressed` on the active locale, or equivalent).
@@ -294,6 +295,5 @@ Production `baseHref` is `/newsletter-template-editor/`. Deploy must ship a `404
 
 ## Future chrome (stubs only — specify before build)
 
-- Block library + inspector tab content (3b) — honor no-panel-scroll tab split
-- Export download feedback (uses snackbar)
-- Drag handles / reorder
+- Colors tab starter / theme library chrome when email-colors is implemented (`email-colors.md`)
+- Library row secondary line: date/time + app version (`createdWithAppVersion`)

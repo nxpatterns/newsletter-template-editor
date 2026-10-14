@@ -12,9 +12,12 @@ Do not add comments unless the logic is non-obvious. Never add comments that res
 | Doc | Role |
 | --- | --- |
 | `AGENTS.md` | Project one-liner, no-env rule, session/docs conventions |
-| `docs/sessions/implementation-plan.md` | Roadmap and hard product rules |
 | `docs/sessions/next-session.md` | Current slice only |
 | `docs/concepts/design-system.md` | Chrome UI specs (tokens, snackbar, footer, shell layout) |
+| `docs/concepts/file-management.md` | Save, library, transfer, HTML export |
+| `docs/concepts/email-colors.md` | Email color system (concept until scheduled) |
+| `docs/concepts/block-content-editing.md` | Structure-first block editing |
+| `docs/concepts/logo-upload.md` | Logo master vs display / export optimize |
 | `docs/knowledge-corner/GitHub-Deployments/ReadMe.md` | Pages deploy pitfalls |
 
 **Repository docs** (markdown under `docs/`, `AGENTS.md`, README): **English only**. No numbering in documentation section titles.  
@@ -152,7 +155,7 @@ Rules:
 - Signals are the default state primitive. RxJS only for genuine streams and library boundaries.
 - Services: `providedIn: 'root'` for app-wide; component `providers` for instance scope.
 - Expose state as readonly signals (`asReadonly()`). Mutations only via named methods on the owner.
-- **This app is static-first** (GitHub Pages). No backend assumed. Persistence v0 = `localStorage` via `src/core/persist`. Do not add HTTP clients “just in case”.
+- **This app is static-first** (GitHub Pages). No backend assumed. Persistence = IndexedDB library + recovery via `src/core/persist` (legacy localStorage migrated once). Locale may still use `localStorage`. Do not add HTTP clients “just in case”.
 - When HTTP appears later: `httpResource()` / `resource()` for reads; `HttpClient` in services for writes; functional interceptors/guards only.
 - Model loading / error / empty states explicitly in the UI.
 - Map any external DTO to domain types at the boundary. Components speak **domain** (`Newsletter`, blocks), not transport shapes.
@@ -205,7 +208,7 @@ Chrome placement and motion: **`docs/concepts/design-system.md`** is authoritati
 | Locales | `en` (default), `de` |
 | Default | **English** on first visit / unknown stored value |
 | Switching | Runtime in the app (no full page rebuild / no separate deploy per locale) |
-| Persistence | Store locale in `localStorage` (same privacy model as newsletter draft); restore on load |
+| Persistence | Store locale in `localStorage`; restore on load. Newsletter drafts use IndexedDB (see file-management) |
 | `lang` / a11y | Update `document.documentElement.lang` when locale changes |
 | Repo docs | Stay English-only (`AGENTS.md`) — not the same as product UI |
 

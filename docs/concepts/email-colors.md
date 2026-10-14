@@ -2,35 +2,39 @@
 
 Concept for how sellers control colors of the **email document** (preview iframe / export), not the editor app chrome.
 Audience: field sellers. English only.
+**Status: concept only — not implemented in code yet.** Implement only when chosen as a session goal; this file is the contract.
+
 Source of truth remains structured document data; HTML colors are always resolved at render time.
 
-Related: `block-content-editing.md` (structure first), `design-system.md` (app chrome only), `file-management.md` (project library / file menu).
+Related: `block-content-editing.md`, `design-system.md` (app chrome only), `file-management.md` (save / library / project transfer).
 
 ## Goals
 
 - One place to edit email colors: the **Colors** tab.
 - Campaign-level palette stays small and reusable (semantic names).
-- Every color the renderer currently uses for mail header, footer, and each block type is editable — no permanent hidden hardcode once this lands.
+- Every color the renderer uses for mail header, footer, and each **placed** block type is editable — no permanent hidden hardcode once this lands.
 - A slot may follow a **semantic campaign color** or a **fixed hex**.
 - Multiple placements of the **same block definition** share one style (synced).
-- Different look + content → **clone** the definition, save under a new name (future **Custom blocks** catalog).
-- Two built-in start worlds: **Dark example** and **Light example**. One active world per document — not a parallel light/dark product toggle.
-- Sellers can switch example **from the Colors tab** (primary control).
-- Reset restores the **active example** originals (Dark start → Dark originals; Light start → Light originals).
-- Sellers can **save, load, export, and import** named color themes (colors only), separate from full project files.
-- Full **project export** always includes the complete color state (and later custom definitions).
-- Color theme files are **forward- and backward-tolerant** via versioned envelopes and normalize-on-import.
+- Different look + content → **clone** the definition (future **Custom blocks**).
+- Two built-in start worlds: **Dark example** and **Light example**. One active world per document — not a parallel light/dark product toggle, and **not** light/dark per block.
+- Sellers switch example **from the top of the Colors tab**.
+- Reset restores the **active example** originals.
+- Sellers can **save, load, export, and import** named color themes (colors only), separate from full template transfer.
+- Save / library / project transfer always carry the color state needed for this document (see Persistence).
+- Color theme files and projects are **forward- and backward-tolerant** via versioned envelopes and normalize-on-load.
 - Color edits participate in normal **Undo / Redo**.
-- Architecture stays open for **AI-generated themes/blocks** and a future **marketplace** of templates and pro themes.
+- Architecture stays open for **AI-generated themes/blocks** and a future **marketplace**.
 
 ## Non-goals
 
 - Changing editor app header/footer/chrome colors (`design-system.md`).
 - Per-instance color forks without cloning a definition (no silent override matrix in v1).
-- Free hex pickers inside the block content inspector (text/structure stay there).
+- **Per-block light/dark dual palettes** (each block does not store two worlds).
+- Free hex pickers inside the block content inspector.
 - Seller-facing dual theme (one mail that is simultaneously light and dark via `prefers-color-scheme` as a product feature). Export may still emit client-protection meta/CSS; that is engineering, not a second palette UI.
-- CSS class names (`text-price-strike`, …) or raw slot ids as seller-visible labels.
-- A global theme toggle in the **app header** that only flips editor chrome (out of scope and confusing).
+- CSS class names or raw slot ids as seller-visible labels.
+- A global theme toggle in the **app header** that flips editor chrome.
+- Materializing color maps for block types **not** present in the document.
 
 ## Product model
 
@@ -47,13 +51,13 @@ Named semantic tokens, always visible at the top of Colors (compact layout):
 | `pageBg` | Page background | `pageBgColor` |
 | `contentBg` | Content background | `contentBgColor` |
 
-Layout: denser than today’s stacked pairs — target about **three swatches per row** when width allows, wrapping by available space, with a sensible minimum control size.
+Layout: about **three swatches per row** when width allows, wrapping by space, sensible minimum control size.
 
 ### Seller labels vs internal ids
 
-- **Slot ids** and **token ids** are stable English machine keys for code, JSON, AI, and marketplace packages. Never shown as primary UI copy.
-- **Every** campaign token, mail shell slot, and block slot uses **semantic i18n labels** (DE/EN), same idea as today’s “Accent” / “Highlight”.
-- Accordions use human names (“Price box”, “Mail header”), optionally with a short placement hint when useful — not `price.strike`.
+- **Slot ids** and **token ids** are stable English machine keys for code, JSON, AI, and packages. Never primary UI copy.
+- Every campaign token, mail shell slot, and block slot uses **semantic i18n labels** (DE/EN).
+- Accordions use human names (“Price box”, “Mail header”), optionally with a short placement hint — not `price.strike`.
 
 ### Color value
 
@@ -89,7 +93,9 @@ Each example bundles:
 - Full campaign palette
 - Default slot map for mail header, mail footer, and every system block type
 
-Document stores `activeExampleId` (which built-in world Reset refers to). Applying a **user/marketplace/AI theme** does not redefine Reset unless product later adds “reset to last named theme”; default Reset stays **built-in example originals**.
+Document stores `activeExampleId` (which built-in world Reset and **new-block defaults** refer to). Applying a user/marketplace/AI theme does not redefine Reset unless product later adds “reset to last named theme”; default Reset stays **built-in example originals**.
+
+**One world per document.** New blocks take defaults from the **active** example only. There is no second stored palette per block for the other example.
 
 ## Where the seller switches Dark ↔ Light
 
@@ -97,21 +103,21 @@ Document stores `activeExampleId` (which built-in world Reset refers to). Applyi
 
 ```text
 Colors
-  Theme starter:  ( Dark example )  ( Light example )   ← segmented control or equivalent
+  Theme starter:  ( Dark example )  ( Light example )   ← segmented control
   [ Reset to original ]
   …
 ```
 
 Behavior:
 
-- App / new demo document starts on **Dark example** (today’s seed).
-- Seller opens **Colors** and selects **Light example** (or Dark again).
-- **Confirm** dialog (existing app modal pattern): applying replaces campaign palette and definition styles from that example; current color tweaks in the open world will be overwritten.
-- On confirm: one history step (undo restores previous full color snapshot).
-- Active selection is visible at a glance (which starter is current).
-- No requirement for a second control in the app header. Optional later shortcut is fine; Colors remains the source of truth for “which email world”.
+- App / new demo document starts on **Dark example**.
+- Seller selects **Light example** (or Dark again).
+- **Confirm** dialog (app modal): applying replaces campaign palette and **styles for definitions currently in the document** (plus shell) from that example; current color tweaks in the open world will be overwritten.
+- On confirm: one history step (undo restores previous full color snapshot for this document).
+- Active selection is visible at a glance.
+- No second control in the app header required.
 
-**Reset to original** always reapplies the **currently active** built-in example (if you started or last confirmed Light, Reset is Light originals).
+**Reset to original** always reapplies the **currently active** built-in example (if Light is active, Reset is Light originals) for palette, shell, and **used** definition styles only.
 
 ## Colors tab structure
 
@@ -134,8 +140,8 @@ Colors
 
 Rules:
 
-- Mail header / footer: email shell in the iframe only; always listed under campaign palette (accordions).
-- Block list: only instances present in the doc; order = `blocks[]`.
+- Mail header / footer: email shell in the iframe only; always listed under campaign palette.
+- **Block list: only instances present in `blocks[]`; order = document order.** Never invent extra block types in this list because the app knows defaults for unused catalog types.
 - Same definition → synced style across instance accordions.
 - Editor app chrome: out of scope.
 
@@ -149,33 +155,45 @@ Rules:
 
 | Action | Effect |
 | --- | --- |
-| Reset to original | Reapply **active built-in example** campaign + system definition styles |
+| Reset to original | Reapply **active built-in example** campaign + shell + styles for **used** system definitions |
 | Reset one accordion group | Reapply that group’s slots from active built-in example |
 
-## Named color themes (save / load / export / import)
+## Persistence (save, library, project)
 
-Sellers manage **colors only** as first-class artifacts, parallel to project files but narrower.
+Colors live **inside** the newsletter document. There is no separate “remember to save colors” step.
 
-### In-browser library (named)
+### What is always stored with the document
 
-- Save current email color state under a **display name** (local library, same spirit as template library).
-- Open / apply a saved named theme onto the current document (confirm if it overwrites current colors).
-- Rename / delete in a small picker (patterns from file-management library modal where sensible).
+| Always | Only when used |
+| --- | --- |
+| Campaign palette (all semantic tokens) | `styles.byDefinitionId` entries for definitions that appear **at least once** in `blocks[]` |
+| Shell styles (header + footer) | — |
+| `activeExampleId` | — |
 
-### Files
+Also stored as today: block content, logo master, legal, campaign fields, etc. (see file-management).
+
+### Lifecycle rules
+
+- **Save / Save as / library write / crash recovery / export current template:** write the color state above (palette + shell + **used** definition styles only). Do not embed full catalog color maps for unused block types.
+- **Add a block** whose definition has no style entry yet: copy defaults from the **active built-in example** for that definition into `styles.byDefinitionId`, then seller may edit.
+- **Remove the last instance** of a definition: drop that definition’s style entry on the next normalize/save (no orphan styles required).
+- **“Missing slots”** means missing **color fields** on palette, shell, or a **used** definition (e.g. older file, newer app added `price.badgeText`). It does **not** mean missing blocks and must **not** add blocks to the document or extra rows under “Blocks in this email”.
+- Fill missing slots from the **active example** defaults for that definition/shell only.
+- Built-in example hex values for **already shipped slot ids** must not change silently in a way that rewrites existing documents; new defaults apply to **new** slot ids or to new documents. Prefer materializing used maps so round-trips stay stable across machines and app builds.
+- Migrate today’s six `globals.*Color` fields into `palette` on first normalize after this feature ships; do not leave a permanent dual model.
+
+### Project transfer vs color-only files
 
 | Action | Scope |
 | --- | --- |
-| **Export colors** | Download a color-theme file (palette + shell + definition styles + metadata). No block content body; not a full project. |
-| **Import colors** | Open a color-theme file and apply onto the current document (confirm). |
-| **Export project** | Full project envelope **including** complete color state (and later custom block defs used by the doc). One file to move a whole job. |
-| **Open project** | Restores newsletter **and** colors together. |
+| **Export current template** (file menu) | Full document envelope including color state above. One file = the open template. Seller-facing label: no “.json” jargon. |
+| **Open exported template** | Restores newsletter **and** colors together. |
+| **Export colors** (Colors tab) | Color-theme file only (palette + shell + used definition styles + metadata). No block content. |
+| **Import colors** | Apply a color-theme file onto the **current** document (confirm). |
 
-Export/import entry points live in the Colors tab (File menu may mirror later; Colors is enough for v1 of the feature).
+v1 transfer is **current template only**. Multi-select / “all library entries” export-import is a **later** file-management slice (not part of colors v1).
 
 ### Color theme file envelope
-
-Versioned, kind-tagged JSON (illustrative):
 
 ```text
 {
@@ -183,35 +201,35 @@ Versioned, kind-tagged JSON (illustrative):
   schemaVersion: number
   name: string
   exportedAt: iso
+  createdWithAppVersion?: string    // package/app version that wrote the file
   activeExampleId?: string
   palette: { … campaign tokens … }
   styles: {
     shell: { header: {…}, footer: {…} }
-    byDefinitionId: { 'system:price-box': {…}, … }
+    byDefinitionId: { 'system:price-box': {…}, … }  // used / theme-relevant defs only
   }
-  // optional future:
-  // meta: { author, tags, marketplaceId, aiPromptRef }
-  // extensions preserved on round-trip when possible
 }
 ```
 
 Rules:
 
 - **Unknown keys** in a newer file: preserve on load when possible; ignore safely if not.
-- **Missing slots** vs current app (older file or older pack): fill from **active example defaults** (or system defaults).
-- **Import info dialog** (app modal, not `window.alert`): plain-language summary that some newer color fields were not in the file and were filled with defaults; seller can change them later. Prefer counts or short group names; do not dump raw slot ids.
-- **Extra slots** for unknown block types (future AI/marketplace blocks): keep under their definition keys so a later build that understands them can use them.
-- Same normalize path family as document load (`normalizeColorTheme` shared ideas with `normalizeNewsletter`).
+- **Missing slots** vs current app: fill from active example defaults for that shell/definition; **do not** add unused block types.
+- **Import info dialog** (app modal): plain-language summary that some newer color fields were filled with defaults. Prefer counts or short group names; no raw slot ids.
+- **Extra slots** for unknown block types: keep under their definition keys for a later build.
+- Same normalize family as document load (`normalizeColorTheme` / `normalizeNewsletter`).
 
-### Project file relationship
+### Opening an old project (no color chapter yet)
 
-- Project export = superset (document + colors + …).
-- Color export = colors subset only.
-- Opening an old project without the new color chapter: normalize fills defaults (same as missing slots).
+1. Map legacy `globals.*Color` → palette.
+2. Set `activeExampleId` default `cloudlib-dark` if absent.
+3. Materialize shell + styles for definitions present in `blocks[]` from that example (then overlay any future partial data).
+4. Info modal when defaults were filled.
+5. Next save writes the full document color contract above.
 
 ## Slot inventory (current renderer reality)
 
-Internal **slot ids** below; UI shows **semantic labels only**. Dark example / current code seed values; Light example has its own defaults.
+Internal **slot ids** below; UI shows **semantic labels only**. Dark example / current code seed values; Light example has its own defaults. Inventory lists **what can be colored**, not what must appear in every document’s Colors list.
 
 ### Mail header (shell)
 
@@ -325,9 +343,9 @@ Inline HTML colors inside content remain until structure/light-marks remove them
 
 `brand.nameHtml` is still multi-span HTML. Do not block email-colors on full decomposition; expose clean shell slots first; brand multi-stop colors follow structured marks later.
 
-## Custom blocks (future, design now)
+## Custom blocks (future)
 
-Working name: **Custom blocks** (DE label at UI time). Catalog section beside system blocks.
+Working name: **Custom blocks**. Catalog section beside system blocks.
 
 ```text
 BlockRecipe {
@@ -340,52 +358,34 @@ BlockRecipe {
 }
 ```
 
-Prefer instances linked by `definitionId` so Colors sync stays true. Clone → edit → save as new name.
+Instances link by `definitionId` so Colors sync stays true. Clone → edit → save as new name.
+
+When a document uses custom definitions, **project transfer must include those recipes** (or the installable package they came from). Detail when Custom blocks is scheduled — do not invent a second color system.
 
 ## Extensibility: AI themes, new blocks, marketplace
 
-The same contracts must support growth without rewriting seller mental models.
-
-### Principles
-
 - **Everything colored is data:** palette + slot maps + definition keys — never only code hardcodes.
-- **Stable kind + schemaVersion** on documents, color themes, block recipes, and later marketplace packages.
-- **definitionKey** namespace, e.g. `system:price-box`, `custom:<uuid>`, `marketplace:<publisher>/<id>@<ver>`, `ai:<session>/<id>` — renderer and Colors UI resolve through a registry.
-- **Slot registry per block type:** declared list of slot ids + default ColorValues + i18n label keys. New block types (human or AI) register slots; Colors accordion is **driven by registry + doc instances**, not a closed hard-coded list alone.
-- **Themes are portable packages:** color-theme files are the thin theme unit; full **template packages** (future) add blocks, copy, logo refs, recipes.
-- **Validate + normalize on every boundary** (open project, import theme, install marketplace item, apply AI result): missing slots → defaults; unknown slots/types → keep payload; seller-safe summary modal when defaults were filled or parts were skipped.
-- **AI output = same JSON shapes** the editor already understands (theme envelope and/or recipes). No parallel AI-only color system.
-- **Marketplace listing metadata** (price, license, preview) stays outside the render model; the installable artifact still uses `nte-color-theme` / project / recipe kinds.
-
-### Future package sketch (not implemented now)
-
-```text
-MarketplacePackage or AiBundle {
-  kind: 'nte-template-pack' | …
-  schemaVersion
-  themes[]: color-theme envelopes
-  blocks[]: BlockRecipe
-  document?: Newsletter seed
-  assets?: …
-}
-```
-
-Installing applies through the same normalize/import pipelines as local files.
+- **Stable kind + schemaVersion** on documents, color themes, block recipes, and later packages.
+- **definitionKey** namespace, e.g. `system:price-box`, `custom:<uuid>`, `marketplace:…`, `ai:…`.
+- **Slot registry per block type:** declared slot ids + default ColorValues + i18n label keys. Colors UI is driven by **registry + doc instances**, not a closed hard-coded accordion list alone.
+- **Validate + normalize on every boundary** (open template, import theme, install package, apply AI result).
+- **AI output = same JSON shapes** the editor already understands.
+- Marketplace listing metadata stays outside the render model.
 
 ## Data shape (implementation direction)
 
 ```text
 Newsletter
   activeExampleId
-  globals.palette                 // campaign tokens
+  globals.palette                 // campaign tokens (migrate from *Color fields)
   styles.shell.header / footer
-  styles.byDefinitionId           // definitionKey → slot map
+  styles.byDefinitionId           // only definitions present in blocks[]
   blocks[]                        // each references definitionKey
 ```
 
-Named themes in IDB (or equivalent) store the color-theme envelope body + displayName.
+Named themes in IDB store the color-theme envelope body + displayName.
 
-- `normalizeNewsletter` / `normalizeColorTheme` fill missing slots from active example.
+- `normalizeNewsletter` / `normalizeColorTheme` fill missing **slots** on used maps; never inject unused blocks.
 - Renderer reads only resolved hex via `resolveColor`.
 
 ## Export HTML / client CSS
@@ -397,26 +397,31 @@ Named themes in IDB (or equivalent) store the color-theme envelope body + displa
 ## Locks
 
 - Colors tab owns email color UX (starter switch, named themes, shell + block slots).
+- One active example per document; no per-block light/dark dual storage.
 - No free hex in block content inspector for these slots.
 - Sellers see semantic labels only; ids stay internal.
 - Shared style per definition; fork via custom block clone/save.
-- Reset = active built-in example originals.
+- Reset = active built-in example originals for palette, shell, and **used** definitions.
 - Example switch and destructive theme apply = confirm modal.
-- Project export includes full colors; color export is colors-only.
-- Import of older/partial theme files: defaults + info modal.
+- **Colors list for blocks = instances in the document only.**
+- **Persist palette + shell always; definition styles only for used definitions.**
+- New block → defaults from active example for that definition.
+- Project / save round-trip carries that color state so another machine matches look + content.
+- Color export is colors-only; full template transfer is file-management “export current template”.
+- Import of older/partial theme or project files: fill missing **slots** + info modal; no phantom blocks.
 - Slot ids stable; registries extend without renaming old ids.
 - MIT-only deps; no Material.
-- Tests: resolveColor, normalize missing/extra slots, two-instance sync, import dialog path, example switch undo.
+- Tests: resolveColor; normalize missing/extra slots; used-only style maps; two-instance sync; import dialog; example switch undo; legacy globals → palette migrate; add-block gets defaults; remove last instance drops style.
 
 ## Suggested delivery slices
 
-- Model: palette + ColorValue + shell/definition maps + example presets + normalize.
+- Model: palette + ColorValue + shell/definition maps + example presets + normalize (used-only + legacy globals migrate).
 - Renderer resolves all current hardcodes.
 - Colors tab: starter Dark/Light + confirm; compact campaign grid; header/footer + instance accordions; labels i18n.
 - Reset + undo.
-- Named theme save/load (library) + export/import files + project envelope includes colors.
+- Named theme save/load (library) + export/import files; ensure save/library/project already carry document colors.
 - Light example content.
-- Later: Custom blocks; AI/marketplace packages on the same envelopes.
+- Later: Custom blocks; AI/marketplace packages; multi-template library transfer (file-management).
 
 ## Open product copy only
 
