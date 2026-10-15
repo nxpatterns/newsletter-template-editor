@@ -49,9 +49,66 @@ const HISTORY_MAX = 80;
 
 /** One format found at a clicked spot in info mode, removable from the info panel. */
 interface InfoItem {
-  kind: 'size' | 'color' | 'mono' | 'paragraphColor';
+  kind: 'size' | 'color' | 'mono' | 'paragraphColor' | InfoTagMark;
   label: string;
   el: HTMLElement;
+}
+
+/**
+ * Text nodes that count toward RichDoc offsets. With paragraphs present the model
+ * only reads `:scope > p`, so whitespace text between paragraphs (the `\n` joins
+ * of richDocToHtml) must not count, or every later paragraph shifts by one.
+ */
+function countsAsDocText(root: HTMLElement, node: Node): boolean {
+  return node.parentNode !== root || !root.querySelector(':scope > p');
+}
+
+/** Plain-text offset of a DOM boundary point, in RichDoc coordinates. */
+function docTextOffset(root: HTMLElement, container: Node, offset: number): number {
+  const boundary = document.createRange();
+  boundary.setStart(container, offset);
+  let total = 0;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const text = node as Text;
+    if (node === container) {
+      if (countsAsDocText(root, text)) total += offset;
+      break;
+    }
+    if (boundary.comparePoint(text, 0) >= 0) break;
+    if (countsAsDocText(root, text)) total += text.data.length;
+  }
+  return total;
+}
+
+/** DOM point for a RichDoc plain-text offset (inverse of docTextOffset). */
+function docTextPoint(root: HTMLElement, target: number): { node: Text; offset: number } | null {
+  let remaining = Math.max(0, target);
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let last: Text | null = null;
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const text = node as Text;
+    if (!countsAsDocText(root, text)) continue;
+    last = text;
+    if (remaining <= text.data.length) return { node: text, offset: remaining };
+    remaining -= text.data.length;
+  }
+  return last ? { node: last, offset: last.data.length } : null;
+}
+
+/** Visible tag marks; (i) lists them for removal but draws no extra marker. */
+type InfoTagMark = 'bold' | 'italic' | 'strike' | 'sup' | 'sub';
+const INFO_TAG_MARKS: ReadonlyArray<{ mark: InfoTagMark; tags: readonly string[] }> = [
+  { mark: 'bold', tags: ['STRONG', 'B'] },
+  { mark: 'italic', tags: ['EM', 'I'] },
+  { mark: 'strike', tags: ['S', 'STRIKE', 'DEL'] },
+  { mark: 'sup', tags: ['SUP'] },
+  { mark: 'sub', tags: ['SUB'] },
+];
+const INFO_TAG_SELECTOR = INFO_TAG_MARKS.flatMap((m) => m.tags.map((t) => t.toLowerCase())).join(',');
+
+function tagMarkOfElement(el: HTMLElement): InfoTagMark | null {
+  return INFO_TAG_MARKS.find((m) => m.tags.includes(el.tagName))?.mark ?? null;
 }
 
 /** Size/color carried by an editor element (data attribute or class from seed/paint). */
@@ -130,9 +187,16 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   private cloneStyleEl: HTMLStyleElement | null = null;
   private stashFlashTimer: ReturnType<typeof setTimeout> | null = null;
 
+  /**
+   * Remember every selection made inside the editor, however it was made, so a
+   * toolbar control reached by keyboard (no mousedown capture) applies to it.
+   */
+  private readonly trackSelection = (): void => this.captureSelection();
+
   constructor() {
     this.session.registerParagraphDraftFlush(() => this.flushPendingEmit());
     afterNextRender(() => {
+      document.addEventListener('selectionchange', this.trackSelection);
       this.viewReady = true;
       this.syncCloneStyles();
       void this.bootstrapFromDoc(this.doc());
@@ -165,6 +229,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    document.removeEventListener('selectionchange', this.trackSelection);
     if (this.debounce) clearTimeout(this.debounce);
     if (this.stashFlashTimer) clearTimeout(this.stashFlashTimer);
     this.session.registerParagraphDraftFlush(null);
@@ -348,6 +413,12 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
       ];
       if (p.querySelector('a.rt-link')) contains.push(t('rt.info.legendLink'));
       if (p.querySelector('code.rt-mono')) contains.push(t('rt.info.legendMono'));
+      const tagMarks = new Set<InfoTagMark>();
+      p.querySelectorAll<HTMLElement>(INFO_TAG_SELECTOR).forEach((el) => {
+        const mark = tagMarkOfElement(el);
+        if (mark) tagMarks.add(mark);
+      });
+      for (const { mark } of INFO_TAG_MARKS) if (tagMarks.has(mark)) contains.push(t(`rt.${mark}`));
       if (contains.length) bits.push(`${t('rt.info.contains')}: ${contains.join(', ')}`);
       if (bits.length) p.setAttribute('data-rt-info', bits.join(' · '));
       else p.removeAttribute('data-rt-info');
@@ -379,6 +450,8 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
       const color = inlineColorOfElement(el);
       if (color && color !== 'standard') add('color', `${t('rt.color')}: ${t(`rt.color.${color}`)}`, el);
       if (el.tagName === 'CODE' && el.classList.contains('rt-mono')) add('mono', t('rt.info.legendMono'), el);
+      const mark = tagMarkOfElement(el);
+      if (mark) add(mark, t(`rt.${mark}`), el);
     }
     this.infoItems.set(items);
   }
@@ -413,7 +486,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
         ? applySizeOnDoc(doc, bm.start, bm.end, 'm')
         : item.kind === 'color'
           ? applyColorOnDoc(doc, bm.start, bm.end, 'standard')
-          : toggleMarkOnDoc(doc, bm.start, bm.end, 'mono');
+          : toggleMarkOnDoc(doc, bm.start, bm.end, item.kind);
     this.commitDoc(next, true, bm);
   }
 
@@ -464,12 +537,8 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     if (!root || !sel || sel.rangeCount === 0) return null;
     const range = sel.getRangeAt(0);
     if (!root.contains(range.commonAncestorContainer)) return null;
-    const pre = document.createRange();
-    pre.selectNodeContents(root);
-    pre.setEnd(range.startContainer, range.startOffset);
-    const start = pre.toString().length;
-    pre.setEnd(range.endContainer, range.endOffset);
-    const end = pre.toString().length;
+    const start = docTextOffset(root, range.startContainer, range.startOffset);
+    const end = docTextOffset(root, range.endContainer, range.endOffset);
     return { start, end: Math.max(start, end) };
   }
 
@@ -477,24 +546,8 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     if (!bm) return;
     const root = this.editorHost()?.nativeElement;
     if (!root) return;
-    const pointAt = (target: number): { node: Text; offset: number } | null => {
-      let remaining = Math.max(0, target);
-      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-      let node: Node | null = walker.nextNode();
-      let last: Text | null = null;
-      while (node) {
-        const text = node as Text;
-        const len = text.data.length;
-        last = text;
-        if (remaining <= len) return { node: text, offset: remaining };
-        remaining -= len;
-        node = walker.nextNode();
-      }
-      if (last) return { node: last, offset: last.data.length };
-      return null;
-    };
-    const a = pointAt(bm.start);
-    const b = pointAt(bm.end);
+    const a = docTextPoint(root, bm.start);
+    const b = docTextPoint(root, bm.end);
     if (!a || !b) return;
     try {
       root.focus();
@@ -905,12 +958,9 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     const root = this.editorHost()?.nativeElement;
     if (!root || !root.contains(this.savedRange.commonAncestorContainer)) return null;
     try {
-      const pre = document.createRange();
-      pre.selectNodeContents(root);
-      pre.setEnd(this.savedRange.startContainer, this.savedRange.startOffset);
-      const start = pre.toString().length;
-      pre.setEnd(this.savedRange.endContainer, this.savedRange.endOffset);
-      return { start, end: Math.max(start, pre.toString().length) };
+      const r = this.savedRange;
+      const start = docTextOffset(root, r.startContainer, r.startOffset);
+      return { start, end: Math.max(start, docTextOffset(root, r.endContainer, r.endOffset)) };
     } catch {
       return null;
     }

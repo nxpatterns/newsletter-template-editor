@@ -109,7 +109,7 @@ export const DE: MessageCatalog = {
   'rt.info.legendMono': 'Mono',
   'rt.info.paragraphColor': 'Absatzfarbe',
   'rt.info.contains': 'Enthält',
-  'rt.info.hint': 'Markierten Text anklicken, um seine Formatierung zu sehen und zu entfernen.',
+  'rt.info.hint': 'Formatierten Text anklicken, um seine Formatierung zu sehen und zu entfernen.',
   'rt.info.panelTitle': 'Formatierung an dieser Stelle',
   'rt.info.remove': 'Entfernen',
   'rt.info.close': 'Schließen',

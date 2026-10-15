@@ -327,3 +327,61 @@ Then('that text should have no inline color anymore', async ({ page }) => {
   await expect(paragraphEditor(page).locator('span[data-rt-color]')).toHaveCount(inlineColorCountBefore - 1);
   await expect(page.getByTestId('rt-info-panel')).toHaveCount(0);
 });
+
+When('I select {string} in paragraph {int} of the editor', async ({ page }, word: string, n: number) => {
+  const para = paragraphEditor(page).locator(':scope > p').nth(n - 1);
+  await expect(para).toContainText(word);
+  await para.evaluate((p, w) => {
+    const walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const at = (node as Text).data.indexOf(w);
+      if (at < 0) continue;
+      const range = document.createRange();
+      range.setStart(node, at);
+      range.setEnd(node, at + w.length);
+      const sel = window.getSelection()!;
+      sel.removeAllRanges();
+      sel.addRange(range);
+      return;
+    }
+    throw new Error(`"${w}" is not inside one text node`);
+  }, word);
+});
+
+When('I set the text color to {string}', async ({ page }, token: string) => {
+  await page.getByTestId('block-edit-modal').getByTestId('rt-color-select').selectOption(token);
+});
+
+Then(
+  'paragraph {int} should color exactly {string} as {string}',
+  async ({ page }, n: number, word: string, token: string) => {
+    const colored = paragraphEditor(page).locator(':scope > p').nth(n - 1).locator(`[data-rt-color="${token}"]`);
+    await expect(colored).toHaveText([word]);
+  },
+);
+
+Then('the info label of paragraph {int} should mention {string}', async ({ page }, n: number, text: string) => {
+  await expect(paragraphEditor(page).locator(':scope > p').nth(n - 1)).toHaveAttribute(
+    'data-rt-info',
+    new RegExp(text),
+  );
+});
+
+When('I click the bold text in paragraph {int}', async ({ page }, n: number) => {
+  await paragraphEditor(page).locator(':scope > p').nth(n - 1).locator('strong').first().click();
+});
+
+When('I remove {string} in the info panel', async ({ page }, kind: string) => {
+  await expect(page.getByTestId(`rt-info-item-${kind}`)).toBeVisible();
+  await page.getByTestId(`rt-info-remove-${kind}`).click();
+});
+
+Then('paragraph {int} should have no bold text anymore', async ({ page }, n: number) => {
+  const para = paragraphEditor(page).locator(':scope > p').nth(n - 1);
+  await expect(para.locator('strong, b')).toHaveCount(0);
+  await expect(para).not.toHaveAttribute('data-rt-info', /.+/);
+});
+
+Then('the info panel should show {string}', async ({ page }, text: string) => {
+  await expect(page.getByTestId('rt-info-panel')).toContainText(text);
+});

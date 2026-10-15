@@ -84,3 +84,23 @@ Feature: Editor side panel
     Then the info panel should list 'Color: Secondary'
     When I remove the color in the info panel
     Then that text should have no inline color anymore
+
+  Scenario: Coloring a word in a later paragraph colors exactly that word
+    Given I open the home page
+    When I open the paragraph editor for seed block 'bmo8rynqo-6'
+    And I select 'cloudlib.eu' in paragraph 2 of the editor
+    And I set the text color to 'accent'
+    Then paragraph 2 should color exactly 'cloudlib.eu' as 'accent'
+    When I select 'Sichtbarkeit' in paragraph 3 of the editor
+    And I set the text color to 'secondary'
+    Then paragraph 3 should color exactly 'Sichtbarkeit' as 'secondary'
+
+  Scenario: Formatting info lists and removes bold text
+    Given I open the home page
+    When I open the paragraph editor for seed block 'bmo8rynqo-6'
+    And I turn on the formatting info
+    Then the info label of paragraph 2 should mention 'Contains: Bold'
+    When I click the bold text in paragraph 2
+    Then the info panel should show 'Bold'
+    When I remove 'bold' in the info panel
+    Then paragraph 2 should have no bold text anymore
