@@ -27,46 +27,15 @@
 
   <div class="ed-field logo-block" data-testid="logo-block">
     <span class="ed-label" [textContent]="i18n.t('brand.logoSection')"></span>
-    <div
-      class="logo-drop"
-      data-testid="logo-drop"
-      [class.is-busy]="busy()"
-      (dragover)="onDragOver($event)"
-      (drop)="onDrop($event)"
-    >
-      @if (g.logo.src) {
-        <img class="logo-thumb" [src]="g.logo.src" [alt]="g.logo.alt || 'Logo'" data-testid="logo-thumb" />
-      } @else {
-        <p class="ed-hint logo-drop-empty" [textContent]="i18n.t('brand.logoDropHint')"></p>
-      }
-      <div class="ed-actions logo-actions">
-        <button
-          type="button"
-          class="ed-btn"
-          data-testid="logo-upload"
-          [disabled]="busy()"
-          [textContent]="i18n.t(g.logo.src ? 'brand.logoReplace' : 'brand.logoUpload')"
-          (click)="pickFile()"
-        ></button>
-        @if (g.logo.src) {
-          <button
-            type="button"
-            class="ed-btn ed-btn--danger"
-            data-testid="logo-clear"
-            [textContent]="i18n.t('brand.logoClear')"
-            (click)="clearLogo()"
-          ></button>
-        }
-      </div>
-      <input
-        #fileInput
-        type="file"
-        class="logo-file-input"
-        accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,.png,.jpg,.jpeg,.webp,.gif,.svg"
-        data-testid="logo-file-input"
-        (change)="onFileSelected($event)"
-      />
-    </div>
+    <app-image-picker
+      idPrefix="g-logo"
+      [src]="g.logo.src"
+      [busy]="busy()"
+      (fileChosen)="handleFile($event)"
+      (urlCommitted)="onLogoUrl($event)"
+      (removed)="clearLogo()"
+      (loaded)="onLogoLoaded($event)"
+    />
   </div>
 
   <div class="ed-field">

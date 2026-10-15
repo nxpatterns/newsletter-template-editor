@@ -137,7 +137,7 @@ Given('I open the home page with an extra thin divider', async ({ page }) => {
 
 Then('the divider tile {string} should be selected', async ({ page }, style: string) => {
   await expect(modal(page).getByTestId(`divider-style-${style}`)).toHaveAttribute('aria-checked', 'true');
-  await expect(modal(page).locator('.divider-tile[aria-checked="true"]')).toHaveCount(1);
+  await expect(modal(page).locator('.ed-tile[aria-checked="true"]')).toHaveCount(1);
 });
 
 When('I pick the divider tile {string}', async ({ page }, style: string) => {

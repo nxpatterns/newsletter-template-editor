@@ -67,7 +67,7 @@
             data-testid="insp-cta-href"
             [value]="block.href"
             (input)="onText(block.id, 'href', $event)"
-            (blur)="onButtonHrefBlur(block.id)"
+            (blur)="onHrefBlur(block.id)"
           />
           @if (linkKindKey(block.href); as kindKey) {
             <p class="link-kind" data-testid="insp-cta-kind">
@@ -79,18 +79,18 @@
       @case ('divider') {
         <div class="ed-field">
           <span class="ed-label" id="insp-div-style" [textContent]="i18n.t('field.dividerStyle')"></span>
-          <div class="divider-tiles" role="radiogroup" aria-labelledby="insp-div-style" data-testid="insp-divider-style">
+          <div class="ed-tiles" role="radiogroup" aria-labelledby="insp-div-style" data-testid="insp-divider-style">
             @for (style of dividerStyles; track style) {
               <button
                 type="button"
-                class="divider-tile"
+                class="ed-tile"
                 role="radio"
                 [class.is-on]="block.style === style"
                 [attr.aria-checked]="block.style === style"
                 [attr.data-testid]="'divider-style-' + style"
                 (click)="setDividerStyle(block.id, style)"
               >
-                <span class="divider-art" aria-hidden="true">
+                <span class="ed-tile-art" aria-hidden="true">
                   @switch (style) {
                     @case ('thin') { <span class="divider-art-thin"></span> }
                     @case ('two-tone') { <span class="divider-art-gap"></span><span class="divider-art-mid"></span><span class="divider-art-end"></span> }
@@ -99,8 +99,8 @@
                     @case ('spacer-only') { <span class="divider-art-space"></span> }
                   }
                 </span>
-                <span class="divider-tile-title" [textContent]="i18n.t('divider.' + style)"></span>
-                <span class="divider-tile-hint" [textContent]="i18n.t('divider.' + style + '.hint')"></span>
+                <span class="ed-tile-title" [textContent]="i18n.t('divider.' + style)"></span>
+                <span class="ed-tile-hint" [textContent]="i18n.t('divider.' + style + '.hint')"></span>
               </button>
             }
           </div>
@@ -154,6 +154,194 @@
           @if (block.style !== 'spacer-only') {
             <p class="ed-hint" [textContent]="i18n.t('field.dividerHeightOnlySpace')"></p>
           }
+        </div>
+      }
+      @case ('image') {
+        <app-image-picker
+          class="ed-field"
+          idPrefix="insp-image"
+          [src]="block.src"
+          [busy]="imageBusy()"
+          (fileChosen)="onImageFile(block.id, $event)"
+          (urlCommitted)="setImageSrc(block.id, $event)"
+          (removed)="setImageSrc(block.id, '')"
+        />
+        <div class="ed-field" [class.is-invalid]="!block.alt.trim()">
+          <div class="ed-label-row">
+            <label class="ed-label" for="insp-image-alt" [textContent]="i18n.t('field.imageAlt')"></label>
+            <span class="ed-count" [class.is-over]="block.alt.length > 120" [textContent]="block.alt.length + ' / 120'"></span>
+          </div>
+          <input
+            id="insp-image-alt"
+            class="ed-input"
+            data-testid="insp-image-alt"
+            required
+            [attr.aria-invalid]="!block.alt.trim()"
+            [value]="block.alt"
+            (input)="onText(block.id, 'alt', $event)"
+            (blur)="onFieldBlur()"
+          />
+          @if (!block.alt.trim()) {
+            <p class="ed-hint is-error" data-testid="insp-image-alt-required" [textContent]="i18n.t('field.imageAltRequired')"></p>
+          }
+        </div>
+        <div class="image-grid">
+          <div class="ed-field">
+            <div class="ed-label-row">
+              <label class="ed-label" for="insp-image-href" [textContent]="i18n.t('field.imageHref')"></label>
+              @if (linkKindKey(block.href); as kindKey) {
+                <span class="link-kind-chip" data-testid="insp-image-kind" [textContent]="i18n.t(kindKey)"></span>
+              }
+            </div>
+            <input
+              id="insp-image-href"
+              class="ed-input"
+              data-testid="insp-image-href"
+              [value]="block.href"
+              (input)="onText(block.id, 'href', $event)"
+              (blur)="onHrefBlur(block.id)"
+            />
+          </div>
+          <div class="ed-field">
+            <label class="ed-label" for="insp-image-caption" [textContent]="i18n.t('field.imageCaption')"></label>
+            <input
+              id="insp-image-caption"
+              class="ed-input"
+              data-testid="insp-image-caption"
+              [placeholder]="i18n.t('field.imageCaptionPlaceholder')"
+              [value]="block.caption"
+              (input)="onText(block.id, 'caption', $event)"
+              (blur)="onFieldBlur()"
+            />
+          </div>
+        </div>
+        <div class="ed-field">
+          <span class="ed-label" id="insp-image-width" [textContent]="i18n.t('field.imageWidth')"></span>
+          <div class="ed-tiles ed-tiles--3" role="radiogroup" aria-labelledby="insp-image-width">
+            @for (w of imageWidths; track w) {
+              <button
+                type="button"
+                class="ed-tile"
+                role="radio"
+                [class.is-on]="block.width === w"
+                [attr.aria-checked]="block.width === w"
+                [attr.data-testid]="'image-width-' + w"
+                (click)="session.updateBlock(block.id, { width: w }, 'immediate')"
+              >
+                <span class="ed-tile-art" aria-hidden="true"><span class="image-art" [class]="'image-art image-art--' + w"></span></span>
+                <span class="ed-tile-title" [textContent]="i18n.t('image.width.' + w)"></span>
+              </button>
+            }
+          </div>
+        </div>
+      }
+      @case ('image-text') {
+        <app-image-picker
+          class="ed-field"
+          idPrefix="insp-it-image"
+          [compact]="true"
+          [src]="block.src"
+          [busy]="imageBusy()"
+          (fileChosen)="onImageFile(block.id, $event)"
+          (urlCommitted)="setImageSrc(block.id, $event)"
+          (removed)="setImageSrc(block.id, '')"
+        />
+        <div class="image-grid">
+          <div class="ed-field" [class.is-invalid]="!block.alt.trim()">
+            <div class="ed-label-row">
+              <label class="ed-label" for="insp-it-alt" [textContent]="i18n.t('field.imageTextAlt')"></label>
+              <span class="ed-count" [class.is-over]="block.alt.length > 120" [textContent]="block.alt.length + ' / 120'"></span>
+            </div>
+            <input
+              id="insp-it-alt"
+              class="ed-input"
+              data-testid="insp-image-text-alt"
+              required
+              [attr.aria-invalid]="!block.alt.trim()"
+              [value]="block.alt"
+              (input)="onText(block.id, 'alt', $event)"
+              (blur)="onFieldBlur()"
+            />
+            @if (!block.alt.trim()) {
+              <p class="ed-hint is-error" data-testid="insp-image-text-alt-required" [textContent]="i18n.t('field.imageAltRequired')"></p>
+            }
+          </div>
+          <div class="ed-field">
+            <div class="ed-label-row">
+              <label class="ed-label" for="insp-it-href" [textContent]="i18n.t('field.imageTextHref')"></label>
+              @if (linkKindKey(block.href); as kindKey) {
+                <span class="link-kind-chip" data-testid="insp-image-text-kind" [textContent]="i18n.t(kindKey)"></span>
+              }
+            </div>
+            <input
+              id="insp-it-href"
+              class="ed-input"
+              data-testid="insp-image-text-href"
+              [value]="block.href"
+              (input)="onText(block.id, 'href', $event)"
+              (blur)="onHrefBlur(block.id)"
+            />
+          </div>
+        </div>
+        <div class="image-text-layout">
+          <div class="ed-field">
+            <span class="ed-label" id="insp-it-side" [textContent]="i18n.t('field.imageTextSide')"></span>
+            <div class="ed-seg" role="radiogroup" aria-labelledby="insp-it-side">
+              @for (v of imageTextSides; track v) {
+                <button
+                  type="button"
+                  class="ed-seg-opt"
+                  role="radio"
+                  [class.is-on]="block.side === v"
+                  [attr.aria-checked]="block.side === v"
+                  [attr.data-testid]="'image-text-side-' + v"
+                  (click)="session.updateBlock(block.id, { side: v }, 'immediate')"
+                  [textContent]="i18n.t('imageText.side.' + v)"
+                ></button>
+              }
+            </div>
+          </div>
+          <div class="ed-field">
+            <span class="ed-label" id="insp-it-width" [textContent]="i18n.t('field.imageTextWidth')"></span>
+            <div class="ed-seg" role="radiogroup" aria-labelledby="insp-it-width">
+              @for (v of imageTextWidths; track v) {
+                <button
+                  type="button"
+                  class="ed-seg-opt"
+                  role="radio"
+                  [class.is-on]="block.imageWidth === v"
+                  [attr.aria-checked]="block.imageWidth === v"
+                  [attr.data-testid]="'image-text-width-' + v"
+                  (click)="session.updateBlock(block.id, { imageWidth: v }, 'immediate')"
+                  [textContent]="i18n.t('imageText.width.' + v)"
+                ></button>
+              }
+            </div>
+          </div>
+          <div class="ed-field">
+            <span class="ed-label" id="insp-it-valign" [textContent]="i18n.t('field.imageTextValign')"></span>
+            <div class="ed-seg" role="radiogroup" aria-labelledby="insp-it-valign">
+              @for (v of imageTextValigns; track v) {
+                <button
+                  type="button"
+                  class="ed-seg-opt"
+                  role="radio"
+                  [class.is-on]="block.valign === v"
+                  [attr.aria-checked]="block.valign === v"
+                  [attr.data-testid]="'image-text-valign-' + v"
+                  (click)="session.updateBlock(block.id, { valign: v }, 'immediate')"
+                  [textContent]="i18n.t('imageText.valign.' + v)"
+                ></button>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="ed-field">
+          <span class="ed-label" [textContent]="i18n.t('field.imageTextBody')"></span>
+          <app-paragraph-lite-editor
+            [doc]="block.body"
+            (docChange)="onParagraphBody(block.id, $event)"
+          />
         </div>
       }
       @case ('chapter-band') {

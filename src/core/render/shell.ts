@@ -168,6 +168,24 @@ const PREVIEW_EDITOR_CHROME = `
     outline: 2px solid #20d4c8;
     outline-offset: -2px;
   }
+  /* Image block without a picture yet: a drop-target look, preview only. */
+  .nte-image-empty {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    max-width: var(--image-w, 504px);
+    height: 140px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    border: 2px dashed rgba(126, 207, 255, 0.45);
+    border-radius: 4px;
+    background: rgba(126, 207, 255, 0.05);
+  }
+  .nte-image-empty::after {
+    content: '🖼';
+    font-size: 28px;
+    line-height: 1;
+  }
   /* Hairline dividers (thin, two-tone): a 10px grab zone above and below; the frame moves onto it. */
   .nte-hit {
     position: absolute;

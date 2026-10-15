@@ -341,6 +341,18 @@ Inline HTML colors inside content remain until structure/light-marks remove them
 | `ctaLinks.link` | Link |
 | `ctaLinks.rowRule` | Row line |
 
+### image
+
+| Slot id | Seller label direction |
+| --- | --- |
+| `image.caption` | Caption (Dim) |
+
+### image-text
+
+| Slot id | Seller label direction |
+| --- | --- |
+| `paragraph.body` | Body text (same as the paragraph block) |
+
 ### Brand name note
 
 `brand.nameHtml` is still multi-span HTML. Do not block email-colors on full decomposition; expose clean shell slots first; brand multi-stop colors follow structured marks later.

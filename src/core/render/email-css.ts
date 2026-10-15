@@ -194,6 +194,34 @@ export function emailDocumentCss(globals: Globals): string {
     height: var(--divider-h, 24px);
   }
 
+  /* Image: width attr for Outlook, fluid below the column width elsewhere. */
+  .image-cell-full { padding: 0; }
+  .image-cell { padding: 12px 48px; }
+  .email-image {
+    display: block;
+    width: 100%;
+    max-width: var(--image-w, 504px);
+    height: auto;
+    margin: 0 auto;
+    border: 0;
+    outline: none;
+    text-decoration: none;
+  }
+  .email-image-link { display: block; }
+  .image-caption-full { margin: 8px 48px 12px 48px; }
+  .image-caption {
+    margin: 8px 0 0 0;
+    font-family: var(--email-font);
+    font-size: 12px;
+    line-height: 18px;
+    font-style: italic;
+    color: var(--email-dim);
+  }
+
+  /* Image and text: two columns, stacked on phones (see the max-width media query) */
+  .image-text-gap { width: 20px; font-size: 0; line-height: 0; }
+  .image-text-copy { text-align: left; }
+
   /* Hero */
   .hero-label {
     font-family: var(--email-font);
@@ -479,6 +507,10 @@ export function emailDocumentCss(globals: Globals): string {
     .email-container { width: 100% !important; max-width: 100% !important; }
     .mobile-padding { padding-left: 20px !important; padding-right: 20px !important; }
     .mobile-font-large, .hero-headline-inner { font-size: 26px !important; line-height: 36px !important; }
+    .image-text-col { display: block !important; width: 100% !important; }
+    .image-text-gap { display: none !important; }
+    .image-text-pic { padding-bottom: 16px !important; }
+    .image-text-img { max-width: 100% !important; }
   }
   `;
 }

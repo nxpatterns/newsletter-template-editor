@@ -79,7 +79,7 @@ export function scaleToMaxEdge(
   return { width: Math.max(1, Math.round(w * scale)), height: Math.max(1, Math.round(h * scale)) };
 }
 
-function readFileAsDataUrl(file: File): Promise<string> {
+export function readFileAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -91,7 +91,7 @@ function readFileAsDataUrl(file: File): Promise<string> {
   });
 }
 
-function loadImage(src: string): Promise<HTMLImageElement> {
+export function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
@@ -100,7 +100,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-function canvasToDataUrl(
+export function canvasToDataUrl(
   canvas: HTMLCanvasElement,
   type: 'image/png' | 'image/jpeg',
   quality?: number,
@@ -112,7 +112,7 @@ function canvasToDataUrl(
   }
 }
 
-function drawScaled(img: CanvasImageSource, width: number, height: number): HTMLCanvasElement {
+export function drawScaled(img: CanvasImageSource, width: number, height: number): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -122,7 +122,7 @@ function drawScaled(img: CanvasImageSource, width: number, height: number): HTML
   return canvas;
 }
 
-function dataUrlByteLength(dataUrl: string): number {
+export function dataUrlByteLength(dataUrl: string): number {
   const i = dataUrl.indexOf(',');
   const b64 = i >= 0 ? dataUrl.slice(i + 1) : dataUrl;
   return Math.floor((b64.length * 3) / 4);

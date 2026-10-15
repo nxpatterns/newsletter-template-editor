@@ -3,6 +3,10 @@ import {
   CTA_LINK_DEFAULT_ICON,
   CURRENT_SCHEMA_VERSION,
   DIVIDER_STYLES,
+  IMAGE_TEXT_SIDES,
+  IMAGE_TEXT_VALIGNS,
+  IMAGE_TEXT_WIDTHS,
+  IMAGE_WIDTHS,
   emptyBenefitsListItem,
   emptyCtaLinkListItem,
   type BenefitsListBlock,
@@ -14,6 +18,9 @@ import {
   type DividerBlock,
   type DividerStyle,
   type HeroBlock,
+  type ImageBlock,
+  type ImageTextBlock,
+  type ImageWidth,
   type Newsletter,
   type ParagraphBlock,
   type PriceBoxBlock,
@@ -365,8 +372,44 @@ function normalizeDividerBlock(raw: Record<string, unknown>, id: string): Divide
   return next;
 }
 
+function normalizeImageBlock(raw: Record<string, unknown>, id: string): ImageBlock {
+  const str = (k: string) => (typeof raw[k] === 'string' ? (raw[k] as string) : '');
+  return {
+    id,
+    type: 'image',
+    src: str('src'),
+    alt: str('alt'),
+    href: str('href'),
+    caption: str('caption'),
+    width: (IMAGE_WIDTHS as readonly unknown[]).includes(raw['width']) ? (raw['width'] as ImageWidth) : 'text',
+  };
+}
+
+function normalizeImageTextBlock(raw: Record<string, unknown>, id: string): ImageTextBlock {
+  const str = (k: string) => (typeof raw[k] === 'string' ? (raw[k] as string) : '');
+  const pick = <T extends string>(k: string, allowed: readonly T[], fallback: T): T =>
+    (allowed as readonly unknown[]).includes(raw[k]) ? (raw[k] as T) : fallback;
+  return {
+    id,
+    type: 'image-text',
+    src: str('src'),
+    alt: str('alt'),
+    href: str('href'),
+    body: Array.isArray(raw['body']) || typeof raw['body'] === 'string' ? ensureRichDoc(raw['body']) : emptyRichDoc(),
+    side: pick('side', IMAGE_TEXT_SIDES, 'left'),
+    imageWidth: pick('imageWidth', IMAGE_TEXT_WIDTHS, 'third'),
+    valign: pick('valign', IMAGE_TEXT_VALIGNS, 'top'),
+  };
+}
+
 function normalizeBlocks(blocks: Block[]): Block[] {
   return blocks.map((block) => {
+    if (block.type === 'image-text') {
+      return normalizeImageTextBlock(block as unknown as Record<string, unknown>, block.id);
+    }
+    if (block.type === 'image') {
+      return normalizeImageBlock(block as unknown as Record<string, unknown>, block.id);
+    }
     if (block.type === 'divider') {
       return normalizeDividerBlock(block as unknown as Record<string, unknown>, block.id);
     }

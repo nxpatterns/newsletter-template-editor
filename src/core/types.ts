@@ -240,6 +240,41 @@ export interface CtaLinkListBlock extends BlockBase {
   items: CtaLinkListItem[];
 }
 
+export const IMAGE_WIDTHS = ['full', 'text', 'small'] as const;
+export type ImageWidth = (typeof IMAGE_WIDTHS)[number];
+
+export interface ImageBlock extends BlockBase {
+  type: 'image';
+  /** https URL (works everywhere) or a data: URL (embedded; not shown by Gmail / classic Outlook). */
+  src: string;
+  /** Required in the editor: shown when images are blocked and read by screen readers. */
+  alt: string;
+  href: string;
+  caption: string;
+  width: ImageWidth;
+}
+
+export const IMAGE_TEXT_SIDES = ['left', 'right'] as const;
+export type ImageTextSide = (typeof IMAGE_TEXT_SIDES)[number];
+export const IMAGE_TEXT_WIDTHS = ['third', 'half'] as const;
+export type ImageTextWidth = (typeof IMAGE_TEXT_WIDTHS)[number];
+export const IMAGE_TEXT_VALIGNS = ['top', 'middle'] as const;
+export type ImageTextValign = (typeof IMAGE_TEXT_VALIGNS)[number];
+
+/** Image beside a paragraph; stacks with the image first on phones. */
+export interface ImageTextBlock extends BlockBase {
+  type: 'image-text';
+  src: string;
+  alt: string;
+  href: string;
+  /** Lite rich-text document, same model and editor as the paragraph block. */
+  body: RichDoc;
+  side: ImageTextSide;
+  imageWidth: ImageTextWidth;
+  /** Vertical position of the text next to the image. */
+  valign: ImageTextValign;
+}
+
 /** Block union — expand slice by slice */
 export type Block =
   | DividerBlock
@@ -251,7 +286,9 @@ export type Block =
   | StatBoxBlock
   | BenefitsListBlock
   | PriceBoxBlock
-  | CtaLinkListBlock;
+  | CtaLinkListBlock
+  | ImageBlock
+  | ImageTextBlock;
 
 export interface Newsletter {
   schemaVersion: number;
@@ -327,6 +364,20 @@ export function createBlock(type: Block['type']): Block {
           },
         ],
       };
+    case 'image':
+      return { id, type, src: '', alt: '', href: '', caption: '', width: 'text' };
+    case 'image-text':
+      return {
+        id,
+        type,
+        src: '',
+        alt: '',
+        href: '',
+        body: emptyRichDoc('New text beside the image.'),
+        side: 'left',
+        imageWidth: 'third',
+        valign: 'top',
+      };
     default: {
       const _exhaustive: never = type;
       throw new Error(`Unknown block type: ${_exhaustive}`);
@@ -345,4 +396,6 @@ export const BLOCK_LABELS: Record<Block['type'], string> = {
   'benefits-list': 'Benefits list',
   'price-box': 'Price box',
   'cta-link-list': 'CTA link list',
+  image: 'Image',
+  'image-text': 'Image and text',
 };

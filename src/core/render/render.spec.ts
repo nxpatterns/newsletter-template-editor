@@ -141,6 +141,59 @@ describe('renderExport', () => {
     expect(glyph.toLowerCase()).toContain(n.globals.accentColor.toLowerCase());
   });
 
+  it('renders an image with Outlook width, alt text, link and caption', () => {
+    const n = seedNewsletter();
+    n.blocks = [
+      {
+        id: 'i',
+        type: 'image',
+        src: 'https://cdn.example.eu/a.jpg',
+        alt: 'Hotel "Seeblick"',
+        href: 'https://example.eu/hotel',
+        caption: 'Zimmer 12',
+        width: 'small',
+      },
+    ];
+    const { full } = renderExport(n);
+    const img = full.match(/<img[^>]*class="email-image"[^>]*>/)?.[0] ?? '';
+    expect(img).toContain('src="https://cdn.example.eu/a.jpg"');
+    expect(img).toContain('width="252"');
+    expect(img).toContain('alt="Hotel &quot;Seeblick&quot;"');
+    expect(img).toMatch(/style="[^"]*height:\s*auto/);
+    expect(full).toMatch(/<a href="\{\{ TrackLink "https:\/\/example\.eu\/hotel" \}\}"[^>]*>\s*<img/);
+    expect(full).toContain('Zimmer 12');
+  });
+
+  it('leaves an image block without a picture out of the export', () => {
+    const n = seedNewsletter();
+    n.blocks = [{ id: 'i', type: 'image', src: '', alt: '', href: '', caption: 'x', width: 'full' }];
+    expect(renderExport(n).full).not.toContain('email-image');
+  });
+
+  it('renders image and text as two columns, image first in the source', () => {
+    const n = seedNewsletter();
+    const b = createBlock('image-text');
+    if (b.type !== 'image-text') throw new Error('type');
+    Object.assign(b, { src: 'https://cdn.example.eu/a.jpg', alt: 'Zimmer', side: 'right', imageWidth: 'half', valign: 'middle' });
+    n.blocks = [b];
+    const { full } = renderExport(n);
+    const table = full.match(/<table[^>]*dir="rtl"[^>]*>[\s\S]*?<\/table>/)?.[0] ?? '';
+    expect(table.indexOf('image-text-pic')).toBeGreaterThan(-1);
+    expect(table.indexOf('image-text-pic')).toBeLessThan(table.indexOf('image-text-copy'));
+    expect(table).toMatch(/<img[^>]*width="242"/);
+    expect(table).toMatch(/image-text-copy"[^>]*valign="middle"/);
+    expect(full).toContain('New text beside the image.');
+    expect(full).toMatch(/\.image-text-col\s*\{\s*display:\s*block !important/);
+  });
+
+  it('keeps the text of an image and text block without a picture', () => {
+    const n = seedNewsletter();
+    n.blocks = [createBlock('image-text')];
+    const { full } = renderExport(n);
+    expect(full).not.toMatch(/<td[^>]*image-text-pic/);
+    expect(full).toContain('New text beside the image.');
+  });
+
   it('keeps TrackLink quotes intact on CTA href', () => {
     const { full, body } = renderExport(acmeNewsletter());
     expect(full).toContain('{{ TrackLink "https://acme.example/buy" }}');

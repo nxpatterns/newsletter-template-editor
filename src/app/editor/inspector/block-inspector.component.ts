@@ -8,6 +8,7 @@ import {
   HostListener,
   inject,
   Injector,
+  signal,
 } from '@angular/core';
 import {
   BENEFIT_DEFAULT_ICON,
@@ -24,18 +25,26 @@ import {
   type DividerBackground,
   type DividerBlock,
   DIVIDER_STYLES,
+  IMAGE_TEXT_SIDES,
+  IMAGE_TEXT_VALIGNS,
+  IMAGE_TEXT_WIDTHS,
+  IMAGE_WIDTHS,
+  intakeEmailImageFile,
+  LogoPipelineError,
   type RichDoc,
 } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
 import { NewsletterSession } from '../newsletter-session.service';
 import { ParagraphLiteEditorComponent } from './paragraph-lite-editor.component';
+import { ImagePickerComponent } from '../image-picker/image-picker.component';
+import { SnackbarService } from '../../ui/snackbar/snackbar.service';
 
 type IconPickerKind = 'cta' | 'benefit' | 'benefit-all';
 type RowKind = 'cta' | 'benefit';
 
 @Component({
   selector: 'app-block-inspector',
-  imports: [ParagraphLiteEditorComponent, CdkDropList, CdkDrag, CdkDragHandle],
+  imports: [ParagraphLiteEditorComponent, ImagePickerComponent, CdkDropList, CdkDrag, CdkDragHandle],
   host: {
     // Email look for the styled fields (font + theme colors from Campaign settings).
     '[style.--em-font]': 'emailFont()',
@@ -55,6 +64,12 @@ export class BlockInspectorComponent {
   protected readonly listIcons = CTA_LINK_ICONS;
   protected readonly dividerStyles = DIVIDER_STYLES;
   protected readonly dividerBackgrounds: readonly DividerBackground[] = ['content', 'page'];
+  protected readonly imageWidths = IMAGE_WIDTHS;
+  protected readonly imageTextSides = IMAGE_TEXT_SIDES;
+  protected readonly imageTextWidths = IMAGE_TEXT_WIDTHS;
+  protected readonly imageTextValigns = IMAGE_TEXT_VALIGNS;
+  protected readonly imageBusy = signal(false);
+  private readonly snackbar = inject(SnackbarService);
   protected readonly emailFont = computed(() => fontStack(this.session.globals()));
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
@@ -94,6 +109,26 @@ export class BlockInspectorComponent {
     this.session.updateBlock(id, { style }, 'immediate');
   }
 
+  protected setImageSrc(id: string, src: string): void {
+    this.session.updateBlock(id, { src }, 'immediate');
+  }
+
+  /** A file can only be embedded (no server to host it): shrunk to the email width first. */
+  protected async onImageFile(id: string, file: File): Promise<void> {
+    this.imageBusy.set(true);
+    try {
+      const { src } = await intakeEmailImageFile(file);
+      this.setImageSrc(id, src);
+    } catch (err) {
+      const code = err instanceof LogoPipelineError ? err.code : 'decode_failed';
+      this.snackbar.error(
+        this.i18n.t(code === 'unsupported_type' ? 'image.errType' : code === 'too_large' ? 'image.errSize' : 'image.errGeneric'),
+      );
+    } finally {
+      this.imageBusy.set(false);
+    }
+  }
+
   protected setDividerBackground(id: string, background: DividerBackground): void {
     this.session.updateBlock(id, { background }, 'immediate');
   }
@@ -128,10 +163,10 @@ export class BlockInspectorComponent {
     if (built) this.patchCtaItem(blockId, index, { href: built }, 'immediate');
   }
 
-  protected onButtonHrefBlur(blockId: string): void {
+  protected onHrefBlur(blockId: string): void {
     this.session.endCoalesce();
     const block = this.session.newsletter().blocks.find((b) => b.id === blockId);
-    if (block?.type !== 'cta-button') return;
+    if (block?.type !== 'cta-button' && block?.type !== 'image' && block?.type !== 'image-text') return;
     const built = normalizedHref(block.href);
     if (built) this.session.updateBlock(blockId, { href: built }, 'immediate');
   }

@@ -1,0 +1,31 @@
+@use '../../../styles/editor-forms';
+
+:host {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.ed-hint {
+  margin: 0;
+}
+
+.meter {
+  display: flex;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--ds-border);
+  background: var(--ds-bg-page);
+}
+
+.meter i {
+  background: #3e84c6;
+}
+
+.meter b {
+  background: #ffb547;
+}
+
+.is-embedded {
+  color: #ffb547;
+}

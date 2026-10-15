@@ -19,7 +19,7 @@ const MIN_W = 360;
 const MIN_H = 280;
 
 /** Short editors open as tall as their content; the rest keep the fixed default height. */
-const FIT_HEIGHT_TYPES = new Set(['hero', 'cta-button', 'stat-box', 'chapter-band', 'pull-quote', 'divider']);
+const FIT_HEIGHT_TYPES = new Set(['hero', 'cta-button', 'stat-box', 'chapter-band', 'pull-quote', 'divider', 'image', 'image-text']);
 
 @Component({
   selector: 'app-block-edit-modal',
@@ -77,6 +77,8 @@ export class BlockEditModalComponent {
       top: `${g.y}px`,
       width: `${g.w}px`,
       height: g.h === null ? null : `${g.h}px`,
+      // Content-tall dialogs grow downwards: stop at the window edge and scroll inside instead.
+      maxHeight: g.h === null ? `calc(100dvh - ${g.y}px - 8px)` : null,
     };
   });
 

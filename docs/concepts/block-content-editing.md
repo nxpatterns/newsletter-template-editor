@@ -211,6 +211,20 @@ Product-strength feature, not a polish pass:
 - Add / remove / reorder rows in the modal; at least one row always remains.
 - Advanced JSON is not seller-facing.
 
+### image
+
+- Fields: `src` (https link or data: URL), `alt` (required in the editor), `href`, `caption`, `width` (`full` 600px | `text` 504px | `small` 252px).
+- Shared picker (`app-image-picker`, also used for the logo): paste a link or drop a file. A file can only be embedded (no server); it is shrunk to 600px, PNG only with transparency, else the smaller of JPG/PNG.
+- Embedded images and SVG get a warning: Gmail shows no data: URLs, classic Outlook neither, and neither shows SVG. A meter shows the exported HTML size against Gmail's ~102 KB clipping limit.
+- Export skips an image block without `src`; the preview shows a dashed placeholder.
+
+### image-text
+
+- Fields: `src`, `alt` (required), `href` like the image block (no caption); `body` (RichDoc, paragraph editor and draft/save flow); `side` `left|right`, `imageWidth` `third` 160px | `half` 242px, `valign` `top|middle`.
+- Editor: one page, picker in compact mode (`[compact]`), then the layout switches, then the text.
+- Email: two table columns plus a 20px gutter. Below 600px they stack via media query. An image on the right uses `dir="rtl"` on the table, so the image comes first in the source and sits above the text on phones. Classic Outlook ignores the media query and keeps two columns.
+- Export without `src` keeps the text as a plain paragraph.
+
 ### price-box (shipped structured fields)
 
 Atomic fields (v0.2.2+):

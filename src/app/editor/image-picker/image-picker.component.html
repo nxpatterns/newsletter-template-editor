@@ -1,0 +1,78 @@
+@let s = src();
+<div
+  class="ip-stage"
+  data-testid="image-stage"
+  [class.is-over]="dragOver()"
+  [class.is-busy]="busy()"
+  (dragover)="onDragOver($event)"
+  (dragleave)="dragOver.set(false)"
+  (drop)="onDrop($event)"
+>
+  @if (s) {
+    <img class="ip-img" [src]="s" alt="" data-testid="image-thumb" (load)="onImgLoad($event)" (error)="onImgError()" />
+    <div class="ip-bar">
+      @let c = chip();
+      <span class="ip-chip" [class]="'ip-chip is-' + c.tone" data-testid="image-status" [textContent]="c.text"></span>
+      <span class="ip-grow"></span>
+      <button type="button" class="ed-btn" data-testid="image-replace" [disabled]="busy()" [textContent]="i18n.t('image.replace')" (click)="pickFile()"></button>
+      <button type="button" class="ed-btn ed-btn--danger" data-testid="image-remove" [textContent]="i18n.t('image.remove')" (click)="removed.emit()"></button>
+    </div>
+    @if (compact()) {
+      <ng-container [ngTemplateOutlet]="urlField" />
+    }
+  } @else {
+    <div class="ip-empty">
+      <span class="ip-empty-icon" aria-hidden="true">🖼</span>
+      <span>
+        <span [textContent]="i18n.t('image.drop')"></span>&ngsp;
+        <button type="button" class="ip-link" data-testid="image-choose" [disabled]="busy()" [textContent]="i18n.t('image.choose')" (click)="pickFile()"></button>
+      </span>
+    </div>
+  }
+  <input
+    #fileInput
+    type="file"
+    class="ip-file"
+    accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,.png,.jpg,.jpeg,.webp,.gif,.svg"
+    data-testid="image-file-input"
+    (change)="onFileSelected($event)"
+  />
+</div>
+
+@if (!s) {
+  <div class="ip-or" [textContent]="i18n.t('image.orLink')"></div>
+}
+@if (!(compact() && s)) {
+  <ng-container [ngTemplateOutlet]="urlField" />
+}
+
+<ng-template #urlField>
+  <div class="ed-field ip-url">
+    @if (s) {
+      <label class="ed-label" [for]="idPrefix() + '-url'" [textContent]="i18n.t('image.address')"></label>
+    }
+    <input
+      class="ed-input"
+      type="url"
+      inputmode="url"
+      [id]="idPrefix() + '-url'"
+      data-testid="image-url"
+      [attr.aria-label]="i18n.t('image.address')"
+      [placeholder]="i18n.t(embedded() ? 'image.urlReplaceEmbedded' : 'image.urlPlaceholder')"
+      [value]="linkValue()"
+      (change)="commitUrl($event)"
+      (keydown.enter)="commitUrl($event)"
+    />
+  </div>
+</ng-template>
+
+@if (insecure()) {
+  <p class="ip-warn" data-testid="image-warn-http"><span aria-hidden="true">⚠</span><span><b [textContent]="i18n.t('image.warn.httpTitle')"></b>&ngsp;<span [textContent]="i18n.t('image.warn.httpBody')"></span></span></p>
+}
+@if (svg()) {
+  <p class="ip-warn" data-testid="image-warn-svg"><span aria-hidden="true">⚠</span><span><b [textContent]="i18n.t('image.warn.svgTitle')"></b>&ngsp;<span [textContent]="i18n.t('image.warn.svgBody')"></span></span></p>
+}
+@if (embedded()) {
+  <p class="ip-warn" data-testid="image-warn-embedded"><span aria-hidden="true">⚠</span><span><b [textContent]="i18n.t('image.warn.embeddedTitle')"></b>&ngsp;<span [textContent]="i18n.t('image.warn.embeddedBody')"></span></span></p>
+  <app-email-size-meter class="ip-meter" data-testid="email-size-meter" />
+}

@@ -6,6 +6,8 @@ export const CATALOG_TYPES: readonly Block['type'][] = [
   'chapter-band',
   'pull-quote',
   'paragraph',
+  'image',
+  'image-text',
   'stat-box',
   'benefits-list',
   'price-box',
@@ -25,6 +27,8 @@ const ICONS: Record<Block['type'], string> = {
   'benefits-list': '✓',
   'price-box': '€',
   'cta-link-list': '→',
+  image: '🖼',
+  'image-text': '◧',
 };
 
 export function blockTypeIcon(type: Block['type']): string {
@@ -34,6 +38,7 @@ export function blockTypeIcon(type: Block['type']): string {
 /** i18n key of the footer badge on a catalog card; only some types have one. */
 const BADGE_KEYS: Partial<Record<Block['type'], string>> = {
   paragraph: 'block.paragraph.badge',
+  'image-text': 'block.paragraph.badge',
 };
 
 export function blockTypeBadgeKey(type: Block['type']): string | undefined {
@@ -61,6 +66,8 @@ const HUES: Record<Block['type'], BlockTypeHue> = {
   'cta-button': { a: '#22d3ee', b: '#0e7490', ink: INK_DARK },
   'cta-link-list': { a: '#bef264', b: '#65a30d', ink: INK_DARK },
   divider: { a: '#94a3b8', b: '#475569', ink: INK_LIGHT },
+  image: { a: '#f87171', b: '#b91c1c', ink: INK_LIGHT },
+  'image-text': { a: '#fb7185', b: '#9f1239', ink: INK_LIGHT },
 };
 
 const FALLBACK_HUE: BlockTypeHue = { a: '#94a3b8', b: '#475569', ink: INK_LIGHT };

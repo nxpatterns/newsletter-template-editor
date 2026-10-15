@@ -1,23 +1,18 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  inject,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import {
   displaySizeFromHeight,
   intakeLogoFile,
   LogoPipelineError,
 } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
+import { ImagePickerComponent, type ImageSize } from '../image-picker/image-picker.component';
 import { ConfirmDialogService } from '../../ui/confirm-dialog/confirm-dialog.service';
 import { SnackbarService } from '../../ui/snackbar/snackbar.service';
 import { NewsletterSession } from '../newsletter-session.service';
 
 @Component({
   selector: 'app-brand-fields',
+  imports: [ImagePickerComponent],
   templateUrl: './brand-fields.component.html',
   styleUrl: './globals-forms.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -27,8 +22,6 @@ export class BrandFieldsComponent {
   protected readonly session = inject(NewsletterSession);
   private readonly snackbar = inject(SnackbarService);
   private readonly confirmDialog = inject(ConfirmDialogService);
-
-  private readonly fileInput = viewChild<ElementRef<HTMLInputElement>>('fileInput');
 
   protected readonly busy = signal(false);
 
@@ -54,26 +47,20 @@ export class BrandFieldsComponent {
     this.session.endCoalesce();
   }
 
-  protected pickFile(): void {
-    this.fileInput()?.nativeElement.click();
+  /** A hosted logo works in every mail program; its pixel size arrives once it has loaded. */
+  protected onLogoUrl(src: string): void {
+    this.session.updateLogo(
+      { src, widthPx: undefined, naturalWidth: undefined, naturalHeight: undefined },
+      'coalesce',
+    );
   }
 
-  protected onDragOver(event: DragEvent): void {
-    event.preventDefault();
-    if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy';
-  }
-
-  protected onDrop(event: DragEvent): void {
-    event.preventDefault();
-    const file = event.dataTransfer?.files?.[0];
-    if (file) void this.handleFile(file);
-  }
-
-  protected onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    input.value = '';
-    if (file) void this.handleFile(file);
+  protected onLogoLoaded(size: ImageSize): void {
+    const logo = this.session.globals().logo;
+    if (logo.naturalWidth === size.width && logo.naturalHeight === size.height) return;
+    const display = displaySizeFromHeight(logo.heightPx, size.width, size.height);
+    this.session.updateLogo({ ...display, naturalWidth: size.width, naturalHeight: size.height }, 'coalesce');
+    this.session.endCoalesce();
   }
 
   protected async clearLogo(): Promise<void> {
@@ -97,7 +84,7 @@ export class BrandFieldsComponent {
     );
   }
 
-  private async handleFile(file: File): Promise<void> {
+  protected async handleFile(file: File): Promise<void> {
     const current = this.session.globals().logo;
     if (current.src) {
       const ok = await this.confirmDialog.confirm({
@@ -118,10 +105,10 @@ export class BrandFieldsComponent {
       const code = err instanceof LogoPipelineError ? err.code : 'decode_failed';
       const key =
         code === 'unsupported_type'
-          ? 'brand.logoErrType'
+          ? 'image.errType'
           : code === 'too_large'
-            ? 'brand.logoErrSize'
-            : 'brand.logoErrGeneric';
+            ? 'image.errSize'
+            : 'image.errGeneric';
       this.snackbar.error(this.i18n.t(key));
     } finally {
       this.busy.set(false);

@@ -7,6 +7,8 @@ import type {
   DividerBlock,
   Globals,
   HeroBlock,
+  ImageBlock,
+  ImageTextBlock,
   ParagraphBlock,
   PriceBoxBlock,
   PullQuoteBlock,
@@ -19,6 +21,7 @@ import {
   escapeHtml,
   mixHex,
   plainTextToHtml,
+  EMAIL_CONTENT_WIDTH_PX,
   resolveHref,
   type RenderMode,
 } from './utils';
@@ -114,6 +117,71 @@ function renderDivider(b: DividerBlock, ctx: RenderContext): string {
     `;
   }
   return rowWrap(b, ctx, inner);
+}
+
+/** Image display width per choice; text width = content column minus the 48px side pads. */
+const IMAGE_PX: Record<ImageBlock['width'], number> = { full: EMAIL_CONTENT_WIDTH_PX, text: 504, small: 252 };
+
+function renderImage(b: ImageBlock, ctx: RenderContext): string {
+  const src = b.src.trim();
+  // Nothing to send without a picture; the editor preview still needs a selectable row.
+  if (!src && !ctx.annotate) return '';
+  const w = IMAGE_PX[b.width] ?? IMAGE_PX.text;
+  const padClass = b.width === 'full' ? 'image-cell-full' : 'mobile-padding image-cell';
+  const caption = b.caption.trim()
+    ? `<p class="image-caption${b.width === 'full' ? ' image-caption-full' : ''}" data-field="caption">${plainTextToHtml(b.caption)}</p>`
+    : '';
+  let pic = src
+    ? `<img src="${escapeAttr(src)}" alt="${escapeAttr(b.alt)}" width="${w}" class="email-image" style="--image-w:${w}px">`
+    : `<span class="nte-image-empty" style="--image-w:${w}px">&nbsp;</span>`;
+  const href = b.href.trim() ? resolveHref(b.href, ctx.mode) : '';
+  if (src && href) pic = `<a href="${attrHref(href, ctx.mode)}" target="_blank" class="email-image-link">${pic}</a>`;
+  return rowWrap(
+    b,
+    ctx,
+    `<td bgcolor="${contentBg(ctx)}" class="content-bg ${padClass}" align="center">${pic}${caption}</td>`,
+  );
+}
+
+/** Image column width: the 504px text column minus a 20px gutter, split ⅓ or ½. */
+const IMAGE_TEXT_PX: Record<ImageTextBlock['imageWidth'], number> = { third: 160, half: 242 };
+
+/**
+ * Two columns that stack on phones. For an image on the right the table runs
+ * dir="rtl", so the image still comes first in the source and lands on top when stacked.
+ */
+function renderImageText(b: ImageTextBlock, ctx: RenderContext): string {
+  const src = b.src.trim();
+  const text = richDocToHtml(b.body, { dataField: 'body' });
+  // Export without a picture keeps the copy as a plain paragraph.
+  if (!src && !ctx.annotate) return rowWrap(b, ctx, contentTd(ctx, 'block-pad-md paragraph-block', text));
+  const w = IMAGE_TEXT_PX[b.imageWidth] ?? IMAGE_TEXT_PX.third;
+  let pic = src
+    ? `<img src="${escapeAttr(src)}" alt="${escapeAttr(b.alt)}" width="${w}" class="email-image image-text-img" style="--image-w:${w}px">`
+    : `<span class="nte-image-empty" style="--image-w:${w}px">&nbsp;</span>`;
+  const href = b.href.trim() ? resolveHref(b.href, ctx.mode) : '';
+  if (src && href) pic = `<a href="${attrHref(href, ctx.mode)}" target="_blank" class="email-image-link">${pic}</a>`;
+  const rtl = b.side === 'right';
+  const tableDir = rtl ? ' dir="rtl"' : '';
+  const cellDir = rtl ? ' dir="ltr"' : '';
+  const valign = b.valign === 'middle' ? 'middle' : 'top';
+  return rowWrap(
+    b,
+    ctx,
+    contentTd(
+      ctx,
+      'block-pad-md image-text-block',
+      `
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"${tableDir}>
+          <tr>
+            <td class="image-text-col image-text-pic" width="${w}" valign="top"${cellDir}>${pic}</td>
+            <td class="image-text-gap" width="20">&nbsp;</td>
+            <td class="image-text-col image-text-copy" valign="${valign}"${cellDir}>${text}</td>
+          </tr>
+        </table>
+      `,
+    ),
+  );
 }
 
 function renderHero(b: HeroBlock, ctx: RenderContext): string {
@@ -404,6 +472,10 @@ export function renderBlock(block: Block, ctx: RenderContext): string {
       return renderPriceBox(block, ctx);
     case 'cta-link-list':
       return renderCtaLinkList(block, ctx);
+    case 'image':
+      return renderImage(block, ctx);
+    case 'image-text':
+      return renderImageText(block, ctx);
     default: {
       const _exhaustive: never = block;
       throw new Error(`Unknown block: ${JSON.stringify(_exhaustive)}`);

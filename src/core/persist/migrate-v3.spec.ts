@@ -36,4 +36,32 @@ describe('schema v3 divider migration', () => {
     expect(b.style).toBe('thin');
     expect(b.background).toBe('content');
   });
+
+  it('fills missing image fields and falls back to text width', () => {
+    const n = normalizeNewsletter({
+      schemaVersion: 3,
+      globals: seedNewsletter().globals,
+      blocks: [{ id: 'i', type: 'image', src: 'https://x.eu/a.png', width: 'huge' }],
+    } as unknown as Newsletter);
+    expect(n.blocks[0]).toEqual({
+      id: 'i',
+      type: 'image',
+      src: 'https://x.eu/a.png',
+      alt: '',
+      href: '',
+      caption: '',
+      width: 'text',
+    });
+  });
+
+  it('fills missing image and text fields with the defaults', () => {
+    const n = normalizeNewsletter({
+      schemaVersion: 3,
+      globals: seedNewsletter().globals,
+      blocks: [{ id: 'it', type: 'image-text', src: 'https://x.eu/a.png', side: 'top', valign: 'middle' }],
+    } as unknown as Newsletter);
+    const b = n.blocks[0];
+    expect(b).toMatchObject({ id: 'it', type: 'image-text', src: 'https://x.eu/a.png', alt: '', href: '', side: 'left', imageWidth: 'third', valign: 'middle' });
+    expect(b.type === 'image-text' && Array.isArray(b.body)).toBe(true);
+  });
 });

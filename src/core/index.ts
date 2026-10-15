@@ -19,5 +19,6 @@ export {
   splitPriceLine,
 } from './persist/normalize-newsletter';
 export * from './logo/logo-pipeline';
+export * from './image/email-image';
 
 export * from './file/sanitize-stem';
