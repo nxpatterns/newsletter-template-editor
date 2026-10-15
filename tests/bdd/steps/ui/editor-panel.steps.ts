@@ -153,8 +153,46 @@ When('I select the link list block', async ({ page }) => {
     'aria-pressed',
     'true',
   );
-  // Allow smooth preview scroll to settle.
-  await page.waitForTimeout(500);
+});
+
+let settledPreviewY: number | null = null;
+
+When('smooth scrolling is enabled', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+});
+
+When('I select the link list block and the preview scroll settles', async ({ page }) => {
+  // Arm the browser's scrollend signal before the click; it resolves with the settled Y.
+  await page.evaluate(() => {
+    const frame = document.querySelector('[data-testid="preview-frame"]') as HTMLIFrameElement;
+    const doc = frame.contentDocument!;
+    (window as unknown as { __nteScrollEnd: Promise<number> }).__nteScrollEnd = new Promise((resolve) => {
+      doc.addEventListener(
+        'scrollend',
+        () => resolve((doc.scrollingElement ?? doc.documentElement).scrollTop),
+        { once: true },
+      );
+    });
+  });
+  const item = await findLinkListSelect(page);
+  await item.locator('[data-testid^="select-block-"]').click();
+  settledPreviewY = await page.evaluate(
+    () => (window as unknown as { __nteScrollEnd: Promise<number> }).__nteScrollEnd,
+  );
+  expect(settledPreviewY).toBeGreaterThan(0);
+});
+
+Then('the preview should keep the settled scroll position', async ({ page }) => {
+  expect(settledPreviewY).not.toBeNull();
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const frame = document.querySelector('[data-testid="preview-frame"]') as HTMLIFrameElement;
+        const doc = frame.contentDocument!;
+        return (doc.scrollingElement ?? doc.documentElement).scrollTop;
+      }),
+    )
+    .toBe(settledPreviewY);
 });
 
 When('I open the link list block editor', async ({ page }) => {
@@ -206,8 +244,6 @@ When('I rename the first CTA link row title to {string}', async ({ page }, title
 When('I save the block edit modal', async ({ page }) => {
   await page.getByTestId('block-edit-save').click();
   await expect(page.getByTestId('block-edit-modal')).toHaveCount(0, { timeout: 5000 });
-  // Smooth scroll-after-save settle.
-  await page.waitForTimeout(500);
 });
 
 Then('the block edit modal should be fully visible in the viewport', async ({ page }) => {
@@ -244,20 +280,6 @@ Then('the block edit modal should stack above the app header', async ({ page }) 
 });
 
 Then('the preview should show the selected block in view', async ({ page }) => {
-  const result = await page.evaluate(() => {
-    const frame = document.querySelector('[data-testid="preview-frame"]') as HTMLIFrameElement | null;
-    const doc = frame?.contentDocument;
-    if (!doc) return { ok: false, reason: 'no-doc' };
-    const selected = doc.querySelector('tr.nte-block.is-selected') as HTMLElement | null;
-    if (!selected) return { ok: false, reason: 'no-selected' };
-    const root = (doc.scrollingElement ?? doc.documentElement) as HTMLElement;
-    const viewTop = root.scrollTop;
-    const viewBottom = viewTop + (frame?.clientHeight ?? root.clientHeight);
-    const top = selected.offsetTop;
-    const bottom = top + selected.offsetHeight;
-    // Allow partial visibility near edges; reject only when fully outside.
-    const visible = bottom > viewTop + 8 && top < viewBottom - 8;
-    return { ok: visible, viewTop, viewBottom, top, bottom, reason: visible ? 'ok' : 'out-of-view' };
-  });
-  expect(result.ok, `preview selected block not in view (${result.reason})`).toBe(true);
+  const selected = page.frameLocator('[data-testid="preview-frame"]').locator('tr.nte-block.is-selected');
+  await expect(selected).toBeInViewport();
 });

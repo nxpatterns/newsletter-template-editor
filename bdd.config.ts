@@ -25,6 +25,8 @@ export default defineConfig({
   use: {
     baseURL: 'http://127.0.0.1:4173',
     screenshot: 'only-on-failure',
+    // Instant scrolls/animations: the app honors prefers-reduced-motion, so no step races a smooth scroll.
+    reducedMotion: 'reduce',
     trace: 'on-first-retry',
   },
   webServer: {

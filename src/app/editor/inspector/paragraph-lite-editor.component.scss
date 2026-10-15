@@ -109,7 +109,6 @@
  */
 .rt-editor {
   min-height: 10rem;
-  max-height: 22rem;
   overflow: auto;
   resize: vertical;
   white-space: pre-wrap;
@@ -157,7 +156,6 @@
 .rt-code {
   margin: 0;
   min-height: 10rem;
-  max-height: 22rem;
   overflow: auto;
   padding: 0.65rem 0.75rem;
   border: 1px solid var(--ds-border);

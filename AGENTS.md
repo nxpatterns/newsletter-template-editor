@@ -28,6 +28,10 @@ Required locally, in order:
 
 Do not tag, push a release commit, or rely on CI alone if either command fails or was skipped. CI is confirmation, not the first time the suite runs.
 
+## Absolute rule — tests are signal-driven
+
+**Never add fixed waits in tests** (`waitForTimeout`, `sleep`, `setTimeout`). Wait only on a real signal: a web-first assertion, an event, or a deterministic app state (e.g. `reducedMotion: 'reduce'` instead of waiting out animations). A flaky test is a bug; fix the cause, never pad the timing.
+
 ## Absolute rule — build after substantive changes
 
 **After substantive code changes: verify the project builds before calling the work done.**

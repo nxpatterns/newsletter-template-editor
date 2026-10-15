@@ -11,6 +11,9 @@
         [attr.data-testid]="'add-block-' + type"
         [attr.aria-label]="label(type)"
         [attr.title]="i18n.t('catalog.dragHint')"
+        [style.--cat-a]="hue(type).a"
+        [style.--cat-b]="hue(type).b"
+        [style.--cat-ink]="hue(type).ink"
         (dragstart)="onDragStart(type, $event)"
         (dragend)="onDragEnd(type, $event)"
       >

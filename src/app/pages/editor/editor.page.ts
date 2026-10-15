@@ -63,8 +63,9 @@ export class EditorPage {
   /** Last known preview document scroll (restored after srcdoc reloads). */
   private lastPreviewScrollY = 0;
   private previewScrollHandler: (() => void) | null = null;
-  /** Ignore scroll capture while restoring / until layout settles (avoids clobbering Y with 0). */
-  private ignorePreviewScrollCaptureUntil = 0;
+  private previewScrollEndHandler: (() => void) | null = null;
+  /** Programmatic scroll in flight: live capture is paused until the next `scrollend` samples the final Y. */
+  private previewScrollProgrammatic = false;
   /** After catalog insert, scroll this block into view once the iframe reloads. */
   private pendingScrollToBlockId: string | null = null;
 
@@ -453,21 +454,38 @@ export class EditorPage {
       doc.removeEventListener('scroll', this.previewScrollHandler, true);
       this.previewScrollHandler = null;
     }
+    if (this.previewScrollEndHandler) {
+      doc.removeEventListener('scrollend', this.previewScrollEndHandler, true);
+      this.previewScrollEndHandler = null;
+    }
   }
 
   private bindPreviewScroll(doc: Document): void {
     if (this.previewScrollHandler && this.previewDocWired === doc) return;
     if (this.previewDocWired && this.previewDocWired !== doc && this.previewScrollHandler) {
       this.previewDocWired.removeEventListener('scroll', this.previewScrollHandler, true);
+      if (this.previewScrollEndHandler) {
+        this.previewDocWired.removeEventListener('scrollend', this.previewScrollEndHandler, true);
+      }
     }
-    const onScroll = (): void => {
-      if (Date.now() < this.ignorePreviewScrollCaptureUntil) return;
+    const readY = (): number => {
       const root = doc.scrollingElement ?? doc.documentElement;
-      const y = root?.scrollTop ?? doc.body?.scrollTop ?? 0;
-      this.lastPreviewScrollY = y;
+      return root?.scrollTop ?? doc.body?.scrollTop ?? 0;
+    };
+    const onScroll = (): void => {
+      if (this.previewScrollProgrammatic) return;
+      this.lastPreviewScrollY = readY();
+    };
+    // Browser signals the scroll (smooth or instant) has settled — sample final Y, end programmatic mode.
+    const onScrollEnd = (): void => {
+      const y = readY();
+      if (!this.previewScrollProgrammatic || y > 0) this.lastPreviewScrollY = y;
+      this.previewScrollProgrammatic = false;
     };
     doc.addEventListener('scroll', onScroll, true);
+    doc.addEventListener('scrollend', onScrollEnd, true);
     this.previewScrollHandler = onScroll;
+    this.previewScrollEndHandler = onScrollEnd;
     // Do not sample scrollTop here — new srcdoc documents start at 0 and would clobber saved Y.
   }
 
@@ -475,7 +493,7 @@ export class EditorPage {
     if (y <= 0) return;
     const doc = this.previewFrame()?.nativeElement?.contentDocument;
     if (!doc) return;
-    this.ignorePreviewScrollCaptureUntil = Date.now() + 200;
+    this.previewScrollProgrammatic = true;
     const apply = (): void => {
       const root = doc.scrollingElement ?? doc.documentElement;
       if (root) root.scrollTop = y;
@@ -552,7 +570,7 @@ export class EditorPage {
     if (!el) return;
     const reduceMotion =
       typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-    this.ignorePreviewScrollCaptureUntil = Date.now() + (reduceMotion ? 200 : 450);
+    this.previewScrollProgrammatic = true;
     const apply = (): void => {
       el.scrollIntoView({
         block: 'center',
@@ -564,20 +582,18 @@ export class EditorPage {
       if (measured > 0 || this.lastPreviewScrollY <= 0) {
         this.lastPreviewScrollY = measured;
       }
-      if (flash) {
+      // Flash is a CSS animation (none under reduced motion); clear it when the animation reports done.
+      if (flash && !reduceMotion && !el.classList.contains('nte-just-inserted')) {
         el.classList.add('nte-just-inserted');
-        window.setTimeout(() => el.classList.remove('nte-just-inserted'), 600);
+        el.addEventListener('animationend', () => el.classList.remove('nte-just-inserted'), {
+          once: true,
+        });
       }
     };
     apply();
     queueMicrotask(apply);
     requestAnimationFrame(apply);
-    // Smooth scroll settles later — sample final Y once capture is allowed again.
-    window.setTimeout(() => {
-      const root = doc.scrollingElement ?? doc.documentElement;
-      const y = root?.scrollTop ?? doc.body?.scrollTop ?? 0;
-      if (y > 0) this.lastPreviewScrollY = y;
-    }, reduceMotion ? 50 : 400);
+    // Final Y is sampled by the `scrollend` listener (bindPreviewScroll), not a timer.
   }
 
   private injectPreviewChrome(doc: Document): void {

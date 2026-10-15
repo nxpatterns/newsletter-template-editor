@@ -11,19 +11,28 @@
   margin-block-start: 0.5rem;
 }
 
+/* Per-type hue comes from blockTypeHue() via --cat-a / --cat-b / --cat-ink. */
 .catalog-card {
+  --cat-a: var(--ds-accent);
+  --cat-b: var(--ds-accent);
+  --cat-ink: var(--ds-bg-panel);
+
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.2rem;
+  gap: 0.25rem;
   min-height: 5.25rem;
-  border: 1px solid var(--ds-border);
-  border-radius: var(--ds-radius);
-  padding: 0.65rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--cat-a) 40%, var(--ds-border));
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.55rem;
   font: inherit;
   color: var(--ds-text);
-  background: color-mix(in srgb, var(--ds-accent) 7%, var(--ds-bg-panel));
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--cat-a) 18%, var(--ds-bg-panel)),
+    var(--ds-bg-panel) 75%
+  );
   cursor: grab;
   text-align: start;
   user-select: none;
@@ -31,8 +40,12 @@
 }
 
 .catalog-card:hover {
-  border-color: color-mix(in srgb, var(--ds-accent) 55%, var(--ds-border));
-  background: color-mix(in srgb, var(--ds-accent) 14%, var(--ds-bg-panel));
+  border-color: color-mix(in srgb, var(--cat-a) 70%, var(--ds-border));
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--cat-a) 28%, var(--ds-bg-panel)),
+    var(--ds-bg-panel) 80%
+  );
 }
 
 .catalog-card:focus-visible {
@@ -46,7 +59,7 @@
 
 .catalog-card--dragging {
   opacity: 0.55;
-  border-color: color-mix(in srgb, var(--ds-accent) 70%, var(--ds-border));
+  border-color: var(--cat-a);
 }
 
 /* Visual “snap back” when Escape / drop-outside cancels the drag. */
@@ -78,14 +91,22 @@
 }
 
 .catalog-card__icon {
-  font-size: 1.15rem;
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 0.4rem;
+  font-size: 1rem;
   line-height: 1;
-  margin-block-end: 0.15rem;
+  color: var(--cat-ink);
+  background: linear-gradient(135deg, var(--cat-a), var(--cat-b));
+  margin-block-end: 0.1rem;
 }
 
 .catalog-card__label {
   font-size: 0.8rem;
   font-weight: 700;
+  color: var(--cat-a);
 }
 
 .catalog-card__hint {
@@ -101,7 +122,7 @@
   inset-inline-end: 0.4rem;
   font-size: 0.75rem;
   letter-spacing: -0.08em;
-  color: color-mix(in srgb, var(--ds-accent) 70%, var(--ds-text-muted));
+  color: var(--cat-a);
   opacity: 0.85;
   pointer-events: none;
 }

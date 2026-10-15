@@ -3,7 +3,7 @@ import type { Block } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
 import { CatalogDragService } from '../../pages/editor/catalog-drag.service';
 import { NTE_CATALOG_MIME } from '../../pages/editor/preview-dnd';
-import { blockTypeIcon, CATALOG_TYPES } from './block-catalog';
+import { blockTypeHue, blockTypeIcon, CATALOG_TYPES, type BlockTypeHue } from './block-catalog';
 
 @Component({
   selector: 'app-catalog-tab',
@@ -30,6 +30,10 @@ export class CatalogTabComponent {
 
   protected icon(type: Block['type']): string {
     return blockTypeIcon(type);
+  }
+
+  protected hue(type: Block['type']): BlockTypeHue {
+    return blockTypeHue(type);
   }
 
   /** Catalog cards are palette items: drag into the preview. Click is intentionally inert. */

@@ -65,3 +65,12 @@ Feature: Editor side panel
     And I save the block edit modal
     Then the preview frame should contain "Stay put title"
     And the preview should show the selected block in view
+
+  Scenario: Live edit reload keeps the preview where smooth scroll settled
+    Given I open the home page
+    When smooth scrolling is enabled
+    And I select the link list block and the preview scroll settles
+    And I open the link list block editor
+    And I rename the first CTA link row title to "Settled title"
+    Then the preview frame should contain "Settled title"
+    And the preview should keep the settled scroll position
