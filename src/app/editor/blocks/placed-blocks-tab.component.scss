@@ -38,19 +38,28 @@
   gap: 0.4rem;
 }
 
+/* Per-type hue (same as the All Blocks cards) comes from blockTypeHue() via --pl-a / --pl-b / --pl-ink. */
 .placed-item {
+  --pl-a: var(--ds-text-muted);
+  --pl-b: var(--ds-text-muted);
+  --pl-ink: var(--ds-bg-page);
+
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  border: 1px solid var(--ds-border);
+  border: 1px solid color-mix(in srgb, var(--pl-a) 35%, var(--ds-border));
   border-radius: var(--ds-radius);
   padding: 0.2rem 0.25rem 0.2rem 0.1rem;
-  background: var(--ds-bg-page);
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--pl-a) 14%, var(--ds-bg-panel)),
+    var(--ds-bg-panel) 70%
+  );
 }
 
 .placed-item.is-selected {
-  border-color: color-mix(in srgb, var(--ds-accent) 55%, var(--ds-border));
-  background: color-mix(in srgb, var(--ds-accent) 12%, var(--ds-bg-page));
+  border-color: var(--ds-accent);
+  box-shadow: inset 0 0 0 1px var(--ds-accent);
 }
 
 .placed-item.cdk-drag-preview {
@@ -71,7 +80,8 @@
   font: inherit;
   font-size: 0.7rem;
   letter-spacing: -0.08em;
-  color: var(--ds-text-muted);
+  color: var(--pl-a);
+  opacity: 0.8;
   background: transparent;
   cursor: grab;
 }
@@ -102,9 +112,16 @@
 }
 
 .placed-icon {
-  width: 1.25rem;
-  text-align: center;
-  font-size: 0.9rem;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 0.3rem;
+  font-size: 0.72rem;
+  line-height: 1;
+  color: var(--pl-ink);
+  background: linear-gradient(135deg, var(--pl-a), var(--pl-b));
 }
 
 .placed-index {
@@ -126,6 +143,8 @@
 
 .placed-label {
   min-width: 0;
+  font-weight: 600;
+  color: var(--pl-a);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

@@ -18,6 +18,9 @@
             cdkDrag
             [class.is-selected]="session.selectedBlockId() === block.id"
             [attr.data-testid]="'placed-item-' + block.id"
+            [style.--pl-a]="hue(block.type).a"
+            [style.--pl-b]="hue(block.type).b"
+            [style.--pl-ink]="hue(block.type).ink"
           >
             <button type="button" class="drag-handle" cdkDragHandle [attr.aria-label]="i18n.t('placed.drag')" title="⋮⋮">
               ⋮⋮

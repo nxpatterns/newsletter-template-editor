@@ -16,7 +16,7 @@ export const CATALOG_TYPES: readonly Block['type'][] = [
 
 const ICONS: Record<Block['type'], string> = {
   hero: '✨',
-  paragraph: '¶',
+  paragraph: 'Aa',
   divider: '—',
   'cta-button': '▶',
   'chapter-band': '▣',
@@ -29,6 +29,15 @@ const ICONS: Record<Block['type'], string> = {
 
 export function blockTypeIcon(type: Block['type']): string {
   return ICONS[type] ?? '■';
+}
+
+/** i18n key of the footer badge on a catalog card; only some types have one. */
+const BADGE_KEYS: Partial<Record<Block['type'], string>> = {
+  paragraph: 'block.paragraph.badge',
+};
+
+export function blockTypeBadgeKey(type: Block['type']): string | undefined {
+  return BADGE_KEYS[type];
 }
 
 /** Catalog card hue per block type: gradient pair (a → b) and ink for text on the gradient. */

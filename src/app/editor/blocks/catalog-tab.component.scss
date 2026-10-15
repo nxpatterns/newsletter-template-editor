@@ -116,6 +116,30 @@
   padding-inline-end: 1.1rem;
 }
 
+/* Footer band across the card bottom (Hugging Face Spaces style). */
+.catalog-card__foot {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: auto -0.55rem -0.6rem;
+  padding: 0.35rem 0.55rem;
+  border-top: 1px solid color-mix(in srgb, var(--cat-a) 25%, transparent);
+  border-radius: 0 0 calc(0.5rem - 1px) calc(0.5rem - 1px);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--cat-a) 75%, var(--ds-text));
+  background: rgb(0 0 0 / 28%);
+}
+
+.catalog-card__foot svg {
+  flex: none;
+  width: 0.8rem;
+  height: 0.8rem;
+  fill: currentColor;
+}
+
 .catalog-card__drag {
   position: absolute;
   top: 0.4rem;

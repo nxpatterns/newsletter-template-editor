@@ -17,7 +17,7 @@ import {
 import type { Block } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
 import { NewsletterSession } from '../newsletter-session.service';
-import { blockTypeIcon } from './block-catalog';
+import { blockTypeHue, blockTypeIcon, type BlockTypeHue } from './block-catalog';
 
 @Component({
   selector: 'app-placed-blocks-tab',
@@ -49,6 +49,10 @@ export class PlacedBlocksTabComponent {
 
   protected icon(type: Block['type']): string {
     return blockTypeIcon(type);
+  }
+
+  protected hue(type: Block['type']): BlockTypeHue {
+    return blockTypeHue(type);
   }
 
   protected onDrop(event: CdkDragDrop<Block[]>): void {
