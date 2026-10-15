@@ -44,10 +44,10 @@ Named semantic tokens, always visible at the top of Colors (compact layout):
 
 | Token id (internal) | Seller label direction (EN) | Current globals field |
 | --- | --- | --- |
+| `standard` | Standard | `standardColor` |
+| `primary` | Primary | `primaryColor` |
+| `secondary` | Secondary | `secondaryColor` |
 | `accent` | Accent | `accentColor` |
-| `highlight` | Highlight | `goldColor` |
-| `body` | Body text | `bodyTextColor` |
-| `heading` | Heading | `headingColor` |
 | `pageBg` | Page background | `pageBgColor` |
 | `contentBg` | Content background | `contentBgColor` |
 

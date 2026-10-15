@@ -24,7 +24,7 @@ export function renderHeader(globals: Globals, mode: RenderMode, bodyInner: stri
   const contentBg = escapeAttr(globals.contentBgColor);
   const starsText = escapeHtml(globals.brand?.starsText || '');
   const starsRow = starsText
-    ? `<p class="brand-stars text-gold" data-field="brand.starsText">${starsText}</p>`
+    ? `<p class="brand-stars text-accent" data-field="brand.starsText">${starsText}</p>`
     : '';
   const brandName = globals.brand?.nameHtml || '';
   const legal = globals.legal;
@@ -82,7 +82,7 @@ export function renderHeader(globals: Globals, mode: RenderMode, bodyInner: stri
                   <tr><td class="footer-rule-cell">&nbsp;</td></tr>
                 </table>
                 <p class="footer-stars-line">
-                  <span class="footer-stars-glyph text-gold">${starsText || '★ ★ ★ ★ ★ ★'}</span>
+                  <span class="footer-stars-glyph text-accent">${starsText || '★ ★ ★ ★ ★ ★'}</span>
                 </p>
                 <p class="footer-company text-dim" data-field="legal.companyName">
                   ${companyRow}

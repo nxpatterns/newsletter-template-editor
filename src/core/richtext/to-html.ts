@@ -4,16 +4,16 @@ import { normalizeMarks } from './model';
 import { cleanPlainText, highlightSuspiciousHtml, isSuspiciousChar } from './sanitize-text';
 
 function sizeClass(size?: string): string {
-  if (!size || size === 'body') return '';
+  if (!size || size === 'm') return '';
   return ` rt-size-${size}`;
 }
 
 function colorClass(color?: string, asBase = false): string {
-  if (!color) return asBase ? ' text-body' : '';
-  if (color === 'body') return ' text-body';
-  if (color === 'heading') return ' text-heading';
+  if (!color) return asBase ? ' text-standard' : '';
+  if (color === 'standard') return ' text-standard';
+  if (color === 'primary') return ' text-primary';
+  if (color === 'secondary') return ' text-secondary';
   if (color === 'accent') return ' text-accent';
-  if (color === 'gold') return ' text-gold';
   if (color === 'dim') return ' text-dim';
   return '';
 }
@@ -35,15 +35,15 @@ function openMarks(
     // Editor: dual-write data-rt-* so Info mode and toolbar apply paths match seed HTML.
     let attrs = ` class="${classes}"`;
     if (opts.forEditor) {
-      if (marks.size && marks.size !== 'body') attrs += ` data-rt-size="${marks.size}"`;
-      if (marks.color && marks.color !== 'body') attrs += ` data-rt-color="${marks.color}"`;
+      if (marks.size && marks.size !== 'm') attrs += ` data-rt-size="${marks.size}"`;
+      if (marks.color && marks.color !== 'standard') attrs += ` data-rt-color="${marks.color}"`;
     }
     push('span', attrs);
   }
   if (marks.link?.href) {
     const target = marks.link.target === '_self' ? '_self' : '_blank';
     const rel = target === '_blank' ? ' rel="noopener noreferrer"' : '';
-    push('a', ` href="${escapeHtml(marks.link.href)}" target="${target}"${rel} class="rt-link text-accent"`);
+    push('a', ` href="${escapeHtml(marks.link.href)}" target="${target}"${rel} class="rt-link text-secondary"`);
   }
   if (marks.bold) push('strong');
   if (marks.italic) push('em');
@@ -96,7 +96,7 @@ export function richDocToHtml(doc: RichDoc, opts: RichHtmlOptions = {}): string 
 
 function renderParagraph(p: RichParagraphNode, index: number, opts: RichHtmlOptions): string {
   const baseColor = colorClass(p.color, true).trim();
-  const cls = ['paragraph-body', baseColor || 'text-body', opts.forEditor ? 'rt-p' : '']
+  const cls = ['paragraph-body', baseColor || 'text-standard', opts.forEditor ? 'rt-p' : '']
     .filter(Boolean)
     .join(' ');
   const dataField =

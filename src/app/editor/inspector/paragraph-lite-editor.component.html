@@ -41,13 +41,13 @@
     </button>
     <span class="rt-sep" aria-hidden="true"></span>
     <label class="rt-select-wrap">
-      <span class="ed-label" [textContent]="i18n.t('rt.appearance')"></span>
+      <span class="ed-label" [textContent]="i18n.t('rt.size')"></span>
       <select
         class="ed-select rt-select"
         (change)="applySize($any($event.target).value, $any($event.target))"
         (mousedown)="captureSelection()"
       >
-        <option value="" disabled selected [textContent]="i18n.t('rt.appearance')"></option>
+        <option value="" disabled selected [textContent]="i18n.t('rt.size')"></option>
         @for (s of sizes; track s) {
           <option [value]="s" [textContent]="i18n.t('rt.size.' + s)"></option>
         }
@@ -167,6 +167,33 @@
         <button type="button" class="ed-btn" (click)="cancelLink()" [textContent]="i18n.t('modal.cancel')"></button>
       </div>
     </div>
+  }
+
+  @if (infoMode()) {
+    <div class="rt-info-legend" data-testid="rt-info-legend">
+      <span class="rt-info-legend__title" [textContent]="i18n.t('rt.info.legend') + ':'"></span>
+      <span class="rt-info-legend__item"><span class="rt-mk rt-mk--size" aria-hidden="true">Aa</span>{{ i18n.t('rt.info.legendSize') }}</span>
+      <span class="rt-info-legend__item"><span class="rt-mk rt-mk--color" aria-hidden="true">Aa</span>{{ i18n.t('rt.info.legendColor') }}</span>
+      <span class="rt-info-legend__item"><span class="rt-mk rt-mk--link" aria-hidden="true">Aa</span>{{ i18n.t('rt.info.legendLink') }}</span>
+      <span class="rt-info-legend__item"><span class="rt-mk rt-mk--mono" aria-hidden="true">Aa</span>{{ i18n.t('rt.info.legendMono') }}</span>
+      <span class="rt-info-legend__hint" [textContent]="i18n.t('rt.info.hint')"></span>
+    </div>
+    @if (infoItems(); as items) {
+      <div class="rt-info-panel" data-testid="rt-info-panel" role="region" [attr.aria-label]="i18n.t('rt.info.panelTitle')">
+        <div class="rt-info-panel__head">
+          <span class="rt-info-panel__title" [textContent]="i18n.t('rt.info.panelTitle')"></span>
+          <button type="button" class="ed-btn" data-testid="rt-info-close" (mousedown)="$event.preventDefault()" (click)="closeInfoPanel()" [textContent]="i18n.t('rt.info.close')"></button>
+        </div>
+        @for (item of items; track item.kind) {
+          <div class="rt-info-panel__row" [attr.data-testid]="'rt-info-item-' + item.kind">
+            <span [textContent]="item.label"></span>
+            <button type="button" class="ed-btn" [attr.data-testid]="'rt-info-remove-' + item.kind" (mousedown)="$event.preventDefault()" (click)="removeInfoItem(item)" [textContent]="i18n.t('rt.info.remove')"></button>
+          </div>
+        } @empty {
+          <p class="rt-info-panel__none" [textContent]="i18n.t('rt.info.none')"></p>
+        }
+      </div>
+    }
   }
 
   <p class="ed-field-help" [textContent]="i18n.t('rt.help')"></p>

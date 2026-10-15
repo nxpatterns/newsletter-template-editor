@@ -68,10 +68,10 @@ export interface Globals {
   preheader: string;
   fontFamily: FontFamilyPreset;
   customFont?: string;
+  secondaryColor: string;
   accentColor: string;
-  goldColor: string;
-  bodyTextColor: string;
-  headingColor: string;
+  standardColor: string;
+  primaryColor: string;
   pageBgColor: string;
   contentBgColor: string;
   campaignSubject?: string;
@@ -90,7 +90,7 @@ export interface BlockBase {
 
 export interface DividerBlock extends BlockBase {
   type: 'divider';
-  style: 'thin' | 'accent-double' | 'spacer-only';
+  style: 'thin' | 'secondary-double' | 'spacer-only';
   heightPx?: number;
 }
 
@@ -253,7 +253,8 @@ export interface Newsletter {
   blocks: Block[];
 }
 
-export const CURRENT_SCHEMA_VERSION = 1;
+/** v2: color tokens standard/primary/secondary/accent/dim, sizes xs–xl (see persist/migrate-v2.ts). */
+export const CURRENT_SCHEMA_VERSION = 2;
 
 let idCounter = 0;
 

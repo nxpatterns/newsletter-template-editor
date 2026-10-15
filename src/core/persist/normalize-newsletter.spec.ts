@@ -99,7 +99,7 @@ describe('normalizePriceBoxBlock', () => {
 describe('normalizeNewsletter price-box', () => {
   it('rewrites legacy blocks in a document', () => {
     const legacy = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       globals: seedNewsletter().globals,
       blocks: [
         {
@@ -224,7 +224,7 @@ describe('normalizeCtaLinkListBlock', () => {
 
   it('runs through normalizeNewsletter for legacy seed rows without icon', () => {
     const legacy = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       globals: seedNewsletter().globals,
       blocks: [
         {

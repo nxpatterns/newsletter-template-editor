@@ -74,3 +74,13 @@ Feature: Editor side panel
     And I rename the first CTA link row title to "Settled title"
     Then the preview frame should contain "Settled title"
     And the preview should keep the settled scroll position
+
+  Scenario: Formatting info explains and removes paragraph formatting
+    Given I open the home page
+    When I open the paragraph editor for seed block 'bmo8rynqo-9'
+    And I turn on the formatting info
+    Then a paragraph info label should mention 'Contains: .*Secondary'
+    When I click the first inline-colored text
+    Then the info panel should list 'Color: Secondary'
+    When I remove the color in the info panel
+    Then that text should have no inline color anymore

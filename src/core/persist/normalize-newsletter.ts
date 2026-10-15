@@ -19,6 +19,7 @@ import {
 } from '../types';
 import { ensureRichDoc } from '../richtext/from-html';
 import { emptyRichDoc } from '../richtext/model';
+import { migrateNewsletterV1ToV2 } from './migrate-v2';
 
 /** Strip tags / collapse whitespace for legacy HTML price blobs. */
 export function plainFromHtml(html: string): string {
@@ -377,7 +378,10 @@ function normalizeBlocks(blocks: Block[]): Block[] {
 }
 
 /** Back-compat normalizer for drafts loaded from storage / project files. */
-export function normalizeNewsletter(n: Newsletter): Newsletter {
+export function normalizeNewsletter(input: Newsletter): Newsletter {
+  // Missing version = pre-versioning draft → treat as v1.
+  const fromVersion = typeof input.schemaVersion === 'number' ? input.schemaVersion : 1;
+  const n = fromVersion < 2 ? migrateNewsletterV1ToV2(input) : input;
   const legal = n.globals?.legal as Newsletter['globals']['legal'] & {
     companyLine?: string;
   };
@@ -402,7 +406,7 @@ export function normalizeNewsletter(n: Newsletter): Newsletter {
 
   return {
     ...n,
-    schemaVersion: n.schemaVersion || CURRENT_SCHEMA_VERSION,
+    schemaVersion: CURRENT_SCHEMA_VERSION,
     blocks: Array.isArray(n.blocks) ? normalizeBlocks(n.blocks) : [],
   };
 }

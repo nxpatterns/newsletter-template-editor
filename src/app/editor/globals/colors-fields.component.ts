@@ -7,7 +7,7 @@ import { NewsletterSession } from '../newsletter-session.service';
 
 type CampaignColorKey = Extract<
   keyof Globals,
-  'accentColor' | 'goldColor' | 'bodyTextColor' | 'headingColor' | 'pageBgColor' | 'contentBgColor'
+  'secondaryColor' | 'accentColor' | 'standardColor' | 'primaryColor' | 'pageBgColor' | 'contentBgColor'
 >;
 
 interface PaletteToken {
@@ -40,7 +40,7 @@ const SHELL_SLOTS: Record<'header' | 'footer', readonly string[]> = {
 };
 
 const BLOCK_SLOTS: Record<Block['type'], readonly string[]> = {
-  divider: ['colors.slot.divider.line', 'colors.slot.divider.accentLead', 'colors.slot.divider.accentTail'],
+  divider: ['colors.slot.divider.line', 'colors.slot.divider.secondaryLead', 'colors.slot.divider.secondaryTail'],
   hero: ['colors.slot.hero.label', 'colors.slot.hero.headline'],
   paragraph: ['colors.slot.paragraph.body'],
   'chapter-band': ['colors.slot.chapter.surface', 'colors.slot.chapter.title'],
@@ -92,10 +92,10 @@ export class ColorsFieldsComponent {
   protected readonly session = inject(NewsletterSession);
 
   protected readonly paletteTokens: readonly PaletteToken[] = [
+    { key: 'standardColor', labelKey: 'colors.standard', testId: 'g-standard' },
+    { key: 'primaryColor', labelKey: 'colors.primary', testId: 'g-primary' },
+    { key: 'secondaryColor', labelKey: 'colors.secondary', testId: 'g-secondary' },
     { key: 'accentColor', labelKey: 'colors.accent', testId: 'g-accent' },
-    { key: 'goldColor', labelKey: 'colors.gold', testId: 'g-gold' },
-    { key: 'bodyTextColor', labelKey: 'colors.bodyText', testId: 'g-body' },
-    { key: 'headingColor', labelKey: 'colors.heading', testId: 'g-heading' },
     { key: 'pageBgColor', labelKey: 'colors.pageBg', testId: 'g-page-bg' },
     { key: 'contentBgColor', labelKey: 'colors.contentBg', testId: 'g-content-bg' },
   ];

@@ -46,7 +46,7 @@ describe('renderExport inliner pipeline', () => {
   it('inlines export HTML while preview stays class-based', () => {
     const n = seedNewsletter();
     const preview = renderPreview(n);
-    expect(preview).toContain('class="hero-label text-gold"');
+    expect(preview).toContain('class="hero-label text-accent"');
     expect(preview).toContain('.block-pad-hero');
     // Preview must not bake hero pad into style on the hero cell from export inliner
     expect(preview).not.toMatch(/class="[^"]*block-pad-hero[^"]*"[^>]*style="[^"]*padding:\s*52px/);
@@ -73,7 +73,7 @@ describe('renderExport inliner pipeline', () => {
       n.globals,
       renderBlocks(n.blocks, { globals: n.globals, mode: 'export', annotate: false }),
     );
-    expect(raw).toContain('class="hero-label text-gold"');
+    expect(raw).toContain('class="hero-label text-accent"');
     expect(raw).not.toMatch(/style="padding:14px 0;border-bottom:1px solid #0a1828"/);
   });
 

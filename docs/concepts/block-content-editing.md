@@ -74,7 +74,7 @@ Fix the model before introducing a text editor.
 
 ### divider
 
-- Enum: style (`thin` | `accent-double` | `spacer-only`).
+- Enum: style (`thin` | `secondary-double` | `spacer-only`).
 - Number: height when spacer-only.
 - No rich text.
 
@@ -105,24 +105,24 @@ Fix the model before introducing a text editor.
 | Strikethrough | |
 | Superscript | Best-effort in email clients |
 | Subscript | Best-effort in email clients |
-| Appearance (semantic size) | Toolbar label **Appearance** / **Darstellung**; see size tokens below |
-| Theme color | **One** Color control: non-collapsed selection → span color; collapsed caret → paragraph base color. Swatches only — no free hex. Seller label for token `heading` is **Primary** (not “Heading”) |
+| Size | Toolbar label **Size** / **Größe**; T-shirt tokens below |
+| Theme color | **One** Color control: non-collapsed selection → span color; collapsed caret → paragraph base color. Swatches only — no free hex. Tokens: `standard` · `primary` · `secondary` · `accent` · `dim` (labels match the ids; no color names) |
 | Link | Selection = default label; URL field; open target (see links). Apply **replaces** the selection (no duplicate text) |
 | Mono | Monospace face mark |
 
 **Not allowed:** underline as a mark; arbitrary font-family per span; free font-size px; free hex.
 
-#### Semantic size tokens
+#### Size tokens
 
-Stable role names (i18n labels separate). Map to CSS classes / Colors-tab sizing later. Multiple spans in one block may share the same token (tokens are **roles**, not unique IDs).
+T-shirt sizes, smallest to largest; labels equal the ids (no translation). Classes `rt-size-{token}`; `m` is normal text and is never stored as a mark.
 
-| Token | Role |
+| Token | Font size / line height |
 | --- | --- |
-| `body` | Default body copy |
-| `lead` | Slightly larger lead / bridge line |
-| `callout` | Strong in-body highlight (seed “large line”) |
-| `fine` | Smaller supporting line |
-| `caption` | Smallest caption-scale line |
+| `xs` | 12 / 18 px |
+| `s` | 14 / 22 px |
+| `m` | 17 / 30 px (normal paragraph text) |
+| `l` | 20 / 32 px |
+| `xl` | 26 / 36 px |
 
 Paid **block editor** (future product): operators may redefine how large each token renders (and more). Seller kit still speaks these token names. Do not design that product here.
 
@@ -136,7 +136,7 @@ Paid **block editor** (future product): operators may redefine how large each to
 
 #### Paragraph-level base color
 
-Allowed and useful: each **paragraph node** (`p`) may set a **base text color** from theme swatches (e.g. Body, Heading, Accent, Highlight).
+Allowed and useful: each **paragraph node** (`p`) may set a **base text color** from theme swatches (e.g. Standard, Primary, Secondary, Accent).
 
 Cascade (high wins):
 
@@ -235,7 +235,7 @@ Renderer composes typography and colors. Legacy `mainPriceHtml` / `strike` migra
 Rules shared by all kit surfaces:
 
 - Theme color swatches only (aligned with Colors tab / campaign tokens).
-- Semantic size tokens where size is offered (`body` | `lead` | `callout` | `fine` | `caption`).
+- Size tokens where size is offered (`xs` | `s` | `m` | `l` | `xl`).
 - Sanitizer + show-suspicious-characters + clear formatting from day one on any kit surface that accepts paste.
 - Modal only; never an editor inside the preview iframe.
 - Angular CDK for overlay / focus / a11y — not as a text engine.

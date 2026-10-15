@@ -30,18 +30,18 @@ function marksFromClassList(el: HTMLElement, base: RichMarks = {}): RichMarks {
       };
     }
   }
-  for (const size of ['lead', 'callout', 'fine', 'caption', 'body'] as const) {
-    if (cls.includes(`rt-size-${size}`)) m.size = size === 'body' ? undefined : size;
+  for (const size of ['l', 'xl', 's', 'xs', 'm'] as const) {
+    if (cls.includes(`rt-size-${size}`)) m.size = size === 'm' ? undefined : size;
   }
-  for (const color of ['heading', 'accent', 'gold', 'dim', 'body'] as const) {
+  for (const color of ['primary', 'secondary', 'accent', 'dim', 'standard'] as const) {
     if (cls.includes(`text-${color}`) || cls.includes(`rt-color-${color}`)) {
-      if (isRichColorToken(color)) m.color = color === 'body' ? undefined : color;
+      if (isRichColorToken(color)) m.color = color === 'standard' ? undefined : color;
     }
   }
   const dataColor = el.getAttribute('data-rt-color');
   if (dataColor && isRichColorToken(dataColor)) m.color = dataColor;
   const dataSize = el.getAttribute('data-rt-size');
-  if (dataSize && isRichSizeToken(dataSize) && dataSize !== 'body') m.size = dataSize;
+  if (dataSize && isRichSizeToken(dataSize) && dataSize !== 'm') m.size = dataSize;
   return m;
 }
 

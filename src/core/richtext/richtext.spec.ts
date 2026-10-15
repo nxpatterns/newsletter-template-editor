@@ -54,14 +54,14 @@ describe('richDocFromHtml', () => {
     );
     expect(flat.some((t) => t.type === 'text' && t.marks?.italic)).toBe(true);
     const call = doc[1].children.find((c) => c.type === 'text' && c.text.includes('call'));
-    expect(call && call.type === 'text' && call.marks?.size).toBe('callout');
+    expect(call && call.type === 'text' && call.marks?.size).toBe('xl');
   });
 
   it('maps rgb accent-ish colors', () => {
     const doc = richDocFromHtml('<span style="color:rgb(50,187,255)">ice</span>');
     const t = doc[0].children[0];
     expect(t.type).toBe('text');
-    if (t.type === 'text') expect(t.marks?.color).toBe('accent');
+    if (t.type === 'text') expect(t.marks?.color).toBe('secondary');
   });
 });
 
@@ -70,14 +70,14 @@ describe('clearMarksOnDoc', () => {
     const doc = clearMarksOnDoc([
       {
         type: 'p',
-        color: 'accent',
+        color: 'secondary',
         children: [
           {
             type: 'text',
             text: 'Hello\u200B',
             marks: {
               bold: true,
-              color: 'gold',
+              color: 'accent',
               link: { href: 'https://cloudlib.eu', target: '_blank' },
             },
           },
@@ -102,7 +102,7 @@ describe('cleanAiCharsOnDoc', () => {
     const doc = cleanAiCharsOnDoc([
       {
         type: 'p',
-        color: 'heading',
+        color: 'primary',
         children: [
           {
             type: 'text',
@@ -112,7 +112,7 @@ describe('cleanAiCharsOnDoc', () => {
         ],
       },
     ]);
-    expect(doc[0].color).toBe('heading');
+    expect(doc[0].color).toBe('primary');
     const t = doc[0].children[0];
     expect(t.type).toBe('text');
     if (t.type === 'text') {
@@ -223,40 +223,40 @@ describe('paragraph lite kit mark operations (toolbar functionality)', () => {
   it('appearance size applies and body clears size without nesting', () => {
     const doc = plainTextToRichDoc(sample);
     const { start, end } = rangeOf(sample, 'internationale');
-    const callout = applySizeOnDoc(doc, start, end, 'callout');
-    expect(spanWith(callout, 'internationale')?.marks?.size).toBe('callout');
-    expect(richDocToHtml(callout)).toContain('rt-size-callout');
+    const callout = applySizeOnDoc(doc, start, end, 'xl');
+    expect(spanWith(callout, 'internationale')?.marks?.size).toBe('xl');
+    expect(richDocToHtml(callout)).toContain('rt-size-xl');
     expect(richDocPlainText(callout)).toBe(sample);
 
-    const lead = applySizeOnDoc(callout, start, end, 'lead');
-    expect(spanWith(lead, 'internationale')?.marks?.size).toBe('lead');
+    const lead = applySizeOnDoc(callout, start, end, 'l');
+    expect(spanWith(lead, 'internationale')?.marks?.size).toBe('l');
     // Single size class after re-apply (no nested sizes in HTML).
     const html = richDocToHtml(lead);
     expect(html.match(/rt-size-/g)?.length).toBe(1);
 
-    const body = applySizeOnDoc(lead, start, end, 'body');
+    const body = applySizeOnDoc(lead, start, end, 'm');
     expect(spanWith(body, 'internationale')?.marks?.size).toBeUndefined();
   });
 
   it('span color applies primary/heading and body clears span color', () => {
     const doc = plainTextToRichDoc(sample);
     const r = rangeOf(sample, 'internationale');
-    const colored = applyColorOnDoc(doc, r.start, r.end, 'heading');
-    expect(spanWith(colored, 'internationale')?.marks?.color).toBe('heading');
-    expect(richDocToHtml(colored)).toContain('text-heading');
+    const colored = applyColorOnDoc(doc, r.start, r.end, 'primary');
+    expect(spanWith(colored, 'internationale')?.marks?.color).toBe('primary');
+    expect(richDocToHtml(colored)).toContain('text-primary');
     expect(richDocPlainText(colored)).toBe(sample);
 
-    const cleared = applyColorOnDoc(colored, r.start, r.end, 'body');
+    const cleared = applyColorOnDoc(colored, r.start, r.end, 'standard');
     expect(spanWith(cleared, 'internationale')?.marks?.color).toBeUndefined();
   });
 
   it('paragraph base color applies at caret offset without wiping span marks', () => {
     let doc = plainTextToRichDoc(sample);
     const r = rangeOf(sample, 'sichtbar');
-    doc = applyColorOnDoc(doc, r.start, r.end, 'accent');
-    doc = applyParagraphBaseColorOnDoc(doc, 0, 'heading');
-    expect(doc[0].color).toBe('heading');
-    expect(spanWith(doc, 'sichtbar')?.marks?.color).toBe('accent');
+    doc = applyColorOnDoc(doc, r.start, r.end, 'secondary');
+    doc = applyParagraphBaseColorOnDoc(doc, 0, 'primary');
+    expect(doc[0].color).toBe('primary');
+    expect(spanWith(doc, 'sichtbar')?.marks?.color).toBe('secondary');
     expect(richDocPlainText(doc)).toBe(sample);
   });
 
@@ -282,8 +282,8 @@ describe('paragraph lite kit mark operations (toolbar functionality)', () => {
     const r = rangeOf(sample, 'internationale');
     doc = toggleMarkOnDoc(doc, r.start, r.end, 'bold');
     doc = toggleMarkOnDoc(doc, r.start, r.end, 'mono');
-    doc = applySizeOnDoc(doc, r.start, r.end, 'callout');
-    doc = applyColorOnDoc(doc, r.start, r.end, 'gold');
+    doc = applySizeOnDoc(doc, r.start, r.end, 'xl');
+    doc = applyColorOnDoc(doc, r.start, r.end, 'accent');
     doc = applyLinkOnDoc(doc, r.start, r.end, 'https://cloudlib.eu');
     const cleared = clearMarksOnDoc(doc);
     const s = spanWith(cleared, 'internationale');
@@ -300,8 +300,8 @@ describe('paragraph lite kit mark operations (toolbar functionality)', () => {
     const r = rangeOf(sample, 'internationale');
     doc = toggleMarkOnDoc(doc, r.start, r.end, 'bold');
     doc = toggleMarkOnDoc(doc, r.start, r.end, 'italic');
-    doc = applySizeOnDoc(doc, r.start, r.end, 'callout');
-    doc = applyColorOnDoc(doc, r.start, r.end, 'heading');
+    doc = applySizeOnDoc(doc, r.start, r.end, 'xl');
+    doc = applyColorOnDoc(doc, r.start, r.end, 'primary');
     const html = richDocToHtml(doc, { forEditor: true });
     const root = document.createElement('div');
     root.innerHTML = html;
@@ -309,8 +309,8 @@ describe('paragraph lite kit mark operations (toolbar functionality)', () => {
     const s = spanWith(again, 'internationale');
     expect(s?.marks?.bold).toBe(true);
     expect(s?.marks?.italic).toBe(true);
-    expect(s?.marks?.size).toBe('callout');
-    expect(s?.marks?.color).toBe('heading');
+    expect(s?.marks?.size).toBe('xl');
+    expect(s?.marks?.color).toBe('primary');
     expect(richDocPlainText(again)).toBe(sample);
   });
 
@@ -372,13 +372,13 @@ describe('richDocToHtml', () => {
         type: 'p',
         children: [
           { type: 'text', text: 'A ' },
-          { type: 'text', text: 'B', marks: { bold: true, size: 'callout' } },
+          { type: 'text', text: 'B', marks: { bold: true, size: 'xl' } },
         ],
       },
     ]);
     expect(html).toContain('paragraph-body');
     expect(html).toContain('<strong>');
-    expect(html).toContain('rt-size-callout');
+    expect(html).toContain('rt-size-xl');
   });
 });
 

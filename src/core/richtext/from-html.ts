@@ -20,14 +20,14 @@ function parseColor(raw: string | null): RichColorToken | undefined {
   const hex = c.startsWith('#') ? c : rgbToHex(c);
   if (!hex) return undefined;
   const map: Record<string, RichColorToken> = {
-    '#7a9ab8': 'body',
-    '#d8eeff': 'heading',
-    '#d4d4d4': 'heading',
-    '#ebf1fa': 'heading',
-    '#7ecfff': 'accent',
-    '#32bbff': 'accent',
-    '#4db8ff': 'accent',
-    '#f5c518': 'gold',
+    '#7a9ab8': 'standard',
+    '#d8eeff': 'primary',
+    '#d4d4d4': 'primary',
+    '#ebf1fa': 'primary',
+    '#7ecfff': 'secondary',
+    '#32bbff': 'secondary',
+    '#4db8ff': 'secondary',
+    '#f5c518': 'accent',
     '#4a6a88': 'dim',
   };
   if (map[hex]) return map[hex];
@@ -38,10 +38,10 @@ function parseColor(raw: string | null): RichColorToken | undefined {
   const g = (n >> 8) & 255;
   const b = n & 255;
   const max = Math.max(r, g, b);
-  if (max > 200 && b > r) return 'heading';
-  if (b > 180 && g > 150) return 'accent';
-  if (r > 200 && g > 150 && b < 80) return 'gold';
-  return 'body';
+  if (max > 200 && b > r) return 'primary';
+  if (b > 180 && g > 150) return 'secondary';
+  if (r > 200 && g > 150 && b < 80) return 'accent';
+  return 'standard';
 }
 
 function rgbToHex(css: string): string | null {
@@ -55,11 +55,11 @@ function parseSize(px: string | null): RichSizeToken | undefined {
   if (!px) return undefined;
   const n = parseFloat(px);
   if (!Number.isFinite(n)) return undefined;
-  if (n >= 24) return 'callout';
-  if (n >= 19) return 'lead';
-  if (n <= 12) return 'caption';
-  if (n <= 14) return 'fine';
-  return 'body';
+  if (n >= 24) return 'xl';
+  if (n >= 19) return 'l';
+  if (n <= 12) return 'xs';
+  if (n <= 14) return 's';
+  return 'm';
 }
 
 function marksFromEl(el: HTMLElement, base: RichMarks = {}): RichMarks {
@@ -79,11 +79,11 @@ function marksFromEl(el: HTMLElement, base: RichMarks = {}): RichMarks {
   }
 
   const cls = el.className || '';
-  for (const size of ['body', 'lead', 'callout', 'fine', 'caption'] as const) {
+  for (const size of ['m', 'l', 'xl', 's', 'xs'] as const) {
     if (cls.includes(`rt-size-${size}`) || cls.includes(`text-size-${size}`)) m.size = size;
   }
-  for (const color of ['body', 'heading', 'accent', 'gold', 'dim'] as const) {
-    if (cls.includes(`text-${color}`) && color !== 'body') m.color = color;
+  for (const color of ['standard', 'primary', 'secondary', 'accent', 'dim'] as const) {
+    if (cls.includes(`text-${color}`) && color !== 'standard') m.color = color;
     if (cls.includes(`rt-color-${color}`)) m.color = color;
   }
 
@@ -96,7 +96,7 @@ function marksFromEl(el: HTMLElement, base: RichMarks = {}): RichMarks {
   const sizeMatch = style.match(/font-size\s*:\s*([\d.]+)px/i);
   if (sizeMatch) {
     const tok = parseSize(sizeMatch[1]);
-    if (tok && tok !== 'body') m.size = tok;
+    if (tok && tok !== 'm') m.size = tok;
   }
   if (/font-weight\s*:\s*(bold|[6-9]00)/i.test(style)) m.bold = true;
   if (/font-style\s*:\s*italic/i.test(style)) m.italic = true;
@@ -160,16 +160,16 @@ function marksFromOpenTag(tag: string, attrStr: string, base: RichMarks): RichMa
   const sizeMatch = style.match(/font-size\s*:\s*([\d.]+)px/i);
   if (sizeMatch) {
     const tok = parseSize(sizeMatch[1]);
-    if (tok && tok !== 'body') m.size = tok;
+    if (tok && tok !== 'm') m.size = tok;
   }
   if (/font-weight\s*:\s*(bold|[6-9]00)/i.test(style)) m.bold = true;
   if (/font-style\s*:\s*italic/i.test(style)) m.italic = true;
   const cm = attrStr.match(/class\s*=\s*["']([^"']*)["']/i);
   const cls = cm?.[1] || '';
-  for (const size of ['lead', 'callout', 'fine', 'caption'] as const) {
+  for (const size of ['l', 'xl', 's', 'xs'] as const) {
     if (cls.includes(`rt-size-${size}`)) m.size = size;
   }
-  for (const color of ['heading', 'accent', 'gold', 'dim'] as const) {
+  for (const color of ['primary', 'secondary', 'accent', 'dim'] as const) {
     if (cls.includes(`text-${color}`) || cls.includes(`rt-color-${color}`)) m.color = color;
   }
   return m;

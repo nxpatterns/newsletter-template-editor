@@ -283,3 +283,47 @@ Then('the preview should show the selected block in view', async ({ page }) => {
   const selected = page.frameLocator('[data-testid="preview-frame"]').locator('tr.nte-block.is-selected');
   await expect(selected).toBeInViewport();
 });
+
+const paragraphEditor = (page: import('@playwright/test').Page) =>
+  page.getByTestId('block-edit-modal').getByTestId('insp-paragraph-html');
+
+let inlineColorCountBefore = 0;
+
+When('I open the paragraph editor for seed block {string}', async ({ page }, blockId: string) => {
+  await page.getByTestId('panel-tab-placed').click();
+  await page.getByTestId(`edit-block-${blockId}`).click();
+  await expect(page.getByTestId('block-edit-modal')).toHaveClass(/is-open/);
+  await expect(paragraphEditor(page).locator('p').first()).toBeVisible();
+});
+
+When('I turn on the formatting info', async ({ page }) => {
+  await page.getByTestId('block-edit-modal').getByTestId('rt-info-mode').click();
+  await expect(page.getByTestId('rt-info-legend')).toBeVisible();
+});
+
+Then('a paragraph info label should mention {string}', async ({ page }, text: string) => {
+  await expect(paragraphEditor(page).locator('p[data-rt-info]').first()).toHaveAttribute(
+    'data-rt-info',
+    new RegExp(text),
+  );
+});
+
+When('I click the first inline-colored text', async ({ page }) => {
+  const colored = paragraphEditor(page).locator('span[data-rt-color]');
+  await expect(colored.first()).toBeVisible();
+  inlineColorCountBefore = await colored.count();
+  await colored.first().click();
+});
+
+Then('the info panel should list {string}', async ({ page }, text: string) => {
+  await expect(page.getByTestId('rt-info-item-color')).toContainText(text);
+});
+
+When('I remove the color in the info panel', async ({ page }) => {
+  await page.getByTestId('rt-info-remove-color').click();
+});
+
+Then('that text should have no inline color anymore', async ({ page }) => {
+  await expect(paragraphEditor(page).locator('span[data-rt-color]')).toHaveCount(inlineColorCountBefore - 1);
+  await expect(page.getByTestId('rt-info-panel')).toHaveCount(0);
+});

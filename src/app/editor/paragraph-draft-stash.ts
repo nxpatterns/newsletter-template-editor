@@ -1,6 +1,9 @@
 import type { RichDoc } from '../../core';
+import { migrateRichDocV1ToV2 } from '../../core/persist/migrate-v2';
 
-const STORAGE_KEY = 'newsletter-template-editor.paragraph-draft.v1';
+const STORAGE_KEY = 'newsletter-template-editor.paragraph-draft.v2';
+/** v1 drafts use the old color/size tokens; converted once on first read. */
+const LEGACY_KEY_V1 = 'newsletter-template-editor.paragraph-draft.v1';
 
 export interface ParagraphStashEntry {
   body: RichDoc;
@@ -13,8 +16,28 @@ function stashKey(libraryId: string | null, blockId: string): string {
   return `${libraryId ?? 'local'}::${blockId}`;
 }
 
+function migrateLegacyV1(): void {
+  try {
+    const legacy = localStorage.getItem(LEGACY_KEY_V1);
+    if (!legacy) return;
+    localStorage.removeItem(LEGACY_KEY_V1);
+    if (localStorage.getItem(STORAGE_KEY)) return;
+    const parsed = JSON.parse(legacy) as StashMap;
+    if (!parsed || typeof parsed !== 'object') return;
+    const next: StashMap = {};
+    for (const [key, entry] of Object.entries(parsed)) {
+      if (!entry || !Array.isArray(entry.body)) continue;
+      next[key] = { ...entry, body: migrateRichDocV1ToV2(entry.body) as RichDoc };
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    /* unreadable legacy stash: drop it */
+  }
+}
+
 function readMap(): StashMap {
   try {
+    migrateLegacyV1();
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return {};
     const parsed = JSON.parse(raw) as StashMap;

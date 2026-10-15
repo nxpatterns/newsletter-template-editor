@@ -54,14 +54,14 @@ function renderDivider(b: DividerBlock, ctx: RenderContext): string {
         </table>
       </td>
     `;
-  } else if (b.style === 'accent-double') {
+  } else if (b.style === 'secondary-double') {
     inner = `
       <td bgcolor="${bg}" class="content-bg block-pad-x">
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
           <tr>
-            <td class="divider-accent-gap">&nbsp;</td>
-            <td class="divider-accent-mid" width="80">&nbsp;</td>
-            <td class="divider-accent-end" width="120">&nbsp;</td>
+            <td class="divider-secondary-gap">&nbsp;</td>
+            <td class="divider-secondary-mid" width="80">&nbsp;</td>
+            <td class="divider-secondary-end" width="120">&nbsp;</td>
           </tr>
         </table>
       </td>
@@ -83,10 +83,10 @@ function renderHero(b: HeroBlock, ctx: RenderContext): string {
       ctx,
       'block-pad-hero',
       `
-        <p class="hero-label text-gold">
+        <p class="hero-label text-accent">
           <span data-field="label">${escapeHtml(b.label)}</span>
         </p>
-        <h1 class="mobile-font-large text-heading hero-headline">
+        <h1 class="mobile-font-large text-primary hero-headline">
           <span data-field="headline" class="hero-headline-inner">${plainTextToHtml(b.headline)}</span>
         </h1>
       `,
@@ -128,7 +128,7 @@ function renderChapterBand(b: ChapterBandBlock, ctx: RenderContext): string {
     ctx,
     `
       <td bgcolor="#060e1a" class="mobile-padding chapter-bg block-pad-chapter">
-        <p class="chapter-title text-gold text-chapter-label">
+        <p class="chapter-title text-accent text-chapter-label">
           <span data-field="title">${plainTextToHtml(b.title)}</span>
         </p>
       </td>

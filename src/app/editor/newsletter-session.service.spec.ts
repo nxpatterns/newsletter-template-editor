@@ -218,9 +218,9 @@ describe('NewsletterSession', () => {
   });
 
   it('updates globals brand and colors', () => {
-    session.updateGlobals({ accentColor: '#112233' });
+    session.updateGlobals({ secondaryColor: '#112233' });
     session.updateBrand({ starsText: '★' });
-    expect(session.globals().accentColor).toBe('#112233');
+    expect(session.globals().secondaryColor).toBe('#112233');
     expect(session.globals().brand.starsText).toBe('★');
   });
 

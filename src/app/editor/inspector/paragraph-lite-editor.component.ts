@@ -19,6 +19,8 @@ import {
   clearMarksOnDoc,
   compactDoc,
   EMAIL_CONTENT_WIDTH_PX,
+  isRichColorToken,
+  isRichSizeToken,
   paragraphEditorSurfaceCss,
   plainTextToRichDoc,
   RICH_COLOR_TOKENS,
@@ -44,6 +46,35 @@ import {
 import { NewsletterSession } from '../newsletter-session.service';
 
 const HISTORY_MAX = 80;
+
+/** One format found at a clicked spot in info mode, removable from the info panel. */
+interface InfoItem {
+  kind: 'size' | 'color' | 'mono' | 'paragraphColor';
+  label: string;
+  el: HTMLElement;
+}
+
+/** Size/color carried by an editor element (data attribute or class from seed/paint). */
+function sizeOfElement(el: HTMLElement): RichSizeToken | null {
+  const data = el.getAttribute('data-rt-size');
+  if (data && isRichSizeToken(data)) return data;
+  for (const c of Array.from(el.classList)) {
+    const t = c.startsWith('rt-size-') ? c.slice('rt-size-'.length) : '';
+    if (t && isRichSizeToken(t)) return t;
+  }
+  return null;
+}
+
+function inlineColorOfElement(el: HTMLElement): RichColorToken | null {
+  if (el.tagName !== 'SPAN') return null;
+  const data = el.getAttribute('data-rt-color');
+  if (data && isRichColorToken(data)) return data;
+  for (const c of Array.from(el.classList)) {
+    const t = c.startsWith('text-') ? c.slice('text-'.length) : '';
+    if (t && isRichColorToken(t)) return t;
+  }
+  return null;
+}
 
 @Component({
   selector: 'app-paragraph-lite-editor',
@@ -73,6 +104,8 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   protected readonly canRedo = signal(false);
   protected readonly emailWidth = signal(false);
   protected readonly infoMode = signal(false);
+  /** Formats at the spot clicked in info mode (null = panel closed). */
+  protected readonly infoItems = signal<InfoItem[] | null>(null);
   /** Brief green “saved draft” flash after intermediate save. */
   protected readonly stashFlash = signal(false);
   /** Stash only when editor body differs from the committed paragraph. */
@@ -205,6 +238,8 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     this.lastSnapshot = JSON.stringify(d);
     this.applying = false;
     this.refreshCanStash(d);
+    // Repaint replaces the DOM; panel items would point at detached nodes.
+    this.infoItems.set(null);
     if (this.infoMode()) this.refreshInfoLabels();
     void recordAsLast;
   }
@@ -220,6 +255,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
 
   protected toggleInfoMode(): void {
     this.infoMode.update((v) => !v);
+    this.infoItems.set(null);
   }
 
   protected stashDraft(): void {
@@ -280,38 +316,105 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
 
   /**
    * Info mode labels via data-rt-info only (ignored by richDocFromEditorRoot).
+   * Lists only what differs from normal; an unformatted paragraph gets no label.
    * Never injects serializable chrome nodes into the mark tree.
    */
   private refreshInfoLabels(): void {
     const root = this.editorHost()?.nativeElement;
     if (!root) return;
-    const paragraphs = root.querySelectorAll(':scope > p');
-    paragraphs.forEach((node) => {
+    const t = (k: string) => this.i18n.t(k);
+    root.querySelectorAll(':scope > p').forEach((node) => {
       const p = node as HTMLElement;
       if (!this.infoMode()) {
         p.removeAttribute('data-rt-info');
         return;
       }
-      const color = p.getAttribute('data-rt-color') || 'body';
-      const colorLabel = this.i18n.t(`rt.color.${color}`);
-      const sizes = new Set<string>();
-      p.querySelectorAll('[class*="rt-size-"]').forEach((el) => {
-        for (const c of Array.from((el as HTMLElement).classList)) {
-          if (c.startsWith('rt-size-')) sizes.add(c.slice('rt-size-'.length));
-        }
+      const bits: string[] = [];
+      const base = p.getAttribute('data-rt-color');
+      if (base && base !== 'standard' && isRichColorToken(base)) {
+        bits.push(`${t('rt.info.paragraphColor')}: ${t(`rt.color.${base}`)}`);
+      }
+      const sizes = new Set<RichSizeToken>();
+      const colors = new Set<RichColorToken>();
+      p.querySelectorAll<HTMLElement>('*').forEach((el) => {
+        const size = sizeOfElement(el);
+        if (size && size !== 'm') sizes.add(size);
+        const color = inlineColorOfElement(el);
+        if (color && color !== 'standard') colors.add(color);
       });
-      const sizePart =
-        sizes.size > 0
-          ? [...sizes].map((s) => this.i18n.t(`rt.size.${s}`)).join(', ')
-          : this.i18n.t('rt.size.body');
-      const hasLink = !!p.querySelector('a.rt-link');
-      const bits = [
-        `${this.i18n.t('rt.appearance')}: ${sizePart}`,
-        `${this.i18n.t('rt.color')}: ${colorLabel}`,
+      const contains = [
+        ...RICH_SIZE_TOKENS.filter((s) => sizes.has(s)).map((s) => t(`rt.size.${s}`)),
+        ...RICH_COLOR_TOKENS.filter((c) => colors.has(c)).map((c) => t(`rt.color.${c}`)),
       ];
-      if (hasLink) bits.push(this.i18n.t('rt.link'));
-      p.setAttribute('data-rt-info', bits.join(' · '));
+      if (p.querySelector('a.rt-link')) contains.push(t('rt.info.legendLink'));
+      if (p.querySelector('code.rt-mono')) contains.push(t('rt.info.legendMono'));
+      if (contains.length) bits.push(`${t('rt.info.contains')}: ${contains.join(', ')}`);
+      if (bits.length) p.setAttribute('data-rt-info', bits.join(' · '));
+      else p.removeAttribute('data-rt-info');
     });
+  }
+
+  /** Info mode click: collect formats from the clicked node up to its paragraph. */
+  private openInfoPanel(start: HTMLElement): void {
+    const root = this.editorHost()?.nativeElement;
+    if (!root) return;
+    const t = (k: string) => this.i18n.t(k);
+    const items: InfoItem[] = [];
+    const seen = new Set<InfoItem['kind']>();
+    const add = (kind: InfoItem['kind'], label: string, el: HTMLElement) => {
+      if (seen.has(kind)) return;
+      seen.add(kind);
+      items.push({ kind, label, el });
+    };
+    for (let el: HTMLElement | null = start; el && el !== root; el = el.parentElement) {
+      if (el.tagName === 'P') {
+        const base = el.getAttribute('data-rt-color');
+        if (base && base !== 'standard' && isRichColorToken(base)) {
+          add('paragraphColor', `${t('rt.info.paragraphColor')}: ${t(`rt.color.${base}`)}`, el);
+        }
+        break;
+      }
+      const size = sizeOfElement(el);
+      if (size && size !== 'm') add('size', `${t('rt.size')}: ${t(`rt.size.${size}`)}`, el);
+      const color = inlineColorOfElement(el);
+      if (color && color !== 'standard') add('color', `${t('rt.color')}: ${t(`rt.color.${color}`)}`, el);
+      if (el.tagName === 'CODE' && el.classList.contains('rt-mono')) add('mono', t('rt.info.legendMono'), el);
+    }
+    this.infoItems.set(items);
+  }
+
+  protected closeInfoPanel(): void {
+    this.infoItems.set(null);
+  }
+
+  /** Remove one format via the model (same path as the toolbar), then repaint. */
+  protected removeInfoItem(item: InfoItem): void {
+    const root = this.editorHost()?.nativeElement;
+    if (!root || !root.contains(item.el)) {
+      this.infoItems.set(null);
+      return;
+    }
+    const sel = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(item.el);
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+    const bm = this.captureSelectionBookmark();
+    if (!bm) return;
+    const doc = richDocFromEditorRoot(root);
+    if (item.kind === 'paragraphColor') {
+      const inside = Math.floor((bm.start + bm.end) / 2);
+      const next = applyParagraphBaseColorOnDoc(doc, inside, 'standard');
+      this.commitDoc(next, true, { start: inside, end: inside });
+      return;
+    }
+    const next =
+      item.kind === 'size'
+        ? applySizeOnDoc(doc, bm.start, bm.end, 'm')
+        : item.kind === 'color'
+          ? applyColorOnDoc(doc, bm.start, bm.end, 'standard')
+          : toggleMarkOnDoc(doc, bm.start, bm.end, 'mono');
+    this.commitDoc(next, true, bm);
   }
 
   /** Capture current selection before toolbar controls steal focus. */
@@ -580,7 +683,10 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     this.captureSelection();
     const t = event.target as HTMLElement | null;
     const anchor = t?.closest?.('a') as HTMLAnchorElement | null;
-    if (!anchor || !this.editorHost()?.nativeElement.contains(anchor)) return;
+    if (!anchor || !this.editorHost()?.nativeElement.contains(anchor)) {
+      if (this.infoMode() && t) this.openInfoPanel(t);
+      return;
+    }
     event.preventDefault();
     event.stopPropagation();
     this.openLinkPopover(anchor);
@@ -646,7 +752,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
       a.setAttribute('target', target);
       if (target === '_blank') a.setAttribute('rel', 'noopener noreferrer');
       else a.removeAttribute('rel');
-      a.classList.add('rt-link', 'text-accent');
+      a.classList.add('rt-link', 'text-secondary');
       if (label) a.textContent = label;
     } else {
       this.restoreSelection();
@@ -662,7 +768,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
       a.href = url;
       a.target = target;
       if (target === '_blank') a.rel = 'noopener noreferrer';
-      a.className = 'rt-link text-accent';
+      a.className = 'rt-link text-secondary';
       a.textContent = label || range?.toString() || url;
 
       if (range && root?.contains(range.commonAncestorContainer)) {
@@ -853,6 +959,8 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
       }
       this.applying = false;
       this.savedRange = null;
+      // Repaint replaces the DOM; panel items would point at detached nodes.
+      this.infoItems.set(null);
       if (restoreBm) {
         this.restoreSelectionBookmark(restoreBm);
         requestAnimationFrame(() => this.restoreSelectionBookmark(restoreBm));

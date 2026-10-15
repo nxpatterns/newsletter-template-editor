@@ -11,9 +11,9 @@ function acmeNewsletter(): Newsletter {
     preheader: 'Acme preheader text',
     pageBgColor: '#112233',
     contentBgColor: '#445566',
-    accentColor: '#ff00aa',
-    bodyTextColor: '#abcdef',
-    headingColor: '#fedcba',
+    secondaryColor: '#ff00aa',
+    standardColor: '#abcdef',
+    primaryColor: '#fedcba',
     campaignSubject: 'Acme subject',
     brand: {
       starsText: '***',
