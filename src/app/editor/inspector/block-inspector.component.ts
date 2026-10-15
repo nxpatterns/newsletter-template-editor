@@ -1,11 +1,18 @@
+import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList } from '@angular/cdk/drag-drop';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   HostListener,
   inject,
+  Injector,
 } from '@angular/core';
 import {
+  BENEFIT_DEFAULT_ICON,
   CTA_LINK_ICONS,
+  detectLinkKind,
+  buildLinkHref,
   emptyBenefitsListItem,
   emptyCtaLinkListItem,
   type BenefitsListBlock,
@@ -20,11 +27,12 @@ import { PersistHeightDirective } from '../../ui/persist-height.directive';
 import { NewsletterSession } from '../newsletter-session.service';
 import { ParagraphLiteEditorComponent } from './paragraph-lite-editor.component';
 
-type IconPickerKind = 'cta' | 'benefit';
+type IconPickerKind = 'cta' | 'benefit' | 'benefit-all';
+type RowKind = 'cta' | 'benefit';
 
 @Component({
   selector: 'app-block-inspector',
-  imports: [PersistHeightDirective, ParagraphLiteEditorComponent],
+  imports: [PersistHeightDirective, ParagraphLiteEditorComponent, CdkDropList, CdkDrag, CdkDragHandle],
   templateUrl: './block-inspector.component.html',
   styleUrl: './block-inspector.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,6 +41,11 @@ export class BlockInspectorComponent {
   protected readonly i18n = inject(LocaleService);
   protected readonly session = inject(NewsletterSession);
   protected readonly listIcons = CTA_LINK_ICONS;
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly injector = inject(Injector);
+
+  /** Link list: the one row whose fields are open (null = all collapsed). */
+  protected openCtaRow: number | null = 0;
 
   /** Which row icon grid is open (null = closed). */
   protected iconPicker: { kind: IconPickerKind; index: number } | null = null;
@@ -78,12 +91,80 @@ export class BlockInspectorComponent {
     this.session.updateBlock(id, { [key]: value } as never, 'immediate');
   }
 
-  protected ctaRowLabel(index: number): string {
-    return `${this.i18n.t('field.ctaLinkRow')} ${index + 1}`;
+  protected toggleCtaRow(index: number): void {
+    this.openCtaRow = this.openCtaRow === index ? null : index;
+    this.iconPicker = null;
   }
 
-  protected benefitRowLabel(index: number): string {
-    return `${this.i18n.t('field.benefitRow')} ${index + 1}`;
+  /** i18n key of the link type the address looks like, for the hint chip. */
+  protected linkKindKey(href: string): string | null {
+    const kind = detectLinkKind(href);
+    return kind ? `rt.linkForm.type.${kind}` : null;
+  }
+
+  /** "info@x.de" or "+49 30 …" become mailto:/tel: so the email link works. */
+  protected onCtaHrefBlur(blockId: string, index: number): void {
+    this.session.endCoalesce();
+    const href = this.ctaBlock(blockId)?.items[index]?.href ?? '';
+    const kind = detectLinkKind(href);
+    const built = kind ? buildLinkHref(kind, href) : null;
+    if (built && built !== href.trim()) this.patchCtaItem(blockId, index, { href: built }, 'immediate');
+  }
+
+  /** Icon most lines use; what the "icon for all lines" button shows. */
+  protected sharedBenefitIcon(items: readonly BenefitsListItem[]): string {
+    const counts = new Map<string, number>();
+    let best = BENEFIT_DEFAULT_ICON;
+    let bestCount = 0;
+    for (const item of items) {
+      const icon = item.icon || BENEFIT_DEFAULT_ICON;
+      const n = (counts.get(icon) ?? 0) + 1;
+      counts.set(icon, n);
+      if (n > bestCount) {
+        best = icon;
+        bestCount = n;
+      }
+    }
+    return best;
+  }
+
+  protected pickAllBenefitIcons(blockId: string, icon: string, event: Event): void {
+    event.stopPropagation();
+    const block = this.benefitsBlock(blockId);
+    if (!block) return;
+    this.session.updateBlock(blockId, { items: block.items.map((item) => ({ ...item, icon })) }, 'immediate');
+    this.iconPicker = null;
+  }
+
+  /** Enter in a benefit line adds a new line right below it. */
+  protected onBenefitEnter(blockId: string, index: number, event: Event): void {
+    event.preventDefault();
+    const block = this.benefitsBlock(blockId);
+    if (!block) return;
+    this.session.endCoalesce();
+    const items = block.items.slice();
+    items.splice(index + 1, 0, { icon: this.sharedBenefitIcon(block.items), text: '' });
+    this.session.updateBlock(blockId, { items }, 'immediate');
+    this.focusLater(`[data-testid="benefit-text-${index + 1}"]`);
+  }
+
+  /** ⋮⋮ handles: drag with the mouse, or ArrowUp / ArrowDown on the keyboard. */
+  protected onRowHandleKey(kind: RowKind, blockId: string, index: number, event: KeyboardEvent): void {
+    const delta = event.key === 'ArrowUp' ? -1 : event.key === 'ArrowDown' ? 1 : 0;
+    if (!delta) return;
+    event.preventDefault();
+    if (kind === 'cta') this.moveCtaItem(blockId, index, delta);
+    else this.moveBenefitItem(blockId, index, delta);
+    const row = kind === 'cta' ? 'cta-link-row' : 'benefit-row';
+    this.focusLater(`[data-testid="${row}-${index + delta}"] .row-drag`);
+  }
+
+  protected dropCtaItem(blockId: string, event: CdkDragDrop<unknown>): void {
+    this.moveCtaItem(blockId, event.previousIndex, event.currentIndex - event.previousIndex);
+  }
+
+  protected dropBenefitItem(blockId: string, event: CdkDragDrop<unknown>): void {
+    this.moveBenefitItem(blockId, event.previousIndex, event.currentIndex - event.previousIndex);
   }
 
   protected isIconPickerOpen(kind: IconPickerKind, index: number): boolean {
@@ -133,7 +214,9 @@ export class BlockInspectorComponent {
       { items: [...block.items, emptyCtaLinkListItem()] },
       'immediate',
     );
+    this.openCtaRow = block.items.length;
     this.iconPicker = null;
+    this.focusLater(`#insp-cta-label-${block.items.length}`);
   }
 
   protected removeCtaItem(blockId: string, index: number): void {
@@ -141,30 +224,32 @@ export class BlockInspectorComponent {
     if (!block || block.items.length <= 1) return;
     const items = block.items.filter((_, i) => i !== index);
     this.session.updateBlock(blockId, { items }, 'immediate');
+    if (this.openCtaRow === index) this.openCtaRow = null;
+    else if (this.openCtaRow !== null && this.openCtaRow > index) this.openCtaRow--;
     this.iconPicker = null;
   }
 
-  protected moveCtaItem(blockId: string, index: number, delta: -1 | 1): void {
+  protected moveCtaItem(blockId: string, index: number, delta: number): void {
     const block = this.ctaBlock(blockId);
     if (!block) return;
-    const target = index + delta;
-    if (target < 0 || target >= block.items.length) return;
-    const items = block.items.slice();
-    const [row] = items.splice(index, 1);
-    items.splice(target, 0, row);
+    const items = moveItem(block.items, index, delta);
+    if (!items) return;
     this.session.updateBlock(blockId, { items }, 'immediate');
+    const target = index + delta;
+    const open = this.openCtaRow;
+    if (open === index) this.openCtaRow = target;
+    else if (open !== null && delta > 0 && open > index && open <= target) this.openCtaRow = open - 1;
+    else if (open !== null && delta < 0 && open < index && open >= target) this.openCtaRow = open + 1;
     this.iconPicker = null;
   }
 
   protected addBenefitItem(blockId: string): void {
     const block = this.benefitsBlock(blockId);
     if (!block) return;
-    this.session.updateBlock(
-      blockId,
-      { items: [...block.items, emptyBenefitsListItem()] },
-      'immediate',
-    );
+    const item = { ...emptyBenefitsListItem(), icon: this.sharedBenefitIcon(block.items) };
+    this.session.updateBlock(blockId, { items: [...block.items, item] }, 'immediate');
     this.iconPicker = null;
+    this.focusLater(`[data-testid="benefit-text-${block.items.length}"]`);
   }
 
   protected removeBenefitItem(blockId: string, index: number): void {
@@ -175,16 +260,19 @@ export class BlockInspectorComponent {
     this.iconPicker = null;
   }
 
-  protected moveBenefitItem(blockId: string, index: number, delta: -1 | 1): void {
+  protected moveBenefitItem(blockId: string, index: number, delta: number): void {
     const block = this.benefitsBlock(blockId);
     if (!block) return;
-    const target = index + delta;
-    if (target < 0 || target >= block.items.length) return;
-    const items = block.items.slice();
-    const [row] = items.splice(index, 1);
-    items.splice(target, 0, row);
+    const items = moveItem(block.items, index, delta);
+    if (!items) return;
     this.session.updateBlock(blockId, { items }, 'immediate');
     this.iconPicker = null;
+  }
+
+  private focusLater(selector: string): void {
+    afterNextRender(() => this.host.nativeElement.querySelector<HTMLElement>(selector)?.focus(), {
+      injector: this.injector,
+    });
   }
 
   private ctaBlock(blockId: string): CtaLinkListBlock | null {
@@ -220,4 +308,14 @@ export class BlockInspectorComponent {
     const items = block.items.map((item, i) => (i === index ? { ...item, ...patch } : item));
     this.session.updateBlock(blockId, { items }, mode);
   }
+}
+
+/** Copy of `items` with one entry moved by `delta`; null when that is a no-op or out of range. */
+function moveItem<T>(items: readonly T[], index: number, delta: number): T[] | null {
+  const target = index + delta;
+  if (!delta || index < 0 || index >= items.length || target < 0 || target >= items.length) return null;
+  const next = items.slice();
+  const [row] = next.splice(index, 1);
+  next.splice(target, 0, row);
+  return next;
 }

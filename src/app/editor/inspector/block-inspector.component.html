@@ -161,247 +161,256 @@
         </div>
       }
       @case ('benefits-list') {
-        <p class="ed-hint" [textContent]="i18n.t('field.benefitsHint')"></p>
-        <div class="list-rows" data-testid="benefits-rows">
-          @for (item of block.items; track $index; let i = $index; let first = $first; let last = $last) {
-            <article class="list-row" [attr.data-testid]="'benefit-row-' + i">
-              <header class="list-row-head">
-                <span class="list-row-index" [textContent]="benefitRowLabel(i)"></span>
-                <div class="list-row-actions">
+        @let shared = sharedBenefitIcon(block.items);
+        <div class="benefit-shared">
+          <span class="ed-label" [textContent]="i18n.t('field.benefitIconAll')"></span>
+          <div class="row-icon-wrap">
+            <button
+              type="button"
+              class="row-icon-btn"
+              data-testid="benefit-icon-all"
+              [attr.aria-expanded]="isIconPickerOpen('benefit-all', 0)"
+              [attr.aria-label]="i18n.t('field.benefitIconAll')"
+              [title]="i18n.t('field.benefitIconAll')"
+              (click)="toggleIconPicker('benefit-all', 0, $event)"
+            >
+              <span class="row-icon-glyph" [textContent]="shared"></span>
+            </button>
+            @if (isIconPickerOpen('benefit-all', 0)) {
+              <div
+                class="row-icon-popup"
+                role="listbox"
+                [attr.aria-label]="i18n.t('field.benefitIconAll')"
+                (click)="$event.stopPropagation()"
+              >
+                @for (glyph of listIcons; track glyph) {
                   <button
                     type="button"
-                    class="ed-btn"
-                    [disabled]="first"
-                    [attr.aria-label]="i18n.t('field.benefitMoveUp')"
-                    [title]="i18n.t('field.benefitMoveUp')"
-                    (click)="moveBenefitItem(block.id, i, -1)"
+                    class="row-icon-option"
+                    role="option"
+                    [class.is-active]="shared === glyph"
+                    [attr.aria-selected]="shared === glyph"
+                    (click)="pickAllBenefitIcons(block.id, glyph, $event)"
                   >
-                    ↑
+                    <span [textContent]="glyph"></span>
                   </button>
-                  <button
-                    type="button"
-                    class="ed-btn"
-                    [disabled]="last"
-                    [attr.aria-label]="i18n.t('field.benefitMoveDown')"
-                    [title]="i18n.t('field.benefitMoveDown')"
-                    (click)="moveBenefitItem(block.id, i, 1)"
-                  >
-                    ↓
-                  </button>
-                  <button
-                    type="button"
-                    class="ed-btn ed-btn--danger"
-                    [disabled]="block.items.length <= 1"
-                    [attr.aria-label]="i18n.t('field.benefitRemove')"
-                    [title]="i18n.t('field.benefitRemove')"
-                    (click)="removeBenefitItem(block.id, i)"
-                  >
-                    ×
-                  </button>
-                </div>
-              </header>
-
-              <div class="list-row-main">
-                <div class="row-icon-wrap">
-                  <span class="ed-label" [textContent]="i18n.t('field.benefitIcon')"></span>
-                  <button
-                    type="button"
-                    class="row-icon-btn"
-                    [attr.aria-expanded]="isIconPickerOpen('benefit', i)"
-                    [attr.aria-label]="i18n.t('field.benefitIconPick')"
-                    [title]="i18n.t('field.benefitIconPick')"
-                    (click)="toggleIconPicker('benefit', i, $event)"
-                  >
-                    <span class="row-icon-glyph" [textContent]="item.icon || '›'"></span>
-                  </button>
-                  @if (isIconPickerOpen('benefit', i)) {
-                    <div
-                      class="row-icon-popup"
-                      role="listbox"
-                      [attr.aria-label]="i18n.t('field.benefitIconPick')"
-                      (click)="$event.stopPropagation()"
-                    >
-                      @for (glyph of listIcons; track glyph) {
-                        <button
-                          type="button"
-                          class="row-icon-option"
-                          role="option"
-                          [class.is-active]="(item.icon || '›') === glyph"
-                          [attr.aria-selected]="(item.icon || '›') === glyph"
-                          (click)="pickBenefitIcon(block.id, i, glyph, $event)"
-                        >
-                          <span [textContent]="glyph"></span>
-                        </button>
-                      }
-                    </div>
-                  }
-                </div>
-
-                <div class="ed-field list-row-title">
-                  <label class="ed-label" [attr.for]="'insp-benefit-text-' + i" [textContent]="i18n.t('field.benefitText')"></label>
-                  <input
-                    class="ed-input"
-                    [id]="'insp-benefit-text-' + i"
-                    [value]="item.text"
-                    (input)="onBenefitText(block.id, i, $event)"
-                    (blur)="onFieldBlur()"
-                  />
-                </div>
+                }
               </div>
-            </article>
+            }
+          </div>
+          <span class="ed-hint" [textContent]="i18n.t('field.benefitIconAllHint')"></span>
+        </div>
+        <div class="list-rows list-rows--tight" data-testid="benefits-rows" cdkDropList (cdkDropListDropped)="dropBenefitItem(block.id, $event)">
+          @for (item of block.items; track $index; let i = $index) {
+            <div class="benefit-row" cdkDrag cdkDragLockAxis="y" [attr.data-testid]="'benefit-row-' + i">
+              <button
+                type="button"
+                class="row-drag"
+                cdkDragHandle
+                [attr.aria-label]="i18n.t('field.rowDrag')"
+                [title]="i18n.t('field.rowDrag')"
+                (keydown)="onRowHandleKey('benefit', block.id, i, $event)"
+              >⋮⋮</button>
+              <div class="row-icon-wrap">
+                <button
+                  type="button"
+                  class="row-icon-btn row-icon-btn--sm"
+                  [class.is-shared]="(item.icon || '›') === shared"
+                  [attr.aria-expanded]="isIconPickerOpen('benefit', i)"
+                  [attr.aria-label]="i18n.t('field.benefitIconPick')"
+                  [title]="i18n.t('field.benefitIconPick')"
+                  (click)="toggleIconPicker('benefit', i, $event)"
+                >
+                  <span class="row-icon-glyph" [textContent]="item.icon || '›'"></span>
+                </button>
+                @if (isIconPickerOpen('benefit', i)) {
+                  <div
+                    class="row-icon-popup"
+                    role="listbox"
+                    [attr.aria-label]="i18n.t('field.benefitIconPick')"
+                    (click)="$event.stopPropagation()"
+                  >
+                    @for (glyph of listIcons; track glyph) {
+                      <button
+                        type="button"
+                        class="row-icon-option"
+                        role="option"
+                        [class.is-active]="(item.icon || '›') === glyph"
+                        [attr.aria-selected]="(item.icon || '›') === glyph"
+                        (click)="pickBenefitIcon(block.id, i, glyph, $event)"
+                      >
+                        <span [textContent]="glyph"></span>
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+              <input
+                class="ed-input"
+                [attr.data-testid]="'benefit-text-' + i"
+                [attr.aria-label]="i18n.t('field.benefitText') + ' ' + (i + 1)"
+                [placeholder]="i18n.t('field.benefitPlaceholder')"
+                [value]="item.text"
+                (input)="onBenefitText(block.id, i, $event)"
+                (keydown.enter)="onBenefitEnter(block.id, i, $event)"
+                (blur)="onFieldBlur()"
+              />
+              <button
+                type="button"
+                class="ed-btn ed-btn--danger row-remove"
+                [disabled]="block.items.length <= 1"
+                [attr.aria-label]="i18n.t('field.benefitRemove')"
+                [title]="i18n.t('field.benefitRemove')"
+                (click)="removeBenefitItem(block.id, i)"
+              >✕</button>
+            </div>
           }
         </div>
         <div class="ed-actions">
           <button
             type="button"
-            class="ed-btn"
+            class="ed-btn ed-btn--add"
             data-testid="benefit-add"
-            [textContent]="i18n.t('field.benefitAdd')"
+            [textContent]="'+ ' + i18n.t('field.benefitAdd')"
             (click)="addBenefitItem(block.id)"
           ></button>
         </div>
       }
       @case ('price-box') {
-        <div class="ed-field">
-          <label class="ed-label" for="insp-p-badge" [textContent]="i18n.t('field.priceBadge')"></label>
-          <input
-            id="insp-p-badge"
-            class="ed-input"
-            [value]="block.badge"
-            (input)="onText(block.id, 'badge', $event)"
-            (blur)="onFieldBlur()"
-          />
-        </div>
-        <div class="ed-field">
-          <label class="ed-label" for="insp-p-currency" [textContent]="i18n.t('field.priceCurrency')"></label>
-          <input
-            id="insp-p-currency"
-            class="ed-input"
-            [value]="block.currency"
-            (input)="onText(block.id, 'currency', $event)"
-            (blur)="onFieldBlur()"
-          />
-          <p class="ed-hint" [textContent]="i18n.t('field.priceCurrencyHint')"></p>
-        </div>
-        <div class="ed-field">
-          <label class="ed-label" for="insp-p-amount" [textContent]="i18n.t('field.priceAmount')"></label>
-          <input
-            id="insp-p-amount"
-            class="ed-input"
-            [value]="block.amount"
-            (input)="onText(block.id, 'amount', $event)"
-            (blur)="onFieldBlur()"
-          />
-        </div>
-        <div class="ed-field">
-          <label class="ed-label" for="insp-p-period" [textContent]="i18n.t('field.pricePeriod')"></label>
-          <input
-            id="insp-p-period"
-            class="ed-input"
-            [value]="block.periodLabel"
-            (input)="onText(block.id, 'periodLabel', $event)"
-            (blur)="onFieldBlur()"
-          />
-          <p class="ed-hint" [textContent]="i18n.t('field.pricePeriodHint')"></p>
-        </div>
-        <div class="ed-field ed-field--check">
-          <label class="ed-check">
-            <input
-              type="checkbox"
-              [checked]="block.strikeEnabled"
-              (change)="onBool(block.id, 'strikeEnabled', $event)"
-            />
-            <span [textContent]="i18n.t('field.priceStrikeEnabled')"></span>
-          </label>
-        </div>
-        @if (block.strikeEnabled) {
+        <section class="ed-group" data-testid="price-group-price">
+          <h3 class="ed-group-title"><span class="ed-group-n">1</span><span [textContent]="i18n.t('field.priceGroupPrice')"></span></h3>
+          <div class="ed-price-row">
+            <div class="ed-field">
+              <label class="ed-label" for="insp-p-currency" [textContent]="i18n.t('field.priceCurrency')"></label>
+              <input
+                id="insp-p-currency"
+                class="ed-input"
+                [value]="block.currency"
+                (input)="onText(block.id, 'currency', $event)"
+                (blur)="onFieldBlur()"
+              />
+            </div>
+            <div class="ed-field">
+              <label class="ed-label" for="insp-p-amount" [textContent]="i18n.t('field.priceAmount')"></label>
+              <input
+                id="insp-p-amount"
+                class="ed-input"
+                [value]="block.amount"
+                (input)="onText(block.id, 'amount', $event)"
+                (blur)="onFieldBlur()"
+              />
+            </div>
+            <div class="ed-field">
+              <label class="ed-label" for="insp-p-period" [textContent]="i18n.t('field.pricePeriod')"></label>
+              <input
+                id="insp-p-period"
+                class="ed-input"
+                [value]="block.periodLabel"
+                (input)="onText(block.id, 'periodLabel', $event)"
+                (blur)="onFieldBlur()"
+              />
+            </div>
+          </div>
+        </section>
+
+        <section class="ed-group" data-testid="price-group-previous">
+          <h3 class="ed-group-title">
+            <span class="ed-group-n">2</span><span [textContent]="i18n.t('field.priceGroupPrevious')"></span>
+            <label class="ed-switch">
+              <span [textContent]="i18n.t('field.priceStrikeEnabled')"></span>
+              <input
+                type="checkbox"
+                role="switch"
+                data-testid="price-strike-toggle"
+                [checked]="block.strikeEnabled"
+                (change)="onBool(block.id, 'strikeEnabled', $event)"
+              />
+              <span class="ed-switch-track" aria-hidden="true"></span>
+            </label>
+          </h3>
+          @if (block.strikeEnabled) {
+            <div class="ed-field-row">
+              <div class="ed-field">
+                <label class="ed-label" for="insp-p-strike-label" [textContent]="i18n.t('field.priceStrikeLabel')"></label>
+                <input
+                  id="insp-p-strike-label"
+                  class="ed-input"
+                  [value]="block.strikeLabel"
+                  (input)="onText(block.id, 'strikeLabel', $event)"
+                  (blur)="onFieldBlur()"
+                />
+              </div>
+              <div class="ed-field">
+                <label class="ed-label" for="insp-p-strike-amount" [textContent]="i18n.t('field.priceStrikeAmount')"></label>
+                <input
+                  id="insp-p-strike-amount"
+                  class="ed-input"
+                  [value]="block.strikeAmount"
+                  (input)="onText(block.id, 'strikeAmount', $event)"
+                  (blur)="onFieldBlur()"
+                />
+              </div>
+            </div>
+          } @else {
+            <p class="ed-group-off" [textContent]="i18n.t('field.priceStrikeOff')"></p>
+          }
+        </section>
+
+        <section class="ed-group" data-testid="price-group-text">
+          <h3 class="ed-group-title"><span class="ed-group-n">3</span><span [textContent]="i18n.t('field.priceGroupText')"></span></h3>
           <div class="ed-field">
-            <label class="ed-label" for="insp-p-strike-label" [textContent]="i18n.t('field.priceStrikeLabel')"></label>
+            <label class="ed-label" for="insp-p-badge" [textContent]="i18n.t('field.priceBadge')"></label>
             <input
-              id="insp-p-strike-label"
+              id="insp-p-badge"
               class="ed-input"
-              [value]="block.strikeLabel"
-              (input)="onText(block.id, 'strikeLabel', $event)"
+              [value]="block.badge"
+              (input)="onText(block.id, 'badge', $event)"
               (blur)="onFieldBlur()"
             />
           </div>
           <div class="ed-field">
-            <label class="ed-label" for="insp-p-strike-amount" [textContent]="i18n.t('field.priceStrikeAmount')"></label>
+            <label class="ed-label" for="insp-p-det" [textContent]="i18n.t('field.priceDetails')"></label>
             <input
-              id="insp-p-strike-amount"
+              id="insp-p-det"
               class="ed-input"
-              [value]="block.strikeAmount"
-              (input)="onText(block.id, 'strikeAmount', $event)"
+              [value]="block.details"
+              (input)="onText(block.id, 'details', $event)"
               (blur)="onFieldBlur()"
             />
           </div>
-        }
-        <div class="ed-field">
-          <label class="ed-label" for="insp-p-det" [textContent]="i18n.t('field.priceDetails')"></label>
-          <input
-            id="insp-p-det"
-            class="ed-input"
-            [value]="block.details"
-            (input)="onText(block.id, 'details', $event)"
-            (blur)="onFieldBlur()"
-          />
-        </div>
-        <div class="ed-field">
-          <label class="ed-label" for="insp-p-fine" [textContent]="i18n.t('field.priceFine')"></label>
-          <textarea
-            id="insp-p-fine"
-            class="ed-textarea"
-            rows="2"
-            [value]="block.fine"
-            (input)="onText(block.id, 'fine', $event)"
-            (blur)="onFieldBlur()"
-          ></textarea>
-        </div>
+          <div class="ed-field">
+            <label class="ed-label" for="insp-p-fine" [textContent]="i18n.t('field.priceFine')"></label>
+            <textarea
+              id="insp-p-fine"
+              class="ed-textarea"
+              rows="2"
+              [value]="block.fine"
+              (input)="onText(block.id, 'fine', $event)"
+              (blur)="onFieldBlur()"
+            ></textarea>
+          </div>
+        </section>
       }
       @case ('cta-link-list') {
-        <p class="ed-hint" [textContent]="i18n.t('field.ctaLinksHint')"></p>
-        <div class="list-rows" data-testid="cta-link-rows">
+        <div class="list-rows" data-testid="cta-link-rows" cdkDropList (cdkDropListDropped)="dropCtaItem(block.id, $event)">
           @for (item of block.items; track $index; let i = $index; let first = $first; let last = $last) {
-            <article class="list-row" [attr.data-testid]="'cta-link-row-' + i">
-              <header class="list-row-head">
-                <span class="list-row-index" [textContent]="ctaRowLabel(i)"></span>
-                <div class="list-row-actions">
-                  <button
-                    type="button"
-                    class="ed-btn"
-                    [disabled]="first"
-                    [attr.aria-label]="i18n.t('field.ctaLinkMoveUp')"
-                    [title]="i18n.t('field.ctaLinkMoveUp')"
-                    (click)="moveCtaItem(block.id, i, -1)"
-                  >
-                    ↑
-                  </button>
-                  <button
-                    type="button"
-                    class="ed-btn"
-                    [disabled]="last"
-                    [attr.aria-label]="i18n.t('field.ctaLinkMoveDown')"
-                    [title]="i18n.t('field.ctaLinkMoveDown')"
-                    (click)="moveCtaItem(block.id, i, 1)"
-                  >
-                    ↓
-                  </button>
-                  <button
-                    type="button"
-                    class="ed-btn ed-btn--danger"
-                    [disabled]="block.items.length <= 1"
-                    [attr.aria-label]="i18n.t('field.ctaLinkRemove')"
-                    [title]="i18n.t('field.ctaLinkRemove')"
-                    (click)="removeCtaItem(block.id, i)"
-                  >
-                    ×
-                  </button>
-                </div>
-              </header>
-
-              <div class="list-row-main">
+            <article
+              class="link-row"
+              cdkDrag
+              cdkDragLockAxis="y"
+              [class.is-open]="openCtaRow === i"
+              [attr.data-testid]="'cta-link-row-' + i"
+            >
+              <header class="link-row-head">
+                <button
+                  type="button"
+                  class="row-drag"
+                  cdkDragHandle
+                  [attr.aria-label]="i18n.t('field.rowDrag')"
+                  [title]="i18n.t('field.rowDrag')"
+                  (keydown)="onRowHandleKey('cta', block.id, i, $event)"
+                >⋮⋮</button>
                 <div class="row-icon-wrap">
-                  <span class="ed-label" [textContent]="i18n.t('field.ctaLinkIcon')"></span>
                   <button
                     type="button"
                     class="row-icon-btn"
@@ -434,61 +443,93 @@
                     </div>
                   }
                 </div>
+                <button
+                  type="button"
+                  class="link-row-summary"
+                  [attr.data-testid]="'cta-link-toggle-' + i"
+                  [attr.aria-expanded]="openCtaRow === i"
+                  (click)="toggleCtaRow(i)"
+                >
+                  <span class="link-row-title" [class.is-empty]="!item.label" [textContent]="item.label || i18n.t('field.ctaLinkUntitled')"></span>
+                  <span class="link-row-intro" [textContent]="item.intro"></span>
+                  @if (item.linkText) {
+                    <span class="link-row-link" [textContent]="item.linkText + ' ↗'"></span>
+                  }
+                  <span class="link-row-chev" aria-hidden="true" [textContent]="openCtaRow === i ? '▾' : '▸'"></span>
+                </button>
+                <button
+                  type="button"
+                  class="ed-btn ed-btn--danger row-remove"
+                  [disabled]="block.items.length <= 1"
+                  [attr.aria-label]="i18n.t('field.ctaLinkRemove')"
+                  [title]="i18n.t('field.ctaLinkRemove')"
+                  (click)="removeCtaItem(block.id, i)"
+                >✕</button>
+              </header>
 
-                <div class="ed-field list-row-title">
-                  <label class="ed-label" [attr.for]="'insp-cta-label-' + i" [textContent]="i18n.t('field.ctaLinkLabel')"></label>
-                  <input
-                    class="ed-input"
-                    [id]="'insp-cta-label-' + i"
-                    [value]="item.label"
-                    (input)="onCtaItemText(block.id, i, 'label', $event)"
-                    (blur)="onFieldBlur()"
-                  />
+              @if (openCtaRow === i) {
+                <div class="link-row-body">
+                  <div class="ed-field-row">
+                    <div class="ed-field">
+                      <label class="ed-label" [attr.for]="'insp-cta-label-' + i" [textContent]="i18n.t('field.ctaLinkLabel')"></label>
+                      <input
+                        class="ed-input"
+                        [id]="'insp-cta-label-' + i"
+                        [value]="item.label"
+                        (input)="onCtaItemText(block.id, i, 'label', $event)"
+                        (blur)="onFieldBlur()"
+                      />
+                    </div>
+                    <div class="ed-field">
+                      <label class="ed-label" [attr.for]="'insp-cta-intro-' + i" [textContent]="i18n.t('field.ctaLinkIntro')"></label>
+                      <input
+                        class="ed-input"
+                        [id]="'insp-cta-intro-' + i"
+                        [value]="item.intro"
+                        (input)="onCtaItemText(block.id, i, 'intro', $event)"
+                        (blur)="onFieldBlur()"
+                      />
+                    </div>
+                  </div>
+                  <div class="ed-field-row">
+                    <div class="ed-field">
+                      <label class="ed-label" [attr.for]="'insp-cta-link-text-' + i" [textContent]="i18n.t('field.ctaLinkText')"></label>
+                      <input
+                        class="ed-input"
+                        [id]="'insp-cta-link-text-' + i"
+                        [value]="item.linkText"
+                        (input)="onCtaItemText(block.id, i, 'linkText', $event)"
+                        (blur)="onFieldBlur()"
+                      />
+                    </div>
+                    <div class="ed-field">
+                      <label class="ed-label" [attr.for]="'insp-cta-href-' + i" [textContent]="i18n.t('field.ctaLinkHref')"></label>
+                      <input
+                        class="ed-input"
+                        [id]="'insp-cta-href-' + i"
+                        [attr.data-testid]="'cta-link-href-' + i"
+                        [value]="item.href"
+                        (input)="onCtaItemText(block.id, i, 'href', $event)"
+                        (blur)="onCtaHrefBlur(block.id, i)"
+                      />
+                      @if (linkKindKey(item.href); as kindKey) {
+                        <p class="link-kind" [attr.data-testid]="'cta-link-kind-' + i">
+                          <span class="link-kind-chip" [textContent]="i18n.t(kindKey)"></span>
+                        </p>
+                      }
+                    </div>
+                  </div>
                 </div>
-              </div>
-
-              <div class="ed-field">
-                <label class="ed-label" [attr.for]="'insp-cta-intro-' + i" [textContent]="i18n.t('field.ctaLinkIntro')"></label>
-                <input
-                  class="ed-input"
-                  [id]="'insp-cta-intro-' + i"
-                  [value]="item.intro"
-                  (input)="onCtaItemText(block.id, i, 'intro', $event)"
-                  (blur)="onFieldBlur()"
-                />
-              </div>
-
-              <div class="ed-field-row">
-                <div class="ed-field">
-                  <label class="ed-label" [attr.for]="'insp-cta-link-text-' + i" [textContent]="i18n.t('field.ctaLinkText')"></label>
-                  <input
-                    class="ed-input"
-                    [id]="'insp-cta-link-text-' + i"
-                    [value]="item.linkText"
-                    (input)="onCtaItemText(block.id, i, 'linkText', $event)"
-                    (blur)="onFieldBlur()"
-                  />
-                </div>
-                <div class="ed-field">
-                  <label class="ed-label" [attr.for]="'insp-cta-href-' + i" [textContent]="i18n.t('field.ctaLinkHref')"></label>
-                  <input
-                    class="ed-input"
-                    [id]="'insp-cta-href-' + i"
-                    [value]="item.href"
-                    (input)="onCtaItemText(block.id, i, 'href', $event)"
-                    (blur)="onFieldBlur()"
-                  />
-                </div>
-              </div>
+              }
             </article>
           }
         </div>
         <div class="ed-actions">
           <button
             type="button"
-            class="ed-btn"
+            class="ed-btn ed-btn--add"
             data-testid="cta-link-add"
-            [textContent]="i18n.t('field.ctaLinkAdd')"
+            [textContent]="'+ ' + i18n.t('field.ctaLinkAdd')"
             (click)="addCtaItem(block.id)"
           ></button>
         </div>
