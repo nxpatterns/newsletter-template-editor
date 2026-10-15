@@ -125,6 +125,7 @@
       class="ed-btn"
       data-testid="rt-stash-draft"
       [title]="i18n.t('rt.stashDraft')"
+      [disabled]="!canStash()"
       (mousedown)="$event.preventDefault()"
       (click)="stashDraft()"
       [textContent]="i18n.t('rt.stashDraftShort')"

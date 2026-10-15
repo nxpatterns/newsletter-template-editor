@@ -75,6 +75,8 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   protected readonly infoMode = signal(false);
   /** Brief green “saved draft” flash after intermediate save. */
   protected readonly stashFlash = signal(false);
+  /** Stash only when editor body differs from the committed paragraph. */
+  protected readonly canStash = signal(false);
 
   private readonly editorHost = viewChild<ElementRef<HTMLDivElement>>('editor');
   private applying = false;
@@ -166,20 +168,25 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     if (!this.stashPrompted && blockId) {
       this.stashPrompted = true;
       const stash = loadParagraphStash(this.session.libraryId(), blockId);
-      if (stash && paragraphStashDiffers(d, stash.body)) {
-        const ok = await this.confirm.confirm({
-          title: this.i18n.t('rt.stashRestoreTitle'),
-          body: this.i18n.t('rt.stashRestoreBody'),
-          confirmLabel: this.i18n.t('rt.stashRestoreYes'),
-          cancelLabel: this.i18n.t('rt.stashRestoreNo'),
-        });
-        if (ok) {
-          this.paintFromDoc(stash.body, false);
-          this.localEdit = true;
-          this.docChange.emit(stash.body);
-          return;
+      if (stash) {
+        if (!paragraphStashDiffers(d, stash.body)) {
+          // Identical to committed — drop dead stash, never prompt.
+          clearParagraphStash(this.session.libraryId(), blockId);
+        } else {
+          const ok = await this.confirm.confirm({
+            title: this.i18n.t('rt.stashRestoreTitle'),
+            body: this.i18n.t('rt.stashRestoreBody'),
+            confirmLabel: this.i18n.t('rt.stashRestoreYes'),
+            cancelLabel: this.i18n.t('rt.stashRestoreNo'),
+          });
+          if (ok) {
+            this.paintFromDoc(stash.body, false);
+            this.localEdit = true;
+            this.docChange.emit(stash.body);
+            return;
+          }
+          clearParagraphStash(this.session.libraryId(), blockId);
         }
-        clearParagraphStash(this.session.libraryId(), blockId);
       }
     }
     this.paintFromDoc(d, false);
@@ -197,6 +204,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     this.codeText.set(richDocToHtml(d, { forEditor: false }));
     this.lastSnapshot = JSON.stringify(d);
     this.applying = false;
+    this.refreshCanStash(d);
     if (this.infoMode()) this.refreshInfoLabels();
     void recordAsLast;
   }
@@ -215,11 +223,17 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   }
 
   protected stashDraft(): void {
+    if (!this.canStash()) return;
     this.flushPendingEmit();
     const blockId = this.session.editingBlockId();
     const root = this.editorHost()?.nativeElement;
     if (!blockId || !root) return;
     const body = richDocFromEditorRoot(root);
+    // No-op identical stash: keep storage clean and button honest.
+    if (!paragraphStashDiffers(this.doc(), body)) {
+      this.canStash.set(false);
+      return;
+    }
     saveParagraphStash(this.session.libraryId(), blockId, body);
     this.stashFlash.set(true);
     if (this.stashFlashTimer) clearTimeout(this.stashFlashTimer);
@@ -227,6 +241,33 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
       this.stashFlash.set(false);
       this.stashFlashTimer = null;
     }, 1800);
+  }
+
+  /** Enable Zwischen speichern only when draft ≠ committed paragraph body. */
+  private refreshCanStash(current?: RichDoc): void {
+    let body = current;
+    if (!body) {
+      const root = this.editorHost()?.nativeElement;
+      if (root && !this.applying) {
+        try {
+          body = richDocFromEditorRoot(root);
+        } catch {
+          body = undefined;
+        }
+      }
+      if (!body && this.lastSnapshot) {
+        try {
+          body = JSON.parse(this.lastSnapshot) as RichDoc;
+        } catch {
+          body = undefined;
+        }
+      }
+    }
+    if (!body) {
+      this.canStash.set(false);
+      return;
+    }
+    this.canStash.set(paragraphStashDiffers(this.doc(), body));
   }
 
   private clearInfoLabels(): void {
@@ -822,6 +863,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     this.codeText.set(richDocToHtml(next, { forEditor: false }));
     this.canUndo.set(this.historyPast.length > 0);
     this.canRedo.set(this.historyFuture.length > 0);
+    this.refreshCanStash(next);
     this.localEdit = true;
     this.docChange.emit(next);
   }

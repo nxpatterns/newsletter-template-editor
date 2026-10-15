@@ -35,7 +35,7 @@ Related: `block-content-editing.md`, `email-colors.md`, `AGENTS.md`.
 | Undo / Redo | Local history; selection bookmark restored after repaint |
 | Email width | 600px clone column; modal may grow |
 | i (Info) | Inspect outlines + paragraph labels; never serializes into `RichDoc` |
-| Zwischen speichern / Save draft | Explicit stash to `localStorage`; restore confirm Yes/No on reopen |
+| Zwischen speichern / Save draft | Enabled only while draft **differs** from committed body; explicit stash to `localStorage`; restore confirm Yes/No only when stash differs on reopen |
 | Code | Read-only classed HTML |
 
 ### Mark pipeline (locked)
@@ -61,5 +61,5 @@ Helpers in `src/core/richtext/model.ts`: `toggleMarkOnDoc`, `applySizeOnDoc`, `a
 - Mono on → off keeps spaces (`internationale Plattform`, not glued)
 - Every boolean mark toggles off on second apply
 - Info labels both class-only and `data-rt-color` spans
-- Stash restore Yes/No; Save clears stash
+- Stash button disabled until dirty vs committed; restore Yes/No only on real diff; Save clears stash
 - Unit: `paragraph lite kit mark operations` in `richtext.spec.ts`
