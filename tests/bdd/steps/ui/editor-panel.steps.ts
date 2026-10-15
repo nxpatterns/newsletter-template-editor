@@ -385,3 +385,63 @@ Then('paragraph {int} should have no bold text anymore', async ({ page }, n: num
 Then('the info panel should show {string}', async ({ page }, text: string) => {
   await expect(page.getByTestId('rt-info-panel')).toContainText(text);
 });
+
+Then('the paragraph text should be read-only', async ({ page }) => {
+  await expect(paragraphEditor(page)).toHaveAttribute('contenteditable', 'false');
+});
+
+Then('every editing control should be disabled', async ({ page }) => {
+  const controls = page.getByTestId('paragraph-lite-editor').locator('[data-rt-edit]');
+  // B I S x² x₂ M, Size, Color, Link, Clear, HTML (+ Remove all when hidden characters exist).
+  expect(await controls.count()).toBeGreaterThanOrEqual(11);
+  for (const control of await controls.all()) await expect(control).toBeDisabled();
+});
+
+Then('undo should be available', async ({ page }) => {
+  await expect(page.getByTestId('block-edit-modal').getByTestId('rt-undo')).toBeEnabled();
+});
+
+When('I undo in the paragraph editor', async ({ page }) => {
+  await page.getByTestId('block-edit-modal').getByTestId('rt-undo').click();
+});
+
+When('I click the link in paragraph {int}', async ({ page }, n: number) => {
+  await paragraphEditor(page).locator(':scope > p').nth(n - 1).locator('a.rt-link').first().click();
+});
+
+Then('the link editor should stay closed', async ({ page }) => {
+  await expect(page.getByTestId('rt-link-popover')).toHaveCount(0);
+});
+
+Then('paragraph {int} should have no link anymore', async ({ page }, n: number) => {
+  await expect(paragraphEditor(page).locator(':scope > p').nth(n - 1).locator('a')).toHaveCount(0);
+});
+
+Then('paragraph {int} should have bold text again', async ({ page }, n: number) => {
+  await expect(paragraphEditor(page).locator(':scope > p').nth(n - 1).locator('strong')).toHaveCount(1);
+});
+
+When('I link the selection to {string}', async ({ page }, href: string) => {
+  await page.getByTestId('block-edit-modal').getByTestId('rt-link').click();
+  await page.getByTestId('rt-link-href').fill(href);
+  await page.getByTestId('rt-link-apply').click();
+  await expect(page.getByTestId('rt-link-popover')).toHaveCount(0);
+});
+
+Then('the {word} control should show {string}', async ({ page }, which: string, token: string) => {
+  await expect(page.getByTestId('block-edit-modal').getByTestId(`rt-${which}-select`)).toHaveValue(token);
+});
+
+When('I type a hidden zero-width character into paragraph {int}', async ({ page }, n: number) => {
+  const para = paragraphEditor(page).locator(':scope > p').nth(n - 1);
+  await para.click();
+  await page.keyboard.insertText('\u200B');
+});
+
+Then('the text check should report {string}', async ({ page }, text: string) => {
+  await expect(page.getByTestId('rt-ai-status')).toContainText(text);
+});
+
+When('I remove all hidden characters', async ({ page }) => {
+  await page.getByTestId('rt-remove-ai-chars').click();
+});

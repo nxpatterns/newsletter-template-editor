@@ -75,3 +75,25 @@ export function highlightSuspiciousHtml(plain: string, escapeHtml: (s: string) =
   }
   return out;
 }
+
+/** What a suspicious character is, in words a seller understands. */
+export type SuspiciousKind = 'zeroWidth' | 'softHyphen' | 'specialSpace' | 'dash' | 'direction' | 'other';
+
+const SUSPICIOUS_KINDS: ReadonlyArray<{ kind: SuspiciousKind; re: RegExp }> = [
+  { kind: 'zeroWidth', re: /[​-‍⁠-⁤﻿͏᠎]/ },
+  { kind: 'softHyphen', re: /­/ },
+  { kind: 'specialSpace', re: /[   ]/ },
+  { kind: 'dash', re: /[‐-―−]/ },
+  { kind: 'direction', re: /[؜‎‏‪-‮⁦-⁯]/ },
+];
+
+/** Count suspicious characters per kind, most frequent first. */
+export function suspiciousBreakdown(input: string): Array<{ kind: SuspiciousKind; count: number }> {
+  const counts = new Map<SuspiciousKind, number>();
+  for (const ch of input) {
+    if (!isSuspiciousChar(ch)) continue;
+    const kind = SUSPICIOUS_KINDS.find((k) => k.re.test(ch))?.kind ?? 'other';
+    counts.set(kind, (counts.get(kind) ?? 0) + 1);
+  }
+  return [...counts].map(([kind, count]) => ({ kind, count })).sort((a, b) => b.count - a.count);
+}

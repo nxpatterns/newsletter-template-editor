@@ -1,135 +1,149 @@
 <div class="rt-kit" data-testid="paragraph-lite-editor">
   <div class="rt-toolbar" role="toolbar" [attr.aria-label]="i18n.t('rt.toolbar')">
-    <button
-      type="button"
-      class="ed-btn"
-      [title]="i18n.t('action.undo')"
-      [disabled]="!canUndo()"
-      (mousedown)="captureSelection($event)"
-      (click)="undo()"
-    >
-      ↶
-    </button>
-    <button
-      type="button"
-      class="ed-btn"
-      [title]="i18n.t('action.redo')"
-      [disabled]="!canRedo()"
-      (mousedown)="captureSelection($event)"
-      (click)="redo()"
-    >
-      ↷
-    </button>
-    <span class="rt-sep" aria-hidden="true"></span>
-    <button type="button" class="ed-btn" [title]="i18n.t('rt.bold')" (mousedown)="captureSelection($event)" (click)="toggleMark('bold')">
-      <strong>B</strong>
-    </button>
-    <button type="button" class="ed-btn" [title]="i18n.t('rt.italic')" (mousedown)="captureSelection($event)" (click)="toggleMark('italic')">
-      <em>I</em>
-    </button>
-    <button type="button" class="ed-btn" [title]="i18n.t('rt.strike')" (mousedown)="captureSelection($event)" (click)="toggleMark('strikeThrough')">
-      <s>S</s>
-    </button>
-    <button type="button" class="ed-btn" [title]="i18n.t('rt.sup')" (mousedown)="captureSelection($event)" (click)="toggleMark('superscript')">
-      x²
-    </button>
-    <button type="button" class="ed-btn" [title]="i18n.t('rt.sub')" (mousedown)="captureSelection($event)" (click)="toggleMark('subscript')">
-      x₂
-    </button>
-    <button type="button" class="ed-btn" [title]="i18n.t('rt.mono')" (mousedown)="captureSelection($event)" (click)="toggleMono()">
-      <span class="rt-mono-label">M</span>
-    </button>
-    <span class="rt-sep" aria-hidden="true"></span>
-    <label class="rt-select-wrap">
-      <span class="ed-label" [textContent]="i18n.t('rt.size')"></span>
-      <select
-        class="ed-select rt-select"
-        (change)="applySize($any($event.target).value, $any($event.target))"
-        (mousedown)="captureSelection()"
+    <span class="rt-group">
+      <button
+        type="button"
+        class="ed-btn"
+        data-testid="rt-undo"
+        [title]="i18n.t('action.undo')"
+        [attr.aria-label]="i18n.t('action.undo')"
+        [disabled]="!canUndo()"
+        (mousedown)="captureSelection($event)"
+        (click)="undo()"
       >
-        <option value="" disabled selected [textContent]="i18n.t('rt.size')"></option>
-        @for (s of sizes; track s) {
-          <option [value]="s" [textContent]="i18n.t('rt.size.' + s)"></option>
-        }
-      </select>
-    </label>
-    <label class="rt-select-wrap">
-      <span class="ed-label" [textContent]="i18n.t('rt.color')"></span>
-      <select
-        class="ed-select rt-select"
-        data-testid="rt-color-select"
-        (change)="onColorChange($event)"
-        (mousedown)="captureSelection()"
+        <svg class="rt-icon" aria-hidden="true" focusable="false"><use href="#icon-undo"></use></svg>
+      </button>
+      <button
+        type="button"
+        class="ed-btn"
+        data-testid="rt-redo"
+        [title]="i18n.t('action.redo')"
+        [attr.aria-label]="i18n.t('action.redo')"
+        [disabled]="!canRedo()"
+        (mousedown)="captureSelection($event)"
+        (click)="redo()"
       >
-        <option value="" disabled selected [textContent]="i18n.t('rt.color')"></option>
-        @for (c of colors; track c) {
-          <option [value]="c" [textContent]="i18n.t('rt.color.' + c)"></option>
-        }
-      </select>
-    </label>
-    <span class="rt-sep" aria-hidden="true"></span>
-    <button type="button" class="ed-btn" [title]="i18n.t('rt.link')" (mousedown)="captureSelection($event)" (click)="openLink()">
-      🔗
-    </button>
-    <button type="button" class="ed-btn" [title]="i18n.t('rt.unlink')" (mousedown)="captureSelection($event)" (click)="removeLink()">
-      ⛓
-    </button>
-    <button type="button" class="ed-btn" [title]="i18n.t('rt.clear')" (mousedown)="$event.preventDefault()" (click)="clearFormatting()">
-      ✎∅
-    </button>
-    <button
-      type="button"
-      class="ed-btn"
-      data-testid="rt-remove-ai-chars"
-      [title]="i18n.t('rt.removeAiChars')"
-      [disabled]="suspiciousCount() === 0"
-      (mousedown)="$event.preventDefault()"
-      (click)="removeAiChars()"
-      [textContent]="i18n.t('rt.removeAiChars')"
-    ></button>
-    <button
-      type="button"
-      class="ed-btn"
-      data-testid="rt-code-view"
-      [class.is-active]="codeView()"
-      [title]="i18n.t('rt.codeView')"
-      (mousedown)="$event.preventDefault()"
-      (click)="toggleCodeView()"
-      [textContent]="i18n.t('rt.codeViewShort')"
-    ></button>
-    <span class="rt-sep" aria-hidden="true"></span>
-    <button
-      type="button"
-      class="ed-btn"
-      data-testid="rt-email-width"
-      [class.is-active]="emailWidth()"
-      [title]="i18n.t('rt.emailWidth')"
-      (mousedown)="$event.preventDefault()"
-      (click)="toggleEmailWidth()"
-      [textContent]="i18n.t('rt.emailWidthShort')"
-    ></button>
-    <button
-      type="button"
-      class="ed-btn rt-info-btn"
-      data-testid="rt-info-mode"
-      [class.is-active]="infoMode()"
-      [title]="i18n.t('rt.infoMode')"
-      [attr.aria-label]="i18n.t('rt.infoMode')"
-      (mousedown)="$event.preventDefault()"
-      (click)="toggleInfoMode()"
-    >
-      i
-    </button>
+        <svg class="rt-icon" aria-hidden="true" focusable="false"><use href="#icon-redo"></use></svg>
+      </button>
+    </span>
+    <span class="rt-group">
+      <button type="button" class="ed-btn" data-rt-edit [title]="i18n.t('rt.bold')" [attr.aria-label]="i18n.t('rt.bold')" [disabled]="infoMode()" (mousedown)="captureSelection($event)" (click)="toggleMark('bold')">
+        <strong>B</strong>
+      </button>
+      <button type="button" class="ed-btn" data-rt-edit [title]="i18n.t('rt.italic')" [attr.aria-label]="i18n.t('rt.italic')" [disabled]="infoMode()" (mousedown)="captureSelection($event)" (click)="toggleMark('italic')">
+        <em>I</em>
+      </button>
+      <button type="button" class="ed-btn" data-rt-edit [title]="i18n.t('rt.strike')" [attr.aria-label]="i18n.t('rt.strike')" [disabled]="infoMode()" (mousedown)="captureSelection($event)" (click)="toggleMark('strikeThrough')">
+        <s>S</s>
+      </button>
+      <button type="button" class="ed-btn" data-rt-edit [title]="i18n.t('rt.sup')" [attr.aria-label]="i18n.t('rt.sup')" [disabled]="infoMode()" (mousedown)="captureSelection($event)" (click)="toggleMark('superscript')">
+        x²
+      </button>
+      <button type="button" class="ed-btn" data-rt-edit [title]="i18n.t('rt.sub')" [attr.aria-label]="i18n.t('rt.sub')" [disabled]="infoMode()" (mousedown)="captureSelection($event)" (click)="toggleMark('subscript')">
+        x₂
+      </button>
+      <button type="button" class="ed-btn" data-rt-edit [title]="i18n.t('rt.mono')" [attr.aria-label]="i18n.t('rt.mono')" [disabled]="infoMode()" (mousedown)="captureSelection($event)" (click)="toggleMono()">
+        <span class="rt-mono-label">M</span>
+      </button>
+    </span>
+    <span class="rt-group">
+      <label class="rt-select-wrap">
+        <span class="rt-select-prefix" [textContent]="i18n.t('rt.size')"></span>
+        <select
+          class="ed-select rt-select"
+          data-testid="rt-size-select"
+          data-rt-edit
+          [disabled]="infoMode()"
+          (change)="applySize($event)"
+          (mousedown)="captureSelection()"
+        >
+          <option value="" disabled [selected]="!caretFormat()">–</option>
+          @for (s of sizes; track s) {
+            <option [value]="s" [selected]="caretFormat()?.size === s" [textContent]="i18n.t('rt.size.' + s)"></option>
+          }
+        </select>
+      </label>
+      <label class="rt-select-wrap">
+        <span class="rt-select-prefix" [textContent]="i18n.t('rt.color')"></span>
+        <select
+          class="ed-select rt-select"
+          data-testid="rt-color-select"
+          data-rt-edit
+          [disabled]="infoMode()"
+          (change)="onColorChange($event)"
+          (mousedown)="captureSelection()"
+        >
+          <option value="" disabled [selected]="!caretFormat()">–</option>
+          @for (c of colors; track c) {
+            <option [value]="c" [selected]="caretFormat()?.color === c" [textContent]="i18n.t('rt.color.' + c)"></option>
+          }
+        </select>
+      </label>
+    </span>
+    <span class="rt-group">
+      <button type="button" class="ed-btn" data-testid="rt-link" data-rt-edit [title]="i18n.t('rt.link')" [attr.aria-label]="i18n.t('rt.link')" [disabled]="infoMode()" (mousedown)="captureSelection($event)" (click)="openLink()">
+        <svg class="rt-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M10.6 13.4a1 1 0 0 1 0-1.4l3.5-3.5a3 3 0 0 1 4.2 4.2l-2 2-1.4-1.4 2-2a1 1 0 0 0-1.4-1.4L12 13.4a1 1 0 0 1-1.4 0ZM13.4 10.6a1 1 0 0 1 0 1.4l-3.5 3.5a3 3 0 0 1-4.2-4.2l2-2 1.4 1.4-2 2a1 1 0 0 0 1.4 1.4L12 10.6a1 1 0 0 1 1.4 0Z" /></svg>
+      </button>
+      <button type="button" class="ed-btn" data-rt-edit [title]="i18n.t('rt.clear')" [attr.aria-label]="i18n.t('rt.clear')" [disabled]="infoMode()" (mousedown)="$event.preventDefault()" (click)="clearFormatting()">
+        <svg class="rt-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4h14v3h-2V6h-4.1l-1.2 5.3-1.8-1.8L10.8 6H7v1H5V4Zm-1.6 2.4 1.4-1.4L20 20.2l-1.4 1.4-6.4-6.4L11 20H9l1.5-6.5-7.1-7.1Z" /></svg>
+      </button>
+    </span>
+    <span class="rt-spacer" aria-hidden="true"></span>
+    <span class="rt-group">
+      <button
+        type="button"
+        class="ed-btn rt-info-btn"
+        data-testid="rt-info-mode"
+        [class.is-active]="infoMode()"
+        [attr.aria-pressed]="infoMode()"
+        [title]="i18n.t('rt.infoMode')"
+        [attr.aria-label]="i18n.t('rt.infoMode')"
+        (mousedown)="$event.preventDefault()"
+        (click)="toggleInfoMode()"
+      >
+        ¶
+      </button>
+      <button
+        type="button"
+        class="ed-btn"
+        data-testid="rt-email-width"
+        [class.is-active]="emailWidth()"
+        [attr.aria-pressed]="emailWidth()"
+        [title]="i18n.t('rt.emailWidth')"
+        [attr.aria-label]="i18n.t('rt.emailWidth')"
+        (mousedown)="$event.preventDefault()"
+        (click)="toggleEmailWidth()"
+      >
+        <svg class="rt-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 4h2v16H3V4Zm16 0h2v16h-2V4ZM7.5 11h9l-2.3-2.3 1.4-1.4L20.3 12l-4.7 4.7-1.4-1.4L16.5 13h-9l2.3 2.3-1.4 1.4L3.7 12l4.7-4.7 1.4 1.4L7.5 11Z" /></svg>
+      </button>
+      <button
+        type="button"
+        class="ed-btn"
+        data-testid="rt-code-view"
+        data-rt-edit
+        [class.is-active]="codeView()"
+        [attr.aria-pressed]="codeView()"
+        [disabled]="infoMode()"
+        [title]="i18n.t('rt.codeView')"
+        [attr.aria-label]="i18n.t('rt.codeView')"
+        (mousedown)="$event.preventDefault()"
+        (click)="toggleCodeView()"
+      >
+        <svg class="rt-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8.3 6.3 9.7 7.7 5.4 12l4.3 4.3-1.4 1.4L2.6 12l5.7-5.7Zm7.4 0L21.4 12l-5.7 5.7-1.4-1.4 4.3-4.3-4.3-4.3 1.4-1.4Z" /></svg>
+      </button>
+    </span>
     <button
       type="button"
       class="ed-btn"
       data-testid="rt-stash-draft"
       [title]="i18n.t('rt.stashDraft')"
+      [attr.aria-label]="i18n.t('rt.stashDraft')"
       [disabled]="!canStash()"
       (mousedown)="$event.preventDefault()"
       (click)="stashDraft()"
-      [textContent]="i18n.t('rt.stashDraftShort')"
-    ></button>
+    >
+      <svg class="rt-icon" aria-hidden="true" focusable="false"><use href="#icon-save"></use></svg>
+    </button>
   </div>
 
   @if (stashFlash()) {
@@ -197,26 +211,47 @@
   }
 
   <p class="ed-field-help" [textContent]="i18n.t('rt.help')"></p>
-  <p
+  <div
     class="rt-ai-status"
     [class.rt-ai-status--found]="suspiciousCount() > 0"
     [class.rt-ai-status--ok]="suspiciousCount() === 0"
     data-testid="rt-ai-status"
     role="status"
-    [textContent]="
-      suspiciousCount() > 0
-        ? i18n.t('rt.aiStatus.found', { n: suspiciousCount() })
-        : i18n.t('rt.aiStatus.none')
-    "
-  ></p>
+  >
+    @if (suspiciousCount() > 0) {
+      <span class="rt-ai-status__text">
+        <strong [textContent]="i18n.t('rt.ai.found', { n: suspiciousCount() })"></strong>
+        <span class="rt-ai-status__detail">
+          @for (k of suspiciousKinds(); track k.kind; let last = $last) {
+            {{ i18n.t('rt.ai.kind.' + k.kind) }}: {{ k.count }}{{ last ? '. ' : ', ' }}
+          }
+          {{ i18n.t('rt.ai.why') }}
+        </span>
+      </span>
+      <button
+        type="button"
+        class="ed-btn rt-ai-status__remove"
+        data-testid="rt-remove-ai-chars"
+        data-rt-edit
+        [disabled]="infoMode()"
+        (mousedown)="$event.preventDefault()"
+        (click)="removeAiChars()"
+        [textContent]="i18n.t('rt.ai.removeAll')"
+      ></button>
+    } @else {
+      <span class="rt-ai-status__text" [textContent]="i18n.t('rt.ai.clean')"></span>
+    }
+  </div>
 
   <div
     #editor
     class="rt-editor rt-clone"
     data-testid="insp-paragraph-html"
-    contenteditable="true"
     role="textbox"
     aria-multiline="true"
+    [attr.contenteditable]="infoMode() ? 'false' : 'true'"
+    [attr.aria-readonly]="infoMode() ? 'true' : null"
+    [attr.tabindex]="infoMode() ? 0 : null"
     [class.rt-email-width]="emailWidth()"
     [class.rt-info]="infoMode()"
     [hidden]="codeView()"

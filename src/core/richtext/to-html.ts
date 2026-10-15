@@ -1,7 +1,7 @@
 import { escapeHtml } from '../render/utils';
 import type { RichDoc, RichInline, RichMarks, RichParagraphNode } from './model';
 import { normalizeMarks } from './model';
-import { cleanPlainText, highlightSuspiciousHtml, isSuspiciousChar } from './sanitize-text';
+import { cleanPlainText, highlightSuspiciousHtml, isSuspiciousChar, suspiciousBreakdown } from './sanitize-text';
 
 function sizeClass(size?: string): string {
   if (!size || size === 'm') return '';
@@ -128,4 +128,8 @@ export function richDocSuspiciousCount(doc: RichDoc): number {
     if (isSuspiciousChar(ch)) n += 1;
   }
   return n;
+}
+
+export function richDocSuspiciousBreakdown(doc: RichDoc): ReturnType<typeof suspiciousBreakdown> {
+  return suspiciousBreakdown(richDocPlainText(doc));
 }

@@ -91,9 +91,12 @@ Feature: Editor side panel
     And I select 'cloudlib.eu' in paragraph 2 of the editor
     And I set the text color to 'accent'
     Then paragraph 2 should color exactly 'cloudlib.eu' as 'accent'
+    And the color control should show 'accent'
     When I select 'Sichtbarkeit' in paragraph 3 of the editor
     And I set the text color to 'secondary'
     Then paragraph 3 should color exactly 'Sichtbarkeit' as 'secondary'
+    And the color control should show 'secondary'
+    And the size control should show 'xl'
 
   Scenario: Formatting info lists and removes bold text
     Given I open the home page
@@ -104,3 +107,30 @@ Feature: Editor side panel
     Then the info panel should show 'Bold'
     When I remove 'bold' in the info panel
     Then paragraph 2 should have no bold text anymore
+    And undo should be available
+    When I undo in the paragraph editor
+    Then paragraph 2 should have bold text again
+
+  Scenario: Formatting info is read-only and explains links
+    Given I open the home page
+    When I open the paragraph editor for seed block 'bmo8rynqo-6'
+    And I select 'cloudlib.eu' in paragraph 2 of the editor
+    And I link the selection to 'cloudlib.eu'
+    And I turn on the formatting info
+    Then the paragraph text should be read-only
+    And every editing control should be disabled
+    And the info label of paragraph 2 should mention 'Link'
+    When I click the link in paragraph 2
+    Then the link editor should stay closed
+    And the info panel should show 'Link: https://cloudlib.eu'
+    When I remove 'link' in the info panel
+    Then paragraph 2 should have no link anymore
+
+  Scenario: The text check finds hidden characters and removes them
+    Given I open the home page
+    When I open the paragraph editor for seed block 'bmo8rynqo-6'
+    Then the text check should report 'Clean'
+    When I type a hidden zero-width character into paragraph 2
+    Then the text check should report 'Zero-width: 1'
+    When I remove all hidden characters
+    Then the text check should report 'Clean'

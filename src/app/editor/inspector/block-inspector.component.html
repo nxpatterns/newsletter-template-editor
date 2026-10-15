@@ -32,7 +32,6 @@
       }
       @case ('paragraph') {
         <div class="ed-field">
-          <label class="ed-label" [textContent]="i18n.t('field.paragraphHtml')"></label>
           <app-paragraph-lite-editor
             [doc]="block.body"
             (docChange)="onParagraphBody(block.id, $event)"

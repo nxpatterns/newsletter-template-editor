@@ -16,7 +16,7 @@ import {
   type RichDoc,
   type RichTextSpan,
 } from './model';
-import { cleanPlainText, countSuspiciousChars } from './sanitize-text';
+import { cleanPlainText, countSuspiciousChars, suspiciousBreakdown } from './sanitize-text';
 import { richDocPlainText, richDocSuspiciousCount, richDocToHtml } from './to-html';
 
 function textSpans(doc: RichDoc): RichTextSpan[] {
@@ -409,5 +409,22 @@ describe('seed paragraphs', () => {
       .map((b) => (b.type === 'paragraph' ? richDocToHtml(b.body) : ''))
       .join('');
     expect(html).toMatch(/cloudlib|Betrieb|Google/i);
+  });
+});
+
+describe('suspiciousBreakdown', () => {
+  it('groups hidden characters by kind, most frequent first', () => {
+    const text = 'a\u200Bb\u200Bc\u00ADd\u202Fe\u2014f\u202Eg';
+    expect(suspiciousBreakdown(text)).toEqual([
+      { kind: 'zeroWidth', count: 2 },
+      { kind: 'softHyphen', count: 1 },
+      { kind: 'specialSpace', count: 1 },
+      { kind: 'dash', count: 1 },
+      { kind: 'direction', count: 1 },
+    ]);
+  });
+
+  it('is empty for clean text', () => {
+    expect(suspiciousBreakdown('Über 22.000 Unternehmen')).toEqual([]);
   });
 });

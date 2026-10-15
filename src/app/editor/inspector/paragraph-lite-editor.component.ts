@@ -13,6 +13,7 @@ import {
 } from '@angular/core';
 import {
   applyColorOnDoc,
+  applyLinkOnDoc,
   applyParagraphBaseColorOnDoc,
   applySizeOnDoc,
   cleanAiCharsOnDoc,
@@ -27,6 +28,7 @@ import {
   RICH_SIZE_TOKENS,
   richDocFromEditorRoot,
   richDocPlainText,
+  richDocSuspiciousBreakdown,
   richDocSuspiciousCount,
   richDocToHtml,
   toggleMarkOnDoc,
@@ -34,6 +36,7 @@ import {
   type RichDoc,
   type RichSizeToken,
   type RichToggleMark,
+  type SuspiciousKind,
 } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
 import { ConfirmDialogService } from '../../ui/confirm-dialog/confirm-dialog.service';
@@ -49,7 +52,7 @@ const HISTORY_MAX = 80;
 
 /** One format found at a clicked spot in info mode, removable from the info panel. */
 interface InfoItem {
-  kind: 'size' | 'color' | 'mono' | 'paragraphColor' | InfoTagMark;
+  kind: 'size' | 'color' | 'mono' | 'link' | 'paragraphColor' | InfoTagMark;
   label: string;
   el: HTMLElement;
 }
@@ -155,6 +158,10 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   protected readonly linkHref = signal('');
   protected readonly linkTarget = signal<'_blank' | '_self'>('_blank');
   protected readonly suspiciousCount = signal(0);
+  /** Hidden/special characters per kind, for the status line under the toolbar. */
+  protected readonly suspiciousKinds = signal<Array<{ kind: SuspiciousKind; count: number }>>([]);
+  /** Size and color where the selection starts; drives what the Size/Color selects show. */
+  protected readonly caretFormat = signal<{ size: RichSizeToken; color: RichColorToken } | null>(null);
   protected readonly codeView = signal(false);
   protected readonly codeText = signal('');
   protected readonly canUndo = signal(false);
@@ -191,7 +198,10 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
    * Remember every selection made inside the editor, however it was made, so a
    * toolbar control reached by keyboard (no mousedown capture) applies to it.
    */
-  private readonly trackSelection = (): void => this.captureSelection();
+  private readonly trackSelection = (): void => {
+    this.captureSelection();
+    this.refreshCaretFormat();
+  };
 
   constructor() {
     this.session.registerParagraphDraftFlush(() => this.flushPendingEmit());
@@ -299,6 +309,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
       highlightSuspicious: false,
     });
     this.suspiciousCount.set(richDocSuspiciousCount(d));
+    this.suspiciousKinds.set(richDocSuspiciousBreakdown(d));
     this.codeText.set(richDocToHtml(d, { forEditor: false }));
     this.lastSnapshot = JSON.stringify(d);
     this.applying = false;
@@ -318,9 +329,16 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     );
   }
 
+  /** (i) is read-only: text and editing controls lock; only Remove and Undo/Redo change content. */
   protected toggleInfoMode(): void {
+    this.flushPendingEmit();
     this.infoMode.update((v) => !v);
     this.infoItems.set(null);
+    if (this.infoMode()) {
+      this.linkOpen.set(false);
+      this.editingAnchor = null;
+      this.codeView.set(false);
+    }
   }
 
   protected stashDraft(): void {
@@ -450,6 +468,9 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
       const color = inlineColorOfElement(el);
       if (color && color !== 'standard') add('color', `${t('rt.color')}: ${t(`rt.color.${color}`)}`, el);
       if (el.tagName === 'CODE' && el.classList.contains('rt-mono')) add('mono', t('rt.info.legendMono'), el);
+      if (el.tagName === 'A' && el.classList.contains('rt-link')) {
+        add('link', `${t('rt.info.legendLink')}: ${el.getAttribute('href') ?? ''}`, el);
+      }
       const mark = tagMarkOfElement(el);
       if (mark) add(mark, t(`rt.${mark}`), el);
     }
@@ -486,8 +507,43 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
         ? applySizeOnDoc(doc, bm.start, bm.end, 'm')
         : item.kind === 'color'
           ? applyColorOnDoc(doc, bm.start, bm.end, 'standard')
-          : toggleMarkOnDoc(doc, bm.start, bm.end, item.kind);
+          : item.kind === 'link'
+            ? applyLinkOnDoc(doc, bm.start, bm.end, '')
+            : toggleMarkOnDoc(doc, bm.start, bm.end, item.kind);
     this.commitDoc(next, true, bm);
+  }
+
+  /** Size/color at the start of the editor selection (inline span, else paragraph, else normal). */
+  private refreshCaretFormat(): void {
+    const root = this.editorHost()?.nativeElement;
+    const sel = window.getSelection();
+    if (!root || !sel || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+    if (!root.contains(range.startContainer)) return;
+    // A selection often starts at the very end of the text before it; use the first selected character.
+    let start: Node = range.startContainer;
+    if (!range.collapsed) {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      for (let t = walker.nextNode(); t; t = walker.nextNode()) {
+        if (!range.intersectsNode(t)) continue;
+        if (t === range.startContainer && range.startOffset >= (t as Text).data.length) continue;
+        start = t;
+        break;
+      }
+    }
+    let size: RichSizeToken | null = null;
+    let color: RichColorToken | null = null;
+    for (let n: Node | null = start; n && n !== root; n = n.parentNode) {
+      if (!(n instanceof HTMLElement)) continue;
+      if (n.tagName === 'P') {
+        const base = n.getAttribute('data-rt-color');
+        if (!color && base && isRichColorToken(base)) color = base;
+        break;
+      }
+      size ??= sizeOfElement(n);
+      color ??= inlineColorOfElement(n);
+    }
+    this.caretFormat.set({ size: size ?? 'm', color: color ?? 'standard' });
   }
 
   /** Capture current selection before toolbar controls steal focus. */
@@ -576,11 +632,13 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   }
 
   protected onEditorInput(): void {
+    if (this.infoMode()) return;
     this.scheduleEmit();
   }
 
   protected onPaste(event: ClipboardEvent): void {
     event.preventDefault();
+    if (this.infoMode()) return;
     const text = event.clipboardData?.getData('text/plain') ?? '';
     const root = this.editorHost()?.nativeElement;
     if (!root) return;
@@ -616,7 +674,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   }
 
   protected onEditorKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Enter' && event.shiftKey) {
+    if (event.key === 'Enter' && event.shiftKey && !this.infoMode()) {
       event.preventDefault();
       document.execCommand('insertLineBreak');
       this.scheduleEmit();
@@ -639,6 +697,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   }
 
   protected toggleMark(cmd: 'bold' | 'italic' | 'strikeThrough' | 'superscript' | 'subscript'): void {
+    if (this.infoMode()) return;
     const map: Record<typeof cmd, RichToggleMark> = {
       bold: 'bold',
       italic: 'italic',
@@ -651,13 +710,28 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
 
   /** Toggle mono via RichDoc offsets (no DOM extract — spaces + toggle-off safe). */
   protected toggleMono(): void {
+    if (this.infoMode()) return;
     this.applyRangeMark((doc, a, b) => toggleMarkOnDoc(doc, a, b, 'mono'));
   }
 
-  protected applySize(size: RichSizeToken, selectEl?: HTMLSelectElement): void {
+  protected applySize(event: Event): void {
+    if (this.infoMode()) return;
+    const select = event.target as HTMLSelectElement;
+    const size = select.value as RichSizeToken;
     if (!size) return;
     this.applyRangeMark((doc, a, b) => applySizeOnDoc(doc, a, b, size), { allowCollapsed: false });
-    if (selectEl) selectEl.selectedIndex = 0;
+    this.resyncSelect(select, 'size');
+  }
+
+  /**
+   * After an apply, show what the text really has now (a refused apply, e.g. size on a
+   * bare caret, must not leave the select claiming a value the text does not have).
+   */
+  private resyncSelect(select: HTMLSelectElement, which: 'size' | 'color'): void {
+    requestAnimationFrame(() => {
+      this.refreshCaretFormat();
+      select.value = this.caretFormat()?.[which] ?? '';
+    });
   }
 
   /**
@@ -665,6 +739,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
    * collapsed caret → paragraph base color.
    */
   protected onColorChange(event: Event): void {
+    if (this.infoMode()) return;
     const select = event.target as HTMLSelectElement;
     const raw = select.value;
     if (!raw) return;
@@ -691,7 +766,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     } else {
       this.keepSelection(bm);
     }
-    select.selectedIndex = 0;
+    this.resyncSelect(select, 'color');
   }
 
   /**
@@ -726,6 +801,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   }
 
   protected openLink(): void {
+    if (this.infoMode()) return;
     this.restoreSelection();
     this.captureSelection();
     const anchor = this.findLinkFromSelection() ?? this.editingAnchor;
@@ -735,11 +811,14 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   protected onEditorClick(event: MouseEvent): void {
     this.captureSelection();
     const t = event.target as HTMLElement | null;
-    const anchor = t?.closest?.('a') as HTMLAnchorElement | null;
-    if (!anchor || !this.editorHost()?.nativeElement.contains(anchor)) {
-      if (this.infoMode() && t) this.openInfoPanel(t);
+    if (this.infoMode()) {
+      // Read-only: a link click explains the link instead of opening the link editor.
+      if (t?.closest?.('a')) event.preventDefault();
+      if (t) this.openInfoPanel(t);
       return;
     }
+    const anchor = t?.closest?.('a') as HTMLAnchorElement | null;
+    if (!anchor || !this.editorHost()?.nativeElement.contains(anchor)) return;
     event.preventDefault();
     event.stopPropagation();
     this.openLinkPopover(anchor);
@@ -788,6 +867,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   }
 
   protected applyLink(): void {
+    if (this.infoMode()) return;
     const url = this.normalizeUrl(this.linkHref());
     const label = this.linkLabel().trim();
     if (!url) {
@@ -864,6 +944,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   }
 
   protected removeLink(): void {
+    if (this.infoMode()) return;
     this.focusEditor();
     if (this.editingAnchor && this.editorHost()?.nativeElement.contains(this.editingAnchor)) {
       const a = this.editingAnchor;
@@ -887,6 +968,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   }
 
   protected async clearFormatting(): Promise<void> {
+    if (this.infoMode()) return;
     const ok = await this.confirm.confirm({
       title: this.i18n.t('rt.clearConfirmTitle'),
       body: this.i18n.t('rt.clearConfirmBody'),
@@ -902,6 +984,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   }
 
   protected removeAiChars(): void {
+    if (this.infoMode()) return;
     const root = this.editorHost()?.nativeElement;
     if (!root) return;
     const next = cleanAiCharsOnDoc(richDocFromEditorRoot(root));
@@ -909,6 +992,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   }
 
   protected toggleCodeView(): void {
+    if (this.infoMode()) return;
     const next = !this.codeView();
     if (next) {
       const root = this.editorHost()?.nativeElement;
@@ -1018,6 +1102,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
       if (this.infoMode()) this.refreshInfoLabels();
     }
     this.suspiciousCount.set(richDocSuspiciousCount(next));
+    this.suspiciousKinds.set(richDocSuspiciousBreakdown(next));
     this.codeText.set(richDocToHtml(next, { forEditor: false }));
     this.canUndo.set(this.historyPast.length > 0);
     this.canRedo.set(this.historyFuture.length > 0);
