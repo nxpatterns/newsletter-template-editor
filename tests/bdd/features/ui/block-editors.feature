@@ -54,3 +54,16 @@ Feature: Block editors
     When I pick the divider tile 'spacer-only'
     Then the divider tile 'spacer-only' should be selected
     And the space height slider should be enabled
+
+  Scenario: Divider background stores a color token and is greyed out where it cannot show
+    Given I open the home page with an extra thin divider
+    When I open the block editor for seed block 'test-divider'
+    Then the divider background switch should be disabled
+    When I pick the divider tile 'spacer-only'
+    And I pick the divider background 'page'
+    Then the preview divider 'test-divider' should use the page background color
+
+  Scenario: A thin divider can be picked in the preview just above its line
+    Given I open the home page with an extra thin divider
+    When I click 8px above the divider 'test-divider' in the preview
+    Then the preview block 'test-divider' should be selected

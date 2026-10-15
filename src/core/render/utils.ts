@@ -41,6 +41,19 @@ export function fontStack(globals: Globals): string {
   return FONT_PRESETS[globals.fontFamily]?.stack || FONT_PRESETS.Georgia.stack;
 }
 
+/**
+ * Mix two #rrggbb colors: `t` = share of `a` (0..1). Email clients ignore CSS
+ * gradients and color-mix(), so blended steps are baked as solid hex values.
+ * Non-hex input falls back to `a` unchanged.
+ */
+export function mixHex(a: string, b: string, t: number): string {
+  const parse = (c: string) => (/^#[0-9a-f]{6}$/i.test(c) ? [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)) : null);
+  const ca = parse(a.trim());
+  const cb = parse(b.trim());
+  if (!ca || !cb) return a;
+  return `#${ca.map((v, i) => Math.round(v * t + cb[i] * (1 - t)).toString(16).padStart(2, '0')).join('')}`;
+}
+
 export function escapeHtml(s: string): string {
   return s
     .replace(/&/g, '&amp;')

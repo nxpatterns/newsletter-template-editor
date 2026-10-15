@@ -101,14 +101,44 @@ describe('renderExport', () => {
   });
 
   it('draws thin and two-tone dividers across the full row width', () => {
-    for (const style of ['thin', 'secondary-double'] as const) {
+    for (const style of ['thin', 'two-tone'] as const) {
       const n = seedNewsletter();
-      n.blocks = [{ id: 'd', type: 'divider', style }];
+      n.blocks = [{ id: 'd', type: 'divider', style, background: 'content' }];
       const { full } = renderExport(n);
       const td = full.match(/<td[^>]*class="[^"]*divider-row[^"]*"[^>]*>/)?.[0] ?? '';
       expect(td).toMatch(/padding:\s*0[;"]/);
       expect(td).not.toMatch(/padding:\s*0 48px/);
     }
+  });
+
+  it('paints the divider with the chosen background token', () => {
+    const n = seedNewsletter();
+    n.globals.pageBgColor = '#010203';
+    n.blocks = [{ id: 'd', type: 'divider', style: 'spacer-only', background: 'page' }];
+    const { full } = renderExport(n);
+    const td = full.match(/<td[^>]*divider-spacer[^>]*>/)?.[0] ?? '';
+    expect(td).toContain('bgcolor="#010203"');
+    expect(td).toContain('email-bg');
+    expect(td).not.toContain(n.globals.contentBgColor);
+  });
+
+  it('mixes the glow steps from Secondary and the background', () => {
+    const n = seedNewsletter();
+    n.globals.secondaryColor = '#ffffff';
+    n.globals.contentBgColor = '#000000';
+    n.blocks = [{ id: 'd', type: 'divider', style: 'glow', background: 'content' }];
+    const { full } = renderExport(n);
+    const steps = [...full.matchAll(/class="divider-glow-step"[^>]*bgcolor="(#[0-9a-f]{6})"/g)].map((m) => m[1]);
+    expect(steps).toEqual(['#0f0f0f', '#292929', '#5c5c5c', '#ffffff', '#5c5c5c', '#292929', '#0f0f0f']);
+  });
+
+  it('draws the ornament diamond in the Accent color', () => {
+    const n = seedNewsletter();
+    n.blocks = [{ id: 'd', type: 'divider', style: 'ornament', background: 'content' }];
+    const { full } = renderExport(n);
+    const glyph = full.match(/<td[^>]*divider-ornament-glyph[^>]*>[^<]*<\/td>/)?.[0] ?? '';
+    expect(glyph).toMatch(/&#9670;|◆/);
+    expect(glyph.toLowerCase()).toContain(n.globals.accentColor.toLowerCase());
   });
 
   it('keeps TrackLink quotes intact on CTA href', () => {

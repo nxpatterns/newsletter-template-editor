@@ -17,6 +17,7 @@ import {
   attrHref,
   escapeAttr,
   escapeHtml,
+  mixHex,
   plainTextToHtml,
   resolveHref,
   type RenderMode,
@@ -43,33 +44,73 @@ function rowWrap(block: Block, ctx: RenderContext, innerTdHtml: string): string 
   return `<tr class="nte-block" data-block-id="${escapeAttr(block.id)}" data-block-type="${escapeAttr(block.type)}">${innerTdHtml}</tr>`;
 }
 
+/** Glow line: [share of Secondary, cell width %], brightest in the middle. */
+const GLOW_STEPS: readonly (readonly [number, number])[] = [
+  [0.06, 13],
+  [0.16, 13],
+  [0.36, 14],
+  [1, 20],
+  [0.36, 14],
+  [0.16, 13],
+  [0.06, 13],
+];
+
 function renderDivider(b: DividerBlock, ctx: RenderContext): string {
-  const bg = contentBg(ctx);
+  const page = b.background === 'page';
+  const bgHex = page ? ctx.globals.pageBgColor : ctx.globals.contentBgColor;
+  const bg = escapeAttr(bgHex);
+  const bgClass = page ? 'email-bg' : 'content-bg';
   let inner = '';
   if (b.style === 'thin') {
     inner = `
-      <td bgcolor="${bg}" class="content-bg divider-row">
+      <td bgcolor="${bg}" class="${bgClass} divider-row">
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
           <tr><td class="divider-line">&nbsp;</td></tr>
         </table>
       </td>
     `;
-  } else if (b.style === 'secondary-double') {
+  } else if (b.style === 'two-tone') {
     inner = `
-      <td bgcolor="${bg}" class="content-bg divider-row">
+      <td bgcolor="${bg}" class="${bgClass} divider-row">
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
           <tr>
-            <td class="divider-secondary-gap">&nbsp;</td>
-            <td class="divider-secondary-mid" width="80">&nbsp;</td>
-            <td class="divider-secondary-end" width="120">&nbsp;</td>
+            <td class="divider-two-tone-gap">&nbsp;</td>
+            <td class="divider-two-tone-mid" width="80">&nbsp;</td>
+            <td class="divider-two-tone-end" width="120">&nbsp;</td>
           </tr>
+        </table>
+      </td>
+    `;
+  } else if (b.style === 'ornament') {
+    const rule = escapeAttr(mixHex(ctx.globals.secondaryColor, bgHex, 0.25));
+    const hair = `<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td class="divider-hair" bgcolor="${rule}" style="background-color:${rule}">&nbsp;</td></tr></table>`;
+    inner = `
+      <td bgcolor="${bg}" class="${bgClass} divider-row-spaced">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+          <tr>
+            <td class="divider-ornament-side" valign="middle">${hair}</td>
+            <td class="divider-ornament-glyph" width="40" align="center">&#9670;</td>
+            <td class="divider-ornament-side" valign="middle">${hair}</td>
+          </tr>
+        </table>
+      </td>
+    `;
+  } else if (b.style === 'glow') {
+    const steps = GLOW_STEPS.map(([share, width]) => {
+      const c = escapeAttr(mixHex(ctx.globals.secondaryColor, bgHex, share));
+      return `<td class="divider-glow-step" width="${width}%" bgcolor="${c}" style="background-color:${c}">&nbsp;</td>`;
+    }).join('');
+    inner = `
+      <td bgcolor="${bg}" class="${bgClass} divider-row-spaced">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+          <tr>${steps}</tr>
         </table>
       </td>
     `;
   } else {
     const h = Math.max(1, b.heightPx ?? 24);
     inner = `
-      <td bgcolor="${bg}" class="content-bg divider-spacer" height="${h}" style="--divider-h:${h}px">&nbsp;</td>
+      <td bgcolor="${bg}" class="${bgClass} divider-spacer" height="${h}" style="--divider-h:${h}px">&nbsp;</td>
     `;
   }
   return rowWrap(b, ctx, inner);

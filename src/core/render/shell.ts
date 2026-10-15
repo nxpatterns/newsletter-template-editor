@@ -168,6 +168,47 @@ const PREVIEW_EDITOR_CHROME = `
     outline: 2px solid #20d4c8;
     outline-offset: -2px;
   }
+  /* Hairline dividers (thin, two-tone): a 10px grab zone above and below; the frame moves onto it. */
+  .nte-hit {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -10px;
+    bottom: -10px;
+    z-index: 20;
+  }
+  tr.nte-block:has(> td > .nte-hit) > td {
+    box-shadow: none !important;
+    outline: none !important;
+  }
+  tr.nte-block:hover:not(.is-selected) > td > .nte-hit {
+    outline: 2px dashed #7ecfff;
+    outline-offset: -2px;
+    background: rgba(126, 207, 255, 0.06);
+  }
+  tr.nte-block.is-selected > td > .nte-hit {
+    outline: 2px solid #20d4c8;
+    outline-offset: -2px;
+    background: rgba(32, 212, 200, 0.07);
+  }
+  tr.nte-block:hover > td > .nte-hit::after,
+  tr.nte-block.is-selected > td > .nte-hit::after {
+    content: attr(data-label);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    padding: 3px 8px;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    font: 600 11px/1 system-ui, -apple-system, sans-serif;
+    color: #7ecfff;
+    background: #0b1a2e;
+    white-space: nowrap;
+  }
+  tr.nte-block.is-selected > td > .nte-hit::after {
+    color: #20d4c8;
+  }
   /* Shared chrome chip look — all sit OUTSIDE the block box */
   .nte-drag-handle,
   .nte-edit-btn,

@@ -93,7 +93,9 @@
                 <span class="divider-art" aria-hidden="true">
                   @switch (style) {
                     @case ('thin') { <span class="divider-art-thin"></span> }
-                    @case ('secondary-double') { <span class="divider-art-gap"></span><span class="divider-art-mid"></span><span class="divider-art-end"></span> }
+                    @case ('two-tone') { <span class="divider-art-gap"></span><span class="divider-art-mid"></span><span class="divider-art-end"></span> }
+                    @case ('ornament') { <span class="divider-art-hair"></span><span class="divider-art-diamond">◆</span><span class="divider-art-hair"></span> }
+                    @case ('glow') { <span class="divider-art-glow"></span> }
                     @case ('spacer-only') { <span class="divider-art-space"></span> }
                   }
                 </span>
@@ -102,6 +104,34 @@
               </button>
             }
           </div>
+        </div>
+        <div class="ed-field" [class.is-disabled]="block.style === 'thin'">
+          <span class="ed-label" id="insp-div-bg" [textContent]="i18n.t('field.dividerBackground')"></span>
+          <div class="ed-seg" role="radiogroup" aria-labelledby="insp-div-bg" data-testid="insp-divider-background">
+            @for (bg of dividerBackgrounds; track bg) {
+              <button
+                type="button"
+                class="ed-seg-opt"
+                role="radio"
+                [class.is-on]="block.background === bg"
+                [attr.aria-checked]="block.background === bg"
+                [attr.data-testid]="'divider-bg-' + bg"
+                [disabled]="block.style === 'thin'"
+                (click)="setDividerBackground(block.id, bg)"
+              >
+                <span
+                  class="ed-swatch"
+                  aria-hidden="true"
+                  [style.background]="bg === 'page' ? session.globals().pageBgColor : session.globals().contentBgColor"
+                ></span>
+                <span [textContent]="i18n.t('divider.background.' + bg)"></span>
+              </button>
+            }
+          </div>
+          <p
+            class="ed-hint"
+            [textContent]="i18n.t(block.style === 'thin' ? 'field.dividerBackgroundThin' : 'field.dividerBackgroundHint')"
+          ></p>
         </div>
         <div class="ed-field" [class.is-disabled]="block.style !== 'spacer-only'">
           <div class="ed-label-row">

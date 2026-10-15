@@ -279,7 +279,7 @@ body {
 /* Divider: picture tiles instead of a dropdown. */
 .divider-tiles {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
   gap: 0.6rem;
 }
 
@@ -317,7 +317,6 @@ body {
   display: flex;
   align-items: center;
   height: 2.4rem;
-  padding: 0 0.7rem;
   border-radius: var(--ds-radius);
   background: var(--em-content-bg);
 }
@@ -347,8 +346,28 @@ body {
   background: var(--em-secondary);
 }
 
+.divider-art-hair {
+  flex: 1;
+  height: 1px;
+  background: color-mix(in srgb, var(--em-secondary) 25%, var(--em-content-bg));
+}
+
+.divider-art-diamond {
+  width: 1.6rem;
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--em-accent);
+}
+
+.divider-art-glow {
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--em-secondary) 40% 60%, transparent);
+}
+
 .divider-art-space {
   flex: 1;
+  margin: 0 0.7rem;
   height: 1.4rem;
   border: 1px dashed color-mix(in srgb, var(--ds-text-muted) 60%, transparent);
   border-radius: 3px;
@@ -362,6 +381,57 @@ body {
 .divider-tile-hint {
   font-size: 0.68rem;
   color: var(--ds-text-muted);
+}
+
+/* Segmented choice of a color token (shows the token's current color, stores only its name). */
+.ed-seg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-self: flex-start;
+  border: 1px solid var(--ds-border);
+  border-radius: 0.45rem;
+  overflow: hidden;
+}
+
+.ed-seg-opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.8rem;
+  border: 0;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ds-text-muted);
+  background: var(--ds-bg-page);
+  cursor: pointer;
+}
+
+.ed-seg-opt + .ed-seg-opt {
+  border-left: 1px solid var(--ds-border);
+}
+
+.ed-seg-opt.is-on {
+  color: var(--ds-text);
+  background: color-mix(in srgb, var(--ds-accent) 14%, var(--ds-bg-page));
+  box-shadow: inset 0 0 0 1px var(--ds-accent);
+}
+
+.ed-seg-opt:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: -2px;
+}
+
+.ed-seg-opt:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.ed-swatch {
+  width: 1.4rem;
+  height: 1rem;
+  border: 1px solid color-mix(in srgb, var(--ds-text-muted) 45%, transparent);
+  border-radius: 0.2rem;
 }
 
 @media (max-width: 520px) {

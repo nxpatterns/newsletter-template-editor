@@ -1,5 +1,5 @@
 import { seedNewsletter } from '../seed';
-import type { Newsletter } from '../types';
+import { CURRENT_SCHEMA_VERSION, type Newsletter } from '../types';
 import { migrateRichHtmlV1ToV2 } from './migrate-v2';
 import { normalizeNewsletter } from './normalize-newsletter';
 
@@ -66,13 +66,13 @@ describe('schema v1 → v2 migration', () => {
     expect(marks[2]).toMatchObject({ size: 'xs' });
   });
 
-  it('renames the divider accent-double style', () => {
+  it('renames the divider accent-double style (on to two-tone in v3)', () => {
     const d = normalizeNewsletter(v1Doc()).blocks[1];
-    expect(d.type === 'divider' && d.style).toBe('secondary-double');
+    expect(d.type === 'divider' && d.style).toBe('two-tone');
   });
 
   it('stamps the current schema version', () => {
-    expect(normalizeNewsletter(v1Doc()).schemaVersion).toBe(2);
+    expect(normalizeNewsletter(v1Doc()).schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
   });
 
   it('leaves v2 documents untouched', () => {

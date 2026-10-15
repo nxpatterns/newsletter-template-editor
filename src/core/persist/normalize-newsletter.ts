@@ -2,6 +2,7 @@ import {
   BENEFIT_DEFAULT_ICON,
   CTA_LINK_DEFAULT_ICON,
   CURRENT_SCHEMA_VERSION,
+  DIVIDER_STYLES,
   emptyBenefitsListItem,
   emptyCtaLinkListItem,
   type BenefitsListBlock,
@@ -10,6 +11,8 @@ import {
   type ChapterBandBlock,
   type CtaLinkListBlock,
   type CtaLinkListItem,
+  type DividerBlock,
+  type DividerStyle,
   type HeroBlock,
   type Newsletter,
   type ParagraphBlock,
@@ -20,6 +23,7 @@ import {
 import { ensureRichDoc } from '../richtext/from-html';
 import { emptyRichDoc } from '../richtext/model';
 import { migrateNewsletterV1ToV2 } from './migrate-v2';
+import { migrateNewsletterV2ToV3 } from './migrate-v3';
 
 /** Strip tags / collapse whitespace for legacy HTML price blobs. */
 export function plainFromHtml(html: string): string {
@@ -347,8 +351,25 @@ export function normalizeCtaLinkListBlock(
   };
 }
 
+function normalizeDividerBlock(raw: Record<string, unknown>, id: string): DividerBlock {
+  const style = (DIVIDER_STYLES as readonly unknown[]).includes(raw['style'])
+    ? (raw['style'] as DividerStyle)
+    : 'thin';
+  const next: DividerBlock = {
+    id,
+    type: 'divider',
+    style,
+    background: raw['background'] === 'page' ? 'page' : 'content',
+  };
+  if (typeof raw['heightPx'] === 'number') next.heightPx = raw['heightPx'];
+  return next;
+}
+
 function normalizeBlocks(blocks: Block[]): Block[] {
   return blocks.map((block) => {
+    if (block.type === 'divider') {
+      return normalizeDividerBlock(block as unknown as Record<string, unknown>, block.id);
+    }
     if (block.type === 'paragraph') {
       return normalizeParagraphBlock(block as unknown as Record<string, unknown>, block.id);
     }
@@ -381,7 +402,8 @@ function normalizeBlocks(blocks: Block[]): Block[] {
 export function normalizeNewsletter(input: Newsletter): Newsletter {
   // Missing version = pre-versioning draft → treat as v1.
   const fromVersion = typeof input.schemaVersion === 'number' ? input.schemaVersion : 1;
-  const n = fromVersion < 2 ? migrateNewsletterV1ToV2(input) : input;
+  const v2 = fromVersion < 2 ? migrateNewsletterV1ToV2(input) : input;
+  const n = fromVersion < 3 ? migrateNewsletterV2ToV3(v2) : v2;
   const legal = n.globals?.legal as Newsletter['globals']['legal'] & {
     companyLine?: string;
   };

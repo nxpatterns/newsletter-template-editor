@@ -256,8 +256,10 @@ Internal **slot ids** below; UI shows **semantic labels only**. Dark example / c
 | Slot id | Seller label direction |
 | --- | --- |
 | `divider.line` | Line |
-| `divider.accentLead` | Accent segment (start) |
-| `divider.accentTail` | Accent segment (end) |
+| `divider.twoToneStart` | Two-tone line (start) |
+| `divider.twoToneEnd` | Two-tone line (end) |
+| `divider.ornament` | Ornament diamond (Accent) |
+| `divider.glow` | Glow line (Secondary mixed into the background) |
 
 ### hero
 

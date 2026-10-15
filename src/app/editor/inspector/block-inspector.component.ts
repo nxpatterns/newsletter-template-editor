@@ -21,7 +21,9 @@ import {
   type BenefitsListItem,
   type CtaLinkListBlock,
   type CtaLinkListItem,
+  type DividerBackground,
   type DividerBlock,
+  DIVIDER_STYLES,
   type RichDoc,
 } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
@@ -51,7 +53,8 @@ export class BlockInspectorComponent {
   protected readonly i18n = inject(LocaleService);
   protected readonly session = inject(NewsletterSession);
   protected readonly listIcons = CTA_LINK_ICONS;
-  protected readonly dividerStyles: readonly DividerBlock['style'][] = ['thin', 'secondary-double', 'spacer-only'];
+  protected readonly dividerStyles = DIVIDER_STYLES;
+  protected readonly dividerBackgrounds: readonly DividerBackground[] = ['content', 'page'];
   protected readonly emailFont = computed(() => fontStack(this.session.globals()));
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
@@ -89,6 +92,10 @@ export class BlockInspectorComponent {
 
   protected setDividerStyle(id: string, style: DividerBlock['style']): void {
     this.session.updateBlock(id, { style }, 'immediate');
+  }
+
+  protected setDividerBackground(id: string, background: DividerBackground): void {
+    this.session.updateBlock(id, { background }, 'immediate');
   }
 
   protected onDividerHeight(id: string, event: Event): void {

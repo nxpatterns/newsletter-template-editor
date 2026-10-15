@@ -151,3 +151,36 @@ Then('the space height slider should be disabled', async ({ page }) => {
 Then('the space height slider should be enabled', async ({ page }) => {
   await expect(modal(page).getByTestId('insp-divider-height')).toBeEnabled();
 });
+
+Then('the divider background switch should be disabled', async ({ page }) => {
+  const opts = modal(page).getByTestId('insp-divider-background').getByRole('radio');
+  await expect(opts).toHaveCount(2);
+  for (const opt of await opts.all()) await expect(opt).toBeDisabled();
+});
+
+When('I pick the divider background {string}', async ({ page }, bg: string) => {
+  const opt = modal(page).getByTestId(`divider-bg-${bg}`);
+  await opt.click();
+  await expect(opt).toHaveAttribute('aria-checked', 'true');
+});
+
+Then('the preview divider {string} should use the page background color', async ({ page }, id: string) => {
+  const seed = JSON.parse(readFileSync('src/core/seed-data/cloudlib-campaign.v1.json', 'utf8'));
+  const td = page.frameLocator('[data-testid="preview-frame"]').locator(`tr[data-block-id="${id}"] > td`);
+  await expect(td).toHaveAttribute('bgcolor', seed.globals.pageBgColor);
+});
+
+When('I click {int}px above the divider {string} in the preview', async ({ page }, dy: number, id: string) => {
+  const td = page.frameLocator('[data-testid="preview-frame"]').locator(`tr[data-block-id="${id}"] > td`);
+  await expect(td.locator('.nte-hit')).toHaveCount(1);
+  await td.scrollIntoViewIfNeeded();
+  const box = await td.boundingBox();
+  if (!box) throw new Error('divider row has no box');
+  expect(box.height).toBeLessThan(4);
+  await page.mouse.click(box.x + box.width / 2, box.y - dy);
+});
+
+Then('the preview block {string} should be selected', async ({ page }, id: string) => {
+  const tr = page.frameLocator('[data-testid="preview-frame"]').locator(`tr[data-block-id="${id}"]`);
+  await expect(tr).toHaveClass(/\bis-selected\b/);
+});

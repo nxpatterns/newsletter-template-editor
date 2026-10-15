@@ -153,26 +153,34 @@ export function emailDocumentCss(globals: Globals): string {
 
   /* Divider: full row width, no side padding */
   .divider-row { padding: 0; }
+  .divider-row-spaced { padding: 10px 0; }
+  .divider-hair { height: 1px; font-size: 0; line-height: 0; }
+  .divider-ornament-glyph {
+    font-family: var(--email-font);
+    font-size: 12px;
+    line-height: 12px;
+    color: var(--email-accent);
+  }
+  .divider-glow-step { height: 2px; font-size: 0; line-height: 0; }
   .divider-line {
     height: 1px;
     background-color: var(--email-rule);
     font-size: 0;
     line-height: 0;
   }
-  .divider-secondary-gap {
+  .divider-two-tone-gap {
     height: 3px;
-    background-color: var(--email-content-bg);
     font-size: 0;
     line-height: 0;
   }
-  .divider-secondary-mid {
+  .divider-two-tone-mid {
     width: 80px;
     height: 3px;
     background-color: #1e6bb8;
     font-size: 0;
     line-height: 0;
   }
-  .divider-secondary-end {
+  .divider-two-tone-end {
     width: 120px;
     height: 3px;
     background-color: var(--email-secondary);
@@ -181,7 +189,6 @@ export function emailDocumentCss(globals: Globals): string {
   }
   .divider-spacer {
     padding: 0;
-    background-color: var(--email-content-bg);
     font-size: 0;
     line-height: 0;
     height: var(--divider-h, 24px);
@@ -459,7 +466,7 @@ export function emailDocumentCss(globals: Globals): string {
     .text-secondary, .text-stat, .stat-number, .cta-link-icon, a.cta-link-anchor {
       color: var(--email-secondary) !important;
     }
-    .text-accent, .text-chapter-label, .hero-label, .chapter-title, .brand-stars, .footer-stars-glyph {
+    .text-accent, .divider-ornament-glyph, .text-chapter-label, .hero-label, .chapter-title, .brand-stars, .footer-stars-glyph {
       color: var(--email-accent) !important;
     }
     .text-dim, .footer-notice, .footer-company { color: var(--email-dim) !important; }

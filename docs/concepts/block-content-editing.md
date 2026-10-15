@@ -74,8 +74,10 @@ Fix the model before introducing a text editor.
 
 ### divider
 
-- Enum: style (`thin` | `secondary-double` | `spacer-only`).
+- Enum: style (`thin` | `two-tone` | `ornament` | `glow` | `spacer-only`); `two-tone` was `secondary-double` before schema v3.
+- Token: `background` (`content` | `page`), stores the token name, never a color. Not visible with `thin`.
 - Number: height when spacer-only.
+- Lines span the full row width (no side padding). Ornament and glow add 10px above and below; glow steps are mixed from Secondary and the background at render time.
 - No rich text.
 
 ### hero

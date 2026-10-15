@@ -40,7 +40,13 @@ const SHELL_SLOTS: Record<'header' | 'footer', readonly string[]> = {
 };
 
 const BLOCK_SLOTS: Record<Block['type'], readonly string[]> = {
-  divider: ['colors.slot.divider.line', 'colors.slot.divider.secondaryLead', 'colors.slot.divider.secondaryTail'],
+  divider: [
+    'colors.slot.divider.line',
+    'colors.slot.divider.twoToneStart',
+    'colors.slot.divider.twoToneEnd',
+    'colors.slot.divider.ornament',
+    'colors.slot.divider.glow',
+  ],
   hero: ['colors.slot.hero.label', 'colors.slot.hero.headline'],
   paragraph: ['colors.slot.paragraph.body'],
   'chapter-band': ['colors.slot.chapter.surface', 'colors.slot.chapter.title'],

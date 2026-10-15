@@ -600,6 +600,7 @@ export class EditorPage {
     const editLabel = this.i18n.t('preview.editBlock');
     const deleteLabel = this.i18n.t('preview.deleteBlock');
     const dragLabel = this.i18n.t('preview.dragBlock');
+    const dividerLabel = this.i18n.t('block.divider');
     const blocks = this.session.blocks();
     const indexById = new Map(blocks.map((b, i) => [b.id, i + 1]));
 
@@ -652,6 +653,18 @@ export class EditorPage {
       }
       del.setAttribute('aria-label', deleteLabel);
       del.title = deleteLabel;
+
+      // Hairline dividers are ~1px tall: give them a grab zone that reaches into the neighbours' padding.
+      if (td.classList.contains('divider-row')) {
+        let hit = td.querySelector(':scope > .nte-hit') as HTMLSpanElement | null;
+        if (!hit) {
+          hit = doc.createElement('span');
+          hit.className = 'nte-hit';
+          hit.setAttribute('aria-hidden', 'true');
+          td.appendChild(hit);
+        }
+        hit.dataset['label'] = dividerLabel;
+      }
     });
   }
 

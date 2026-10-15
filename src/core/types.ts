@@ -88,9 +88,15 @@ export interface BlockBase {
   type: string;
 }
 
+export const DIVIDER_STYLES = ['thin', 'two-tone', 'ornament', 'glow', 'spacer-only'] as const;
+export type DividerStyle = (typeof DIVIDER_STYLES)[number];
+export type DividerBackground = 'content' | 'page';
+
 export interface DividerBlock extends BlockBase {
   type: 'divider';
-  style: 'thin' | 'secondary-double' | 'spacer-only';
+  style: DividerStyle;
+  /** Color token only (content or page background), never a hex value. */
+  background: DividerBackground;
   heightPx?: number;
 }
 
@@ -253,8 +259,11 @@ export interface Newsletter {
   blocks: Block[];
 }
 
-/** v2: color tokens standard/primary/secondary/accent/dim, sizes xs–xl (see persist/migrate-v2.ts). */
-export const CURRENT_SCHEMA_VERSION = 2;
+/**
+ * v2: color tokens standard/primary/secondary/accent/dim, sizes xs–xl (persist/migrate-v2.ts).
+ * v3: divider style secondary-double → two-tone, divider background token (persist/migrate-v3.ts).
+ */
+export const CURRENT_SCHEMA_VERSION = 3;
 
 let idCounter = 0;
 
@@ -267,7 +276,7 @@ export function createBlock(type: Block['type']): Block {
   const id = newId();
   switch (type) {
     case 'divider':
-      return { id, type, style: 'thin' };
+      return { id, type, style: 'thin', background: 'content' };
     case 'hero':
       return { id, type, label: 'Your intro', headline: 'New headline' };
     case 'paragraph':
