@@ -3,6 +3,7 @@ import {
   afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  computed,
   ElementRef,
   HostListener,
   inject,
@@ -13,6 +14,7 @@ import {
   CTA_LINK_ICONS,
   detectLinkKind,
   buildLinkHref,
+  fontStack,
   emptyBenefitsListItem,
   emptyCtaLinkListItem,
   type BenefitsListBlock,
@@ -23,7 +25,6 @@ import {
   type RichDoc,
 } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
-import { PersistHeightDirective } from '../../ui/persist-height.directive';
 import { NewsletterSession } from '../newsletter-session.service';
 import { ParagraphLiteEditorComponent } from './paragraph-lite-editor.component';
 
@@ -32,7 +33,16 @@ type RowKind = 'cta' | 'benefit';
 
 @Component({
   selector: 'app-block-inspector',
-  imports: [PersistHeightDirective, ParagraphLiteEditorComponent, CdkDropList, CdkDrag, CdkDragHandle],
+  imports: [ParagraphLiteEditorComponent, CdkDropList, CdkDrag, CdkDragHandle],
+  host: {
+    // Email look for the styled fields (font + theme colors from Campaign settings).
+    '[style.--em-font]': 'emailFont()',
+    '[style.--em-accent]': 'session.globals().accentColor',
+    '[style.--em-primary]': 'session.globals().primaryColor',
+    '[style.--em-secondary]': 'session.globals().secondaryColor',
+    '[style.--em-standard]': 'session.globals().standardColor',
+    '[style.--em-content-bg]': 'session.globals().contentBgColor',
+  },
   templateUrl: './block-inspector.component.html',
   styleUrl: './block-inspector.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -41,6 +51,8 @@ export class BlockInspectorComponent {
   protected readonly i18n = inject(LocaleService);
   protected readonly session = inject(NewsletterSession);
   protected readonly listIcons = CTA_LINK_ICONS;
+  protected readonly dividerStyles: readonly DividerBlock['style'][] = ['thin', 'secondary-double', 'spacer-only'];
+  protected readonly emailFont = computed(() => fontStack(this.session.globals()));
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
 
@@ -75,9 +87,8 @@ export class BlockInspectorComponent {
     this.session.setParagraphEditDraft(id, body);
   }
 
-  protected onDividerStyle(id: string, event: Event): void {
-    const value = (event.target as HTMLSelectElement).value as DividerBlock['style'];
-    this.session.updateBlock(id, { style: value }, 'immediate');
+  protected setDividerStyle(id: string, style: DividerBlock['style']): void {
+    this.session.updateBlock(id, { style }, 'immediate');
   }
 
   protected onDividerHeight(id: string, event: Event): void {
@@ -106,9 +117,16 @@ export class BlockInspectorComponent {
   protected onCtaHrefBlur(blockId: string, index: number): void {
     this.session.endCoalesce();
     const href = this.ctaBlock(blockId)?.items[index]?.href ?? '';
-    const kind = detectLinkKind(href);
-    const built = kind ? buildLinkHref(kind, href) : null;
-    if (built && built !== href.trim()) this.patchCtaItem(blockId, index, { href: built }, 'immediate');
+    const built = normalizedHref(href);
+    if (built) this.patchCtaItem(blockId, index, { href: built }, 'immediate');
+  }
+
+  protected onButtonHrefBlur(blockId: string): void {
+    this.session.endCoalesce();
+    const block = this.session.newsletter().blocks.find((b) => b.id === blockId);
+    if (block?.type !== 'cta-button') return;
+    const built = normalizedHref(block.href);
+    if (built) this.session.updateBlock(blockId, { href: built }, 'immediate');
   }
 
   /** Icon most lines use; what the "icon for all lines" button shows. */
@@ -318,4 +336,11 @@ function moveItem<T>(items: readonly T[], index: number, delta: number): T[] | n
   const [row] = next.splice(index, 1);
   next.splice(target, 0, row);
   return next;
+}
+
+/** The usable href for a typed address, or null when it is already fine or not recognizable. */
+function normalizedHref(href: string): string | null {
+  const kind = detectLinkKind(href);
+  const built = kind ? buildLinkHref(kind, href) : null;
+  return built && built !== href.trim() ? built : null;
 }

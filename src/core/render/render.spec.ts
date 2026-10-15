@@ -91,6 +91,26 @@ describe('renderExport', () => {
     expect(html).toContain('prefers-color-scheme: dark');
   });
 
+  it('strikes through only the old price amount and does not repeat the period', () => {
+    const { full } = renderExport(seedNewsletter());
+    const line = full.match(/<p[^>]*class="price-strike[^"]*"[^>]*>[\s\S]*?<\/p>/)?.[0] ?? '';
+    expect(line).toMatch(/<s\b[^>]*class="price-strike-amount"[^>]*style="[^"]*line-through[^"]*"[^>]*>.*€.*199.*<\/s>/s);
+    expect(line.match(/<p[^>]*>/)?.[0]).not.toContain('line-through');
+    expect(line.replace(/<s\b[\s\S]*?<\/s>/, '')).toContain('Statt');
+    expect(line).not.toContain('netto / Jahr');
+  });
+
+  it('draws thin and two-tone dividers across the full row width', () => {
+    for (const style of ['thin', 'secondary-double'] as const) {
+      const n = seedNewsletter();
+      n.blocks = [{ id: 'd', type: 'divider', style }];
+      const { full } = renderExport(n);
+      const td = full.match(/<td[^>]*class="[^"]*divider-row[^"]*"[^>]*>/)?.[0] ?? '';
+      expect(td).toMatch(/padding:\s*0[;"]/);
+      expect(td).not.toMatch(/padding:\s*0 48px/);
+    }
+  });
+
   it('keeps TrackLink quotes intact on CTA href', () => {
     const { full, body } = renderExport(acmeNewsletter());
     expect(full).toContain('{{ TrackLink "https://acme.example/buy" }}');

@@ -27,3 +27,30 @@ Feature: Block editors
     And I turn off the previous price
     Then the previous price fields should be hidden
     And the preview frame should not show a previous price
+
+  Scenario: Short editors open as tall as their content
+    Given I open the home page
+    When I open the block editor for seed block 'bmo8rynqo-2'
+    Then the block editor should be shorter than the default height
+
+  Scenario: Text fields count characters and show when a text gets long
+    Given I open the home page
+    When I open the block editor for seed block 'bmo8rynqo-e'
+    Then the button text counter should read '17 / 30'
+    When I type the button text 'Jetzt kostenlos und unverbindlich testen'
+    Then the button text counter should warn
+
+  Scenario: A button link typed as a phone number becomes a tel link
+    Given I open the home page
+    When I open the block editor for seed block 'bmo8rynqo-e'
+    And I enter the button link '+49 30 1234567'
+    Then the button should link to 'tel:+49301234567' and show 'Phone'
+
+  Scenario: Divider style is picked from picture tiles and the space height only applies to space
+    Given I open the home page with an extra thin divider
+    When I open the block editor for seed block 'test-divider'
+    Then the divider tile 'thin' should be selected
+    And the space height slider should be disabled
+    When I pick the divider tile 'spacer-only'
+    Then the divider tile 'spacer-only' should be selected
+    And the space height slider should be enabled

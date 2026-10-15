@@ -1,7 +1,8 @@
+import { readFileSync } from 'node:fs';
 import { expect, type Page } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
 
-const { When, Then } = createBdd();
+const { Given, When, Then } = createBdd();
 
 const modal = (page: Page) => page.getByTestId('block-edit-modal');
 const linkRow = (page: Page, n: number) => modal(page).getByTestId(`cta-link-row-${n - 1}`);
@@ -91,4 +92,62 @@ Then('the preview frame should not show a previous price', async ({ page }) => {
   const frame = page.frameLocator('[data-testid="preview-frame"]');
   await expect(frame.locator('.price-main')).toBeVisible();
   await expect(frame.locator('.price-strike')).toHaveCount(0);
+});
+
+Then('the block editor should be shorter than the default height', async ({ page }) => {
+  const box = await modal(page).locator('.block-edit-dialog').boundingBox();
+  expect(box).toBeTruthy();
+  expect(box!.height).toBeLessThan(400);
+});
+
+Then('the button text counter should read {string}', async ({ page }, text: string) => {
+  const counter = modal(page).locator('.ed-label-row').filter({ has: page.locator('label[for="insp-cta-text"]') }).locator('.ed-count');
+  await expect(counter).toHaveText(text);
+  await expect(counter).not.toHaveClass(/is-over/);
+});
+
+When('I type the button text {string}', async ({ page }, text: string) => {
+  await modal(page).getByTestId('insp-cta-text').fill(text);
+});
+
+Then('the button text counter should warn', async ({ page }) => {
+  const counter = modal(page).locator('.ed-label-row').filter({ has: page.locator('label[for="insp-cta-text"]') }).locator('.ed-count');
+  await expect(counter).toHaveClass(/is-over/);
+});
+
+When('I enter the button link {string}', async ({ page }, href: string) => {
+  const input = modal(page).getByTestId('insp-cta-href');
+  await input.fill(href);
+  await input.blur();
+});
+
+Then('the button should link to {string} and show {string}', async ({ page }, href: string, kind: string) => {
+  await expect(modal(page).getByTestId('insp-cta-href')).toHaveValue(href);
+  await expect(modal(page).getByTestId('insp-cta-kind')).toHaveText(kind);
+});
+
+Given('I open the home page with an extra thin divider', async ({ page }) => {
+  const seed = JSON.parse(readFileSync('src/core/seed-data/cloudlib-campaign.v1.json', 'utf8'));
+  seed.blocks.push({ id: 'test-divider', type: 'divider', style: 'thin' });
+  await page.addInitScript((value) => {
+    localStorage.setItem('nte:newsletter:v1', value);
+  }, JSON.stringify(seed));
+  await page.goto('/');
+});
+
+Then('the divider tile {string} should be selected', async ({ page }, style: string) => {
+  await expect(modal(page).getByTestId(`divider-style-${style}`)).toHaveAttribute('aria-checked', 'true');
+  await expect(modal(page).locator('.divider-tile[aria-checked="true"]')).toHaveCount(1);
+});
+
+When('I pick the divider tile {string}', async ({ page }, style: string) => {
+  await modal(page).getByTestId(`divider-style-${style}`).click();
+});
+
+Then('the space height slider should be disabled', async ({ page }) => {
+  await expect(modal(page).getByTestId('insp-divider-height')).toBeDisabled();
+});
+
+Then('the space height slider should be enabled', async ({ page }) => {
+  await expect(modal(page).getByTestId('insp-divider-height')).toBeEnabled();
 });

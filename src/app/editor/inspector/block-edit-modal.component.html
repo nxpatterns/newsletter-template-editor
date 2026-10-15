@@ -8,7 +8,9 @@
     <div class="block-edit-backdrop" (click)="onBackdropClick()"></div>
 
     <div
+      #dialog
       class="block-edit-dialog"
+      [class.is-fit]="geo().h === null"
       role="dialog"
       aria-modal="true"
       aria-labelledby="block-edit-title"

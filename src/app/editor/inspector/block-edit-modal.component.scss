@@ -50,6 +50,11 @@
     opacity 0.24s ease;
 }
 
+/* As tall as the content: no empty space under one or two fields. */
+.block-edit-dialog.is-fit {
+  min-height: 0;
+}
+
 .block-edit-overlay.is-open .block-edit-dialog {
   opacity: 1;
   transform: scale(1);

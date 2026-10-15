@@ -48,7 +48,7 @@ function renderDivider(b: DividerBlock, ctx: RenderContext): string {
   let inner = '';
   if (b.style === 'thin') {
     inner = `
-      <td bgcolor="${bg}" class="content-bg block-pad-x">
+      <td bgcolor="${bg}" class="content-bg divider-row">
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
           <tr><td class="divider-line">&nbsp;</td></tr>
         </table>
@@ -56,7 +56,7 @@ function renderDivider(b: DividerBlock, ctx: RenderContext): string {
     `;
   } else if (b.style === 'secondary-double') {
     inner = `
-      <td bgcolor="${bg}" class="content-bg block-pad-x">
+      <td bgcolor="${bg}" class="content-bg divider-row">
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
           <tr>
             <td class="divider-secondary-gap">&nbsp;</td>
@@ -245,7 +245,7 @@ function renderBenefitsList(b: BenefitsListBlock, ctx: RenderContext): string {
 function composeStrikeLine(b: PriceBoxBlock): string {
   if (!b.strikeEnabled) return '';
   const money = `${b.currency}${b.strikeAmount}`.trim();
-  return [b.strikeLabel.trim(), money, b.periodLabel.trim()].filter(Boolean).join(' ');
+  return [b.strikeLabel.trim(), money].filter(Boolean).join(' ');
 }
 
 function renderPriceBox(b: PriceBoxBlock, ctx: RenderContext): string {
@@ -255,13 +255,9 @@ function renderPriceBox(b: PriceBoxBlock, ctx: RenderContext): string {
               <p class="price-strike text-price-strike">
                 <span data-field="strikeLabel">${escapeHtml(b.strikeLabel)}</span>${
                   b.strikeLabel.trim() ? ' ' : ''
-                }<span data-field="currency">${escapeHtml(b.currency)}</span><span data-field="strikeAmount">${escapeHtml(
+                }<s class="price-strike-amount"><span data-field="currency">${escapeHtml(b.currency)}</span><span data-field="strikeAmount">${escapeHtml(
                   b.strikeAmount,
-                )}</span>${
-                  b.periodLabel.trim()
-                    ? ` <span data-field="periodLabel" class="price-period text-price-sub">${escapeHtml(b.periodLabel)}</span>`
-                    : ''
-                }
+                )}</span></s>
               </p>`
     : '';
   const periodHtml = b.periodLabel.trim()

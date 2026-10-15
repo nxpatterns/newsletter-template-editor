@@ -7,10 +7,13 @@
     @switch (block.type) {
       @case ('hero') {
         <div class="ed-field">
-          <label class="ed-label" for="insp-hero-label" [textContent]="i18n.t('field.label')"></label>
+          <div class="ed-label-row">
+            <label class="ed-label" for="insp-hero-label" [textContent]="i18n.t('field.heroLabel')"></label>
+            <span class="ed-count" [class.is-over]="(block.label).length > 60" [textContent]="(block.label).length + ' / 60'"></span>
+          </div>
           <input
             id="insp-hero-label"
-            class="ed-input"
+            class="ed-input em-field em-hero-label"
             data-testid="insp-hero-label"
             [value]="block.label"
             (input)="onText(block.id, 'label', $event)"
@@ -18,12 +21,15 @@
           />
         </div>
         <div class="ed-field">
-          <label class="ed-label" for="insp-hero-headline" [textContent]="i18n.t('field.headlineHtml')"></label>
+          <div class="ed-label-row">
+            <label class="ed-label" for="insp-hero-headline" [textContent]="i18n.t('field.headlineHtml')"></label>
+            <span class="ed-count" [class.is-over]="(block.headline).length > 70" [textContent]="(block.headline).length + ' / 70'"></span>
+          </div>
           <textarea
             id="insp-hero-headline"
-            class="ed-textarea"
+            class="ed-textarea em-field em-hero-headline"
             data-testid="insp-hero-headline"
-            rows="3"
+            rows="2"
             [value]="block.headline"
             (input)="onText(block.id, 'headline', $event)"
             (blur)="onFieldBlur()"
@@ -40,10 +46,13 @@
       }
       @case ('cta-button') {
         <div class="ed-field">
-          <label class="ed-label" for="insp-cta-text" [textContent]="i18n.t('field.ctaText')"></label>
+          <div class="ed-label-row">
+            <label class="ed-label" for="insp-cta-text" [textContent]="i18n.t('field.ctaText')"></label>
+            <span class="ed-count" [class.is-over]="(block.text).length > 30" [textContent]="(block.text).length + ' / 30'"></span>
+          </div>
           <input
             id="insp-cta-text"
-            class="ed-input"
+            class="ed-input em-field em-button"
             data-testid="insp-cta-text"
             [value]="block.text"
             (input)="onText(block.id, 'text', $event)"
@@ -58,48 +67,76 @@
             data-testid="insp-cta-href"
             [value]="block.href"
             (input)="onText(block.id, 'href', $event)"
-            (blur)="onFieldBlur()"
+            (blur)="onButtonHrefBlur(block.id)"
           />
+          @if (linkKindKey(block.href); as kindKey) {
+            <p class="link-kind" data-testid="insp-cta-kind">
+              <span class="link-kind-chip" [textContent]="i18n.t(kindKey)"></span>
+            </p>
+          }
         </div>
       }
       @case ('divider') {
         <div class="ed-field">
-          <label class="ed-label" for="insp-div-style" [textContent]="i18n.t('field.dividerStyle')"></label>
-          <select
-            id="insp-div-style"
-            class="ed-select"
-            data-testid="insp-divider-style"
-            [value]="block.style"
-            (change)="onDividerStyle(block.id, $event)"
-          >
-            <option value="thin" [textContent]="i18n.t('divider.thin')"></option>
-            <option value="secondary-double" [textContent]="i18n.t('divider.secondary-double')"></option>
-            <option value="spacer-only" [textContent]="i18n.t('divider.spacer-only')"></option>
-          </select>
-        </div>
-        @if (block.style === 'spacer-only') {
-          <div class="ed-field">
-            <label class="ed-label" for="insp-div-h" [textContent]="i18n.t('field.dividerHeight')"></label>
-            <input
-              id="insp-div-h"
-              class="ed-input"
-              type="number"
-              min="8"
-              max="120"
-              [value]="block.heightPx ?? 24"
-              (input)="onDividerHeight(block.id, $event)"
-              (blur)="onFieldBlur()"
-            />
+          <span class="ed-label" id="insp-div-style" [textContent]="i18n.t('field.dividerStyle')"></span>
+          <div class="divider-tiles" role="radiogroup" aria-labelledby="insp-div-style" data-testid="insp-divider-style">
+            @for (style of dividerStyles; track style) {
+              <button
+                type="button"
+                class="divider-tile"
+                role="radio"
+                [class.is-on]="block.style === style"
+                [attr.aria-checked]="block.style === style"
+                [attr.data-testid]="'divider-style-' + style"
+                (click)="setDividerStyle(block.id, style)"
+              >
+                <span class="divider-art" aria-hidden="true">
+                  @switch (style) {
+                    @case ('thin') { <span class="divider-art-thin"></span> }
+                    @case ('secondary-double') { <span class="divider-art-gap"></span><span class="divider-art-mid"></span><span class="divider-art-end"></span> }
+                    @case ('spacer-only') { <span class="divider-art-space"></span> }
+                  }
+                </span>
+                <span class="divider-tile-title" [textContent]="i18n.t('divider.' + style)"></span>
+                <span class="divider-tile-hint" [textContent]="i18n.t('divider.' + style + '.hint')"></span>
+              </button>
+            }
           </div>
-        }
+        </div>
+        <div class="ed-field" [class.is-disabled]="block.style !== 'spacer-only'">
+          <div class="ed-label-row">
+            <label class="ed-label" for="insp-div-h" [textContent]="i18n.t('field.dividerHeight')"></label>
+            <span class="ed-count" [textContent]="(block.heightPx ?? 24) + ' px'"></span>
+          </div>
+          <input
+            id="insp-div-h"
+            class="ed-range"
+            type="range"
+            min="8"
+            max="120"
+            step="4"
+            data-testid="insp-divider-height"
+            [disabled]="block.style !== 'spacer-only'"
+            [value]="block.heightPx ?? 24"
+            (input)="onDividerHeight(block.id, $event)"
+            (change)="onFieldBlur()"
+          />
+          @if (block.style !== 'spacer-only') {
+            <p class="ed-hint" [textContent]="i18n.t('field.dividerHeightOnlySpace')"></p>
+          }
+        </div>
       }
       @case ('chapter-band') {
         <div class="ed-field">
-          <label class="ed-label" for="insp-chapter" [textContent]="i18n.t('field.chapterTitle')"></label>
+          <div class="ed-label-row">
+            <label class="ed-label" for="insp-chapter" [textContent]="i18n.t('field.chapterTitle')"></label>
+            <span class="ed-count" [class.is-over]="(block.title).length > 45" [textContent]="(block.title).length + ' / 45'"></span>
+          </div>
           <textarea
             id="insp-chapter"
-            class="ed-textarea"
-            rows="2"
+            class="ed-textarea em-field em-chapter"
+            data-testid="insp-chapter-title"
+            rows="1"
             [value]="block.title"
             (input)="onText(block.id, 'title', $event)"
             (blur)="onFieldBlur()"
@@ -108,56 +145,60 @@
       }
       @case ('pull-quote') {
         <div class="ed-field">
-          <label class="ed-label" for="insp-quote" [textContent]="i18n.t('field.quoteHtml')"></label>
-          <textarea
-            id="insp-quote"
-            class="ed-textarea"
-            rows="3"
-            [value]="block.quote"
-            (input)="onText(block.id, 'quote', $event)"
-            (blur)="onFieldBlur()"
-          ></textarea>
+          <div class="ed-label-row">
+            <label class="ed-label" for="insp-quote" [textContent]="i18n.t('field.quoteHtml')"></label>
+            <span class="ed-count" [class.is-over]="(block.quote).length > 140" [textContent]="(block.quote).length + ' / 140'"></span>
+          </div>
+          <div class="em-quote-wrap">
+            <textarea
+              id="insp-quote"
+              class="ed-textarea em-field em-quote"
+              data-testid="insp-quote"
+              rows="2"
+              [value]="block.quote"
+              (input)="onText(block.id, 'quote', $event)"
+              (blur)="onFieldBlur()"
+            ></textarea>
+          </div>
         </div>
       }
       @case ('stat-box') {
-        <div class="ed-field">
-          <label class="ed-label" for="insp-stat-n" [textContent]="i18n.t('field.statNumber')"></label>
-          <input
-            id="insp-stat-n"
-            class="ed-input"
-            [value]="block.number"
-            (input)="onText(block.id, 'number', $event)"
-            (blur)="onFieldBlur()"
-          />
-        </div>
-        <div class="ed-field">
-          <label class="ed-label" for="insp-stat-l" [textContent]="i18n.t('field.statLabel')"></label>
-          <input
-            id="insp-stat-l"
-            class="ed-input"
-            [value]="block.label"
-            (input)="onText(block.id, 'label', $event)"
-            (blur)="onFieldBlur()"
-          />
-        </div>
-        <div class="ed-field">
-          <label class="ed-label" for="insp-stat-g" [textContent]="i18n.t('field.statGeo')"></label>
-          <p
-            id="insp-stat-g-help"
-            class="ed-field-help"
-            [textContent]="i18n.t('field.statGeoHint')"
-          ></p>
-          <textarea
-            id="insp-stat-g"
-            class="ed-textarea ed-textarea--resizable ed-textarea--tall"
-            data-testid="insp-stat-geo"
-            rows="7"
-            appPersistHeight="stat.geo"
-            [attr.aria-describedby]="'insp-stat-g-help'"
-            [value]="block.geo"
-            (input)="onText(block.id, 'geo', $event)"
-            (blur)="onFieldBlur()"
-          ></textarea>
+        <div class="stat-grid">
+          <div>
+            <div class="ed-field">
+              <label class="ed-label" for="insp-stat-n" [textContent]="i18n.t('field.statNumber')"></label>
+              <input
+                id="insp-stat-n"
+                class="ed-input em-field em-stat-number"
+                data-testid="insp-stat-number"
+                [value]="block.number"
+                (input)="onText(block.id, 'number', $event)"
+                (blur)="onFieldBlur()"
+              />
+            </div>
+            <div class="ed-field">
+              <label class="ed-label" for="insp-stat-l" [textContent]="i18n.t('field.statLabel')"></label>
+              <input
+                id="insp-stat-l"
+                class="ed-input em-field em-stat-label"
+                [value]="block.label"
+                (input)="onText(block.id, 'label', $event)"
+                (blur)="onFieldBlur()"
+              />
+            </div>
+          </div>
+          <div class="ed-field">
+            <label class="ed-label" for="insp-stat-g" [textContent]="i18n.t('field.statGeo')"></label>
+            <textarea
+              id="insp-stat-g"
+              class="ed-textarea em-field em-stat-geo"
+              data-testid="insp-stat-geo"
+              rows="6"
+              [value]="block.geo"
+              (input)="onText(block.id, 'geo', $event)"
+              (blur)="onFieldBlur()"
+            ></textarea>
+          </div>
         </div>
       }
       @case ('benefits-list') {

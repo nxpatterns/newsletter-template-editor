@@ -150,9 +150,9 @@ export function emailDocumentCss(globals: Globals): string {
   .block-pad-md { padding: 24px 48px; background-color: var(--email-content-bg); }
   .block-pad-sm { padding: 20px 48px; background-color: var(--email-content-bg); }
   .block-pad-chapter { padding: 16px 48px; background-color: var(--email-chapter-bg); }
-  .block-pad-x { padding: 0 48px; background-color: var(--email-content-bg); }
 
-  /* Divider */
+  /* Divider: full row width, no side padding */
+  .divider-row { padding: 0; }
   .divider-line {
     height: 1px;
     background-color: var(--email-rule);
@@ -355,8 +355,9 @@ export function emailDocumentCss(globals: Globals): string {
     font-size: 15px;
     color: #02fdfb;
     margin: 0 0 4px 0;
-    text-decoration: line-through;
   }
+  /* Only the old amount is struck; "Statt" and the period stay readable. */
+  .price-strike-amount { text-decoration: line-through; }
   .price-main {
     font-family: var(--email-sans);
     font-size: 38px;
@@ -445,7 +446,7 @@ export function emailDocumentCss(globals: Globals): string {
   @media (prefers-color-scheme: dark) {
     body, .email-bg, .footer-bg { background-color: var(--email-page-bg) !important; }
     .header-bg, .content-bg,
-    .block-pad-hero, .block-pad-md, .block-pad-sm, .block-pad-x,
+    .block-pad-hero, .block-pad-md, .block-pad-sm,
     .benefits-list-block, .price-box-outer, .cta-links-block {
       background-color: var(--email-content-bg) !important;
     }

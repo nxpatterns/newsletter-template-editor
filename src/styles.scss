@@ -223,3 +223,150 @@ body {
   border-color: color-mix(in srgb, var(--ds-accent) 45%, var(--ds-border));
   color: var(--ds-accent);
 }
+
+/* Label with a right-aligned length counter. */
+.ed-label-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.ed-count {
+  margin-inline-start: auto;
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-text-muted);
+}
+
+/* Past the suggested length: a nudge, never a block. */
+.ed-count.is-over {
+  color: #ffb547;
+}
+
+.ed-range {
+  width: 100%;
+  accent-color: var(--ds-accent);
+}
+
+.ed-field.is-disabled .ed-label,
+.ed-field.is-disabled .ed-count {
+  opacity: 0.5;
+}
+
+/* Block editor layouts (no .ed-* overrides here; those stay in the component). The --em-* vars come from the block inspector host. */
+.em-quote-wrap::before {
+  content: '';
+  flex: none;
+  width: 3px;
+  margin: 0.5rem 0 0.5rem 0.5rem;
+  border-radius: 2px;
+  background: var(--em-secondary);
+}
+
+.em-quote-wrap {
+  display: flex;
+  border: 1px solid color-mix(in srgb, var(--ds-accent) 25%, var(--ds-border));
+  border-radius: var(--ds-radius);
+  background: var(--em-content-bg);
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+/* Divider: picture tiles instead of a dropdown. */
+.divider-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+}
+
+.divider-tile {
+  display: grid;
+  gap: 0.45rem;
+  justify-items: start;
+  border: 1px solid var(--ds-border);
+  border-radius: 0.45rem;
+  padding: 0.7rem 0.7rem 0.55rem;
+  font: inherit;
+  text-align: start;
+  color: var(--ds-text);
+  background: var(--ds-bg-page);
+  cursor: pointer;
+}
+
+.divider-tile:hover {
+  border-color: color-mix(in srgb, var(--ds-accent) 45%, var(--ds-border));
+}
+
+.divider-tile:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 1px;
+}
+
+.divider-tile.is-on {
+  border-color: var(--ds-accent);
+  box-shadow: inset 0 0 0 1px var(--ds-accent);
+  background: color-mix(in srgb, var(--ds-accent) 8%, var(--ds-bg-page));
+}
+
+.divider-art {
+  justify-self: stretch;
+  display: flex;
+  align-items: center;
+  height: 2.4rem;
+  padding: 0 0.7rem;
+  border-radius: var(--ds-radius);
+  background: var(--em-content-bg);
+}
+
+.divider-art-thin {
+  flex: 1;
+  height: 1px;
+  background: #1a3050;
+}
+
+.divider-art-gap {
+  flex: 1;
+}
+
+.divider-art-mid,
+.divider-art-end {
+  height: 3px;
+}
+
+.divider-art-mid {
+  width: 30%;
+  background: #1e6bb8;
+}
+
+.divider-art-end {
+  width: 42%;
+  background: var(--em-secondary);
+}
+
+.divider-art-space {
+  flex: 1;
+  height: 1.4rem;
+  border: 1px dashed color-mix(in srgb, var(--ds-text-muted) 60%, transparent);
+  border-radius: 3px;
+}
+
+.divider-tile-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.divider-tile-hint {
+  font-size: 0.68rem;
+  color: var(--ds-text-muted);
+}
+
+@media (max-width: 520px) {
+  .stat-grid,
+  .divider-tiles {
+    grid-template-columns: 1fr;
+  }
+}

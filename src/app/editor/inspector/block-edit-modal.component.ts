@@ -18,6 +18,9 @@ const DEFAULT_H = 560;
 const MIN_W = 360;
 const MIN_H = 280;
 
+/** Short editors open as tall as their content; the rest keep the fixed default height. */
+const FIT_HEIGHT_TYPES = new Set(['hero', 'cta-button', 'stat-box', 'chapter-band', 'pull-quote', 'divider']);
+
 @Component({
   selector: 'app-block-edit-modal',
   imports: [BlockInspectorComponent],
@@ -35,12 +38,19 @@ export class BlockEditModalComponent {
   private readonly shellUi = inject(ShellUiService);
 
   private readonly cancelBtn = viewChild<ElementRef<HTMLButtonElement>>('cancelBtn');
+  private readonly dialogEl = viewChild<ElementRef<HTMLElement>>('dialog');
 
   protected readonly openVisual = signal(false);
   private closing = false;
   private closeAction: 'save' | 'cancel' = 'cancel';
 
-  protected readonly geo = signal({ x: 80, y: 80, w: DEFAULT_W, h: DEFAULT_H });
+  /** h null = as tall as the content (until the user resizes by hand). */
+  protected readonly geo = signal<{ x: number; y: number; w: number; h: number | null }>({
+    x: 80,
+    y: 80,
+    w: DEFAULT_W,
+    h: DEFAULT_H,
+  });
 
   private drag:
     | { mode: 'move'; ox: number; oy: number; sx: number; sy: number }
@@ -66,7 +76,7 @@ export class BlockEditModalComponent {
       left: `${g.x}px`,
       top: `${g.y}px`,
       width: `${g.w}px`,
-      height: `${g.h}px`,
+      height: g.h === null ? null : `${g.h}px`,
     };
   });
 
@@ -113,12 +123,12 @@ export class BlockEditModalComponent {
     if (!this.session.editingBlockId()) return;
     const g = this.geo();
     const w = Math.max(MIN_W, Math.min(g.w, window.innerWidth - 16));
-    const h = Math.max(MIN_H, Math.min(g.h, window.innerHeight - 16));
+    const h = g.h === null ? null : Math.max(MIN_H, Math.min(g.h, window.innerHeight - 16));
     this.geo.set({
       w,
       h,
       x: this.clampX(g.x, w),
-      y: this.clampY(g.y, h),
+      y: this.clampY(g.y, h ?? this.renderedHeight()),
     });
   }
 
@@ -147,7 +157,7 @@ export class BlockEditModalComponent {
   protected onResizePointerDown(event: PointerEvent): void {
     if (event.button !== 0) return;
     const g = this.geo();
-    this.drag = { mode: 'resize', ox: event.clientX, oy: event.clientY, sw: g.w, sh: g.h };
+    this.drag = { mode: 'resize', ox: event.clientX, oy: event.clientY, sw: g.w, sh: g.h ?? this.renderedHeight() };
     (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
     event.preventDefault();
     event.stopPropagation();
@@ -161,7 +171,7 @@ export class BlockEditModalComponent {
     this.geo.set({
       ...g,
       x: this.clampX(this.drag.sx + dx, g.w),
-      y: this.clampY(this.drag.sy + dy, g.h),
+      y: this.clampY(this.drag.sy + dy, g.h ?? this.renderedHeight()),
     });
   }
 
@@ -196,12 +206,15 @@ export class BlockEditModalComponent {
     const saved = this.shellUi.getBlockModalGeometry(blockType);
     const vw = window.innerWidth;
     const vh = window.innerHeight;
+    const fit = FIT_HEIGHT_TYPES.has(blockType);
     if (saved) {
+      // Older saves stored the untouched default height; treat that as "never resized".
+      const h = saved.h === null || (fit && saved.h === DEFAULT_H) ? (fit ? null : DEFAULT_H) : saved.h;
       this.geo.set({
         w: Math.max(MIN_W, Math.min(saved.w, vw - 16)),
-        h: Math.max(MIN_H, Math.min(saved.h, vh - 16)),
+        h: h === null ? null : Math.max(MIN_H, Math.min(h, vh - 16)),
         x: this.clampX(saved.x, saved.w),
-        y: this.clampY(saved.y, saved.h),
+        y: this.clampY(saved.y, h ?? MIN_H),
       });
       return;
     }
@@ -209,8 +222,9 @@ export class BlockEditModalComponent {
     const h = Math.min(DEFAULT_H, vh - 32);
     this.geo.set({
       w,
-      h,
+      h: fit ? null : h,
       x: Math.max(16, Math.round((vw - w) / 2)),
+      // Same top edge as the fixed-height dialog, so short editors do not jump around.
       y: Math.max(16, Math.round((vh - h) / 2)),
     });
   }
@@ -219,6 +233,10 @@ export class BlockEditModalComponent {
     const block = this.session.editingBlock();
     if (!block) return;
     this.shellUi.setBlockModalGeometry(block.type, this.geo());
+  }
+
+  private renderedHeight(): number {
+    return this.dialogEl()?.nativeElement.offsetHeight || DEFAULT_H;
   }
 
   private clampX(x: number, w: number): number {

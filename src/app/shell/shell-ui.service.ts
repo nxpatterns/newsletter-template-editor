@@ -10,7 +10,8 @@ export interface BlockModalGeometry {
   x: number;
   y: number;
   w: number;
-  h: number;
+  /** null = the dialog is as tall as its content (never resized by hand). */
+  h: number | null;
 }
 
 /** Matches `--ds-panel-width: 21rem` at default root font size. */
@@ -104,7 +105,8 @@ export class ShellUiService {
   getBlockModalGeometry(blockType: string): BlockModalGeometry | null {
     const g = this.blockModalGeoSignal()[blockType];
     if (!g) return null;
-    if (![g.x, g.y, g.w, g.h].every((n) => Number.isFinite(n))) return null;
+    if (![g.x, g.y, g.w].every((n) => Number.isFinite(n))) return null;
+    if (g.h !== null && !Number.isFinite(g.h)) return null;
     return { ...g };
   }
 
@@ -114,9 +116,9 @@ export class ShellUiService {
       x: Math.round(geo.x),
       y: Math.round(geo.y),
       w: Math.round(geo.w),
-      h: Math.round(geo.h),
+      h: geo.h === null ? null : Math.round(geo.h),
     };
-    if (next.w < 320 || next.h < 240) return;
+    if (next.w < 320 || (next.h !== null && next.h < 240)) return;
     const map = { ...this.blockModalGeoSignal(), [blockType]: next };
     this.blockModalGeoSignal.set(map);
     if (!isPlatformBrowser(this.platformId)) return;
@@ -140,9 +142,9 @@ export class ShellUiService {
         const x = Number(v['x']);
         const y = Number(v['y']);
         const w = Number(v['w']);
-        const h = Number(v['h']);
-        if ([x, y, w, h].every((n) => Number.isFinite(n)) && w >= 320 && h >= 240) {
-          out[key] = { x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h) };
+        const h = v['h'] === null ? null : Number(v['h']);
+        if ([x, y, w].every((n) => Number.isFinite(n)) && w >= 320 && (h === null || (Number.isFinite(h) && h >= 240))) {
+          out[key] = { x: Math.round(x), y: Math.round(y), w: Math.round(w), h: h === null ? null : Math.round(h) };
         }
       }
       return out;
