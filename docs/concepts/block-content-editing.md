@@ -43,8 +43,8 @@ Git anchor: export inliner landed as `feat(render): implement CSS inliner for em
 - Modal: larger dialog (drag header, resize corner; geometry per block type in localStorage), footer **Cancel** / **Save**.
 - **Live preview while typing** for structured/plain block fields (hero, benefits, CTA, …).
 - **Paragraph (WYSIWYG only):** main email preview stays frozen on the open snapshot until **Save**; the modal editor is a visual clone of body copy. See `paragraph-format-feedback.md`.
-- Cancel restores the block snapshot from modal open and drops undo entries created during that edit.
-- Save keeps live edits and closes.
+- Cancel restores the block snapshot from modal open and drops undo entries created during that edit (paragraph draft is discarded; preview was frozen).
+- Save commits live field edits and any paragraph draft, then closes.
 - Escape acts as Cancel. **Backdrop click does not dismiss** — exit must be intentional (Cancel / Save / Escape).
 - Open focus: Cancel is focused **once** when a given edit session opens; typing must not re-steal focus.
 
@@ -106,7 +106,7 @@ Fix the model before introducing a text editor.
 | Superscript | Best-effort in email clients |
 | Subscript | Best-effort in email clients |
 | Appearance (semantic size) | Toolbar label **Appearance** / **Darstellung**; see size tokens below |
-| Theme color | **One** Color control: non-collapsed selection → span color; collapsed caret → paragraph base color. Swatches only — no free hex |
+| Theme color | **One** Color control: non-collapsed selection → span color; collapsed caret → paragraph base color. Swatches only — no free hex. Seller label for token `heading` is **Primary** (not “Heading”) |
 | Link | Selection = default label; URL field; open target (see links). Apply **replaces** the selection (no duplicate text) |
 | Mono | Monospace face mark |
 
@@ -168,11 +168,11 @@ Product-strength feature, not a polish pass:
 #### Editor chrome
 
 - Lite toolbar in the **edit modal** only (never inside the preview iframe).
-- Implementation: `contenteditable` + commands + mark tree serialize (`richDocFromEditorRoot` / `richDocToHtml`); selection captured before toolbar selects so Appearance/Color/Link re-apply reliably.
+- Implementation: `contenteditable` display + **model range mark ops** (`toggleMarkOnDoc`, `applySizeOnDoc`, `applyColorOnDoc`, …) + serialize (`richDocFromEditorRoot` / `richDocToHtml`). Selection bookmarks survive repaint/undo.
 - Local **undo/redo** inside the paragraph editor (toolbar + ⌘/Ctrl+Z); independent of shell document undo while the modal is open.
 - Read-only **Code** view: classed HTML produced by the model (selectable to copy; not editable; no paste into code).
 - Preview freeze until Save (draft local to the modal); other blocks keep live preview.
-- Optional: email-width toggle, Info inspect labels, explicit draft stash — see `paragraph-format-feedback.md`.
+- Email-width, Info (`i`), intermediate draft stash — see `paragraph-format-feedback.md` (shipped).
 
 ### chapter-band
 

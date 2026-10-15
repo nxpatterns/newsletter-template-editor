@@ -2,7 +2,6 @@ import {
   afterNextRender,
   ChangeDetectionStrategy,
   Component,
-  computed,
   effect,
   ElementRef,
   inject,
@@ -13,9 +12,13 @@ import {
   viewChild,
 } from '@angular/core';
 import {
+  applyColorOnDoc,
+  applyParagraphBaseColorOnDoc,
+  applySizeOnDoc,
   cleanAiCharsOnDoc,
   clearMarksOnDoc,
   compactDoc,
+  EMAIL_CONTENT_WIDTH_PX,
   paragraphEditorSurfaceCss,
   plainTextToRichDoc,
   RICH_COLOR_TOKENS,
@@ -24,9 +27,11 @@ import {
   richDocPlainText,
   richDocSuspiciousCount,
   richDocToHtml,
+  toggleMarkOnDoc,
   type RichColorToken,
   type RichDoc,
   type RichSizeToken,
+  type RichToggleMark,
 } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
 import { ConfirmDialogService } from '../../ui/confirm-dialog/confirm-dialog.service';
@@ -68,11 +73,8 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   protected readonly canRedo = signal(false);
   protected readonly emailWidth = signal(false);
   protected readonly infoMode = signal(false);
-
-  /** Theme-driven clone CSS (same tokens as email paragraph body). */
-  protected readonly cloneCss = computed(() =>
-    paragraphEditorSurfaceCss(this.session.globals()),
-  );
+  /** Brief green “saved draft” flash after intermediate save. */
+  protected readonly stashFlash = signal(false);
 
   private readonly editorHost = viewChild<ElementRef<HTMLDivElement>>('editor');
   private applying = false;
@@ -89,12 +91,21 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   private stashPrompted = false;
   /** True after first afterNextRender — avoids painting before #editor exists. */
   private viewReady = false;
+  /** Global <style> — template <style> is stripped/scoped and never styled innerHTML. */
+  private cloneStyleEl: HTMLStyleElement | null = null;
+  private stashFlashTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     this.session.registerParagraphDraftFlush(() => this.flushPendingEmit());
     afterNextRender(() => {
       this.viewReady = true;
+      this.syncCloneStyles();
       void this.bootstrapFromDoc(this.doc());
+    });
+    effect(() => {
+      // Keep head stylesheet in sync with theme globals.
+      this.session.globals();
+      this.syncCloneStyles();
     });
     effect(() => {
       const d = this.doc();
@@ -114,12 +125,28 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
       // Keep info labels in sync when mode is on (after paints / commits).
       const on = this.infoMode();
       if (on) queueMicrotask(() => this.refreshInfoLabels());
+      else queueMicrotask(() => this.clearInfoLabels());
     });
   }
 
   ngOnDestroy(): void {
     if (this.debounce) clearTimeout(this.debounce);
+    if (this.stashFlashTimer) clearTimeout(this.stashFlashTimer);
     this.session.registerParagraphDraftFlush(null);
+    this.session.requestEditModalMinWidth(null);
+    this.cloneStyleEl?.remove();
+    this.cloneStyleEl = null;
+  }
+
+  /** Inject email-token CSS into document.head (survives encapsulation + innerHTML). */
+  private syncCloneStyles(): void {
+    if (typeof document === 'undefined') return;
+    if (!this.cloneStyleEl) {
+      this.cloneStyleEl = document.createElement('style');
+      this.cloneStyleEl.setAttribute('data-rt-paragraph-clone', '1');
+      document.head.appendChild(this.cloneStyleEl);
+    }
+    this.cloneStyleEl.textContent = paragraphEditorSurfaceCss(this.session.globals());
   }
 
   /** Force pending debounce into docChange (called by session Save). */
@@ -175,12 +202,16 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   }
 
   protected toggleEmailWidth(): void {
-    this.emailWidth.update((v) => !v);
+    const next = !this.emailWidth();
+    this.emailWidth.set(next);
+    // Grow modal enough for 600px column + body padding (~1.35rem × 2) + chrome.
+    this.session.requestEditModalMinWidth(
+      next ? EMAIL_CONTENT_WIDTH_PX + 96 : null,
+    );
   }
 
   protected toggleInfoMode(): void {
     this.infoMode.update((v) => !v);
-    queueMicrotask(() => this.refreshInfoLabels());
   }
 
   protected stashDraft(): void {
@@ -190,6 +221,20 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     if (!blockId || !root) return;
     const body = richDocFromEditorRoot(root);
     saveParagraphStash(this.session.libraryId(), blockId, body);
+    this.stashFlash.set(true);
+    if (this.stashFlashTimer) clearTimeout(this.stashFlashTimer);
+    this.stashFlashTimer = setTimeout(() => {
+      this.stashFlash.set(false);
+      this.stashFlashTimer = null;
+    }, 1800);
+  }
+
+  private clearInfoLabels(): void {
+    const root = this.editorHost()?.nativeElement;
+    if (!root) return;
+    root.querySelectorAll(':scope > p[data-rt-info]').forEach((p) => {
+      (p as HTMLElement).removeAttribute('data-rt-info');
+    });
   }
 
   /**
@@ -265,6 +310,74 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     this.savedRange = range.cloneRange();
   }
 
+  /**
+   * Plain-text offsets into the editor — survive DOM rebuilds (undo/redo/mono unwrap)
+   * so sellers can chain Bold after Mono or Undo without re-selecting.
+   */
+  private captureSelectionBookmark(): { start: number; end: number } | null {
+    const root = this.editorHost()?.nativeElement;
+    const sel = window.getSelection();
+    if (!root || !sel || sel.rangeCount === 0) return null;
+    const range = sel.getRangeAt(0);
+    if (!root.contains(range.commonAncestorContainer)) return null;
+    const pre = document.createRange();
+    pre.selectNodeContents(root);
+    pre.setEnd(range.startContainer, range.startOffset);
+    const start = pre.toString().length;
+    pre.setEnd(range.endContainer, range.endOffset);
+    const end = pre.toString().length;
+    return { start, end: Math.max(start, end) };
+  }
+
+  private restoreSelectionBookmark(bm: { start: number; end: number } | null): void {
+    if (!bm) return;
+    const root = this.editorHost()?.nativeElement;
+    if (!root) return;
+    const pointAt = (target: number): { node: Text; offset: number } | null => {
+      let remaining = Math.max(0, target);
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      let node: Node | null = walker.nextNode();
+      let last: Text | null = null;
+      while (node) {
+        const text = node as Text;
+        const len = text.data.length;
+        last = text;
+        if (remaining <= len) return { node: text, offset: remaining };
+        remaining -= len;
+        node = walker.nextNode();
+      }
+      if (last) return { node: last, offset: last.data.length };
+      return null;
+    };
+    const a = pointAt(bm.start);
+    const b = pointAt(bm.end);
+    if (!a || !b) return;
+    try {
+      root.focus();
+      const range = document.createRange();
+      range.setStart(a.node, a.offset);
+      range.setEnd(b.node, b.offset);
+      const sel = window.getSelection();
+      if (!sel) return;
+      sel.removeAllRanges();
+      sel.addRange(range);
+      this.savedRange = range.cloneRange();
+    } catch {
+      /* DOM edge */
+    }
+  }
+
+  /** Keep live selection + bookmark after toolbar work (focus can steal on click). */
+  private keepSelection(bm?: { start: number; end: number } | null): void {
+    const mark = bm ?? this.captureSelectionBookmark();
+    this.refreshSavedRangeFromLive();
+    // Next frame: button click may collapse selection after our handler.
+    requestAnimationFrame(() => {
+      if (mark) this.restoreSelectionBookmark(mark);
+      else this.restoreSelection();
+    });
+  }
+
   protected onEditorInput(): void {
     this.scheduleEmit();
   }
@@ -329,22 +442,24 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   }
 
   protected toggleMark(cmd: 'bold' | 'italic' | 'strikeThrough' | 'superscript' | 'subscript'): void {
-    this.restoreSelection();
-    this.focusEditor();
-    document.execCommand(cmd, false);
-    this.refreshSavedRangeFromLive();
-    this.scheduleEmit(true);
+    const map: Record<typeof cmd, RichToggleMark> = {
+      bold: 'bold',
+      italic: 'italic',
+      strikeThrough: 'strike',
+      superscript: 'sup',
+      subscript: 'sub',
+    };
+    this.applyRangeMark((doc, a, b) => toggleMarkOnDoc(doc, a, b, map[cmd]));
   }
 
+  /** Toggle mono via RichDoc offsets (no DOM extract — spaces + toggle-off safe). */
   protected toggleMono(): void {
-    this.restoreSelection();
-    this.wrapSelection('code', { class: 'rt-mono' });
+    this.applyRangeMark((doc, a, b) => toggleMarkOnDoc(doc, a, b, 'mono'));
   }
 
   protected applySize(size: RichSizeToken, selectEl?: HTMLSelectElement): void {
     if (!size) return;
-    this.restoreSelection();
-    this.applyTokenMark('size', size);
+    this.applyRangeMark((doc, a, b) => applySizeOnDoc(doc, a, b, size), { allowCollapsed: false });
     if (selectEl) selectEl.selectedIndex = 0;
   }
 
@@ -357,112 +472,60 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     const raw = select.value;
     if (!raw) return;
     const color = raw as RichColorToken;
-    this.restoreSelection();
-    const sel = window.getSelection();
-    if (sel && !sel.isCollapsed && sel.rangeCount > 0) {
-      this.applyTokenMark('color', color);
+    this.focusEditor();
+    if (!this.restoreSelection()) {
+      const savedBm = this.bookmarkFromSavedRange();
+      if (savedBm) this.restoreSelectionBookmark(savedBm);
+    }
+    const root = this.editorHost()?.nativeElement;
+    if (!root) return;
+    const bm = this.captureSelectionBookmark() ?? this.bookmarkFromSavedRange();
+    if (!bm) {
+      select.selectedIndex = 0;
+      return;
+    }
+    const doc = richDocFromEditorRoot(root);
+    const collapsed = bm.start === bm.end;
+    const next = collapsed
+      ? applyParagraphBaseColorOnDoc(doc, bm.start, color)
+      : applyColorOnDoc(doc, bm.start, bm.end, color);
+    if (JSON.stringify(doc) !== JSON.stringify(next)) {
+      this.commitDoc(next, true, collapsed ? { start: bm.start, end: bm.start } : bm);
     } else {
-      this.applyParagraphColor(color);
+      this.keepSelection(bm);
     }
     select.selectedIndex = 0;
   }
 
   /**
-   * Replace (not nest) size/color marks on the current selection.
-   * Extracts the range, strips prior token attrs, wraps once, reselects.
+   * Shared path: bookmark → model transform → repaint + restore selection.
+   * Prefer this over contenteditable extractContents for mark surgery.
    */
-  private applyTokenMark(kind: 'size' | 'color', value: string): void {
+  private applyRangeMark(
+    fn: (doc: RichDoc, start: number, end: number) => RichDoc,
+    opts?: { allowCollapsed?: boolean },
+  ): void {
     this.focusEditor();
-    const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
-    const range = sel.getRangeAt(0);
-    const frag = range.extractContents();
-    this.stripTokenFromFragment(frag, kind);
-
-    const isNeutral =
-      (kind === 'size' && value === 'body') || (kind === 'color' && value === 'body');
-
-    if (isNeutral) {
-      range.insertNode(frag);
-      this.refreshSavedRangeFromLive();
-      this.scheduleEmit(true);
-      return;
+    if (!this.restoreSelection()) {
+      const savedBm = this.bookmarkFromSavedRange();
+      if (savedBm) this.restoreSelectionBookmark(savedBm);
     }
-
-    const span = document.createElement('span');
-    if (kind === 'size') {
-      span.className = `rt-size-${value}`;
-      span.setAttribute('data-rt-size', value);
-    } else {
-      span.className = `text-${value}`;
-      span.setAttribute('data-rt-color', value);
-    }
-    span.appendChild(frag);
-    range.insertNode(span);
-    const next = document.createRange();
-    next.selectNodeContents(span);
-    sel.removeAllRanges();
-    sel.addRange(next);
-    this.savedRange = next.cloneRange();
-    this.scheduleEmit(true);
-  }
-
-  private stripTokenFromFragment(root: DocumentFragment | Node, kind: 'size' | 'color'): void {
-    const walk = (node: Node): void => {
-      if (node.nodeType !== Node.ELEMENT_NODE) return;
-      const el = node as HTMLElement;
-      if (kind === 'size') {
-        el.removeAttribute('data-rt-size');
-        for (const c of Array.from(el.classList)) {
-          if (c.startsWith('rt-size-')) el.classList.remove(c);
-        }
-      } else {
-        el.removeAttribute('data-rt-color');
-        for (const c of ['text-body', 'text-heading', 'text-accent', 'text-gold', 'text-dim']) {
-          el.classList.remove(c);
-        }
-      }
-      Array.from(el.childNodes).forEach(walk);
-      if (
-        el.tagName === 'SPAN' &&
-        !el.className.trim() &&
-        !el.getAttribute('data-rt-size') &&
-        !el.getAttribute('data-rt-color') &&
-        el.childNodes.length
-      ) {
-        const parent = el.parentNode;
-        if (parent) {
-          while (el.firstChild) parent.insertBefore(el.firstChild, el);
-          parent.removeChild(el);
-        }
-      }
-    };
-    Array.from(root.childNodes).forEach(walk);
-  }
-
-  private applyParagraphColor(color: RichColorToken | ''): void {
     const root = this.editorHost()?.nativeElement;
     if (!root) return;
-    const sel = window.getSelection();
-    let p: HTMLElement | null = null;
-    if (sel?.anchorNode) {
-      p =
-        sel.anchorNode.nodeType === Node.ELEMENT_NODE
-          ? (sel.anchorNode as HTMLElement).closest('p')
-          : sel.anchorNode.parentElement?.closest('p') ?? null;
+    const bm = this.captureSelectionBookmark() ?? this.bookmarkFromSavedRange();
+    if (!bm) return;
+    if (opts?.allowCollapsed === false && bm.start === bm.end) {
+      this.keepSelection(bm);
+      return;
     }
-    if (!p) p = root.querySelector('p');
-    if (!p) return;
-    if (color) {
-      p.setAttribute('data-rt-color', color);
-      p.classList.remove('text-body', 'text-heading', 'text-accent', 'text-gold', 'text-dim');
-      p.classList.add(`text-${color}`);
-    } else {
-      p.removeAttribute('data-rt-color');
-      p.classList.remove('text-heading', 'text-accent', 'text-gold', 'text-dim');
-      p.classList.add('text-body');
+    this.restoreSelectionBookmark(bm);
+    const doc = richDocFromEditorRoot(root);
+    const next = fn(doc, bm.start, bm.end);
+    if (JSON.stringify(doc) === JSON.stringify(next)) {
+      this.keepSelection(bm);
+      return;
     }
-    this.scheduleEmit(true);
+    this.commitDoc(next, true, bm);
   }
 
   protected openLink(): void {
@@ -661,12 +724,14 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     if (!this.historyPast.length) return;
     const root = this.editorHost()?.nativeElement;
     if (!root) return;
+    // Prefer live selection; fall back to last toolbar snapshot.
+    const bm = this.captureSelectionBookmark() ?? this.bookmarkFromSavedRange();
     const current = JSON.stringify(richDocFromEditorRoot(root));
     const prev = this.historyPast.pop()!;
     this.historyFuture.push(current);
     this.historySuspended = true;
     const doc = JSON.parse(prev) as RichDoc;
-    this.commitDoc(doc, true);
+    this.commitDoc(doc, true, bm);
     this.historySuspended = false;
     this.canUndo.set(this.historyPast.length > 0);
     this.canRedo.set(this.historyFuture.length > 0);
@@ -676,40 +741,32 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     if (!this.historyFuture.length) return;
     const root = this.editorHost()?.nativeElement;
     if (!root) return;
+    const bm = this.captureSelectionBookmark() ?? this.bookmarkFromSavedRange();
     const current = JSON.stringify(richDocFromEditorRoot(root));
     const next = this.historyFuture.pop()!;
     this.historyPast.push(current);
     this.historySuspended = true;
     const doc = JSON.parse(next) as RichDoc;
-    this.commitDoc(doc, true);
+    this.commitDoc(doc, true, bm);
     this.historySuspended = false;
     this.canUndo.set(this.historyPast.length > 0);
     this.canRedo.set(this.historyFuture.length > 0);
   }
 
-  private wrapSelection(tag: string, attrs: Record<string, string>): void {
-    this.focusEditor();
-    this.restoreSelection();
-    const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
-    const range = sel.getRangeAt(0);
-    const el = document.createElement(tag);
-    for (const [k, v] of Object.entries(attrs)) {
-      if (v) el.setAttribute(k, v);
-    }
+  private bookmarkFromSavedRange(): { start: number; end: number } | null {
+    if (!this.savedRange) return null;
+    const root = this.editorHost()?.nativeElement;
+    if (!root || !root.contains(this.savedRange.commonAncestorContainer)) return null;
     try {
-      range.surroundContents(el);
+      const pre = document.createRange();
+      pre.selectNodeContents(root);
+      pre.setEnd(this.savedRange.startContainer, this.savedRange.startOffset);
+      const start = pre.toString().length;
+      pre.setEnd(this.savedRange.endContainer, this.savedRange.endOffset);
+      return { start, end: Math.max(start, pre.toString().length) };
     } catch {
-      const frag = range.extractContents();
-      el.appendChild(frag);
-      range.insertNode(el);
+      return null;
     }
-    const next = document.createRange();
-    next.selectNodeContents(el);
-    sel.removeAllRanges();
-    sel.addRange(next);
-    this.savedRange = next.cloneRange();
-    this.scheduleEmit(true);
   }
 
   private focusEditor(): void {
@@ -733,8 +790,13 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   /**
    * @param repaint When true, rewrite editor HTML from model (undo/clear).
    *                When false, keep live DOM (typing / toolbar marks).
+   * @param restoreBm Optional plain-text bookmark to re-select after repaint.
    */
-  private commitDoc(next: RichDoc, repaint: boolean): void {
+  private commitDoc(
+    next: RichDoc,
+    repaint: boolean,
+    restoreBm?: { start: number; end: number } | null,
+  ): void {
     const snap = JSON.stringify(next);
     if (!this.historySuspended && this.lastSnapshot && this.lastSnapshot !== snap) {
       this.historyPast.push(this.lastSnapshot);
@@ -750,6 +812,11 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
       }
       this.applying = false;
       this.savedRange = null;
+      if (restoreBm) {
+        this.restoreSelectionBookmark(restoreBm);
+        requestAnimationFrame(() => this.restoreSelectionBookmark(restoreBm));
+      }
+      if (this.infoMode()) this.refreshInfoLabels();
     }
     this.suspiciousCount.set(richDocSuspiciousCount(next));
     this.codeText.set(richDocToHtml(next, { forEditor: false }));

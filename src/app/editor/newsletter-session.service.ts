@@ -67,6 +67,9 @@ export class NewsletterSession {
   private paragraphEditDraft: { blockId: string; body: RichDoc } | null = null;
   /** Optional flusher so Save picks up the last debounced keystrokes. */
   private paragraphDraftFlush: (() => void) | null = null;
+  /** Paragraph email-width toggle may ask the edit modal to grow. */
+  private readonly editModalMinWidthSignal = signal<number | null>(null);
+  readonly editModalMinWidth = this.editModalMinWidthSignal.asReadonly();
 
   private undoStack: Newsletter[] = [];
   private redoStack: Newsletter[] = [];
@@ -266,6 +269,7 @@ export class NewsletterSession {
     this.editBaselineBlock = block ? structuredClone(block) : null;
     this.editUndoDepth = this.undoStack.length;
     this.paragraphEditDraft = null;
+    this.editModalMinWidthSignal.set(null);
     this.editingBlockIdSignal.set(id);
   }
 
@@ -282,11 +286,17 @@ export class NewsletterSession {
     this.paragraphDraftFlush = fn;
   }
 
+  /** Ask the open edit modal to be at least this wide (px), or clear. */
+  requestEditModalMinWidth(px: number | null): void {
+    this.editModalMinWidthSignal.set(px);
+  }
+
   /** Discard in-progress field edits and close the modal. */
   cancelBlockEditor(): void {
     this.endCoalesce();
     this.paragraphDraftFlush = null;
     this.paragraphEditDraft = null;
+    this.editModalMinWidthSignal.set(null);
     const baseline = this.editBaselineBlock;
     const id = this.editingBlockIdSignal();
     if (baseline && id) {
@@ -330,6 +340,7 @@ export class NewsletterSession {
     }
     this.paragraphEditDraft = null;
     this.paragraphDraftFlush = null;
+    this.editModalMinWidthSignal.set(null);
     this.editBaselineBlock = null;
     this.editUndoDepth = 0;
     this.editingBlockIdSignal.set(null);

@@ -18,7 +18,10 @@ function colorClass(color?: string, asBase = false): string {
   return '';
 }
 
-function openMarks(m?: RichMarks): { open: string; close: string } {
+function openMarks(
+  m: RichMarks | undefined,
+  opts: { forEditor?: boolean },
+): { open: string; close: string } {
   const marks = normalizeMarks(m);
   if (!marks) return { open: '', close: '' };
   const classes = `${sizeClass(marks.size)}${colorClass(marks.color)}`.trim();
@@ -29,7 +32,13 @@ function openMarks(m?: RichMarks): { open: string; close: string } {
     close = `</${tag}>` + close;
   };
   if (classes) {
-    push('span', ` class="${classes}"`);
+    // Editor: dual-write data-rt-* so Info mode and toolbar apply paths match seed HTML.
+    let attrs = ` class="${classes}"`;
+    if (opts.forEditor) {
+      if (marks.size && marks.size !== 'body') attrs += ` data-rt-size="${marks.size}"`;
+      if (marks.color && marks.color !== 'body') attrs += ` data-rt-color="${marks.color}"`;
+    }
+    push('span', attrs);
   }
   if (marks.link?.href) {
     const target = marks.link.target === '_self' ? '_self' : '_blank';
@@ -58,7 +67,7 @@ function renderInlines(
         : opts.cleanExport !== false
           ? cleanPlainText(n.text)
           : n.text;
-      const { open, close } = openMarks(n.marks);
+      const { open, close } = openMarks(n.marks, { forEditor: !!opts.forEditor });
       const body = opts.highlightSuspicious
         ? highlightSuspiciousHtml(text, escapeHtml)
         : escapeHtml(text);

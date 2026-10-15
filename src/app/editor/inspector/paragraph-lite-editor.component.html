@@ -110,14 +110,16 @@
     ></button>
     <button
       type="button"
-      class="ed-btn"
+      class="ed-btn rt-info-btn"
       data-testid="rt-info-mode"
       [class.is-active]="infoMode()"
       [title]="i18n.t('rt.infoMode')"
+      [attr.aria-label]="i18n.t('rt.infoMode')"
       (mousedown)="$event.preventDefault()"
       (click)="toggleInfoMode()"
-      [textContent]="i18n.t('rt.infoModeShort')"
-    ></button>
+    >
+      i
+    </button>
     <button
       type="button"
       class="ed-btn"
@@ -129,7 +131,9 @@
     ></button>
   </div>
 
-  <style [textContent]="cloneCss()"></style>
+  @if (stashFlash()) {
+    <p class="rt-stash-flash" data-testid="rt-stash-flash" role="status" [textContent]="i18n.t('rt.stashFlash')"></p>
+  }
 
   @if (linkOpen()) {
     <div class="rt-link-popover" data-testid="rt-link-popover">

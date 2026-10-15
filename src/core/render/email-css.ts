@@ -233,7 +233,8 @@ export function emailDocumentCss(globals: Globals): string {
   .paragraph-body s { text-decoration: line-through; }
   .paragraph-body code.rt-mono, .rt-mono {
     font-family: 'Courier New', Courier, monospace;
-    font-size: 0.95em;
+    font-size: 16px;
+    line-height: 1.35;
   }
 
   /* CTA button */
@@ -493,6 +494,10 @@ export function paragraphEditorSurfaceCss(globals: Globals): string {
   const dim = '#4a6a88';
   const w = EMAIL_CONTENT_WIDTH_PX;
 
+  /* Preview selected-block chrome (shell PREVIEW_EDITOR_CHROME). */
+  const selectOutline = '#20d4c8';
+  const selectGlow = 'rgba(32, 212, 200, 0.95)';
+
   return `
 .rt-editor.rt-clone {
   --email-content-bg: ${contentBg};
@@ -503,16 +508,21 @@ export function paragraphEditorSurfaceCss(globals: Globals): string {
   --email-dim: ${dim};
   --email-font: ${font};
   box-sizing: border-box;
-  background-color: var(--email-content-bg);
-  color: var(--email-body);
-  font-family: var(--email-font);
+  background-color: var(--email-content-bg) !important;
+  color: var(--email-body) !important;
+  font-family: var(--email-font) !important;
   padding: 24px 48px;
-  border: 1px solid color-mix(in srgb, var(--email-body) 22%, transparent);
-  border-radius: var(--ds-radius, 6px);
+  /* Same solid turquoise frame as a selected block in the email preview. */
+  box-shadow: inset 0 0 0 2px ${selectGlow};
+  outline: 2px solid ${selectOutline};
+  outline-offset: -2px;
+  border-radius: 0;
 }
 .rt-editor.rt-clone.rt-email-width {
-  width: ${w}px;
-  max-width: 100%;
+  width: ${w}px !important;
+  min-width: ${w}px !important;
+  max-width: ${w}px !important;
+  flex-shrink: 0;
 }
 .rt-editor.rt-clone .paragraph-body {
   font-family: var(--email-font);
@@ -544,7 +554,9 @@ export function paragraphEditorSurfaceCss(globals: Globals): string {
 .rt-editor.rt-clone .paragraph-body code.rt-mono,
 .rt-editor.rt-clone .rt-mono {
   font-family: 'Courier New', Courier, monospace;
-  font-size: 0.95em;
+  /* Absolute size — relative em nested on every Mono click and shrank the text. */
+  font-size: 16px;
+  line-height: 1.35;
 }
 .rt-editor.rt-clone .text-body { color: var(--email-body); }
 .rt-editor.rt-clone .text-heading { color: var(--email-heading); }
@@ -573,9 +585,17 @@ export function paragraphEditorSurfaceCss(globals: Globals): string {
   pointer-events: none;
   user-select: none;
 }
+/* Span color may be class-only (seed/paint) or data-rt-color (live toolbar). */
 .rt-editor.rt-clone.rt-info [class*="rt-size-"],
 .rt-editor.rt-clone.rt-info a.rt-link,
-.rt-editor.rt-clone.rt-info [data-rt-color]:not(.paragraph-body) {
+.rt-editor.rt-clone.rt-info code.rt-mono,
+.rt-editor.rt-clone.rt-info span.text-heading,
+.rt-editor.rt-clone.rt-info span.text-accent,
+.rt-editor.rt-clone.rt-info span.text-gold,
+.rt-editor.rt-clone.rt-info span.text-dim,
+.rt-editor.rt-clone.rt-info span.text-body,
+.rt-editor.rt-clone.rt-info [data-rt-color]:not(.paragraph-body),
+.rt-editor.rt-clone.rt-info [data-rt-size] {
   box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--email-gold) 70%, transparent);
 }
 `;

@@ -38,6 +38,49 @@
   background: color-mix(in srgb, var(--ds-accent) 14%, transparent);
 }
 
+.rt-info-btn {
+  min-width: 2rem;
+  font-style: italic;
+  font-weight: 700;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+.rt-stash-flash {
+  margin: 0;
+  padding: 0.35rem 0.55rem;
+  border-radius: var(--ds-radius, 6px);
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #0a2e1a;
+  background: color-mix(in srgb, #3dd68c 82%, #fff);
+  border: 1px solid color-mix(in srgb, #3dd68c 70%, #0a2e1a);
+  animation: rt-stash-in-out 1.8s ease forwards;
+}
+
+@keyframes rt-stash-in-out {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  12% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rt-stash-flash {
+    animation: none;
+    opacity: 1;
+  }
+}
+
 .rt-badge {
   display: inline-block;
   margin-inline-start: 0.2rem;
@@ -72,9 +115,10 @@
   white-space: pre-wrap;
 }
 
-.rt-editor:focus-visible {
-  outline: 2px solid var(--ds-accent);
-  outline-offset: 1px;
+/* Focus ring outside the turquoise selection frame (clone CSS owns the frame). */
+.rt-editor.rt-clone:focus-visible {
+  outline: 2px solid #20d4c8;
+  outline-offset: 2px;
 }
 
 .rt-mono-label {

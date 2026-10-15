@@ -98,7 +98,8 @@
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  overflow-x: hidden;
+  /* Allow horizontal scroll if email-width clone exceeds dialog briefly. */
+  overflow-x: auto;
   overflow-y: auto;
   padding: 1rem clamp(0.85rem, 2vw, 1.35rem) 0.85rem;
   overscroll-behavior: contain;

@@ -193,3 +193,235 @@ export function cleanAiCharsOnDoc(doc: RichDoc): RichDoc {
     })),
   );
 }
+
+/** Boolean inline marks toggleable on a plain-text range. */
+export type RichToggleMark = 'bold' | 'italic' | 'strike' | 'sup' | 'sub' | 'mono';
+
+type SpanHit = { spanStart: number; spanEnd: number; has: boolean };
+
+/** Resolve [start,end) against text-only offsets; expand caret to enclosing span. */
+function resolveTextRange(
+  doc: RichDoc,
+  start: number,
+  end: number,
+  hasMark: (m?: RichMarks) => boolean,
+): { a: number; b: number; hits: SpanHit[] } | null {
+  let a = Math.max(0, Math.min(start, end));
+  let b = Math.max(0, Math.max(start, end));
+  const hits: SpanHit[] = [];
+  let pos = 0;
+  for (const p of doc) {
+    for (const ch of p.children) {
+      if (ch.type === 'br') continue;
+      const spanStart = pos;
+      const spanEnd = pos + ch.text.length;
+      hits.push({ spanStart, spanEnd, has: hasMark(ch.marks) });
+      pos = spanEnd;
+    }
+  }
+  if (!hits.length) return null;
+  if (a === b) {
+    const hit =
+      hits.find((h) => a >= h.spanStart && a < h.spanEnd) ??
+      hits.find((h) => a === h.spanEnd) ??
+      hits[hits.length - 1];
+    if (!hit) return null;
+    a = hit.spanStart;
+    b = hit.spanEnd;
+  }
+  if (a === b) return null;
+  return { a, b, hits };
+}
+
+function mapRangeSpans(
+  doc: RichDoc,
+  a: number,
+  b: number,
+  applyMid: (base: RichMarks) => RichMarks | undefined,
+): RichDoc {
+  const next: RichDoc = doc.map((p) => ({
+    type: 'p' as const,
+    color: p.color,
+    children: p.children.map((ch) =>
+      ch.type === 'br' ? ch : { type: 'text' as const, text: ch.text, marks: normalizeMarks(ch.marks) },
+    ),
+  }));
+
+  let pos = 0;
+  for (const p of next) {
+    const newChildren: RichInline[] = [];
+    for (const ch of p.children) {
+      if (ch.type === 'br') {
+        newChildren.push(ch);
+        continue;
+      }
+      const spanStart = pos;
+      const spanEnd = pos + ch.text.length;
+      pos = spanEnd;
+      const lo = Math.max(a, spanStart);
+      const hi = Math.min(b, spanEnd);
+      if (hi <= lo) {
+        newChildren.push(ch);
+        continue;
+      }
+      const localLo = lo - spanStart;
+      const localHi = hi - spanStart;
+      const before = ch.text.slice(0, localLo);
+      const mid = ch.text.slice(localLo, localHi);
+      const after = ch.text.slice(localHi);
+      const base = normalizeMarks(ch.marks) ?? {};
+      if (before) newChildren.push({ type: 'text', text: before, marks: normalizeMarks(base) });
+      if (mid) {
+        newChildren.push({
+          type: 'text',
+          text: mid,
+          marks: normalizeMarks(applyMid({ ...base })),
+        });
+      }
+      if (after) newChildren.push({ type: 'text', text: after, marks: normalizeMarks(base) });
+    }
+    p.children = newChildren.length ? newChildren : [{ type: 'text', text: '' }];
+  }
+  return compactDoc(next);
+}
+
+/**
+ * Toggle a boolean mark on [start, end) plain-text offsets (text nodes only —
+ * same as contenteditable TreeWalker SHOW_TEXT / selection bookmarks).
+ * If every covered character already has the mark → turn off; otherwise on.
+ * Collapsed range: toggle the whole text span containing the caret.
+ */
+export function toggleMarkOnDoc(
+  doc: RichDoc,
+  start: number,
+  end: number,
+  mark: RichToggleMark,
+): RichDoc {
+  const resolved = resolveTextRange(doc, start, end, (m) => !!m?.[mark]);
+  if (!resolved) return doc;
+  const { a, b, hits } = resolved;
+
+  let covered = 0;
+  let marked = 0;
+  for (const h of hits) {
+    const lo = Math.max(a, h.spanStart);
+    const hi = Math.min(b, h.spanEnd);
+    if (hi <= lo) continue;
+    const n = hi - lo;
+    covered += n;
+    if (h.has) marked += n;
+  }
+  if (covered === 0) return doc;
+  const turnOn = marked < covered;
+
+  return mapRangeSpans(doc, a, b, (base) => {
+    const marks: RichMarks = { ...base };
+    if (turnOn) marks[mark] = true;
+    else delete marks[mark];
+    // sup/sub are mutually exclusive in the lite kit.
+    if (turnOn && mark === 'sup') delete marks.sub;
+    if (turnOn && mark === 'sub') delete marks.sup;
+    return marks;
+  });
+}
+
+/** @deprecated use toggleMarkOnDoc(doc, start, end, 'mono') */
+export function toggleMonoOnDoc(doc: RichDoc, start: number, end: number): RichDoc {
+  return toggleMarkOnDoc(doc, start, end, 'mono');
+}
+
+/** Apply semantic size on range (body clears size mark). Preserves other marks. */
+export function applySizeOnDoc(
+  doc: RichDoc,
+  start: number,
+  end: number,
+  size: RichSizeToken,
+): RichDoc {
+  const resolved = resolveTextRange(doc, start, end, () => false);
+  if (!resolved) return doc;
+  const { a, b } = resolved;
+  return mapRangeSpans(doc, a, b, (base) => {
+    const marks: RichMarks = { ...base };
+    if (!size || size === 'body') delete marks.size;
+    else marks.size = size;
+    return marks;
+  });
+}
+
+/** Apply span theme color on range (body clears span color). */
+export function applyColorOnDoc(
+  doc: RichDoc,
+  start: number,
+  end: number,
+  color: RichColorToken,
+): RichDoc {
+  const resolved = resolveTextRange(doc, start, end, () => false);
+  if (!resolved) return doc;
+  const { a, b } = resolved;
+  return mapRangeSpans(doc, a, b, (base) => {
+    const marks: RichMarks = { ...base };
+    if (!color || color === 'body') delete marks.color;
+    else marks.color = color;
+    return marks;
+  });
+}
+
+/** Set paragraph base color by plain-text offset (paragraph containing `at`). */
+export function applyParagraphBaseColorOnDoc(
+  doc: RichDoc,
+  at: number,
+  color: RichColorToken | '',
+): RichDoc {
+  let pos = 0;
+  let target = 0;
+  for (let pi = 0; pi < doc.length; pi++) {
+    const p = doc[pi];
+    const start = pos;
+    for (const ch of p.children) {
+      if (ch.type === 'br') continue;
+      pos += ch.text.length;
+    }
+    const end = pos;
+    if (at >= start && at <= end) {
+      target = pi;
+      break;
+    }
+    target = pi;
+  }
+  return compactDoc(
+    doc.map((p, pi) => ({
+      type: 'p' as const,
+      color: pi === target ? (color && color !== 'body' ? color : undefined) : p.color,
+      children: p.children,
+    })),
+  );
+}
+
+/** Apply / replace link on range; empty href strips link. Label text unchanged. */
+export function applyLinkOnDoc(
+  doc: RichDoc,
+  start: number,
+  end: number,
+  href: string,
+  target: RichLinkTarget = '_blank',
+): RichDoc {
+  const resolved = resolveTextRange(doc, start, end, () => false);
+  if (!resolved) return doc;
+  const { a, b } = resolved;
+  const clean = href.trim();
+  if (!clean || /^javascript:/i.test(clean)) {
+    return mapRangeSpans(doc, a, b, (base) => {
+      const marks: RichMarks = { ...base };
+      delete marks.link;
+      return marks;
+    });
+  }
+  const normalized =
+    clean.includes('://') || clean.startsWith('mailto:') || clean.startsWith('tel:') || clean.startsWith('#')
+      ? clean
+      : `https://${clean}`;
+  return mapRangeSpans(doc, a, b, (base) => ({
+    ...base,
+    link: { href: normalized, target: target === '_self' ? '_self' : '_blank' },
+  }));
+}

@@ -88,6 +88,19 @@ export class BlockEditModalComponent {
       requestAnimationFrame(() => this.openVisual.set(true));
       queueMicrotask(() => this.cancelBtn()?.nativeElement.focus());
     });
+    // Paragraph “Email width” may request a wider dialog so the 600px clone fits.
+    effect(() => {
+      const minW = this.session.editModalMinWidth();
+      if (minW == null || !this.session.editingBlockId()) return;
+      const g = this.geo();
+      const w = Math.max(MIN_W, Math.min(window.innerWidth - 16, Math.max(g.w, minW)));
+      if (w === g.w) return;
+      this.geo.set({
+        ...g,
+        w,
+        x: this.clampX(g.x, w),
+      });
+    });
   }
 
   /** Outside click must not dismiss — only Cancel / Save / Escape. */
