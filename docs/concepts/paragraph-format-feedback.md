@@ -2,7 +2,7 @@
 
 Shipped concept (v0.2.4): the Paragraph lite editor is a visual clone of email body copy, with draft-local editing and preview freeze until Save.
 
-Audience: non-technical field sellers. English only.
+Audience: non-technical marketing experts.
 
 Related: `block-content-editing.md`, `email-colors.md`, `AGENTS.md`.
 
