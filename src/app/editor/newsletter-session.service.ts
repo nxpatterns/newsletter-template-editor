@@ -8,7 +8,9 @@ import {
   type Block,
   type Globals,
   type Newsletter,
+  type RichDoc,
 } from '../../core';
+import { clearParagraphStash } from './paragraph-draft-stash';
 import {
   buildProjectEnvelope,
   deleteLibraryEntry,
@@ -58,6 +60,13 @@ export class NewsletterSession {
   private editBaselineBlock: Block | null = null;
   /** Undo-stack depth when the modal opened — cancel trims entries pushed during edit. */
   private editUndoDepth = 0;
+  /**
+   * Paragraph WYSIWYG draft while the modal is open.
+   * Does not mutate the newsletter/preview until Save.
+   */
+  private paragraphEditDraft: { blockId: string; body: RichDoc } | null = null;
+  /** Optional flusher so Save picks up the last debounced keystrokes. */
+  private paragraphDraftFlush: (() => void) | null = null;
 
   private undoStack: Newsletter[] = [];
   private redoStack: Newsletter[] = [];
@@ -256,12 +265,28 @@ export class NewsletterSession {
     const block = this.newsletterSignal().blocks.find((b) => b.id === id) ?? null;
     this.editBaselineBlock = block ? structuredClone(block) : null;
     this.editUndoDepth = this.undoStack.length;
+    this.paragraphEditDraft = null;
     this.editingBlockIdSignal.set(id);
+  }
+
+  /**
+   * Paragraph lite editor only: keep body draft local so the iframe stays on the
+   * open snapshot until Save. Other block fields still use updateBlock live.
+   */
+  setParagraphEditDraft(blockId: string, body: RichDoc): void {
+    this.paragraphEditDraft = { blockId, body: structuredClone(body) };
+  }
+
+  /** Register/clear a flush callback from the live paragraph editor (debounce). */
+  registerParagraphDraftFlush(fn: (() => void) | null): void {
+    this.paragraphDraftFlush = fn;
   }
 
   /** Discard in-progress field edits and close the modal. */
   cancelBlockEditor(): void {
     this.endCoalesce();
+    this.paragraphDraftFlush = null;
+    this.paragraphEditDraft = null;
     const baseline = this.editBaselineBlock;
     const id = this.editingBlockIdSignal();
     if (baseline && id) {
@@ -288,14 +313,27 @@ export class NewsletterSession {
     this.editingBlockIdSignal.set(null);
   }
 
-  /** Keep live edits and close the modal. */
+  /** Commit live edits (and paragraph draft) then close the modal. */
   saveBlockEditor(): void {
     this.endCoalesce();
+    // Pull last debounced keystrokes into paragraphEditDraft before commit.
+    try {
+      this.paragraphDraftFlush?.();
+    } catch {
+      /* editor may already be tearing down */
+    }
     const id = this.editingBlockIdSignal();
+    const draft = this.paragraphEditDraft;
+    if (draft && id && draft.blockId === id) {
+      this.updateBlock(id, { body: structuredClone(draft.body) } as never, 'immediate');
+      clearParagraphStash(this.libraryIdSignal(), id);
+    }
+    this.paragraphEditDraft = null;
+    this.paragraphDraftFlush = null;
     this.editBaselineBlock = null;
     this.editUndoDepth = 0;
     this.editingBlockIdSignal.set(null);
-    // Stay on the block that was just edited (preview may have reloaded during live typing).
+    // Stay on the block that was just edited.
     if (id) this.requestPreviewScroll(id);
   }
 
@@ -340,6 +378,8 @@ export class NewsletterSession {
       if (this.editingBlockIdSignal() === id) {
         this.editingBlockIdSignal.set(null);
         this.editBaselineBlock = null;
+        this.paragraphEditDraft = null;
+        this.paragraphDraftFlush = null;
       }
       return { ...n, blocks };
     });

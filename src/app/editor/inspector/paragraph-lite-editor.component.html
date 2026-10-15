@@ -97,7 +97,39 @@
       (click)="toggleCodeView()"
       [textContent]="i18n.t('rt.codeViewShort')"
     ></button>
+    <span class="rt-sep" aria-hidden="true"></span>
+    <button
+      type="button"
+      class="ed-btn"
+      data-testid="rt-email-width"
+      [class.is-active]="emailWidth()"
+      [title]="i18n.t('rt.emailWidth')"
+      (mousedown)="$event.preventDefault()"
+      (click)="toggleEmailWidth()"
+      [textContent]="i18n.t('rt.emailWidthShort')"
+    ></button>
+    <button
+      type="button"
+      class="ed-btn"
+      data-testid="rt-info-mode"
+      [class.is-active]="infoMode()"
+      [title]="i18n.t('rt.infoMode')"
+      (mousedown)="$event.preventDefault()"
+      (click)="toggleInfoMode()"
+      [textContent]="i18n.t('rt.infoModeShort')"
+    ></button>
+    <button
+      type="button"
+      class="ed-btn"
+      data-testid="rt-stash-draft"
+      [title]="i18n.t('rt.stashDraft')"
+      (mousedown)="$event.preventDefault()"
+      (click)="stashDraft()"
+      [textContent]="i18n.t('rt.stashDraftShort')"
+    ></button>
   </div>
+
+  <style [textContent]="cloneCss()"></style>
 
   @if (linkOpen()) {
     <div class="rt-link-popover" data-testid="rt-link-popover">
@@ -148,11 +180,13 @@
 
   <div
     #editor
-    class="rt-editor ed-textarea"
+    class="rt-editor rt-clone"
     data-testid="insp-paragraph-html"
     contenteditable="true"
     role="textbox"
     aria-multiline="true"
+    [class.rt-email-width]="emailWidth()"
+    [class.rt-info]="infoMode()"
     [hidden]="codeView()"
     [attr.aria-label]="i18n.t('field.paragraphHtml')"
     (click)="onEditorClick($event)"

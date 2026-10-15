@@ -2,6 +2,9 @@ import type { FontFamilyPreset, Globals } from '../types';
 
 export type RenderMode = 'preview' | 'export';
 
+/** Mail content column width (px) — matches `.email-container` in email CSS. */
+export const EMAIL_CONTENT_WIDTH_PX = 600;
+
 export const FONT_PRESETS: Record<
   Exclude<FontFamilyPreset, 'Custom'>,
   { label: string; stack: string }

@@ -98,6 +98,17 @@ export const EN: MessageCatalog = {
   'rt.aiStatus.found':
     'In your text, {n} AI watermarks/characters were detected. To remove them, click Remove AI Chars.',
   'rt.aiStatus.none': 'No AI special characters/watermarks detected.',
+  'rt.emailWidth': 'Match email column width (line wraps like the preview)',
+  'rt.emailWidthShort': 'Email width',
+  'rt.infoMode': 'Show Appearance and Color labels on paragraphs',
+  'rt.infoModeShort': 'Info',
+  'rt.stashDraft': 'Remember draft without saving to the newsletter',
+  'rt.stashDraftShort': 'Stash',
+  'rt.stashRestoreTitle': 'Restore unsaved paragraph draft?',
+  'rt.stashRestoreBody':
+    'A stashed draft from a previous edit is available for this paragraph. Restore it in the editor? (The email preview stays unchanged until you Save.)',
+  'rt.stashRestoreYes': 'Restore',
+  'rt.stashRestoreNo': 'Discard stash',
   'field.ctaText': 'Button text',
   'field.ctaHref': 'Button link',
   'field.dividerStyle': 'Divider style',

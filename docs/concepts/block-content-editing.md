@@ -40,7 +40,9 @@ Git anchor: export inliner landed as `feat(render): implement CSS inliner for em
 
 - Select block in list or preview → highlight only.
 - Edit opens only via ✎ (list or preview) → shared **edit modal**.
-- Modal: larger dialog (drag header, resize corner; geometry per block type in localStorage), live preview while typing, footer **Cancel** / **Save**.
+- Modal: larger dialog (drag header, resize corner; geometry per block type in localStorage), footer **Cancel** / **Save**.
+- **Live preview while typing** for structured/plain block fields (hero, benefits, CTA, …).
+- **Paragraph (WYSIWYG only):** main email preview stays frozen on the open snapshot until **Save**; the modal editor is a visual clone of body copy. See `paragraph-format-feedback.md`.
 - Cancel restores the block snapshot from modal open and drops undo entries created during that edit.
 - Save keeps live edits and closes.
 - Escape acts as Cancel. **Backdrop click does not dismiss** — exit must be intentional (Cancel / Save / Escape).
@@ -169,7 +171,8 @@ Product-strength feature, not a polish pass:
 - Implementation: `contenteditable` + commands + mark tree serialize (`richDocFromEditorRoot` / `richDocToHtml`); selection captured before toolbar selects so Appearance/Color/Link re-apply reliably.
 - Local **undo/redo** inside the paragraph editor (toolbar + ⌘/Ctrl+Z); independent of shell document undo while the modal is open.
 - Read-only **Code** view: classed HTML produced by the model (selectable to copy; not editable; no paste into code).
-- Live preview as shipped for other blocks.
+- Preview freeze until Save (draft local to the modal); other blocks keep live preview.
+- Optional: email-width toggle, Info inspect labels, explicit draft stash — see `paragraph-format-feedback.md`.
 
 ### chapter-band
 

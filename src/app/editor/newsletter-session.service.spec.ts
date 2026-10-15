@@ -138,6 +138,61 @@ describe('NewsletterSession', () => {
     expect(session.canUndo()).toBe(false);
   });
 
+  it('paragraph draft does not mutate newsletter until save', () => {
+    const para = session.blocks().find((b) => b.type === 'paragraph');
+    expect(para).toBeTruthy();
+    if (para?.type !== 'paragraph') return;
+    const original = JSON.stringify(para.body);
+    session.openBlockEditor(para.id);
+    session.setParagraphEditDraft(para.id, [
+      { type: 'p', children: [{ type: 'text', text: 'Draft only — not in preview yet' }] },
+    ]);
+    const mid = session.blocks().find((b) => b.id === para.id);
+    expect(mid?.type === 'paragraph' && JSON.stringify(mid.body)).toBe(original);
+    session.saveBlockEditor();
+    const saved = session.blocks().find((b) => b.id === para.id);
+    expect(saved?.type === 'paragraph' && saved.body[0]?.children[0]?.type === 'text').toBe(true);
+    if (saved?.type === 'paragraph' && saved.body[0]?.children[0]?.type === 'text') {
+      expect(saved.body[0].children[0].text).toContain('Draft only');
+    }
+  });
+
+  it('paragraph draft is dropped on cancel without changing newsletter', () => {
+    const para = session.blocks().find((b) => b.type === 'paragraph');
+    expect(para).toBeTruthy();
+    if (para?.type !== 'paragraph') return;
+    const original = JSON.stringify(para.body);
+    session.openBlockEditor(para.id);
+    session.setParagraphEditDraft(para.id, [
+      { type: 'p', children: [{ type: 'text', text: 'Should vanish on cancel' }] },
+    ]);
+    session.cancelBlockEditor();
+    const after = session.blocks().find((b) => b.id === para.id);
+    expect(after?.type === 'paragraph' && JSON.stringify(after.body)).toBe(original);
+  });
+
+  it('save flushes registered paragraph draft callback before commit', () => {
+    const para = session.blocks().find((b) => b.type === 'paragraph');
+    expect(para).toBeTruthy();
+    if (para?.type !== 'paragraph') return;
+    let flushed = false;
+    session.openBlockEditor(para.id);
+    session.registerParagraphDraftFlush(() => {
+      flushed = true;
+      session.setParagraphEditDraft(para.id, [
+        { type: 'p', children: [{ type: 'text', text: 'From flush' }] },
+      ]);
+    });
+    session.saveBlockEditor();
+    expect(flushed).toBe(true);
+    const saved = session.blocks().find((b) => b.id === para.id);
+    expect(
+      saved?.type === 'paragraph' &&
+        saved.body[0]?.children[0]?.type === 'text' &&
+        saved.body[0].children[0].text === 'From flush',
+    ).toBe(true);
+  });
+
   it('reorders blocks by id list', () => {
     const ids = session.blocks().map((b) => b.id);
     const reversed = [...ids].reverse();

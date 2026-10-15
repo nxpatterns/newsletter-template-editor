@@ -98,6 +98,17 @@ export const DE: MessageCatalog = {
   'rt.aiStatus.found':
     'In Ihrem Text wurden {n} AI-Wasserzeichen/Sonderzeichen erkannt. Zum Entfernen auf „AI-Zeichen entfernen“ klicken.',
   'rt.aiStatus.none': 'Keine AI-Sonderzeichen/Wasserzeichen erkannt.',
+  'rt.emailWidth': 'E-Mail-Spaltenbreite (Zeilenumbrüche wie in der Vorschau)',
+  'rt.emailWidthShort': 'E-Mail-Breite',
+  'rt.infoMode': 'Darstellung und Farbe an Absätzen anzeigen',
+  'rt.infoModeShort': 'Info',
+  'rt.stashDraft': 'Entwurf merken, ohne den Newsletter zu speichern',
+  'rt.stashDraftShort': 'Merken',
+  'rt.stashRestoreTitle': 'Ungespeicherten Absatz-Entwurf wiederherstellen?',
+  'rt.stashRestoreBody':
+    'Für diesen Absatz liegt ein gemerkter Entwurf aus einer früheren Bearbeitung vor. Im Editor wiederherstellen? (Die E-Mail-Vorschau bleibt bis Speichern unverändert.)',
+  'rt.stashRestoreYes': 'Wiederherstellen',
+  'rt.stashRestoreNo': 'Entwurf verwerfen',
   'field.ctaText': 'Button-Text',
   'field.ctaHref': 'Button-Link',
   'field.dividerStyle': 'Trenner-Stil',

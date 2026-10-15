@@ -59,12 +59,16 @@
   gap: 0.35rem;
 }
 
+/*
+ * Visual clone skin (type, color, links, content bg) comes from
+ * paragraphEditorSurfaceCss() injected as <style> — keep component SCSS
+ * for chrome only so email tokens cannot drift from a second SCSS copy.
+ */
 .rt-editor {
   min-height: 10rem;
   max-height: 22rem;
   overflow: auto;
   resize: vertical;
-  line-height: 1.45;
   white-space: pre-wrap;
 }
 
@@ -73,30 +77,7 @@
   outline-offset: 1px;
 }
 
-.rt-editor .paragraph-body {
-  margin: 0 0 0.65rem;
-}
-
-.rt-editor .paragraph-body:last-child {
-  margin-bottom: 0;
-}
-
-.rt-editor .rt-size-lead {
-  font-size: 1.15em;
-}
-.rt-editor .rt-size-callout {
-  font-size: 1.35em;
-}
-.rt-editor .rt-size-fine {
-  font-size: 0.9em;
-}
-.rt-editor .rt-size-caption {
-  font-size: 0.8em;
-}
-
-.rt-mono-label,
-.rt-editor .rt-mono,
-.rt-editor code.rt-mono {
+.rt-mono-label {
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.95em;
 }
@@ -104,21 +85,6 @@
 .rt-editor .rt-suspicious {
   outline: 1px dashed color-mix(in srgb, var(--ds-danger, #c44) 70%, transparent);
   background: color-mix(in srgb, #f5c518 35%, transparent);
-}
-
-/* Ice-blue links: spacing + underline only on hover/focus. */
-.rt-editor a.rt-link {
-  cursor: pointer;
-  text-decoration: none;
-  color: var(--ds-accent, #7ecfff);
-  margin: 0 0.12em;
-}
-
-.rt-editor a.rt-link:hover,
-.rt-editor a.rt-link:focus-visible {
-  text-decoration: underline;
-  outline: 1px dotted var(--ds-accent, #7ecfff);
-  outline-offset: 1px;
 }
 
 .rt-ai-status {

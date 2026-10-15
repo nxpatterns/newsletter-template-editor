@@ -1,5 +1,5 @@
 import type { Globals } from '../types';
-import { escapeAttr, fontStack } from './utils';
+import { EMAIL_CONTENT_WIDTH_PX, escapeAttr, fontStack } from './utils';
 
 /**
  * Shared email document stylesheet (preview + export head).
@@ -477,4 +477,106 @@ export function emailDocumentCss(globals: Globals): string {
 /** @deprecated use emailDocumentCss — kept name for call-site clarity during transition */
 export function darkModeCss(globals: Globals): string {
   return emailDocumentCss(globals);
+}
+
+/**
+ * Paragraph lite editor surface: same type/color/link truth as email body copy.
+ * Scoped under `.rt-editor.rt-clone` so app chrome colors stay untouched.
+ */
+export function paragraphEditorSurfaceCss(globals: Globals): string {
+  const contentBg = escapeAttr(globals.contentBgColor);
+  const accent = escapeAttr(globals.accentColor);
+  const gold = escapeAttr(globals.goldColor);
+  const heading = escapeAttr(globals.headingColor);
+  const body = escapeAttr(globals.bodyTextColor);
+  const font = fontStack(globals);
+  const dim = '#4a6a88';
+  const w = EMAIL_CONTENT_WIDTH_PX;
+
+  return `
+.rt-editor.rt-clone {
+  --email-content-bg: ${contentBg};
+  --email-accent: ${accent};
+  --email-gold: ${gold};
+  --email-heading: ${heading};
+  --email-body: ${body};
+  --email-dim: ${dim};
+  --email-font: ${font};
+  box-sizing: border-box;
+  background-color: var(--email-content-bg);
+  color: var(--email-body);
+  font-family: var(--email-font);
+  padding: 24px 48px;
+  border: 1px solid color-mix(in srgb, var(--email-body) 22%, transparent);
+  border-radius: var(--ds-radius, 6px);
+}
+.rt-editor.rt-clone.rt-email-width {
+  width: ${w}px;
+  max-width: 100%;
+}
+.rt-editor.rt-clone .paragraph-body {
+  font-family: var(--email-font);
+  font-size: 17px;
+  line-height: 30px;
+  color: var(--email-body);
+  margin: 0 0 16px 0;
+}
+.rt-editor.rt-clone .paragraph-body:last-child { margin-bottom: 0; }
+.rt-editor.rt-clone .rt-size-lead { font-size: 20px; line-height: 32px; }
+.rt-editor.rt-clone .rt-size-callout { font-size: 26px; line-height: 36px; }
+.rt-editor.rt-clone .rt-size-fine { font-size: 14px; line-height: 22px; }
+.rt-editor.rt-clone .rt-size-caption { font-size: 12px; line-height: 18px; }
+.rt-editor.rt-clone a.rt-link {
+  color: var(--email-accent);
+  text-decoration: none;
+  margin: 0 0.12em;
+  cursor: pointer;
+}
+.rt-editor.rt-clone a.rt-link:hover,
+.rt-editor.rt-clone a.rt-link:focus-visible {
+  text-decoration: underline;
+  outline: 1px dotted var(--email-accent);
+  outline-offset: 1px;
+}
+.rt-editor.rt-clone .paragraph-body strong { font-weight: 700; }
+.rt-editor.rt-clone .paragraph-body em { font-style: italic; }
+.rt-editor.rt-clone .paragraph-body s { text-decoration: line-through; }
+.rt-editor.rt-clone .paragraph-body code.rt-mono,
+.rt-editor.rt-clone .rt-mono {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.95em;
+}
+.rt-editor.rt-clone .text-body { color: var(--email-body); }
+.rt-editor.rt-clone .text-heading { color: var(--email-heading); }
+.rt-editor.rt-clone .text-accent { color: var(--email-accent); }
+.rt-editor.rt-clone .text-gold { color: var(--email-gold); }
+.rt-editor.rt-clone .text-dim { color: var(--email-dim); }
+
+/* Info inspect: read-only outlines; no extra DOM inside contenteditable. */
+.rt-editor.rt-clone.rt-info .paragraph-body {
+  outline: 1px dashed color-mix(in srgb, var(--email-accent) 55%, transparent);
+  outline-offset: 4px;
+  position: relative;
+}
+.rt-editor.rt-clone.rt-info .paragraph-body::after {
+  content: attr(data-rt-info);
+  display: block;
+  margin-top: 0.35rem;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  color: var(--email-accent);
+  opacity: 0.92;
+  pointer-events: none;
+  user-select: none;
+}
+.rt-editor.rt-clone.rt-info [class*="rt-size-"],
+.rt-editor.rt-clone.rt-info a.rt-link,
+.rt-editor.rt-clone.rt-info [data-rt-color]:not(.paragraph-body) {
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--email-gold) 70%, transparent);
+}
+`;
 }

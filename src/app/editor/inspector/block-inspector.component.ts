@@ -54,8 +54,12 @@ export class BlockInspectorComponent {
     this.session.endCoalesce();
   }
 
+  /**
+   * Paragraph WYSIWYG: draft only — preview freezes until modal Save.
+   * (Other blocks still live-update via updateBlock.)
+   */
   protected onParagraphBody(id: string, body: RichDoc): void {
-    this.session.updateBlock(id, { body } as never, 'coalesce');
+    this.session.setParagraphEditDraft(id, body);
   }
 
   protected onDividerStyle(id: string, event: Event): void {

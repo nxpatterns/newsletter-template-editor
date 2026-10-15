@@ -2,6 +2,7 @@ import {
   afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   ElementRef,
   inject,
@@ -15,6 +16,7 @@ import {
   cleanAiCharsOnDoc,
   clearMarksOnDoc,
   compactDoc,
+  paragraphEditorSurfaceCss,
   plainTextToRichDoc,
   RICH_COLOR_TOKENS,
   RICH_SIZE_TOKENS,
@@ -28,6 +30,13 @@ import {
 } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
 import { ConfirmDialogService } from '../../ui/confirm-dialog/confirm-dialog.service';
+import {
+  clearParagraphStash,
+  loadParagraphStash,
+  paragraphStashDiffers,
+  saveParagraphStash,
+} from '../paragraph-draft-stash';
+import { NewsletterSession } from '../newsletter-session.service';
 
 const HISTORY_MAX = 80;
 
@@ -40,6 +49,7 @@ const HISTORY_MAX = 80;
 export class ParagraphLiteEditorComponent implements OnDestroy {
   protected readonly i18n = inject(LocaleService);
   private readonly confirm = inject(ConfirmDialogService);
+  private readonly session = inject(NewsletterSession);
   protected readonly sizes = RICH_SIZE_TOKENS;
   protected readonly colors = RICH_COLOR_TOKENS;
 
@@ -56,6 +66,13 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   protected readonly codeText = signal('');
   protected readonly canUndo = signal(false);
   protected readonly canRedo = signal(false);
+  protected readonly emailWidth = signal(false);
+  protected readonly infoMode = signal(false);
+
+  /** Theme-driven clone CSS (same tokens as email paragraph body). */
+  protected readonly cloneCss = computed(() =>
+    paragraphEditorSurfaceCss(this.session.globals()),
+  );
 
   private readonly editorHost = viewChild<ElementRef<HTMLDivElement>>('editor');
   private applying = false;
@@ -69,11 +86,19 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   private historyFuture: string[] = [];
   private historySuspended = false;
   private lastSnapshot = '';
+  private stashPrompted = false;
+  /** True after first afterNextRender — avoids painting before #editor exists. */
+  private viewReady = false;
 
   constructor() {
-    afterNextRender(() => this.paintFromDoc(this.doc(), false));
+    this.session.registerParagraphDraftFlush(() => this.flushPendingEmit());
+    afterNextRender(() => {
+      this.viewReady = true;
+      void this.bootstrapFromDoc(this.doc());
+    });
     effect(() => {
       const d = this.doc();
+      if (!this.viewReady) return;
       if (this.localEdit) {
         this.localEdit = false;
         return;
@@ -82,12 +107,55 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
       this.historyFuture = [];
       this.canUndo.set(false);
       this.canRedo.set(false);
-      this.paintFromDoc(d, false);
+      this.stashPrompted = false;
+      void this.bootstrapFromDoc(d);
+    });
+    effect(() => {
+      // Keep info labels in sync when mode is on (after paints / commits).
+      const on = this.infoMode();
+      if (on) queueMicrotask(() => this.refreshInfoLabels());
     });
   }
 
   ngOnDestroy(): void {
     if (this.debounce) clearTimeout(this.debounce);
+    this.session.registerParagraphDraftFlush(null);
+  }
+
+  /** Force pending debounce into docChange (called by session Save). */
+  flushPendingEmit(): void {
+    if (this.debounce) {
+      clearTimeout(this.debounce);
+      this.debounce = null;
+    }
+    const root = this.editorHost()?.nativeElement;
+    if (!root || this.applying) return;
+    const next = richDocFromEditorRoot(root);
+    this.commitDoc(next, false);
+  }
+
+  private async bootstrapFromDoc(d: RichDoc): Promise<void> {
+    const blockId = this.session.editingBlockId();
+    if (!this.stashPrompted && blockId) {
+      this.stashPrompted = true;
+      const stash = loadParagraphStash(this.session.libraryId(), blockId);
+      if (stash && paragraphStashDiffers(d, stash.body)) {
+        const ok = await this.confirm.confirm({
+          title: this.i18n.t('rt.stashRestoreTitle'),
+          body: this.i18n.t('rt.stashRestoreBody'),
+          confirmLabel: this.i18n.t('rt.stashRestoreYes'),
+          cancelLabel: this.i18n.t('rt.stashRestoreNo'),
+        });
+        if (ok) {
+          this.paintFromDoc(stash.body, false);
+          this.localEdit = true;
+          this.docChange.emit(stash.body);
+          return;
+        }
+        clearParagraphStash(this.session.libraryId(), blockId);
+      }
+    }
+    this.paintFromDoc(d, false);
   }
 
   private paintFromDoc(d: RichDoc, recordAsLast = true): void {
@@ -100,9 +168,64 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     });
     this.suspiciousCount.set(richDocSuspiciousCount(d));
     this.codeText.set(richDocToHtml(d, { forEditor: false }));
-    if (recordAsLast) this.lastSnapshot = JSON.stringify(d);
-    else this.lastSnapshot = JSON.stringify(d);
+    this.lastSnapshot = JSON.stringify(d);
     this.applying = false;
+    if (this.infoMode()) this.refreshInfoLabels();
+    void recordAsLast;
+  }
+
+  protected toggleEmailWidth(): void {
+    this.emailWidth.update((v) => !v);
+  }
+
+  protected toggleInfoMode(): void {
+    this.infoMode.update((v) => !v);
+    queueMicrotask(() => this.refreshInfoLabels());
+  }
+
+  protected stashDraft(): void {
+    this.flushPendingEmit();
+    const blockId = this.session.editingBlockId();
+    const root = this.editorHost()?.nativeElement;
+    if (!blockId || !root) return;
+    const body = richDocFromEditorRoot(root);
+    saveParagraphStash(this.session.libraryId(), blockId, body);
+  }
+
+  /**
+   * Info mode labels via data-rt-info only (ignored by richDocFromEditorRoot).
+   * Never injects serializable chrome nodes into the mark tree.
+   */
+  private refreshInfoLabels(): void {
+    const root = this.editorHost()?.nativeElement;
+    if (!root) return;
+    const paragraphs = root.querySelectorAll(':scope > p');
+    paragraphs.forEach((node) => {
+      const p = node as HTMLElement;
+      if (!this.infoMode()) {
+        p.removeAttribute('data-rt-info');
+        return;
+      }
+      const color = p.getAttribute('data-rt-color') || 'body';
+      const colorLabel = this.i18n.t(`rt.color.${color}`);
+      const sizes = new Set<string>();
+      p.querySelectorAll('[class*="rt-size-"]').forEach((el) => {
+        for (const c of Array.from((el as HTMLElement).classList)) {
+          if (c.startsWith('rt-size-')) sizes.add(c.slice('rt-size-'.length));
+        }
+      });
+      const sizePart =
+        sizes.size > 0
+          ? [...sizes].map((s) => this.i18n.t(`rt.size.${s}`)).join(', ')
+          : this.i18n.t('rt.size.body');
+      const hasLink = !!p.querySelector('a.rt-link');
+      const bits = [
+        `${this.i18n.t('rt.appearance')}: ${sizePart}`,
+        `${this.i18n.t('rt.color')}: ${colorLabel}`,
+      ];
+      if (hasLink) bits.push(this.i18n.t('rt.link'));
+      p.setAttribute('data-rt-info', bits.join(' · '));
+    });
   }
 
   /** Capture current selection before toolbar controls steal focus. */

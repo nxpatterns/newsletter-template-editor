@@ -58,8 +58,8 @@ export async function renderExportOptimized(newsletter: Newsletter): Promise<Exp
 
 export { renderBlocks, renderExportShell, renderPreviewDoc };
 export type { RenderContext } from './blocks';
-export { emailDocumentCss, darkModeCss } from './email-css';
+export { emailDocumentCss, darkModeCss, paragraphEditorSurfaceCss } from './email-css';
 export { inlineEmailCss, inlineEmailCssFragment } from './inline-email-css';
-export { FONT_PRESETS, fontStack } from './utils';
+export { EMAIL_CONTENT_WIDTH_PX, FONT_PRESETS, fontStack } from './utils';
 export type { RenderMode } from './utils';
 // renderExportOptimized is exported above
