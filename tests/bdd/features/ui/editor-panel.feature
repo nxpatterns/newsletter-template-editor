@@ -134,3 +134,38 @@ Feature: Editor side panel
     Then the text check should report 'Zero-width: 1'
     When I remove all hidden characters
     Then the text check should report 'Clean'
+
+  Scenario: A link goes where the cursor is, and its type follows the address
+    Given I open the home page
+    When I open the paragraph editor for seed block 'bmo8rynqo-6'
+    Then the link button should be disabled
+    When I place the cursor after 'Ländern ' in paragraph 2
+    And I open the link form
+    And I fill the link text with 'unsere Plattform'
+    And I type the link address 'info@cloudlib.eu'
+    Then the link type should be 'email'
+    And the link hint should say 'Opens an email to info@cloudlib.eu'
+    When I confirm the link
+    Then paragraph 2 should read 'Ländern unsere Plattform' with a link 'unsere Plattform' to 'mailto:info@cloudlib.eu'
+    When I click the link 'unsere Plattform'
+    Then the link popover should show 'info@cloudlib.eu'
+    When I edit the link
+    And I type the link address '+49 30 1234567'
+    Then the link type should be 'phone'
+    When I confirm the link
+    Then paragraph 2 should read 'Ländern unsere Plattform' with a link 'unsere Plattform' to 'tel:+49301234567'
+    When I click the link 'unsere Plattform'
+    And I remove the link in the popover
+    Then paragraph 2 should have no link anymore
+
+  Scenario: Escape closes the link form without changes
+    Given I open the home page
+    When I open the paragraph editor for seed block 'bmo8rynqo-6'
+    And I select 'cloudlib.eu' in paragraph 2 of the editor
+    And I open the link form
+    Then the link type should be 'web'
+    And the link hint should say 'Opens https://cloudlib.eu'
+    When I press Escape in the link form
+    Then the link form should be closed
+    And paragraph 2 should have no link anymore
+

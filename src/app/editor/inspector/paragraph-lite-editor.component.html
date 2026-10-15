@@ -1,4 +1,4 @@
-<div class="rt-kit" data-testid="paragraph-lite-editor">
+<div #kit class="rt-kit" data-testid="paragraph-lite-editor">
   <div class="rt-toolbar" role="toolbar" [attr.aria-label]="i18n.t('rt.toolbar')">
     <span class="rt-group">
       <button
@@ -81,7 +81,7 @@
       </label>
     </span>
     <span class="rt-group">
-      <button type="button" class="ed-btn" data-testid="rt-link" data-rt-edit [title]="i18n.t('rt.link')" [attr.aria-label]="i18n.t('rt.link')" [disabled]="infoMode()" (mousedown)="captureSelection($event)" (click)="openLink()">
+      <button type="button" class="ed-btn" data-testid="rt-link" data-rt-edit [title]="i18n.t(hasCursor() ? 'rt.link' : 'rt.linkForm.needCursor')" [attr.aria-label]="i18n.t('rt.link')" [disabled]="infoMode() || !hasCursor()" (mousedown)="captureSelection($event)" (click)="openLink()">
         <svg class="rt-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M10.6 13.4a1 1 0 0 1 0-1.4l3.5-3.5a3 3 0 0 1 4.2 4.2l-2 2-1.4-1.4 2-2a1 1 0 0 0-1.4-1.4L12 13.4a1 1 0 0 1-1.4 0ZM13.4 10.6a1 1 0 0 1 0 1.4l-3.5 3.5a3 3 0 0 1-4.2-4.2l2-2 1.4 1.4-2 2a1 1 0 0 0 1.4 1.4L12 10.6a1 1 0 0 1 1.4 0Z" /></svg>
       </button>
       <button type="button" class="ed-btn" data-rt-edit [title]="i18n.t('rt.clear')" [attr.aria-label]="i18n.t('rt.clear')" [disabled]="infoMode()" (mousedown)="$event.preventDefault()" (click)="clearFormatting()">
@@ -151,35 +151,103 @@
   }
 
   @if (linkOpen()) {
-    <div class="rt-link-popover" data-testid="rt-link-popover">
-      <label class="ed-label" for="rt-link-label" [textContent]="i18n.t('rt.linkLabel')"></label>
-      <input
-        id="rt-link-label"
-        class="ed-input"
-        type="text"
-        data-testid="rt-link-label"
-        [value]="linkLabel()"
-        (input)="linkLabel.set($any($event.target).value)"
-      />
-      <label class="ed-label" for="rt-link-href" [textContent]="i18n.t('rt.linkHref')"></label>
-      <input
-        id="rt-link-href"
-        class="ed-input"
-        type="url"
-        data-testid="rt-link-href"
-        [value]="linkHref()"
-        (input)="linkHref.set($any($event.target).value)"
-      />
-      <label class="ed-label" for="rt-link-target" [textContent]="i18n.t('rt.linkTarget')"></label>
-      <select id="rt-link-target" class="ed-select" [value]="linkTarget()" (change)="linkTarget.set($any($event.target).value)">
-        <option value="_blank" [textContent]="i18n.t('rt.linkTarget.blank')"></option>
-        <option value="_self" [textContent]="i18n.t('rt.linkTarget.self')"></option>
-      </select>
-      <div class="ed-actions">
-        <button type="button" class="ed-btn" data-testid="rt-link-apply" (click)="applyLink()" [textContent]="i18n.t('rt.linkApply')"></button>
-        <button type="button" class="ed-btn" (click)="removeLink()" [textContent]="i18n.t('rt.unlink')"></button>
-        <button type="button" class="ed-btn" (click)="cancelLink()" [textContent]="i18n.t('modal.cancel')"></button>
-      </div>
+    <div
+      class="rt-link-pop"
+      data-testid="rt-link-popover"
+      role="dialog"
+      [attr.aria-label]="i18n.t('rt.link')"
+      [style.top.px]="linkPos().top"
+      [style.left.px]="linkPos().left"
+      [style.--rt-arrow]="linkPos().arrow + 'px'"
+      (keydown)="onLinkKeydown($event)"
+    >
+      @if (linkMode() === 'view') {
+        <div class="rt-link-pop__row">
+          <span class="rt-link-pop__current" data-testid="rt-link-current" [textContent]="linkViewText()"></span>
+          @if (linkHref(); as href) {
+            <a class="ed-btn rt-link-pop__icon" [href]="href" target="_blank" rel="noopener noreferrer" [title]="i18n.t('rt.linkForm.open')" [attr.aria-label]="i18n.t('rt.linkForm.open')">
+              <svg class="rt-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14 3h7v7h-2V6.4l-8.3 8.3-1.4-1.4L17.6 5H14V3ZM5 5h6v2H5v12h12v-6h2v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" /></svg>
+            </a>
+          }
+        </div>
+        <div class="rt-link-pop__row">
+          <button type="button" class="ed-btn" data-testid="rt-link-edit" (click)="editLink()" [textContent]="i18n.t('rt.linkForm.edit')"></button>
+          <button type="button" class="ed-btn rt-link-pop__danger" data-testid="rt-link-remove" (click)="removeLink()" [textContent]="i18n.t('rt.unlink')"></button>
+          <span class="rt-spacer" aria-hidden="true"></span>
+          <button type="button" class="ed-btn rt-link-pop__icon" data-testid="rt-link-close" [title]="i18n.t('rt.linkForm.close')" [attr.aria-label]="i18n.t('rt.linkForm.close')" (click)="cancelLink()">
+            <svg class="rt-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6 10.6 12 5 6.4 6.4 5Z" /></svg>
+          </button>
+        </div>
+      } @else {
+        <p class="rt-link-pop__title">
+          @if (linkMode() === 'insert') {
+            {{ i18n.t('rt.linkForm.insertTitle') }}
+          } @else {
+            {{ i18n.t('rt.link') }} <span class="rt-link-pop__sub">„{{ linkLabel() }}“</span>
+          }
+        </p>
+        <div class="rt-link-pop__kinds" role="radiogroup" [attr.aria-label]="i18n.t('rt.linkForm.type')">
+          @for (k of linkKinds; track k) {
+            <button
+              type="button"
+              role="radio"
+              class="rt-link-pop__kind"
+              [class.is-on]="linkKind() === k"
+              [attr.aria-checked]="linkKind() === k"
+              [attr.data-testid]="'rt-link-type-' + k"
+              (click)="chooseLinkKind(k)"
+              [textContent]="i18n.t('rt.linkForm.type.' + k)"
+            ></button>
+          }
+        </div>
+        @if (linkMode() !== 'selection') {
+          <label class="rt-link-pop__field">
+            <span [textContent]="i18n.t('rt.linkForm.text')"></span>
+            <input class="ed-input" type="text" data-testid="rt-link-label" [value]="linkLabel()" (input)="linkLabel.set($any($event.target).value)" />
+          </label>
+        }
+        <label class="rt-link-pop__field">
+          <span [textContent]="i18n.t('rt.linkForm.address')"></span>
+          <input
+            #linkAddressInput
+            class="ed-input"
+            data-testid="rt-link-href"
+            [attr.type]="linkKind() === 'email' ? 'email' : linkKind() === 'phone' ? 'tel' : 'url'"
+            [placeholder]="linkPlaceholders[linkKind()]"
+            [value]="linkAddress()"
+            (input)="onLinkAddressInput($any($event.target).value)"
+          />
+        </label>
+        @if (linkKind() === 'email') {
+          <label class="rt-link-pop__field">
+            <span [textContent]="i18n.t('rt.linkForm.subject')"></span>
+            <input class="ed-input" type="text" data-testid="rt-link-subject" [value]="linkSubject()" (input)="linkSubject.set($any($event.target).value)" />
+          </label>
+        }
+        @if (linkHint(); as hint) {
+          <p class="rt-link-pop__hint" [class.is-ok]="hint.ok" data-testid="rt-link-hint" [textContent]="hint.text"></p>
+        }
+        @if (linkKind() === 'web') {
+          <label class="rt-link-pop__check">
+            <input type="checkbox" data-testid="rt-link-newtab" [checked]="linkNewTab()" (change)="linkNewTab.set($any($event.target).checked)" />
+            <span [textContent]="i18n.t('rt.linkForm.newTab')"></span>
+          </label>
+        }
+        <div class="rt-link-pop__row">
+          <span class="rt-spacer" aria-hidden="true"></span>
+          <button type="button" class="ed-btn" (click)="cancelLink()" [textContent]="i18n.t('modal.cancel')"></button>
+          <button
+            type="button"
+            class="ed-btn rt-link-pop__primary"
+            data-testid="rt-link-apply"
+            [disabled]="!linkHref()"
+            (click)="applyLink()"
+            [textContent]="
+              i18n.t(linkMode() === 'insert' ? 'rt.linkForm.insert' : linkMode() === 'edit' ? 'rt.linkForm.save' : 'rt.linkForm.add')
+            "
+          ></button>
+        </div>
+      }
     </div>
   }
 

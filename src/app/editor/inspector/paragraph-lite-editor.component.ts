@@ -2,7 +2,9 @@ import {
   afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
+  Injector,
   ElementRef,
   inject,
   input,
@@ -15,6 +17,10 @@ import {
   applyColorOnDoc,
   applyLinkOnDoc,
   applyParagraphBaseColorOnDoc,
+  buildLinkHref,
+  detectLinkKind,
+  parseLinkHref,
+  type LinkKind,
   applySizeOnDoc,
   cleanAiCharsOnDoc,
   clearMarksOnDoc,
@@ -154,9 +160,26 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   readonly docChange = output<RichDoc>();
 
   protected readonly linkOpen = signal(false);
+  /** selection: link the selected words · insert: new linked text at the cursor · view/edit: existing link. */
+  protected readonly linkMode = signal<'selection' | 'insert' | 'view' | 'edit'>('selection');
   protected readonly linkLabel = signal('');
-  protected readonly linkHref = signal('');
-  protected readonly linkTarget = signal<'_blank' | '_self'>('_blank');
+  protected readonly linkKind = signal<LinkKind>('web');
+  protected readonly linkAddress = signal('');
+  protected readonly linkSubject = signal('');
+  protected readonly linkNewTab = signal(true);
+  /** Popover position inside .rt-kit, right under the text it belongs to. */
+  protected readonly linkPos = signal({ top: 0, left: 0, arrow: 16 });
+  protected readonly linkKinds: readonly LinkKind[] = ['web', 'email', 'phone'];
+  protected readonly linkPlaceholders: Record<LinkKind, string> = {
+    web: 'cloudlib.eu',
+    email: 'info@cloudlib.eu',
+    phone: '+49 30 1234567',
+  };
+  protected readonly linkHref = computed(() =>
+    buildLinkHref(this.linkKind(), this.linkAddress(), this.linkSubject()),
+  );
+  /** Link needs a place in the text: a cursor or a selection made since the last repaint. */
+  protected readonly hasCursor = signal(false);
   protected readonly suspiciousCount = signal(0);
   /** Hidden/special characters per kind, for the status line under the toolbar. */
   protected readonly suspiciousKinds = signal<Array<{ kind: SuspiciousKind; count: number }>>([]);
@@ -176,13 +199,23 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   protected readonly canStash = signal(false);
 
   private readonly editorHost = viewChild<ElementRef<HTMLDivElement>>('editor');
+  private readonly kitHost = viewChild<ElementRef<HTMLDivElement>>('kit');
+  private readonly linkAddressInput = viewChild<ElementRef<HTMLInputElement>>('linkAddressInput');
+  private readonly injector = inject(Injector);
   private applying = false;
   private localEdit = false;
   private debounce: ReturnType<typeof setTimeout> | null = null;
   /** Anchor currently being edited (click or selection inside link). */
   private editingAnchor: HTMLAnchorElement | null = null;
   /** Selection snapshot — selects/inputs steal focus and collapse the live selection. */
-  private savedRange: Range | null = null;
+  private savedRangeValue: Range | null = null;
+  private get savedRange(): Range | null {
+    return this.savedRangeValue;
+  }
+  private set savedRange(range: Range | null) {
+    this.savedRangeValue = range;
+    this.hasCursor.set(!!range);
+  }
   private historyPast: string[] = [];
   private historyFuture: string[] = [];
   private historySuspended = false;
@@ -802,10 +835,21 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
 
   protected openLink(): void {
     if (this.infoMode()) return;
-    this.restoreSelection();
-    this.captureSelection();
-    const anchor = this.findLinkFromSelection() ?? this.editingAnchor;
-    this.openLinkPopover(anchor);
+    const root = this.editorHost()?.nativeElement;
+    const range = this.savedRange;
+    if (!root || !range || !root.contains(range.commonAncestorContainer)) return;
+    const anchor = this.findLinkFromSelection();
+    if (anchor) {
+      this.openLinkPopover(anchor);
+      return;
+    }
+    this.editingAnchor = null;
+    this.linkMode.set(range.collapsed ? 'insert' : 'selection');
+    const selected = range.toString();
+    this.linkLabel.set(range.collapsed ? '' : selected);
+    const guess = range.collapsed ? null : detectLinkKind(selected);
+    this.setLinkFields(guess ?? 'web', guess ? selected.trim() : '', '', true);
+    this.showLinkPopover(range.getBoundingClientRect());
   }
 
   protected onEditorClick(event: MouseEvent): void {
@@ -824,21 +868,97 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     this.openLinkPopover(anchor);
   }
 
-  private openLinkPopover(anchor: HTMLAnchorElement | null): void {
-    const sel = window.getSelection();
-    const selected = sel?.toString() ?? this.savedRange?.toString() ?? '';
-    if (anchor) {
-      this.editingAnchor = anchor;
-      this.linkLabel.set(anchor.textContent ?? '');
-      this.linkHref.set(anchor.getAttribute('href') || '');
-      this.linkTarget.set(anchor.getAttribute('target') === '_self' ? '_self' : '_blank');
-    } else {
-      this.editingAnchor = null;
-      this.linkLabel.set(selected || '');
-      this.linkHref.set(selected.startsWith('http') ? selected : '');
-      this.linkTarget.set('_blank');
+  /** Existing link: compact view first, Edit opens the form. */
+  private openLinkPopover(anchor: HTMLAnchorElement): void {
+    this.editingAnchor = anchor;
+    this.linkMode.set('view');
+    this.linkLabel.set(anchor.textContent ?? '');
+    const parsed = parseLinkHref(anchor.getAttribute('href') || '');
+    this.setLinkFields(parsed.kind, parsed.address, parsed.subject, anchor.getAttribute('target') !== '_self');
+    this.showLinkPopover(anchor.getBoundingClientRect());
+  }
+
+  private setLinkFields(kind: LinkKind, address: string, subject: string, newTab: boolean): void {
+    this.linkKind.set(kind);
+    this.linkAddress.set(address);
+    this.linkSubject.set(subject);
+    this.linkNewTab.set(newTab);
+  }
+
+  /** Place the popover under the given text rect (clamped to the editor kit) and focus the address. */
+  private showLinkPopover(rect: DOMRect): void {
+    const kit = this.kitHost()?.nativeElement;
+    if (kit) {
+      const box = kit.getBoundingClientRect();
+      const width = Math.min(352, box.width);
+      const left = Math.max(0, Math.min(rect.left - box.left - 16, box.width - width));
+      const arrow = Math.max(12, Math.min(rect.left - box.left - left + Math.min(rect.width, 40) / 2, width - 24));
+      this.linkPos.set({ top: rect.bottom - box.top + 10, left, arrow });
     }
     this.linkOpen.set(true);
+    this.revealLinkPopover();
+    if (this.linkMode() !== 'view') this.focusLinkAddress();
+  }
+
+  /** The modal body scrolls; keep the whole popover in view whenever it opens or grows. */
+  private revealLinkPopover(): void {
+    afterNextRender(
+      () => this.kitHost()?.nativeElement.querySelector('.rt-link-pop')?.scrollIntoView({ block: 'nearest' }),
+      { injector: this.injector },
+    );
+  }
+
+  /** Existing link in words: the web address, the email address (and subject), or the number. */
+  protected linkViewText(): string {
+    const kind = this.linkKind();
+    if (kind === 'web') return this.linkHref() ?? this.linkAddress();
+    const subject = kind === 'email' ? this.linkSubject().trim() : '';
+    return subject ? `${this.linkAddress()} · ${subject}` : this.linkAddress();
+  }
+
+  private focusLinkAddress(): void {
+    afterNextRender(() => this.linkAddressInput()?.nativeElement.focus({ preventScroll: true }), {
+      injector: this.injector,
+    });
+  }
+
+  protected onLinkAddressInput(value: string): void {
+    this.linkAddress.set(value);
+    const kind = detectLinkKind(value);
+    if (kind && kind !== this.linkKind()) this.linkKind.set(kind);
+    this.revealLinkPopover();
+  }
+
+  protected chooseLinkKind(kind: LinkKind): void {
+    this.linkKind.set(kind);
+    this.revealLinkPopover();
+    this.focusLinkAddress();
+  }
+
+  protected editLink(): void {
+    this.linkMode.set('edit');
+    this.revealLinkPopover();
+    this.focusLinkAddress();
+  }
+
+  /** What the link will do, in words; null while the address is incomplete. */
+  protected linkHint(): { ok: boolean; text: string } | null {
+    const href = this.linkHref();
+    if (!this.linkAddress().trim()) return null;
+    if (!href) return { ok: false, text: this.i18n.t(`rt.linkForm.invalid.${this.linkKind()}`) };
+    const kind = this.linkKind();
+    const shown = kind === 'web' ? href : href.replace(/^(mailto|tel):/, '').split('?')[0];
+    return { ok: true, text: this.i18n.t(`rt.linkForm.opens.${kind}`, { target: shown }) };
+  }
+
+  protected onLinkKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.cancelLink();
+    } else if (event.key === 'Enter' && this.linkMode() !== 'view') {
+      event.preventDefault();
+      this.applyLink();
+    }
   }
 
   private findLinkFromSelection(): HTMLAnchorElement | null {
@@ -858,69 +978,54 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     return (el?.closest('a') as HTMLAnchorElement | null) ?? null;
   }
 
-  private normalizeUrl(href: string): string | null {
-    const h = href.trim();
-    if (!h || /^javascript:/i.test(h)) return null;
-    if (h.includes('://') || h.startsWith('mailto:') || h.startsWith('tel:') || h.startsWith('#'))
-      return h;
-    return `https://${h}`;
-  }
-
   protected applyLink(): void {
     if (this.infoMode()) return;
-    const url = this.normalizeUrl(this.linkHref());
-    const label = this.linkLabel().trim();
-    if (!url) {
-      this.linkOpen.set(false);
-      this.editingAnchor = null;
-      return;
-    }
-    const target = this.linkTarget();
+    const href = this.linkHref();
     const root = this.editorHost()?.nativeElement;
+    if (!href || !root) return;
+    const target = this.linkKind() === 'web' && this.linkNewTab() ? '_blank' : '_self';
+    const mode = this.linkMode();
+    this.linkOpen.set(false);
     this.focusEditor();
 
-    if (this.editingAnchor && root?.contains(this.editingAnchor)) {
+    if (mode === 'selection') {
+      // Through the model, so bold/italic inside the selection survive.
+      const bm = this.bookmarkFromSavedRange();
+      this.editingAnchor = null;
+      if (!bm || bm.start === bm.end) return;
+      const doc = richDocFromEditorRoot(root);
+      this.commitDoc(applyLinkOnDoc(doc, bm.start, bm.end, href, target), true, bm);
+      return;
+    }
+
+    if (mode === 'edit' && this.editingAnchor && root.contains(this.editingAnchor)) {
       const a = this.editingAnchor;
-      a.setAttribute('href', url);
+      a.setAttribute('href', href);
       a.setAttribute('target', target);
       if (target === '_blank') a.setAttribute('rel', 'noopener noreferrer');
       else a.removeAttribute('rel');
       a.classList.add('rt-link', 'text-secondary');
-      if (label) a.textContent = label;
-    } else {
-      this.restoreSelection();
-      const sel = window.getSelection();
-      const range =
-        this.savedRange && root
-          ? this.savedRange
-          : sel && sel.rangeCount
-            ? sel.getRangeAt(0)
-            : null;
-
+      const label = this.linkLabel().trim();
+      if (label && label !== a.textContent) a.textContent = label;
+    } else if (mode === 'insert') {
+      const range = this.savedRange;
+      if (!range || !root.contains(range.commonAncestorContainer)) return;
       const a = document.createElement('a');
-      a.href = url;
+      a.href = href;
       a.target = target;
       if (target === '_blank') a.rel = 'noopener noreferrer';
       a.className = 'rt-link text-secondary';
-      a.textContent = label || range?.toString() || url;
-
-      if (range && root?.contains(range.commonAncestorContainer)) {
-        range.deleteContents();
-        range.insertNode(a);
-        this.ensureLinkSpacing(a);
-        const after = document.createRange();
-        after.setStartAfter(a);
-        after.collapse(true);
-        sel?.removeAllRanges();
-        sel?.addRange(after);
-        this.savedRange = after.cloneRange();
-      } else if (root) {
-        const p = root.querySelector('p') ?? root;
-        p.appendChild(a);
-      }
+      a.textContent = this.linkLabel().trim() || this.linkAddress().trim();
+      range.insertNode(a);
+      this.ensureLinkSpacing(a);
+      const after = document.createRange();
+      after.setStartAfter(a);
+      after.collapse(true);
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(after);
+      this.savedRange = after.cloneRange();
     }
-
-    this.linkOpen.set(false);
     this.editingAnchor = null;
     this.scheduleEmit(true);
   }

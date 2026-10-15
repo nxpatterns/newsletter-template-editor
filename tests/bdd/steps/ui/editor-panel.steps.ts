@@ -445,3 +445,87 @@ Then('the text check should report {string}', async ({ page }, text: string) => 
 When('I remove all hidden characters', async ({ page }) => {
   await page.getByTestId('rt-remove-ai-chars').click();
 });
+
+Then('the link button should be disabled', async ({ page }) => {
+  await expect(page.getByTestId('block-edit-modal').getByTestId('rt-link')).toBeDisabled();
+});
+
+When('I place the cursor after {string} in paragraph {int}', async ({ page }, word: string, n: number) => {
+  const para = paragraphEditor(page).locator(':scope > p').nth(n - 1);
+  await para.evaluate((p, w) => {
+    const walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const at = (node as Text).data.indexOf(w);
+      if (at < 0) continue;
+      const range = document.createRange();
+      range.setStart(node, at + w.length);
+      range.collapse(true);
+      const sel = window.getSelection()!;
+      sel.removeAllRanges();
+      sel.addRange(range);
+      return;
+    }
+    throw new Error(`"${w}" is not inside one text node`);
+  }, word);
+});
+
+When('I open the link form', async ({ page }) => {
+  await page.getByTestId('block-edit-modal').getByTestId('rt-link').click();
+  await expect(page.getByTestId('rt-link-popover')).toBeVisible();
+});
+
+When('I fill the link text with {string}', async ({ page }, text: string) => {
+  await page.getByTestId('rt-link-label').fill(text);
+});
+
+When('I type the link address {string}', async ({ page }, address: string) => {
+  await page.getByTestId('rt-link-href').fill(address);
+});
+
+Then('the link type should be {string}', async ({ page }, kind: string) => {
+  await expect(page.getByTestId(`rt-link-type-${kind}`)).toHaveAttribute('aria-checked', 'true');
+});
+
+Then('the link hint should say {string}', async ({ page }, text: string) => {
+  await expect(page.getByTestId('rt-link-hint')).toHaveText(text);
+});
+
+When('I confirm the link', async ({ page }) => {
+  await page.getByTestId('rt-link-apply').click();
+  await expect(page.getByTestId('rt-link-popover')).toHaveCount(0);
+});
+
+Then(
+  'paragraph {int} should read {string} with a link {string} to {string}',
+  async ({ page }, n: number, text: string, label: string, href: string) => {
+    const para = paragraphEditor(page).locator(':scope > p').nth(n - 1);
+    await expect(para).toContainText(text);
+    await expect(para.locator(`a[href="${href}"]`)).toHaveText(label);
+  },
+);
+
+When('I click the link {string}', async ({ page }, label: string) => {
+  await paragraphEditor(page).locator('a', { hasText: label }).click();
+  await expect(page.getByTestId('rt-link-current')).toBeVisible();
+});
+
+Then('the link popover should show {string}', async ({ page }, text: string) => {
+  await expect(page.getByTestId('rt-link-current')).toHaveText(text);
+});
+
+When('I edit the link', async ({ page }) => {
+  await page.getByTestId('rt-link-edit').click();
+});
+
+When('I remove the link in the popover', async ({ page }) => {
+  await page.getByTestId('rt-link-remove').click();
+  await expect(page.getByTestId('rt-link-popover')).toHaveCount(0);
+});
+
+When('I press Escape in the link form', async ({ page }) => {
+  await page.getByTestId('rt-link-href').press('Escape');
+});
+
+Then('the link form should be closed', async ({ page }) => {
+  await expect(page.getByTestId('rt-link-popover')).toHaveCount(0);
+});
