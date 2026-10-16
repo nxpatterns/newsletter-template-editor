@@ -58,3 +58,7 @@ Then('the preview should link {string}', async ({ page }, href: string) => {
 Then('the preview should link {string} {int} times', async ({ page }, href: string, n: number) => {
   await expect(block(page).locator(`a[href="${href}"]`)).toHaveCount(n);
 });
+
+Then('the block editor should have no {string}', async ({ page }, testId: string) => {
+  await expect(modal(page).getByTestId(testId)).toHaveCount(0);
+});

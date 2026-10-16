@@ -1,4 +1,4 @@
-Feature: Contact person, customer quote and video preview
+Feature: Contact person, customer quote, pull quote and video preview
   Three blocks for sellers: who to call, what a customer says, and a link to a video or 3D tour.
 
   Background:
@@ -25,16 +25,28 @@ Feature: Contact person, customer quote and video preview
   Scenario: A customer quote with company logo
     Given I open the start page
     And I click the start tile 'start-blank'
+    When I drag the catalog card 'testimonial' over the preview content
+    And I drop it
+    And I open the block editor for the first block
+    And I fill 'insp-testimonial-role' with 'Owner, Example Ltd'
+    Then the preview should show 'Owner, Example Ltd' in '.testimonial-role'
+    And the preview should have a '.testimonial-quote'
+    And the preview should have no '.pull-quote-bar'
+    When I click 'testimonial-image-logo'
+    And I paste the image link 'https://cdn.example.test/logo.png'
+    Then the 'testimonial' image description should be marked as required
+    When I fill 'insp-testimonial-description' with 'Example Ltd'
+    Then the preview should have a '.testimonial-logo'
+
+  Scenario: A pull quote stays a plain quote with the accent bar
+    Given I open the start page
+    And I click the start tile 'start-blank'
     When I drag the catalog card 'pull-quote' over the preview content
     And I drop it
     And I open the block editor for the first block
-    And I fill 'insp-quote-role' with 'Owner, Example Ltd'
-    Then the preview should show 'Owner, Example Ltd' in '.quote-role'
-    And the preview should have a '.pull-quote-centered'
-    When I click 'quote-image-logo'
-    And I paste the image link 'https://cdn.example.test/logo.png'
-    And I fill 'insp-quote-description' with 'Example Ltd'
-    Then the preview should have a '.quote-logo'
+    Then the preview should have a '.pull-quote-bar'
+    And the preview should have no '.testimonial-quote'
+    And the block editor should have no 'insp-testimonial-name'
 
   Scenario: A video preview links image and title to the tidied link target
     Given I open the start page

@@ -51,12 +51,8 @@ const BLOCK_SLOTS: Record<Block['type'], readonly string[]> = {
   hero: ['colors.slot.hero.label', 'colors.slot.hero.headline'],
   paragraph: ['colors.slot.paragraph.body'],
   'chapter-band': ['colors.slot.chapter.surface', 'colors.slot.chapter.title'],
-  'pull-quote': [
-    'colors.slot.pullQuote.bar',
-    'colors.slot.pullQuote.text',
-    'colors.slot.pullQuote.name',
-    'colors.slot.pullQuote.role',
-  ],
+  'pull-quote': ['colors.slot.pullQuote.bar', 'colors.slot.pullQuote.text'],
+  testimonial: ['colors.slot.testimonial.text', 'colors.slot.testimonial.name', 'colors.slot.testimonial.role'],
   'stat-box': [
     'colors.slot.stat.surface',
     'colors.slot.stat.number',

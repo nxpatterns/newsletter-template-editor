@@ -34,8 +34,9 @@ import {
   emptyTeaserItem,
   EVENT_LOCATION_MODES,
   EVENT_LOCALES,
-  type QuoteImageMode,
-  QUOTE_IMAGE_MODES,
+  type TestimonialBlock,
+  type TestimonialImageMode,
+  TESTIMONIAL_IMAGE_MODES,
   BLOCK_DEFAULT_TEXTS_EN,
   type ImageWidth,
   type Newsletter,
@@ -288,21 +289,33 @@ export function normalizeChapterBandBlock(
   };
 }
 
-/** Map legacy html onto plain quote. */
+/**
+ * Map legacy html onto plain quote. A pull quote saved with a byline (name, role
+ * or picture, from the time both blocks shared one type) becomes a testimonial.
+ */
 export function normalizePullQuoteBlock(
   raw: Record<string, unknown> & { id?: unknown; quote?: unknown; html?: unknown },
   fallbackId = '',
-): PullQuoteBlock {
+): PullQuoteBlock | TestimonialBlock {
   const id = typeof raw.id === 'string' && raw.id ? raw.id : fallbackId;
+  const quote = pickPlainField(raw.quote, raw.html, true);
   const str = (k: string) => (typeof raw[k] === 'string' ? (raw[k] as string) : '');
+  if (str('name').trim() || str('role').trim() || str('src').trim()) {
+    return normalizeTestimonialBlock({ ...raw, quote }, id);
+  }
+  return { id, type: 'pull-quote', quote };
+}
+
+export function normalizeTestimonialBlock(raw: Record<string, unknown>, id: string): TestimonialBlock {
+  const str = (k: string) => (typeof raw[k] === 'string' ? (raw[k] as string) : '');
+  const mode = raw['imageMode'];
   return {
     id,
-    type: 'pull-quote',
-    quote: pickPlainField(raw.quote, raw.html, true),
-    // Quotes saved before the byline existed: all empty → classic look.
+    type: 'testimonial',
+    quote: str('quote'),
     name: str('name'),
     role: str('role'),
-    imageMode: (QUOTE_IMAGE_MODES as readonly unknown[]).includes(raw['imageMode']) ? (raw['imageMode'] as QuoteImageMode) : 'none',
+    imageMode: (TESTIMONIAL_IMAGE_MODES as readonly unknown[]).includes(mode) ? (mode as TestimonialImageMode) : 'none',
     src: str('src'),
     alt: str('alt'),
   };
@@ -548,6 +561,9 @@ function normalizeBlocks(blocks: Block[]): Block[] {
     }
     if (block.type === 'pull-quote') {
       return normalizePullQuoteBlock(block as unknown as Record<string, unknown>, block.id);
+    }
+    if (block.type === 'testimonial') {
+      return normalizeTestimonialBlock(block as unknown as Record<string, unknown>, block.id);
     }
     if (block.type === 'stat-box') {
       return normalizeStatBoxBlock(block as unknown as Record<string, unknown>, block.id);

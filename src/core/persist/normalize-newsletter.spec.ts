@@ -11,6 +11,7 @@ import {
   type Newsletter,
   type PriceBoxBlock,
   type PullQuoteBlock,
+  type TestimonialBlock,
   type StatBoxBlock,
 } from '../types';
 import { renderExport, renderPreview } from '../render';
@@ -304,7 +305,7 @@ describe('chapter / quote / stat plain-up', () => {
         id: 'q1',
         html: '„Line one<br>Line two“',
       }),
-    ).toEqual({ id: 'q1', type: 'pull-quote', quote: '„Line one\nLine two“', name: '', role: '', imageMode: 'none', src: '', alt: '' });
+    ).toEqual({ id: 'q1', type: 'pull-quote', quote: '„Line one\nLine two“' });
 
     expect(
       normalizeStatBoxBlock({
@@ -332,9 +333,33 @@ describe('chapter / quote / stat plain-up', () => {
     expect(escaped).toContain('Safe &lt;b&gt;x&lt;/b&gt;');
   });
 
+  it('drops empty byline fields from a stored pull quote', () => {
+    expect(
+      normalizePullQuoteBlock({ id: 'q2', quote: 'Q', name: '', role: '', imageMode: 'none', src: '', alt: '' }),
+    ).toEqual({ id: 'q2', type: 'pull-quote', quote: 'Q' });
+  });
+
+  it('converts a stored pull quote with name, role or picture into a testimonial', () => {
+    const n = normalizeNewsletter({
+      schemaVersion: 4,
+      globals: {},
+      blocks: [
+        { id: 'a', type: 'pull-quote', quote: 'Q', name: 'Sam Keller', role: 'Owner', imageMode: 'none', src: '', alt: '' },
+        { id: 'b', type: 'pull-quote', quote: 'Q', name: '', role: '', imageMode: 'logo', src: 'https://x/l.png', alt: 'L' },
+        { id: 'c', type: 'pull-quote', quote: 'Plain' },
+      ],
+    } as unknown as Newsletter);
+    expect(n.blocks).toEqual([
+      { id: 'a', type: 'testimonial', quote: 'Q', name: 'Sam Keller', role: 'Owner', imageMode: 'none', src: '', alt: '' },
+      { id: 'b', type: 'testimonial', quote: 'Q', name: '', role: '', imageMode: 'logo', src: 'https://x/l.png', alt: 'L' },
+      { id: 'c', type: 'pull-quote', quote: 'Plain' },
+    ]);
+  });
+
   it('createBlock defaults use plain fields', () => {
     expect((createBlock('chapter-band') as ChapterBandBlock).title).toBe('Chapter title');
     expect((createBlock('pull-quote') as PullQuoteBlock).quote).toContain('memorable');
+    expect((createBlock('testimonial') as TestimonialBlock).name).toBe('Sam Keller');
     expect((createBlock('stat-box') as StatBoxBlock).geo).toContain('Region');
   });
 });

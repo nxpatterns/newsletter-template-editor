@@ -174,21 +174,25 @@ export interface ChapterBandBlock extends BlockBase {
   title: string;
 }
 
-export const QUOTE_IMAGE_MODES = ['none', 'photo', 'logo'] as const;
-export type QuoteImageMode = (typeof QUOTE_IMAGE_MODES)[number];
-
-/**
- * Quote, optionally as a customer quote: name, "role and company", photo or logo.
- * All byline fields empty → the classic quote with the side bar.
- */
+/** Emphasized quote with the accent side bar. */
 export interface PullQuoteBlock extends BlockBase {
   type: 'pull-quote';
+  /** Plain quote body; italic via CSS. */
+  quote: string;
+}
+
+export const TESTIMONIAL_IMAGE_MODES = ['none', 'photo', 'logo'] as const;
+export type TestimonialImageMode = (typeof TESTIMONIAL_IMAGE_MODES)[number];
+
+/** Customer testimonial: centered quote with name, "role and company", photo or logo. */
+export interface TestimonialBlock extends BlockBase {
+  type: 'testimonial';
   /** Plain quote body; italic via CSS. */
   quote: string;
   name: string;
   /** One line: role and company, e.g. "Owner, Keller Optics". */
   role: string;
-  imageMode: QuoteImageMode;
+  imageMode: TestimonialImageMode;
   src: string;
   alt: string;
 }
@@ -438,6 +442,7 @@ export type Block =
   | CtaButtonBlock
   | ChapterBandBlock
   | PullQuoteBlock
+  | TestimonialBlock
   | StatBoxBlock
   | BenefitsListBlock
   | PriceBoxBlock
@@ -493,8 +498,9 @@ export interface BlockDefaultTexts {
   imageText: string;
   greetingText: string;
   greetingNameLead: string;
-  quoteName: string;
-  quoteRole: string;
+  testimonialQuote: string;
+  testimonialName: string;
+  testimonialRole: string;
   contactIntro: string;
   contactName: string;
   contactRole: string;
@@ -535,8 +541,9 @@ export const BLOCK_DEFAULT_TEXTS_EN: BlockDefaultTexts = {
   imageText: 'New text beside the image.',
   greetingText: 'Dear business partner',
   greetingNameLead: 'Hello',
-  quoteName: 'Sam Keller',
-  quoteRole: 'Owner, Keller Optics',
+  testimonialQuote: '\u201cSince the 3D tour, customers arrive knowing exactly what they want.\u201d',
+  testimonialName: 'Sam Keller',
+  testimonialRole: 'Owner, Keller Optics',
   contactIntro: 'Questions? I am happy to help.',
   contactName: 'Alex Berger',
   contactRole: 'Customer advice',
@@ -587,7 +594,9 @@ export function createBlock(type: Block['type'], texts: BlockDefaultTexts = BLOC
     case 'chapter-band':
       return { id, type, title: t.chapterTitle };
     case 'pull-quote':
-      return { id, type, quote: t.pullQuote, name: t.quoteName, role: t.quoteRole, imageMode: 'none', src: '', alt: '' };
+      return { id, type, quote: t.pullQuote };
+    case 'testimonial':
+      return { id, type, quote: t.testimonialQuote, name: t.testimonialName, role: t.testimonialRole, imageMode: 'none', src: '', alt: '' };
     case 'stat-box':
       return { id, type, number: t.statNumber, label: t.statLabel, geo: t.statGeo };
     case 'benefits-list':
@@ -700,7 +709,8 @@ export const BLOCK_LABELS: Record<Block['type'], string> = {
   paragraph: 'Paragraph',
   'cta-button': 'CTA Button',
   'chapter-band': 'Chapter band',
-  'pull-quote': 'Customer quote',
+  'pull-quote': 'Pull quote',
+  testimonial: 'Customer quote',
   'stat-box': 'Stat box',
   'benefits-list': 'Benefits list',
   'price-box': 'Price box',

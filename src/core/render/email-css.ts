@@ -320,13 +320,21 @@ export function emailDocumentCss(globals: Globals): string {
     font-style: italic;
   }
 
-  /* Customer quote (byline set): centered quote, photo/logo + name + role below */
-  .pull-quote-centered { text-align: center; margin: 0 0 18px 0; }
-  .quote-by { margin: 0 auto; }
-  .quote-by-pic { padding-right: 12px; }
-  .quote-photo { display: block; width: 44px; height: 44px; border-radius: 50%; border: 0; }
-  .quote-logo { display: block; height: 36px; width: auto; max-width: 140px; border: 0; }
-  .quote-name {
+  /* Testimonial: centered quote, photo/logo + name + role below */
+  .testimonial-quote {
+    font-family: var(--email-font);
+    font-size: 22px;
+    line-height: 34px;
+    color: #c8dff0;
+    font-style: italic;
+    text-align: center;
+    margin: 0 0 18px 0;
+  }
+  .testimonial-by { margin: 0 auto; }
+  .testimonial-by-pic { padding-right: 12px; }
+  .testimonial-photo { display: block; width: 44px; height: 44px; border-radius: 50%; border: 0; }
+  .testimonial-logo { display: block; height: 36px; width: auto; max-width: 140px; border: 0; }
+  .testimonial-name {
     margin: 0;
     font-family: var(--email-font);
     font-size: 15px;
@@ -334,7 +342,7 @@ export function emailDocumentCss(globals: Globals): string {
     font-weight: 700;
     color: var(--email-primary);
   }
-  .quote-role {
+  .testimonial-role {
     margin: 0;
     font-family: var(--email-font);
     font-size: 13px;
@@ -652,14 +660,14 @@ export function emailDocumentCss(globals: Globals): string {
     }
     .price-box-bg, .price-box-inner { background-color: var(--email-price-bg) !important; }
     .text-standard, .paragraph-body, .stat-geo, .contact-line, .teaser-text { color: var(--email-standard) !important; }
-    .text-primary, .hero-headline, .quote-name, .contact-name, .teaser-title, .event-title, .event-day { color: var(--email-primary) !important; }
+    .text-primary, .hero-headline, .testimonial-name, .contact-name, .teaser-title, .event-title, .event-day { color: var(--email-primary) !important; }
     .text-secondary, .text-stat, .stat-number, .cta-link-icon, a.cta-link-anchor, a.contact-link, a.video-title-link, a.teaser-link-anchor, a.event-cal-link {
       color: var(--email-secondary) !important;
     }
     .text-accent, .divider-ornament-glyph, .text-chapter-label, .hero-label, .chapter-title, .brand-stars, .footer-stars-glyph {
       color: var(--email-accent) !important;
     }
-    .text-dim, .footer-notice, .footer-company, .quote-role, .contact-intro, .contact-role, .video-title-cell, .event-meta, .event-weekday { color: var(--email-dim) !important; }
+    .text-dim, .footer-notice, .footer-company, .testimonial-role, .contact-intro, .contact-role, .video-title-cell, .event-meta, .event-weekday { color: var(--email-dim) !important; }
     .text-price-main, .price-main { color: #ffffff !important; }
     .text-cta-body, .cta-link-body { color: #3a6080 !important; }
     .benefit-icon, .text-benefit-icon { color: #4db8ff !important; }

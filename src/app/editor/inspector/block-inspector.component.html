@@ -969,42 +969,61 @@
             ></textarea>
           </div>
         </div>
-              <div class="ed-field">
-          <label class="ed-label" for="insp-quote-name" [textContent]="i18n.t('field.quoteName')"></label>
+      }
+      @case ('testimonial') {
+        <div class="ed-field">
+          <div class="ed-label-row">
+            <label class="ed-label" for="insp-testimonial-quote" [textContent]="i18n.t('field.quoteHtml')"></label>
+            <span class="ed-count" [class.is-over]="(block.quote).length > 140" [textContent]="(block.quote).length + ' / 140'"></span>
+          </div>
+          <div class="em-quote-wrap">
+            <textarea
+              id="insp-testimonial-quote"
+              class="ed-textarea em-field em-quote"
+              data-testid="insp-testimonial-quote"
+              rows="2"
+              [value]="block.quote"
+              (input)="onText(block.id, 'quote', $event)"
+              (blur)="onFieldBlur()"
+            ></textarea>
+          </div>
+        </div>
+        <div class="ed-field">
+          <label class="ed-label" for="insp-testimonial-name" [textContent]="i18n.t('field.testimonialName')"></label>
           <input
-            id="insp-quote-name"
+            id="insp-testimonial-name"
             class="ed-input"
-            data-testid="insp-quote-name"
+            data-testid="insp-testimonial-name"
             [value]="block.name"
             (input)="onText(block.id, 'name', $event)"
             (blur)="onFieldBlur()"
           />
         </div>
         <div class="ed-field">
-          <label class="ed-label" for="insp-quote-role" [textContent]="i18n.t('field.quoteRole')"></label>
+          <label class="ed-label" for="insp-testimonial-role" [textContent]="i18n.t('field.testimonialRole')"></label>
           <input
-            id="insp-quote-role"
+            id="insp-testimonial-role"
             class="ed-input"
-            data-testid="insp-quote-role"
-            [placeholder]="i18n.t('field.quoteRolePlaceholder')"
+            data-testid="insp-testimonial-role"
+            [placeholder]="i18n.t('field.testimonialRolePlaceholder')"
             [value]="block.role"
             (input)="onText(block.id, 'role', $event)"
             (blur)="onFieldBlur()"
           />
         </div>
         <div class="ed-field">
-          <span class="ed-label" id="insp-quote-image" [textContent]="i18n.t('field.quoteImage')"></span>
-          <div class="ed-seg" role="radiogroup" aria-labelledby="insp-quote-image">
-            @for (v of quoteImageModes; track v) {
+          <span class="ed-label" id="insp-testimonial-image" [textContent]="i18n.t('field.testimonialImage')"></span>
+          <div class="ed-seg" role="radiogroup" aria-labelledby="insp-testimonial-image">
+            @for (v of testimonialImageModes; track v) {
               <button
                 type="button"
                 class="ed-seg-opt"
                 role="radio"
                 [class.is-on]="block.imageMode === v"
                 [attr.aria-checked]="block.imageMode === v"
-                [attr.data-testid]="'quote-image-' + v"
+                [attr.data-testid]="'testimonial-image-' + v"
                 (click)="session.updateBlock(block.id, { imageMode: v }, 'immediate')"
-                [textContent]="i18n.t('quote.image.' + v)"
+                [textContent]="i18n.t('testimonial.image.' + v)"
               ></button>
             }
           </div>
@@ -1012,7 +1031,7 @@
         @if (block.imageMode !== 'none') {
           <app-image-picker
             class="ed-field"
-            idPrefix="insp-quote"
+            idPrefix="insp-testimonial"
             [compact]="true"
             [src]="block.src"
             [busy]="imageBusy()"
@@ -1021,11 +1040,11 @@
             (removed)="setImageSrc(block.id, '')"
           />
           <div class="ed-field" [class.is-invalid]="!!block.src.trim() && !block.alt.trim()">
-            <label class="ed-label" for="insp-quote-description" [textContent]="i18n.t('field.imageDescription')"></label>
+            <label class="ed-label" for="insp-testimonial-description" [textContent]="i18n.t('field.imageDescription')"></label>
             <input
-              id="insp-quote-description"
+              id="insp-testimonial-description"
               class="ed-input"
-              data-testid="insp-quote-description"
+              data-testid="insp-testimonial-description"
               [placeholder]="i18n.t('field.imageDescriptionPlaceholder')"
               [attr.aria-invalid]="!!block.src.trim() && !block.alt.trim()"
               [value]="block.alt"
@@ -1033,7 +1052,7 @@
               (blur)="onFieldBlur()"
             />
             @if (!!block.src.trim() && !block.alt.trim()) {
-              <p class="ed-hint is-error" data-testid="insp-quote-description-required" [textContent]="i18n.t('field.imageDescriptionRequired')"></p>
+              <p class="ed-hint is-error" data-testid="insp-testimonial-description-required" [textContent]="i18n.t('field.imageDescriptionRequired')"></p>
             }
           </div>
         }

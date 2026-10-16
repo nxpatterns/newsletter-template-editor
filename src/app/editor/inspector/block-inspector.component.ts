@@ -26,7 +26,7 @@ import {
   type DividerBlock,
   DIVIDER_STYLES,
   IMAGE_TEXT_SIDES,
-  QUOTE_IMAGE_MODES,
+  TESTIMONIAL_IMAGE_MODES,
   TEASER_COLUMNS,
   EVENT_LOCATION_MODES,
   emptyTeaserItem,
@@ -78,7 +78,7 @@ export class BlockInspectorComponent {
   protected readonly imageTextWidths = IMAGE_TEXT_WIDTHS;
   protected readonly imageTextValigns = IMAGE_TEXT_VALIGNS;
   protected readonly richSizes = RICH_SIZE_TOKENS;
-  protected readonly quoteImageModes = QUOTE_IMAGE_MODES;
+  protected readonly testimonialImageModes = TESTIMONIAL_IMAGE_MODES;
   protected readonly teaserColumns = TEASER_COLUMNS;
   protected readonly eventLocationModes = EVENT_LOCATION_MODES;
   /** IANA zones for the event time-zone suggestions (empty where the browser cannot list them). */

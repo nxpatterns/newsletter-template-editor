@@ -273,32 +273,42 @@ describe('renderExport', () => {
     expect(full).not.toMatch(/<table[^>]*contact-button/);
   });
 
-  it('keeps an old quote without name, role or picture in the bar layout', () => {
-    const n = seedNewsletter();
-    n.blocks = [
-      { id: 'q', type: 'pull-quote', quote: 'Old quote', name: '', role: '', imageMode: 'none', src: '', alt: '' },
-    ];
-    const { body } = renderExport(n);
-    expect(body).toMatch(/<td[^>]*pull-quote-bar[^>]*width="3"/);
-    expect(body).toContain('Old quote');
-    expect(body).not.toContain('pull-quote-centered');
-    expect(body).not.toContain('quote-by');
-  });
-
-  it('renders a customer quote centered with name, role and a round photo', () => {
+  it('renders a pull quote with the accent bar and no byline', () => {
     const n = seedNewsletter();
     const b = createBlock('pull-quote');
     if (b.type !== 'pull-quote') throw new Error('type');
+    expect(Object.keys(b).sort()).toEqual(['id', 'quote', 'type']);
+    n.blocks = [b];
+    const { body } = renderExport(n);
+    expect(body).toMatch(/<td[^>]*pull-quote-bar[^>]*width="3"/);
+    expect(body).toContain('memorable');
+    expect(body).not.toContain('testimonial');
+    expect(body).not.toContain('Sam Keller');
+  });
+
+  it('renders a testimonial centered with name, role and a round photo, never with the bar', () => {
+    const n = seedNewsletter();
+    const b = createBlock('testimonial');
+    if (b.type !== 'testimonial') throw new Error('type');
     Object.assign(b, { imageMode: 'photo', src: 'https://cdn.example.com/sam.jpg', alt: 'Sam Keller' });
     n.blocks = [b];
     const { body } = renderExport(n);
-    expect(body).toContain('pull-quote-centered');
-    expect(body).not.toContain('pull-quote-bar');
-    expect(body).toMatch(/<img[^>]*quote-photo/);
+    expect(body).toContain('testimonial-quote');
+    expect(body).not.toContain('pull-quote');
+    expect(body).toMatch(/<img[^>]*testimonial-photo/);
     expect(body).toContain('Sam Keller');
     expect(body).toContain('Owner, Keller Optics');
     b.imageMode = 'logo';
-    expect(renderExport(n).body).toMatch(/<img[^>]*quote-logo/);
+    expect(renderExport(n).body).toMatch(/<img[^>]*testimonial-logo/);
+  });
+
+  it('renders a testimonial without byline still centered and without an empty byline table', () => {
+    const n = seedNewsletter();
+    n.blocks = [{ id: 't', type: 'testimonial', quote: 'Just words', name: '', role: '', imageMode: 'none', src: '', alt: '' }];
+    const { body } = renderExport(n);
+    expect(body).toContain('testimonial-quote');
+    expect(body).not.toContain('testimonial-by');
+    expect(body).not.toContain('pull-quote-bar');
   });
 
   it('renders a video preview with linked image and a play row instead of an overlay', () => {

@@ -14,6 +14,7 @@ export {
   normalizeParagraphBlock,
   normalizePriceBoxBlock,
   normalizePullQuoteBlock,
+  normalizeTestimonialBlock,
   normalizeStatBoxBlock,
   plainFromHtml,
   plainMultilineFromHtml,

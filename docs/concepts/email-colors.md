@@ -289,8 +289,14 @@ Inline HTML colors inside content remain until structure/light-marks remove them
 | --- | --- |
 | `pullQuote.bar` | Accent bar |
 | `pullQuote.text` | Quote text |
-| `pullQuote.name` | Name |
-| `pullQuote.role` | Role and company |
+
+### testimonial
+
+| Slot id | Seller label direction |
+| --- | --- |
+| `testimonial.text` | Quote text |
+| `testimonial.name` | Name |
+| `testimonial.role` | Role and company |
 
 ### contact
 

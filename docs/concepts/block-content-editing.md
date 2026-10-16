@@ -199,9 +199,14 @@ Product-strength feature, not a polish pass:
 
 - Plain: `quote` multi-line; italic via CSS (`.pull-quote`), not seller HTML.
 - Legacy `html` migrates via `normalizePullQuoteBlock` / `plainMultilineFromHtml`.
-- Seller label **Customer quote** (Kundenstimme); the type name stays `pull-quote`.
-- Byline fields: `name`, `role` (role and company), `imageMode` `none|photo|logo`, `src`, `alt` (required when a picture is set). Missing fields normalize to empty / `none`, no schema bump.
-- With a byline the quote renders centered (`.pull-quote-centered`) with a small round photo (logo not rounded), bold name and role below. Without name, role and picture it keeps the original accent-bar layout unchanged.
+- Seller label **Pull quote** (Zitat). Always the accent-bar layout, no byline.
+- A stored `pull-quote` with `name`, `role` or `src` set (saved while both blocks briefly shared this type) normalizes to `testimonial`.
+
+### testimonial
+
+- Seller label **Customer quote** (Kundenstimme). Own type, never shares data or markup with `pull-quote`.
+- Plain: `quote`, `name`, `role` (role and company), `imageMode` `none|photo|logo`, `src`, `alt` (required when a picture is set). Normalized by `normalizeTestimonialBlock`.
+- Renders centered (`.testimonial-quote`) with a small round photo (logo not rounded), bold name and role below. No byline table when name, role and picture are all empty.
 
 ### stat-box
 

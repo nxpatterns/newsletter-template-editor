@@ -14,6 +14,7 @@ import type {
   ParagraphBlock,
   PriceBoxBlock,
   PullQuoteBlock,
+  TestimonialBlock,
   StatBoxBlock,
   TeasersBlock,
   EventBlock,
@@ -485,42 +486,7 @@ function renderChapterBand(b: ChapterBandBlock, ctx: RenderContext): string {
   );
 }
 
-/** Customer quote byline: small round photo or logo, name, role and company. */
-function quoteByline(b: PullQuoteBlock): string {
-  const src = b.imageMode !== 'none' ? b.src.trim() : '';
-  const pic = src
-    ? b.imageMode === 'logo'
-      ? `<img src="${escapeAttr(src)}" alt="${escapeAttr(b.alt)}" height="36" class="quote-logo">`
-      : `<img src="${escapeAttr(src)}" alt="${escapeAttr(b.alt)}" width="44" height="44" class="quote-photo">`
-    : '';
-  const name = b.name.trim() ? `<p class="quote-name" data-field="name">${escapeHtml(b.name)}</p>` : '';
-  const role = b.role.trim() ? `<p class="quote-role" data-field="role">${escapeHtml(b.role)}</p>` : '';
-  return `
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" class="quote-by">
-          <tr>
-            ${pic ? `<td class="quote-by-pic" valign="middle">${pic}</td>` : ''}
-            <td class="quote-by-text" valign="middle">${name}${role}</td>
-          </tr>
-        </table>`;
-}
-
 function renderPullQuote(b: PullQuoteBlock, ctx: RenderContext): string {
-  const hasByline = !!(b.name.trim() || b.role.trim() || (b.imageMode !== 'none' && b.src.trim()));
-  if (hasByline) {
-    return rowWrap(
-      b,
-      ctx,
-      contentTd(
-        ctx,
-        'block-pad-sm quote-block',
-        `
-        <p class="pull-quote pull-quote-centered" align="center">
-          <span data-field="quote">${plainTextToHtml(b.quote)}</span>
-        </p>${quoteByline(b)}
-      `,
-      ),
-    );
-  }
   return rowWrap(
     b,
     ctx,
@@ -538,6 +504,42 @@ function renderPullQuote(b: PullQuoteBlock, ctx: RenderContext): string {
             </td>
           </tr>
         </table>
+      `,
+    ),
+  );
+}
+
+/** Byline: small round photo or logo, name, role and company. */
+function testimonialByline(b: TestimonialBlock): string {
+  const src = b.imageMode !== 'none' ? b.src.trim() : '';
+  const pic = src
+    ? b.imageMode === 'logo'
+      ? `<img src="${escapeAttr(src)}" alt="${escapeAttr(b.alt)}" height="36" class="testimonial-logo">`
+      : `<img src="${escapeAttr(src)}" alt="${escapeAttr(b.alt)}" width="44" height="44" class="testimonial-photo">`
+    : '';
+  const name = b.name.trim() ? `<p class="testimonial-name" data-field="name">${escapeHtml(b.name)}</p>` : '';
+  const role = b.role.trim() ? `<p class="testimonial-role" data-field="role">${escapeHtml(b.role)}</p>` : '';
+  if (!pic && !name && !role) return '';
+  return `
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" class="testimonial-by">
+          <tr>
+            ${pic ? `<td class="testimonial-by-pic" valign="middle">${pic}</td>` : ''}
+            <td class="testimonial-by-text" valign="middle">${name}${role}</td>
+          </tr>
+        </table>`;
+}
+
+function renderTestimonial(b: TestimonialBlock, ctx: RenderContext): string {
+  return rowWrap(
+    b,
+    ctx,
+    contentTd(
+      ctx,
+      'block-pad-sm testimonial-block',
+      `
+        <p class="testimonial-quote" align="center">
+          <span data-field="quote">${plainTextToHtml(b.quote)}</span>
+        </p>${testimonialByline(b)}
       `,
     ),
   );
@@ -739,6 +741,8 @@ export function renderBlock(block: Block, ctx: RenderContext): string {
       return renderChapterBand(block, ctx);
     case 'pull-quote':
       return renderPullQuote(block, ctx);
+    case 'testimonial':
+      return renderTestimonial(block, ctx);
     case 'stat-box':
       return renderStatBox(block, ctx);
     case 'benefits-list':
