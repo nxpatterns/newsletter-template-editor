@@ -8,6 +8,7 @@ import {
   seedNewsletter,
   type Block,
   type BlockDefaultTexts,
+  type FramePart,
   type Globals,
   type Newsletter,
   type RichDoc,
@@ -33,8 +34,9 @@ export type EditorPanelTab =
   | 'catalog'
   | 'campaign'
   | 'brand'
-  | 'colors'
-  | 'legal';
+  | 'legal'
+  | 'social'
+  | 'colors';
 
 /** How a mutation records undo history. */
 export type HistoryMode = 'immediate' | 'coalesce';
@@ -585,6 +587,14 @@ export class NewsletterSession {
       ...n,
       globals: { ...n.globals, legal: { ...n.globals.legal, ...patch } },
     }));
+  }
+
+  /** Switch one header/footer part on or off in the mail. */
+  setFramePartShown(part: FramePart, shown: boolean): void {
+    this.mutate('immediate', (n) => {
+      const hidden = (n.globals.hiddenFrameParts ?? []).filter((p) => p !== part);
+      return { ...n, globals: { ...n.globals, hiddenFrameParts: shown ? hidden : [...hidden, part] } };
+    });
   }
 
   updateSample(key: string, value: string, history: HistoryMode = 'immediate'): void {

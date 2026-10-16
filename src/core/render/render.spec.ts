@@ -61,6 +61,25 @@ describe('render utils', () => {
 });
 
 describe('renderExport', () => {
+  it('leaves out switched-off header and footer parts and keeps the rest', () => {
+    const n = acmeNewsletter();
+    n.globals.hiddenFrameParts = ['logo', 'notice', 'imprint', 'starsBottom'];
+    const { full } = renderExport(n);
+    expect(full).not.toContain('class="footer-notice');
+    expect(full).not.toContain('Imprint</a>');
+    expect(full).not.toContain('footer-stars-line');
+    expect(full).not.toContain('class="email-logo');
+    expect(full).toContain('class="brand-stars');
+    expect(full).toMatch(/Privacy<\/a>\s*&nbsp;\|&nbsp;\s*<a[^>]*>Unsubscribe<\/a>/);
+  });
+
+  it('shows every header and footer part when nothing is switched off', () => {
+    const { full } = renderExport(acmeNewsletter());
+    expect(full).toContain('class="email-logo');
+    expect(full).toContain('class="footer-notice');
+    expect(full).toContain('Imprint</a>');
+  });
+
   it('places preheader immediately after body open', () => {
     const html = renderExport(seedNewsletter()).full;
     const bodyIdx = html.search(/<body\b/i);

@@ -1,4 +1,4 @@
-import type { BrandName, BrandStars, Globals, LogoConfig } from '../types';
+import { isFramePartShown, type BrandName, type BrandStars, type FramePart, type Globals, type LogoConfig } from '../types';
 import { filledSocialNetworks, SOCIAL_ICON_PX, type SocialIconSources } from '../brand/social';
 import { emailDocumentCss } from './email-css';
 import { attrHref, escapeAttr, escapeHtml, fontStack, resolveHref, type RenderMode } from './utils';
@@ -62,15 +62,18 @@ export function renderSocialRow(globals: Globals, mode: RenderMode, icons?: Soci
 }
 
 export function renderHeader(globals: Globals, mode: RenderMode, bodyInner: string, socialIcons?: SocialIconSources): string {
+  const shown = (part: FramePart) => isFramePartShown(globals, part);
   const messageHref = mode === 'export' ? '{{ MessageURL }}' : '#';
-  const logoHtml = renderLogo(globals.logo);
+  const logoHtml = shown('logo') ? renderLogo(globals.logo) : '';
   const pageBg = escapeAttr(globals.pageBgColor);
   const contentBg = escapeAttr(globals.contentBgColor);
   const starsText = escapeHtml(brandStarsText(globals.brand?.stars));
-  const starsRow = starsText
+  const starsRow = starsText && shown('starsTop')
     ? `<p class="brand-stars text-accent" data-field="brand.stars">${starsText}</p>`
     : '';
-  const brandName = renderBrandName(globals.brand?.name);
+  const brandNameRow = shown('brandName')
+    ? `<span data-field="brand.name">${renderBrandName(globals.brand?.name)}</span>`
+    : '';
   const legal = globals.legal;
   const unsubHref = mode === 'export' ? '{{ UnsubscribeURL }}' : '#';
   const privacyHref = attrHref(resolveHref(legal.privacyHref, mode), mode);
@@ -86,6 +89,32 @@ export function renderHeader(globals: Globals, mode: RenderMode, bodyInner: stri
   const viewInBrowserClass = logoHtml
     ? 'view-in-browser view-in-browser--after-logo'
     : 'view-in-browser';
+  const viewInBrowserTop = shown('viewInBrowserTop')
+    ? `<p class="${viewInBrowserClass}">
+                        <a href="${messageHref}" target="_blank" class="email-muted-link">${escapeHtml(
+                          legal.viewInBrowserLabel,
+                        )}</a>
+                      </p>`
+    : '';
+  const footerLinks = (
+    [
+      ['privacy', privacyHref, legal.privacyLabel],
+      ['imprint', imprintHref, legal.imprintLabel],
+      ['unsubscribe', unsubHref, legal.unsubscribeLabel],
+      ['viewInBrowserBottom', messageHref, legal.viewInBrowserLabel],
+    ] as const
+  )
+    .filter(([part]) => shown(part))
+    .map(([, href, label]) => `<a href="${href}" target="_blank" class="email-footer-link">${escapeHtml(label)}</a>`);
+  const noticeRow = shown('notice')
+    ? `<tr>
+              <td bgcolor="${pageBg}" class="mobile-padding footer-bg footer-notice-pad">
+                <p class="footer-notice text-dim" data-field="legal.noticeHtml">
+                  ${legal.noticeHtml}
+                </p>
+              </td>
+            </tr>`
+    : '';
 
   return `
     <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" bgcolor="${pageBg}" class="email-bg">
@@ -98,57 +127,35 @@ export function renderHeader(globals: Globals, mode: RenderMode, bodyInner: stri
                   <tr>
                     <td valign="top" class="v-top">
                       ${starsRow}
-                      <span data-field="brand.name">${brandName}</span>
+                      ${brandNameRow}
                     </td>
                     <td align="right" valign="top" class="t-right">
                       ${logoHtml}
-                      <p class="${viewInBrowserClass}">
-                        <a href="${messageHref}" target="_blank" class="email-muted-link">${escapeHtml(
-                          legal.viewInBrowserLabel,
-                        )}</a>
-                      </p>
+                      ${viewInBrowserTop}
                     </td>
                   </tr>
                 </table>
               </td>
             </tr>
             ${bodyInner}
-            <tr>
-              <td bgcolor="${pageBg}" class="mobile-padding footer-bg footer-notice-pad">
-                <p class="footer-notice text-dim" data-field="legal.noticeHtml">
-                  ${legal.noticeHtml}
-                </p>
-              </td>
-            </tr>
+            ${noticeRow}
             <tr>
               <td bgcolor="${pageBg}" class="mobile-padding footer-bg footer-meta-pad">
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                   <tr><td class="footer-rule-cell">&nbsp;</td></tr>
                 </table>
-                ${renderSocialRow(globals, mode, socialIcons)}
-                ${starsText ? `<p class="footer-stars-line">
+                ${shown('social') ? renderSocialRow(globals, mode, socialIcons) : ''}
+                ${starsText && shown('starsBottom') ? `<p class="footer-stars-line">
                   <span class="footer-stars-glyph text-accent">${starsText}</span>
                 </p>` : ''}
-                <p class="footer-company text-dim" data-field="legal.companyName">
+                ${shown('company') ? `<p class="footer-company text-dim" data-field="legal.companyName">
                   ${companyRow}
-                </p>
-                <p class="footer-links">
-                  <a href="${privacyHref}" target="_blank" class="email-footer-link">${escapeHtml(
-                    legal.privacyLabel,
-                  )}</a>
+                </p>` : ''}
+                ${footerLinks.length ? `<p class="footer-links">
+                  ${footerLinks.join(`
                   &nbsp;|&nbsp;
-                  <a href="${imprintHref}" target="_blank" class="email-footer-link">${escapeHtml(
-                    legal.imprintLabel,
-                  )}</a>
-                  &nbsp;|&nbsp;
-                  <a href="${unsubHref}" target="_blank" class="email-footer-link">${escapeHtml(
-                    legal.unsubscribeLabel,
-                  )}</a>
-                  &nbsp;|&nbsp;
-                  <a href="${messageHref}" target="_blank" class="email-footer-link">${escapeHtml(
-                    legal.viewInBrowserLabel,
-                  )}</a>
-                </p>
+                  `)}
+                </p>` : ''}
               </td>
             </tr>
           </table>

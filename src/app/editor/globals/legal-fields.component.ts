@@ -1,46 +1,25 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { normalizeLinkTarget, SOCIAL_ICON_DIR, SOCIAL_NETWORKS, type SocialNetworkId } from '../../../core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { normalizeLinkTarget, isFramePartShown, REQUIRED_FRAME_PARTS, type FramePart } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
 import { NewsletterSession } from '../newsletter-session.service';
+import { FramePartSwitchComponent } from './frame-part-switch.component';
+import { ClearableInputDirective } from '../../ui/clearable-input.directive';
 
 @Component({
   selector: 'app-legal-fields',
+  imports: [ClearableInputDirective, FramePartSwitchComponent],
   templateUrl: './legal-fields.component.html',
-  styleUrl: './globals-forms.component.scss',
+  styleUrls: ['./globals-forms.component.scss', './legal-fields.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LegalFieldsComponent {
   protected readonly i18n = inject(LocaleService);
   protected readonly session = inject(NewsletterSession);
-  protected readonly networks = SOCIAL_NETWORKS;
-  protected readonly iconDir = SOCIAL_ICON_DIR;
-  protected readonly placeholders: Record<SocialNetworkId, string> = {
-    linkedin: 'linkedin.com/company/…',
-    facebook: 'facebook.com/…',
-    instagram: 'instagram.com/…',
-    x: 'x.com/…',
-    youtube: 'youtube.com/@…',
-    tiktok: 'tiktok.com/@…',
-    threads: 'threads.net/@…',
-    pinterest: 'pinterest.com/…',
-    vimeo: 'vimeo.com/…',
-    dailymotion: 'dailymotion.com/…',
-    snapchat: 'snapchat.com/add/…',
-    whatsapp: 'wa.me/…',
-  };
-
-  protected onSocial(id: SocialNetworkId, event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    this.session.updateLegal({ social: { ...this.session.globals().legal.social, [id]: value } }, 'coalesce');
-  }
-
-  /** "linkedin.com/company/x" becomes a working https link when the field is left. */
-  protected onSocialBlur(id: SocialNetworkId): void {
-    this.session.endCoalesce();
-    const social = this.session.globals().legal.social;
-    const built = normalizeLinkTarget(social[id] ?? '');
-    if (built) this.session.updateLegal({ social: { ...social, [id]: built } }, 'immediate');
-  }
+  protected readonly shown = (part: FramePart) => isFramePartShown(this.session.globals(), part);
+  /** Required footer links currently switched off (drives the status line). */
+  protected readonly missingRequired = computed(() =>
+    REQUIRED_FRAME_PARTS.filter((part) => !isFramePartShown(this.session.globals(), part)),
+  );
 
   protected onLegal(
     key:

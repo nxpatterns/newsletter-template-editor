@@ -43,6 +43,8 @@ import {
   type PriceBoxBlock,
   type PullQuoteBlock,
   type StatBoxBlock,
+  FRAME_PARTS,
+  type FramePart,
 } from '../types';
 import { ensureRichDoc } from '../richtext/from-html';
 import { emptyRichDoc, isRichColorToken, RICH_SIZE_TOKENS, type RichSizeToken } from '../richtext/model';
@@ -601,10 +603,17 @@ export function normalizeNewsletter(input: Newsletter): Newsletter {
           ...n.globals,
           brand: normalizeBrand(n.globals.brand),
           assetBaseUrl: typeof n.globals.assetBaseUrl === 'string' ? n.globals.assetBaseUrl : '',
+          hiddenFrameParts: normalizeHiddenFrameParts(n.globals.hiddenFrameParts),
         }
       : n.globals,
     blocks: Array.isArray(n.blocks) ? normalizeBlocks(n.blocks) : [],
   };
+}
+
+/** Known part ids only, each once; anything else means "all shown". */
+function normalizeHiddenFrameParts(raw: unknown): FramePart[] {
+  if (!Array.isArray(raw)) return [];
+  return FRAME_PARTS.filter((p) => raw.includes(p));
 }
 
 const HEX = /^#[0-9a-f]{3,8}$/i;

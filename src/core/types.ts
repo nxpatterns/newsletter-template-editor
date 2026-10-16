@@ -30,7 +30,7 @@ export interface PersonalizationConfig {
   samples: Record<string, string>;
 }
 
-export const BRAND_STAR_SYMBOLS = ['★', '☆', '✦', '◆', '●'] as const;
+export const BRAND_STAR_SYMBOLS = ['★', '☆', '✦', '✧', '✶', '◆', '◇', '●'] as const;
 export const BRAND_STAR_MAX = 9;
 
 /** Decorative row above the brand name and in the footer; count 0 hides both. */
@@ -89,6 +89,26 @@ export interface LegalFooterConfig {
   social: SocialLinks;
 }
 
+/** Header and footer parts the author can switch off one by one. */
+export const FRAME_PARTS = [
+  'starsTop',
+  'brandName',
+  'logo',
+  'viewInBrowserTop',
+  'notice',
+  'social',
+  'starsBottom',
+  'company',
+  'privacy',
+  'imprint',
+  'unsubscribe',
+  'viewInBrowserBottom',
+] as const;
+export type FramePart = (typeof FRAME_PARTS)[number];
+
+/** Parts whose absence may break legal requirements (imprint duty, unsubscribe link). */
+export const REQUIRED_FRAME_PARTS: readonly FramePart[] = ['imprint', 'unsubscribe'];
+
 export interface Globals {
   preheader: string;
   fontFamily: FontFamilyPreset;
@@ -108,6 +128,8 @@ export interface Globals {
   exportFileNamePrefix: string;
   /** Public base address where exported images (social icons) are uploaded, e.g. the Listmonk media URL. */
   assetBaseUrl: string;
+  /** Header/footer parts switched off; absent or empty = everything shown. */
+  hiddenFrameParts?: FramePart[];
 }
 
 export interface BlockBase {
@@ -691,3 +713,8 @@ export const BLOCK_LABELS: Record<Block['type'], string> = {
   teasers: 'Teasers',
   event: 'Event',
 };
+
+/** True when a header/footer part should appear in the mail. */
+export function isFramePartShown(globals: Pick<Globals, 'hiddenFrameParts'>, part: FramePart): boolean {
+  return !globals.hiddenFrameParts?.includes(part);
+}

@@ -11,16 +11,20 @@ import {
   intakeLogoFile,
   LogoPipelineError,
   PLACEHOLDER_LOGO_SRC,
+  isFramePartShown,
+  type FramePart,
 } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
 import { ImagePickerComponent, type ImageSize } from '../image-picker/image-picker.component';
 import { ConfirmDialogService } from '../../ui/confirm-dialog/confirm-dialog.service';
 import { SnackbarService } from '../../ui/snackbar/snackbar.service';
 import { NewsletterSession } from '../newsletter-session.service';
+import { FramePartSwitchComponent } from './frame-part-switch.component';
+import { ClearableInputDirective } from '../../ui/clearable-input.directive';
 
 @Component({
   selector: 'app-brand-fields',
-  imports: [ImagePickerComponent],
+  imports: [ClearableInputDirective, ImagePickerComponent, FramePartSwitchComponent],
   templateUrl: './brand-fields.component.html',
   styleUrl: './brand-fields.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,6 +32,7 @@ import { NewsletterSession } from '../newsletter-session.service';
 export class BrandFieldsComponent {
   protected readonly i18n = inject(LocaleService);
   protected readonly session = inject(NewsletterSession);
+  protected readonly shown = (part: FramePart) => isFramePartShown(this.session.globals(), part);
   protected readonly placeholderLogo = PLACEHOLDER_LOGO_SRC;
   private readonly snackbar = inject(SnackbarService);
   private readonly confirmDialog = inject(ConfirmDialogService);
@@ -102,6 +107,10 @@ export class BrandFieldsComponent {
     const logo = this.session.globals().logo;
     const size = displaySizeFromHeight(heightPx, logo.naturalWidth, logo.naturalHeight);
     this.session.updateLogo(size, 'coalesce');
+  }
+
+  protected onViewInBrowserLabel(event: Event): void {
+    this.session.updateLegal({ viewInBrowserLabel: (event.target as HTMLInputElement).value }, 'coalesce');
   }
 
   protected onFieldBlur(): void {

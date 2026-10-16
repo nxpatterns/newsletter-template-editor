@@ -1,0 +1,101 @@
+/* Required-links status: green when imprint and unsubscribe are in the footer, amber when one is off. */
+.legal-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--ds-success) 40%, var(--ds-border));
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--ds-text);
+  background: color-mix(in srgb, var(--ds-success) 8%, transparent);
+}
+
+.legal-status b {
+  color: var(--ds-success);
+}
+
+.legal-status.is-missing {
+  border-color: color-mix(in srgb, #ffb547 50%, var(--ds-border));
+  background: color-mix(in srgb, #ffb547 8%, transparent);
+}
+
+.legal-status.is-missing b {
+  color: #ffb547;
+}
+
+.legal-status-icon {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  margin-block-start: 0.05rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  color: var(--ds-success);
+}
+
+.legal-status.is-missing .legal-status-icon {
+  color: #ffb547;
+}
+
+.legal-row-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-block-end: 0.25rem;
+}
+
+.legal-row-head .ed-label {
+  margin: 0;
+}
+
+.legal-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  gap: 0.35rem;
+  margin-block-start: 0.35rem;
+}
+
+.ed-field.is-hidden-part > :not(.legal-row-head) {
+  opacity: 0.45;
+}
+
+/* Links as a table: switch | link text | target. */
+.legal-links {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.35rem 0.3rem;
+  align-items: center;
+  margin-block-end: 0.5rem;
+}
+
+.legal-links app-frame-part-switch {
+  margin-inline-start: 0;
+}
+
+.legal-col {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-text-muted);
+}
+
+.legal-links .ed-input {
+  padding-inline-start: 0.4rem;
+  font-size: 0.75rem;
+}
+
+.legal-links .ed-input.is-off {
+  opacity: 0.45;
+}
+
+.legal-auto {
+  font-size: 0.72rem;
+  color: var(--ds-text-muted);
+}

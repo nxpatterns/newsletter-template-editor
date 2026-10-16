@@ -13,17 +13,19 @@
         <button
           type="button"
           class="editor-tab"
-          [class.editor-tab--stack]="!!tab.line2Key"
+          [class.editor-tab--last]="tab.value === 'colors'"
           ngTab
           [value]="tab.value"
           [attr.data-testid]="'panel-tab-' + tab.value"
+          [attr.title]="i18n.t(tab.fullKey ?? tab.labelKey)"
+          [attr.aria-label]="i18n.t(tab.fullKey ?? tab.labelKey)"
         >
-          @if (tab.line2Key) {
-            <span class="editor-tab-l1" [textContent]="i18n.t(tab.labelKey)"></span>
-            <span class="editor-tab-l2" [textContent]="i18n.t(tab.line2Key)"></span>
-          } @else {
-            <span [textContent]="i18n.t(tab.labelKey)"></span>
-          }
+          <svg class="editor-tab-icon" viewBox="0 0 24 24" aria-hidden="true">
+            @for (d of tab.icon; track $index) {
+              <path [attr.d]="d" />
+            }
+          </svg>
+          <span class="editor-tab-label" [textContent]="i18n.t(tab.labelKey)"></span>
         </button>
       }
     </div>
@@ -50,14 +52,19 @@
         <app-brand-fields />
       </ng-template>
     </div>
-    <div class="editor-tab-panel" ngTabPanel value="colors" [preserveContent]="true">
-      <ng-template ngTabContent>
-        <app-colors-fields />
-      </ng-template>
-    </div>
     <div class="editor-tab-panel" ngTabPanel value="legal" [preserveContent]="true">
       <ng-template ngTabContent>
         <app-legal-fields />
+      </ng-template>
+    </div>
+    <div class="editor-tab-panel" ngTabPanel value="social" [preserveContent]="true">
+      <ng-template ngTabContent>
+        <app-social-fields />
+      </ng-template>
+    </div>
+    <div class="editor-tab-panel" ngTabPanel value="colors" [preserveContent]="true">
+      <ng-template ngTabContent>
+        <app-colors-fields />
       </ng-template>
     </div>
   </div>

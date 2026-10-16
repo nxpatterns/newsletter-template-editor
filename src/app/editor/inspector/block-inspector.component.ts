@@ -46,13 +46,14 @@ import { NewsletterSession } from '../newsletter-session.service';
 import { ParagraphLiteEditorComponent } from './paragraph-lite-editor.component';
 import { ImagePickerComponent } from '../image-picker/image-picker.component';
 import { SnackbarService } from '../../ui/snackbar/snackbar.service';
+import { ClearableInputDirective } from '../../ui/clearable-input.directive';
 
 type IconPickerKind = 'cta' | 'benefit' | 'benefit-all';
 type RowKind = 'cta' | 'benefit' | 'teaser';
 
 @Component({
   selector: 'app-block-inspector',
-  imports: [ParagraphLiteEditorComponent, ImagePickerComponent, CdkDropList, CdkDrag, CdkDragHandle],
+  imports: [ClearableInputDirective, ParagraphLiteEditorComponent, ImagePickerComponent, CdkDropList, CdkDrag, CdkDragHandle],
   host: {
     // Email look for the styled fields (font + theme colors from Campaign settings).
     '[style.--em-font]': 'emailFont()',

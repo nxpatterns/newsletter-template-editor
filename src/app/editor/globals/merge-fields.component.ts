@@ -1,9 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { LocaleService } from '../../i18n/locale.service';
 import { NewsletterSession } from '../newsletter-session.service';
+import { ClearableInputDirective } from '../../ui/clearable-input.directive';
 
 @Component({
   selector: 'app-merge-fields',
+  imports: [ClearableInputDirective],
   templateUrl: './merge-fields.component.html',
   styleUrl: './globals-forms.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

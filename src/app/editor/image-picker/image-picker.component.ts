@@ -14,6 +14,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import { embeddedFileBytes, embeddedFormat, isEmbeddedSrc, isSvgSrc, PLACEHOLDER_LOGO_SRC } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
 import { EmailSizeMeterComponent } from './email-size-meter.component';
+import { ClearableInputDirective } from '../../ui/clearable-input.directive';
 
 export interface ImageSize {
   width: number;
@@ -28,7 +29,7 @@ type LoadState = 'loading' | 'ok' | 'error';
  */
 @Component({
   selector: 'app-image-picker',
-  imports: [EmailSizeMeterComponent, NgTemplateOutlet],
+  imports: [ClearableInputDirective, EmailSizeMeterComponent, NgTemplateOutlet],
   host: { '[class.is-compact]': 'compact()' },
   templateUrl: './image-picker.component.html',
   styleUrl: './image-picker.component.scss',

@@ -176,6 +176,7 @@ body {
 
 .ed-switch input {
   position: absolute;
+  z-index: 1;
   inset: 0;
   opacity: 0;
   margin: 0;
@@ -222,6 +223,39 @@ body {
   .ed-switch-track::after {
     transition: none;
   }
+}
+
+
+/* × at the end of a filled text field (ClearableInputDirective). Global and extra-specific: component sheets reset `background`. */
+input.ed-input.ed-input--clearable {
+  padding-inline-end: 1.6rem;
+}
+
+input.ed-input.ed-input--clearable:is(:hover, :focus) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 3l6 6M9 3l-6 6' stroke='%237a9ab8' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 0.65rem;
+}
+
+input.ed-input.ed-input--clearable.ed-input--clear-hover {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 3l6 6M9 3l-6 6' stroke='%23e8f4ff' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+/* Header/footer part switch in a group title (Brand, Legal, Social). */
+.frame-part-switch {
+  display: inline-flex;
+  margin-inline-start: auto;
+}
+
+.frame-part-switch + .frame-part-switch {
+  margin-inline-start: 0.6rem;
+}
+
+/* Part switched off: fields stay editable but recede. */
+.ed-group.is-hidden-part > :not(.ed-group-title, .ed-warn) {
+  opacity: 0.45;
 }
 
 /* "+ Add …" under a list of rows. */

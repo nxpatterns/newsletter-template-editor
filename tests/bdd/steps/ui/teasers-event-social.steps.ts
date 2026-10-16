@@ -23,8 +23,8 @@ Then('the calendar link should add {string} in {string}', async ({ page }, dates
   expect(url.searchParams.get('ctz')).toBe(tz);
 });
 
-When('I open the Legal tab', async ({ page }) => {
-  await page.getByTestId('panel-tab-legal').click();
+When('I open the Social tab', async ({ page }) => {
+  await page.getByTestId('panel-tab-social').click();
   await expect(page.getByTestId('social-fields')).toBeVisible();
 });
 
@@ -45,8 +45,19 @@ When('I enter the social link {string} as {string}', async ({ page }, id: string
   await input.blur();
 });
 
+When('I clear the social link {string} with the ×', async ({ page }, id: string) => {
+  const input = page.getByTestId(`g-social-${id}`);
+  const box = await input.boundingBox();
+  if (!box) throw new Error(`social link field ${id} is not visible`);
+  await input.click({ position: { x: box.width - 10, y: box.height / 2 } });
+});
+
 Then('the social link {string} should read {string}', async ({ page }, id: string, value: string) => {
   await expect(page.getByTestId(`g-social-${id}`)).toHaveValue(value);
+});
+
+Then('the preview footer should not show the {string} icon', async ({ page }, label: string) => {
+  await expect(frame(page).locator(`.footer-social img.footer-social-icon[alt="${label}"]`)).toHaveCount(0);
 });
 
 Then('the preview footer should show the {string} icon', async ({ page }, label: string) => {
@@ -107,4 +118,12 @@ Then('the zipped HTML should show the icon from {string}', async ({}, urlPrefix:
   const text = readFileSync(join(zipDir, html), 'utf8');
   expect(text).toMatch(new RegExp(`<img src="${urlPrefix.replace(/[./]/g, '\\$&')}[0-9a-f]{6}\\.png"[^>]*alt="LinkedIn"`));
   expect(text).not.toMatch(/footer-social[\s\S]{0,300}data:image/);
+});
+
+Then('the social strip should show {string}', async ({ page }, id: string) => {
+  await expect(page.getByTestId(`social-strip-${id}`)).toBeVisible();
+});
+
+Then('the social strip should not show {string}', async ({ page }, id: string) => {
+  await expect(page.getByTestId(`social-strip-${id}`)).toHaveCount(0);
 });

@@ -53,6 +53,7 @@ import {
   saveParagraphStash,
 } from '../paragraph-draft-stash';
 import { NewsletterSession } from '../newsletter-session.service';
+import { ClearableInputDirective } from '../../ui/clearable-input.directive';
 
 const HISTORY_MAX = 80;
 
@@ -144,6 +145,7 @@ function inlineColorOfElement(el: HTMLElement): RichColorToken | null {
 
 @Component({
   selector: 'app-paragraph-lite-editor',
+  imports: [ClearableInputDirective],
   templateUrl: './paragraph-lite-editor.component.html',
   styleUrl: './paragraph-lite-editor.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

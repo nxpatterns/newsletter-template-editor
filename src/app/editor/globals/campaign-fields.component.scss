@@ -1,0 +1,163 @@
+/* Inbox preview: a light mail-client row so subject and preheader read as they will in the inbox. */
+.inbox {
+  margin-block-end: 0.75rem;
+  border: 1px solid var(--ds-border);
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.7rem 0.6rem;
+  color: #1c2733;
+  background: #f6f8fb;
+}
+
+.inbox-cap {
+  margin: 0 0 0.35rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8795a6;
+}
+
+.inbox-row {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr);
+  column-gap: 0.5rem;
+  align-items: start;
+}
+
+.inbox-avatar {
+  grid-row: span 3;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  background: #2a7fc0;
+}
+
+.inbox-from,
+.inbox-subject,
+.inbox-pre {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inbox-from {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.inbox-subject {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.inbox-pre {
+  font-size: 0.72rem;
+  color: #6a7889;
+}
+
+.count-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.count {
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-success);
+}
+
+.count.is-over {
+  color: var(--ds-danger);
+}
+
+.count-bar {
+  display: block;
+  height: 3px;
+  margin-block-start: 0.25rem;
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--ds-border);
+}
+
+.count-bar i {
+  display: block;
+  max-width: 100%;
+  height: 100%;
+  background: var(--ds-success);
+}
+
+.count-bar i.is-over {
+  background: var(--ds-danger);
+}
+
+.font-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(4.4rem, 1fr));
+  gap: 0.3rem;
+  margin-block-end: 0.55rem;
+}
+
+.font-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  min-width: 0;
+  border: 1px solid var(--ds-border);
+  border-radius: 0.4rem;
+  padding: 0.35rem 0.2rem 0.3rem;
+  color: var(--ds-text);
+  background: var(--ds-bg-page);
+  cursor: pointer;
+}
+
+.font-tile b {
+  font-size: 1.1rem;
+  font-weight: 400;
+  line-height: 1.1;
+}
+
+.font-tile span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.6rem;
+  color: var(--ds-text-muted);
+}
+
+.font-tile:hover {
+  border-color: color-mix(in srgb, var(--ds-border) 45%, var(--ds-accent));
+}
+
+.font-tile.is-on {
+  border-color: var(--ds-accent);
+  box-shadow: inset 0 0 0 1px var(--ds-accent);
+}
+
+.font-tile.is-on span {
+  color: var(--ds-accent);
+}
+
+.font-tile:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 1px;
+}
+
+.export-files {
+  margin: 0.3rem 0 0;
+  border: 1px dashed var(--ds-border);
+  border-radius: var(--ds-radius);
+  padding: 0.3rem 0.45rem;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.68rem;
+  color: var(--ds-text-muted);
+  word-break: break-all;
+}

@@ -3,74 +3,47 @@
 @let stars = g.brand.stars;
 
 <section data-testid="brand-fields">
-  <div class="ed-group" data-testid="logo-block">
-    <p class="ed-group-title" [textContent]="i18n.t('brand.logoSection')"></p>
-    <app-image-picker
-      class="ed-field"
-      idPrefix="g-logo"
-      [src]="g.logo.src"
-      [busy]="busy()"
-      (fileChosen)="handleFile($event)"
-      (urlCommitted)="onLogoUrl($event)"
-      (removed)="clearLogo()"
-      (loaded)="onLogoLoaded($event)"
-    />
-    @if (g.logo.src === placeholderLogo) {
-      <p class="ed-warn" data-testid="g-logo-placeholder" [textContent]="i18n.t('brand.logoPlaceholderHint')"></p>
-    }
-    <div class="ed-field" [class.is-invalid]="!!g.logo.src && !(g.logo.alt ?? '').trim()">
-      <label class="ed-label" for="g-logo-description" [textContent]="i18n.t('field.imageDescription')"></label>
-      <input
-        id="g-logo-description"
-        class="ed-input"
-        data-testid="g-logo-description"
-        [placeholder]="i18n.t('brand.logoDescriptionPlaceholder')"
-        [attr.aria-invalid]="!!g.logo.src && !(g.logo.alt ?? '').trim()"
-        [value]="g.logo.alt ?? ''"
-        (input)="onLogo('alt', $event)"
-        (blur)="onFieldBlur()"
-      />
-      @if (g.logo.src && !(g.logo.alt ?? '').trim()) {
-        <p class="ed-hint is-error" data-testid="g-logo-description-required" [textContent]="i18n.t('field.imageDescriptionRequired')"></p>
-      }
-    </div>
+  <div class="ed-group" data-testid="brand-stars" [class.is-hidden-part]="!shown('starsTop') && !shown('starsBottom')">
+    <p class="ed-group-title">
+      <span class="ed-group-n" aria-hidden="true">1</span>
+      <span [textContent]="i18n.t('brand.stars')"></span>
+      <app-frame-part-switch part="starsTop" textKey="frame.top" />
+      <app-frame-part-switch part="starsBottom" textKey="frame.bottom" />
+    </p>
     <div class="ed-field">
-      <div class="ed-label-row">
-        <label class="ed-label" for="g-logo-link-target" [textContent]="i18n.t('brand.logoLinkTarget')"></label>
-        @if (linkKindKey(g.logo.href ?? ''); as kindKey) {
-          <span class="link-kind-chip" data-testid="g-logo-link-kind" [textContent]="i18n.t(kindKey)"></span>
+      <span class="ed-label" id="g-stars-symbol" [textContent]="i18n.t('brand.starsSymbol')"></span>
+      <div class="brand-symbols" role="radiogroup" aria-labelledby="g-stars-symbol">
+        @for (sym of starSymbols(); track sym; let i = $index) {
+          <button
+            type="button"
+            class="brand-symbol"
+            role="radio"
+            [class.is-on]="stars.symbol === sym"
+            [attr.aria-checked]="stars.symbol === sym"
+            [attr.data-testid]="'brand-star-symbol-' + i"
+            [textContent]="sym"
+            (click)="updateStars({ symbol: sym })"
+          ></button>
         }
       </div>
-      <input
-        id="g-logo-link-target"
-        class="ed-input"
-        data-testid="g-logo-link-target"
-        [placeholder]="i18n.t('brand.logoLinkTargetPlaceholder')"
-        [value]="g.logo.href ?? ''"
-        (input)="onLogo('href', $event)"
-        (blur)="onLogoLinkTargetBlur()"
-      />
-      <p class="ed-hint" [textContent]="i18n.t('link.targetHint')"></p>
     </div>
     <div class="ed-field">
-      <label class="ed-label" for="g-logo-h" [textContent]="i18n.t('brand.logoHeight')"></label>
-      <input
-        id="g-logo-h"
-        class="ed-input brand-narrow"
-        type="number"
-        min="16"
-        max="480"
-        data-testid="g-logo-h"
-        [value]="g.logo.heightPx"
-        (input)="onLogoHeight($event)"
-        (blur)="onFieldBlur()"
-      />
-      <p class="ed-hint" [textContent]="i18n.t('brand.logoHeightHint')"></p>
+      <span class="ed-label" id="g-stars-count" [textContent]="i18n.t('brand.starsCount')"></span>
+      <div class="brand-stepper" role="group" aria-labelledby="g-stars-count">
+        <button type="button" data-testid="brand-stars-fewer" [attr.aria-label]="i18n.t('brand.starsFewer')" [disabled]="stars.count < 1" (click)="updateStars({ count: stars.count - 1 })">−</button>
+        <output data-testid="brand-stars-count" [textContent]="stars.count"></output>
+        <button type="button" data-testid="brand-stars-more" [attr.aria-label]="i18n.t('brand.starsMore')" [disabled]="stars.count >= starMax" (click)="updateStars({ count: stars.count + 1 })">+</button>
+      </div>
+      <p class="ed-hint" [textContent]="i18n.t('brand.starsHint')"></p>
     </div>
   </div>
 
-  <div class="ed-group" data-testid="brand-name">
-    <p class="ed-group-title" [textContent]="i18n.t('brand.name')"></p>
+  <div class="ed-group" data-testid="brand-name" [class.is-hidden-part]="!shown('brandName')">
+    <p class="ed-group-title">
+      <span class="ed-group-n" aria-hidden="true">2</span>
+      <span [textContent]="i18n.t('brand.name')"></span>
+      <app-frame-part-switch part="brandName" />
+    </p>
     <div class="brand-parts">
       @for (part of name.parts; track $index; let i = $index) {
         <div class="brand-part">
@@ -142,33 +115,86 @@
     </div>
   </div>
 
-  <div class="ed-group" data-testid="brand-stars">
-    <p class="ed-group-title" [textContent]="i18n.t('brand.stars')"></p>
-    <div class="ed-field">
-      <span class="ed-label" id="g-stars-symbol" [textContent]="i18n.t('brand.starsSymbol')"></span>
-      <div class="brand-symbols" role="radiogroup" aria-labelledby="g-stars-symbol">
-        @for (sym of starSymbols(); track sym; let i = $index) {
-          <button
-            type="button"
-            class="brand-symbol"
-            role="radio"
-            [class.is-on]="stars.symbol === sym"
-            [attr.aria-checked]="stars.symbol === sym"
-            [attr.data-testid]="'brand-star-symbol-' + i"
-            [textContent]="sym"
-            (click)="updateStars({ symbol: sym })"
-          ></button>
-        }
-      </div>
+  <div class="ed-group" data-testid="logo-block" [class.is-hidden-part]="!shown('logo')">
+    <p class="ed-group-title">
+      <span class="ed-group-n" aria-hidden="true">3</span>
+      <span [textContent]="i18n.t('brand.logoSection')"></span>
+      <app-frame-part-switch part="logo" />
+    </p>
+    <app-image-picker
+      class="ed-field"
+      idPrefix="g-logo"
+      [src]="g.logo.src"
+      [busy]="busy()"
+      (fileChosen)="handleFile($event)"
+      (urlCommitted)="onLogoUrl($event)"
+      (removed)="clearLogo()"
+      (loaded)="onLogoLoaded($event)"
+    />
+    @if (g.logo.src === placeholderLogo) {
+      <p class="ed-warn" data-testid="g-logo-placeholder" [textContent]="i18n.t('brand.logoPlaceholderHint')"></p>
+    }
+    <div class="ed-field" [class.is-invalid]="!!g.logo.src && !(g.logo.alt ?? '').trim()">
+      <label class="ed-label" for="g-logo-description" [textContent]="i18n.t('field.imageDescription')"></label>
+      <input
+        id="g-logo-description"
+        class="ed-input"
+        data-testid="g-logo-description"
+        [placeholder]="i18n.t('brand.logoDescriptionPlaceholder')"
+        [attr.aria-invalid]="!!g.logo.src && !(g.logo.alt ?? '').trim()"
+        [value]="g.logo.alt ?? ''"
+        (input)="onLogo('alt', $event)"
+        (blur)="onFieldBlur()"
+      />
+      @if (g.logo.src && !(g.logo.alt ?? '').trim()) {
+        <p class="ed-hint is-error" data-testid="g-logo-description-required" [textContent]="i18n.t('field.imageDescriptionRequired')"></p>
+      }
     </div>
     <div class="ed-field">
-      <span class="ed-label" id="g-stars-count" [textContent]="i18n.t('brand.starsCount')"></span>
-      <div class="brand-stepper" role="group" aria-labelledby="g-stars-count">
-        <button type="button" data-testid="brand-stars-fewer" [attr.aria-label]="i18n.t('brand.starsFewer')" [disabled]="stars.count < 1" (click)="updateStars({ count: stars.count - 1 })">−</button>
-        <output data-testid="brand-stars-count" [textContent]="stars.count"></output>
-        <button type="button" data-testid="brand-stars-more" [attr.aria-label]="i18n.t('brand.starsMore')" [disabled]="stars.count >= starMax" (click)="updateStars({ count: stars.count + 1 })">+</button>
+      <div class="ed-label-row">
+        <label class="ed-label" for="g-logo-link-target" [textContent]="i18n.t('brand.logoLinkTarget')"></label>
+        @if (linkKindKey(g.logo.href ?? ''); as kindKey) {
+          <span class="link-kind-chip" data-testid="g-logo-link-kind" [textContent]="i18n.t(kindKey)"></span>
+        }
       </div>
-      <p class="ed-hint" [textContent]="i18n.t('brand.starsHint')"></p>
+      <input
+        id="g-logo-link-target"
+        class="ed-input"
+        data-testid="g-logo-link-target"
+        [placeholder]="i18n.t('brand.logoLinkTargetPlaceholder')"
+        [value]="g.logo.href ?? ''"
+        (input)="onLogo('href', $event)"
+        (blur)="onLogoLinkTargetBlur()"
+      />
+      <p class="ed-hint" [textContent]="i18n.t('link.targetHint')"></p>
+    </div>
+    <div class="ed-field">
+      <label class="ed-label" for="g-logo-h" [textContent]="i18n.t('brand.logoHeight')"></label>
+      <input
+        id="g-logo-h"
+        class="ed-input brand-narrow"
+        type="number"
+        min="16"
+        max="480"
+        data-testid="g-logo-h"
+        [value]="g.logo.heightPx"
+        (input)="onLogoHeight($event)"
+        (blur)="onFieldBlur()"
+      />
+      <p class="ed-hint" [textContent]="i18n.t('brand.logoHeightHint')"></p>
+    </div>
+  </div>
+
+  <div class="ed-group" data-testid="brand-view-in-browser" [class.is-hidden-part]="!shown('viewInBrowserTop')">
+    <p class="ed-group-title">
+      <span class="ed-group-n" aria-hidden="true">4</span>
+      <span [textContent]="i18n.t('legal.viewInBrowserGroup')"></span>
+      <app-frame-part-switch part="viewInBrowserTop" />
+    </p>
+    <div class="ed-field">
+      <label class="ed-label" for="g-view-top" [textContent]="i18n.t('legal.viewInBrowser')"></label>
+      <input id="g-view-top" class="ed-input" data-testid="g-view-top" [value]="g.legal.viewInBrowserLabel" (input)="onViewInBrowserLabel($event)" (blur)="onFieldBlur()" />
+      <p class="ed-hint" [textContent]="i18n.t('brand.viewInBrowserHint')"></p>
     </div>
   </div>
 </section>

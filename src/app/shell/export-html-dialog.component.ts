@@ -1,12 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from '@angular/core';
-import { filledSocialNetworks, isAssetBaseUrl, placeholderParts } from '../../core';
+import { filledSocialNetworks, isFramePartShown, isAssetBaseUrl, placeholderParts } from '../../core';
 import { NewsletterSession } from '../editor/newsletter-session.service';
 import { LocaleService } from '../i18n/locale.service';
+import { ClearableInputDirective } from '../ui/clearable-input.directive';
 
 export type HtmlExportKind = 'full' | 'listmonk';
 
 @Component({
   selector: 'app-export-html-dialog',
+  imports: [ClearableInputDirective],
   templateUrl: './export-html-dialog.component.html',
   styleUrl: './export-html-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,7 +22,10 @@ export class ExportHtmlDialogComponent {
   /** Dummy logo / example.com links still in use (blank newsletter): warn before download. */
   protected readonly placeholders = computed(() => placeholderParts(this.session.newsletter()));
   /** Social icons need a public place for their PNGs; without one the footer uses text links. */
-  protected readonly hasSocial = computed(() => filledSocialNetworks(this.session.globals().legal.social).length > 0);
+  protected readonly hasSocial = computed(() => {
+    const g = this.session.globals();
+    return isFramePartShown(g, 'social') && filledSocialNetworks(g.legal.social).length > 0;
+  });
   protected readonly assetBase = computed(() => this.session.globals().assetBaseUrl);
   protected readonly assetBaseValid = computed(() => isAssetBaseUrl(this.assetBase()));
 

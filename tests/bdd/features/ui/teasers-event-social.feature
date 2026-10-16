@@ -32,13 +32,25 @@ Feature: Teasers, event and social media footer
   Scenario: Every icon in the social folder has a link field
     Given I open the start page
     And I click the start tile 'start-blank'
-    When I open the Legal tab
+    When I open the Social tab
     Then there should be one social link field per icon in 'public/icons/social'
+
+  Scenario: The × at the end of a text field empties it
+    Given I open the start page
+    And I click the start tile 'start-blank'
+    When I open the Social tab
+    And I enter the social link 'linkedin' as 'linkedin.com/company/acme'
+    Then the preview footer should show the 'LinkedIn' icon
+    And the social strip should show 'linkedin'
+    When I clear the social link 'linkedin' with the ×
+    Then the social link 'linkedin' should read ''
+    And the preview footer should not show the 'LinkedIn' icon
+    And the social strip should not show 'linkedin'
 
   Scenario: Social icons need an image address, else the export uses text links
     Given I open the start page
     And I click the start tile 'start-blank'
-    When I open the Legal tab
+    When I open the Social tab
     And I enter the social link 'linkedin' as 'linkedin.com/company/acme'
     Then the social link 'linkedin' should read 'https://linkedin.com/company/acme'
     And the preview footer should show the 'LinkedIn' icon

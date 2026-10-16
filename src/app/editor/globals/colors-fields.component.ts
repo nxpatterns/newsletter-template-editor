@@ -4,6 +4,7 @@ import type { Block, Globals } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
 import { blockTypeIcon } from '../blocks/block-catalog';
 import { NewsletterSession } from '../newsletter-session.service';
+import { ClearableInputDirective } from '../../ui/clearable-input.directive';
 
 type CampaignColorKey = Extract<
   keyof Globals,
@@ -106,6 +107,7 @@ const BLOCK_SLOTS: Record<Block['type'], readonly string[]> = {
 
 @Component({
   selector: 'app-colors-fields',
+  imports: [ClearableInputDirective],
   templateUrl: './colors-fields.component.html',
   styleUrl: './colors-fields.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

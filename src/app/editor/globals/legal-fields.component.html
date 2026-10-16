@@ -1,91 +1,97 @@
 @let l = session.globals().legal;
+@let missing = missingRequired();
 
 <section data-testid="legal-fields">
-  <div class="ed-field">
-    <label class="ed-label" for="g-notice" [textContent]="i18n.t('legal.notice')"></label>
-    <textarea id="g-notice" class="ed-textarea" rows="3" [value]="l.noticeHtml" (input)="onLegal('noticeHtml', $event)" (blur)="onFieldBlur()"></textarea>
-  </div>
-  <div class="ed-field">
-    <label class="ed-label" for="g-company-name" [textContent]="i18n.t('legal.companyName')"></label>
-    <input
-      id="g-company-name"
-      class="ed-input"
-      data-testid="g-company"
-      [value]="l.companyName"
-      (input)="onLegal('companyName', $event)"
-     (blur)="onFieldBlur()" />
-  </div>
-  <div class="ed-field-row">
-    <div class="ed-field">
-      <label class="ed-label" for="g-company-site-l" [textContent]="i18n.t('legal.companyWebsiteText')"></label>
-      <input
-        id="g-company-site-l"
-        class="ed-input"
-        data-testid="g-company-site-text"
-        [value]="l.companyWebsiteLabel"
-        (input)="onLegal('companyWebsiteLabel', $event)"
-       (blur)="onFieldBlur()" />
-    </div>
-    <div class="ed-field">
-      <label class="ed-label" for="g-company-site-h" [textContent]="i18n.t('legal.companyWebsiteTarget')"></label>
-      <input
-        id="g-company-site-h"
-        class="ed-input"
-        data-testid="g-company-site-target"
-        [placeholder]="i18n.t('legal.companyWebsitePlaceholder')"
-        [value]="l.companyWebsiteHref"
-        (input)="onLegal('companyWebsiteHref', $event)"
-        (blur)="onTargetBlur('companyWebsiteHref')" />
-    </div>
-  </div>
-  <div class="ed-field-row">
-    <div class="ed-field">
-      <label class="ed-label" for="g-priv-l" [textContent]="i18n.t('legal.privacyText')"></label>
-      <input id="g-priv-l" class="ed-input" [value]="l.privacyLabel" (input)="onLegal('privacyLabel', $event)"  (blur)="onFieldBlur()" />
-    </div>
-    <div class="ed-field">
-      <label class="ed-label" for="g-priv-h" [textContent]="i18n.t('legal.privacyTarget')"></label>
-      <input id="g-priv-h" class="ed-input" [value]="l.privacyHref" [placeholder]="i18n.t('legal.privacyPlaceholder')" (input)="onLegal('privacyHref', $event)" (blur)="onTargetBlur('privacyHref')" />
-    </div>
-  </div>
-  <div class="ed-field-row">
-    <div class="ed-field">
-      <label class="ed-label" for="g-imp-l" [textContent]="i18n.t('legal.imprintText')"></label>
-      <input id="g-imp-l" class="ed-input" [value]="l.imprintLabel" (input)="onLegal('imprintLabel', $event)"  (blur)="onFieldBlur()" />
-    </div>
-    <div class="ed-field">
-      <label class="ed-label" for="g-imp-h" [textContent]="i18n.t('legal.imprintTarget')"></label>
-      <input id="g-imp-h" class="ed-input" [value]="l.imprintHref" [placeholder]="i18n.t('legal.imprintPlaceholder')" (input)="onLegal('imprintHref', $event)" (blur)="onTargetBlur('imprintHref')" />
-    </div>
-  </div>
-  <div class="ed-field">
-    <label class="ed-label" for="g-unsub" [textContent]="i18n.t('legal.unsubscribe')"></label>
-    <input id="g-unsub" class="ed-input" [value]="l.unsubscribeLabel" (input)="onLegal('unsubscribeLabel', $event)"  (blur)="onFieldBlur()" />
-  </div>
-  <div class="ed-field">
-    <label class="ed-label" for="g-view" [textContent]="i18n.t('legal.viewInBrowser')"></label>
-    <input id="g-view" class="ed-input" [value]="l.viewInBrowserLabel" (input)="onLegal('viewInBrowserLabel', $event)"  (blur)="onFieldBlur()" />
-  </div>
-  <section class="ed-group" data-testid="social-fields">
-    <h3 class="ed-group-title" [textContent]="i18n.t('legal.socialTitle')"></h3>
-    <p class="ed-hint" [textContent]="i18n.t('legal.socialHint')"></p>
-    <div class="social-list">
-      @for (n of networks; track n.id) {
-        <label class="social-row" [attr.for]="'g-social-' + n.id">
-          <span class="social-ico" aria-hidden="true" [style.mask-image]="'url(' + iconDir + '/' + n.id + '.svg)'"></span>
-          <span class="social-name" [textContent]="n.label"></span>
-        </label>
-        <input
-          class="ed-input"
-          [id]="'g-social-' + n.id"
-          [attr.data-testid]="'g-social-' + n.id"
-          [attr.aria-label]="n.label + ': ' + i18n.t('legal.socialTarget')"
-          [placeholder]="placeholders[n.id]"
-          [value]="l.social[n.id]"
-          (input)="onSocial(n.id, $event)"
-          (blur)="onSocialBlur(n.id)"
-        />
+  <p class="legal-status" data-testid="legal-status" [class.is-missing]="missing.length > 0" role="status">
+    <svg class="legal-status-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z" />
+      @if (missing.length === 0) {
+        <path d="M9 12l2 2 4-4" />
+      } @else {
+        <path d="M12 8v5M12 16h.01" />
       }
+    </svg>
+    @if (missing.length === 0) {
+      <span><b [textContent]="i18n.t('legal.statusOk')"></b> · <span [textContent]="i18n.t('legal.statusOkDetail')"></span></span>
+    } @else {
+      <span>
+        @for (part of missing; track part; let last = $last) {
+          <b [attr.data-testid]="'frame-warn-' + part" [textContent]="i18n.t('frame.part.' + part)"></b>@if (!last) {<span> + </span>}
+        }
+        <span [textContent]="' ' + i18n.t('legal.statusMissing')"></span>
+      </span>
+    }
+  </p>
+
+  <div class="ed-group" data-testid="legal-sender">
+    <p class="ed-group-title" [textContent]="i18n.t('legal.groupSender')"></p>
+
+    <div class="ed-field" data-testid="legal-notice" [class.is-hidden-part]="!shown('notice')">
+      <div class="legal-row-head">
+        <label class="ed-label" for="g-notice" [textContent]="i18n.t('legal.notice')"></label>
+        <app-frame-part-switch part="notice" />
+      </div>
+      <textarea id="g-notice" class="ed-textarea" rows="3" [value]="l.noticeHtml" (input)="onLegal('noticeHtml', $event)" (blur)="onFieldBlur()"></textarea>
     </div>
-  </section>
+
+    <div class="ed-field" data-testid="legal-company" [class.is-hidden-part]="!shown('company')">
+      <div class="legal-row-head">
+        <label class="ed-label" for="g-company-name" [textContent]="i18n.t('legal.companyRow')"></label>
+        <app-frame-part-switch part="company" />
+      </div>
+      <input
+        id="g-company-name"
+        class="ed-input"
+        data-testid="g-company"
+        [attr.aria-label]="i18n.t('legal.companyName')"
+        [placeholder]="i18n.t('legal.companyName')"
+        [value]="l.companyName"
+        (input)="onLegal('companyName', $event)"
+        (blur)="onFieldBlur()" />
+      <div class="legal-pair">
+        <input
+          id="g-company-site-l"
+          class="ed-input"
+          data-testid="g-company-site-text"
+          [attr.aria-label]="i18n.t('legal.companyWebsiteText')"
+          [value]="l.companyWebsiteLabel"
+          (input)="onLegal('companyWebsiteLabel', $event)"
+          (blur)="onFieldBlur()" />
+        <input
+          id="g-company-site-h"
+          class="ed-input"
+          data-testid="g-company-site-target"
+          [attr.aria-label]="i18n.t('legal.companyWebsiteTarget')"
+          [placeholder]="i18n.t('legal.companyWebsitePlaceholder')"
+          [value]="l.companyWebsiteHref"
+          (input)="onLegal('companyWebsiteHref', $event)"
+          (blur)="onTargetBlur('companyWebsiteHref')" />
+      </div>
+    </div>
+  </div>
+
+  <div class="ed-group" data-testid="legal-links">
+    <p class="ed-group-title" [textContent]="i18n.t('legal.groupLinks')"></p>
+    <div class="legal-links">
+      <span></span>
+      <span class="legal-col" [textContent]="i18n.t('legal.colText')"></span>
+      <span class="legal-col" [textContent]="i18n.t('legal.colTarget')"></span>
+
+      <app-frame-part-switch part="privacy" />
+      <input id="g-priv-l" class="ed-input" [class.is-off]="!shown('privacy')" [attr.aria-label]="i18n.t('legal.privacyText')" [value]="l.privacyLabel" (input)="onLegal('privacyLabel', $event)" (blur)="onFieldBlur()" />
+      <input id="g-priv-h" class="ed-input" [class.is-off]="!shown('privacy')" [attr.aria-label]="i18n.t('legal.privacyTarget')" [value]="l.privacyHref" [placeholder]="i18n.t('legal.privacyPlaceholder')" (input)="onLegal('privacyHref', $event)" (blur)="onTargetBlur('privacyHref')" />
+
+      <app-frame-part-switch part="imprint" />
+      <input id="g-imp-l" class="ed-input" [class.is-off]="!shown('imprint')" [attr.aria-label]="i18n.t('legal.imprintText')" [value]="l.imprintLabel" (input)="onLegal('imprintLabel', $event)" (blur)="onFieldBlur()" />
+      <input id="g-imp-h" class="ed-input" [class.is-off]="!shown('imprint')" [attr.aria-label]="i18n.t('legal.imprintTarget')" [value]="l.imprintHref" [placeholder]="i18n.t('legal.imprintPlaceholder')" (input)="onLegal('imprintHref', $event)" (blur)="onTargetBlur('imprintHref')" />
+
+      <app-frame-part-switch part="unsubscribe" />
+      <input id="g-unsub" class="ed-input" [class.is-off]="!shown('unsubscribe')" [attr.aria-label]="i18n.t('legal.unsubscribe')" [value]="l.unsubscribeLabel" (input)="onLegal('unsubscribeLabel', $event)" (blur)="onFieldBlur()" />
+      <span class="legal-auto" [textContent]="i18n.t('legal.targetListmonk')"></span>
+
+      <app-frame-part-switch part="viewInBrowserBottom" />
+      <input id="g-view" class="ed-input" [class.is-off]="!shown('viewInBrowserBottom')" [attr.aria-label]="i18n.t('legal.viewInBrowser')" [value]="l.viewInBrowserLabel" (input)="onLegal('viewInBrowserLabel', $event)" (blur)="onFieldBlur()" />
+      <span class="legal-auto" [textContent]="i18n.t('legal.targetListmonk')"></span>
+    </div>
+  </div>
 </section>
