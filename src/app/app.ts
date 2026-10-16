@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Toolbar, ToolbarWidget } from '@angular/aria/toolbar';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
@@ -13,10 +14,12 @@ import {
   type LegalModalKind,
 } from './ui/legal-modal/legal-modal.component';
 import { FileMenuComponent } from './shell/file-menu.component';
+import { UnsavedGuardService } from './shell/unsaved-guard.service';
 import { SnackbarComponent } from './ui/snackbar/snackbar.component';
 
 @Component({
   imports: [
+    NgTemplateOutlet,
     RouterOutlet,
     RouterLink,
     Toolbar,
@@ -42,14 +45,22 @@ export class App {
 
   protected readonly legalKind = signal<LegalModalKind>(null);
 
-  /** Editor-only header controls (document name, Start, undo/redo, file menu). */
-  protected readonly inEditor = toSignal(
+  private readonly unsaved = inject(UnsavedGuardService);
+
+  private readonly url = toSignal(
     inject(Router).events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd),
-      map((e) => e.urlAfterRedirects.startsWith('/edit/')),
+      map((e) => e.urlAfterRedirects.split(/[?#]/)[0]),
     ),
-    { initialValue: false },
+    { initialValue: '/' },
   );
+
+  /** Start page: the title is plain text; everywhere else it links home. */
+  protected readonly onStart = computed(() => this.url() === '/');
+  /** Editor-only header controls (document name, undo/redo, save, export, menu). */
+  protected readonly inEditor = computed(() => this.url().startsWith('/edit/'));
+  /** About shows a way back to the open document. */
+  protected readonly onAbout = computed(() => this.url() === '/about');
 
   protected openLegal(kind: Exclude<LegalModalKind, null>): void {
     this.legalKind.set(kind);
@@ -67,6 +78,12 @@ export class App {
     const mod = event.metaKey || event.ctrlKey;
     if (!mod || !this.inEditor()) return;
     const key = event.key.toLowerCase();
+    if (key === 's') {
+      event.preventDefault();
+      if (event.shiftKey) void this.unsaved.saveAs();
+      else if (this.unsaved.canSave()) void this.unsaved.save();
+      return;
+    }
     if (key === 'z' && !event.shiftKey) {
       if (!this.session.canUndo()) return;
       event.preventDefault();

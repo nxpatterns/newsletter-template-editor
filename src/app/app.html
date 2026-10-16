@@ -14,36 +14,76 @@
       <symbol id="icon-start" viewBox="0 -960 960 960">
         <path d="M240-200h120v-240h240v240h120v-360L480-750 240-560v360Zm-80 80v-480l320-240 320 240v480H520v-240h-80v240H160Zm320-350Z" />
       </symbol>
+      <symbol id="icon-back" viewBox="0 -960 960 960">
+        <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z" />
+      </symbol>
     </defs>
   </svg>
 
   <header class="app-header">
     <div class="app-header-bar">
+      <div class="app-header-lead">
+      @if (!onStart()) {
+        <a
+          class="toolbar-btn app-header-home-btn"
+          routerLink="/"
+          data-testid="action-home"
+          [attr.aria-label]="i18n.t('start.headerTitle')"
+          [attr.title]="i18n.t('start.headerTitle')"
+        >
+          <svg class="toolbar-icon" aria-hidden="true" focusable="false">
+            <use href="#icon-start"></use>
+          </svg>
+        </a>
+      }
       <div class="app-header-brand">
-        <h1 class="app-header-title" data-testid="app-title" [textContent]="i18n.t('shell.title')"></h1>
+        @if (onStart()) {
+          <h1 class="app-header-title" data-testid="app-title" [textContent]="i18n.t('shell.title')"></h1>
+        } @else {
+          <h1 class="app-header-title">
+            <a
+              class="app-header-home"
+              routerLink="/"
+              data-testid="action-start"
+              [attr.title]="i18n.t('start.headerTitle')"
+            ><span data-testid="app-title" [textContent]="i18n.t('shell.title')"></span></a>
+          </h1>
+        }
         @if (inEditor()) {
-          <div class="app-header-doc" data-testid="doc-name">
-            <span [textContent]="session.displayName()"></span>
-            @if (session.dirty()) {
-              <span class="app-header-dirty" [attr.title]="i18n.t('file.dirtyTitle')">•</span>
-            }
+          <div class="app-header-doc">
+            <span class="app-header-doc-name" data-testid="doc-name" [textContent]="session.displayName()"></span>
+            <ng-container [ngTemplateOutlet]="saveState" />
+          </div>
+        } @else if (onAbout() && session.hasDocument()) {
+          <div class="app-header-doc">
+            <a class="app-header-back" [routerLink]="['/edit', session.routeId()]" data-testid="action-back-to-doc">
+              <svg class="app-header-back-icon" aria-hidden="true" focusable="false">
+                <use href="#icon-back"></use>
+              </svg>
+              <span [textContent]="i18n.t('about.backToDoc')"></span>
+              <span class="app-header-doc-name" [textContent]="session.displayName()"></span>
+            </a>
+            <ng-container [ngTemplateOutlet]="saveState" />
           </div>
         }
+        <ng-template #saveState>
+          @if (session.dirty()) {
+            <span class="save-state save-state--dirty" data-testid="save-state" role="status">
+              <span class="save-state-dot" aria-hidden="true"></span>
+              <span [textContent]="i18n.t('file.statusUnsaved')"></span>
+            </span>
+          } @else if (session.libraryId()) {
+            <span class="save-state save-state--saved" data-testid="save-state" role="status">
+              <span aria-hidden="true">✓</span>
+              <span [textContent]="i18n.t('file.statusSaved')"></span>
+            </span>
+          }
+        </ng-template>
+      </div>
       </div>
 
       <div class="app-header-actions">
         @if (inEditor()) {
-          <a
-            class="start-link"
-            routerLink="/"
-            data-testid="action-start"
-            [attr.title]="i18n.t('start.headerTitle')"
-          >
-            <svg class="toolbar-icon" aria-hidden="true" focusable="false">
-              <use href="#icon-start"></use>
-            </svg>
-            <span [textContent]="i18n.t('start.header')"></span>
-          </a>
           <div
             ngToolbar
             class="app-toolbar"
@@ -81,6 +121,7 @@
               </svg>
             </button>
           </div>
+          <app-file-menu />
         }
 
         <div class="locale-switch" role="group" [attr.aria-label]="i18n.t('action.locale')">
@@ -103,10 +144,6 @@
             (click)="setLocale('de')"
           ></button>
         </div>
-
-        @if (inEditor()) {
-          <app-file-menu />
-        }
       </div>
     </div>
   </header>
@@ -119,6 +156,14 @@
     <div class="app-footer-bar">
       <div class="app-footer-left"></div>
       <nav class="app-footer-center" aria-label="Legal">
+        <a
+          class="footer-link"
+          routerLink="/"
+          data-testid="footer-home"
+          [attr.aria-current]="onStart() ? 'page' : null"
+          [textContent]="i18n.t('footer.home')"
+        ></a>
+        <span class="app-footer-separator" aria-hidden="true">·</span>
         <button
           type="button"
           class="footer-link"

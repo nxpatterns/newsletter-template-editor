@@ -34,6 +34,18 @@
   padding: 0.65rem 1rem;
 }
 
+.app-header-lead {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.app-header-home-btn {
+  flex: none;
+  text-decoration: none;
+}
+
 .app-header-brand {
   min-width: 0;
 }
@@ -45,21 +57,111 @@
   line-height: 1.15;
 }
 
-.app-header-doc {
-  margin-block-start: 0.2rem;
+.app-header-home {
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--ds-radius);
+}
+
+.app-header-home:hover {
   color: var(--ds-accent);
-  font-size: 0.72rem;
-  font-weight: 600;
+}
+
+.app-header-home:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 2px;
+}
+
+/* Second line: open document and its save state, flush left with the title. */
+.app-header-doc {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-block-start: 0.25rem;
+  min-width: 0;
+  font-size: 0.8125rem;
   line-height: 1.2;
-  max-width: min(28rem, 70vw);
+}
+
+.app-header-doc-name {
+  color: var(--ds-accent);
+  font-weight: 600;
+  max-width: min(28rem, 55vw);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.app-header-dirty {
-  margin-inline-start: 0.25rem;
-  color: var(--ds-gold, #f5c518);
+.app-header-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  color: var(--ds-text);
+  text-decoration: none;
+}
+
+.app-header-back:hover .app-header-doc-name {
+  text-decoration: underline;
+}
+
+.app-header-back:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 2px;
+}
+
+.app-header-back-icon {
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor;
+}
+
+/* Save state uses status colours (amber/green), never a block-type tint. */
+.save-state {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid;
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.save-state--dirty {
+  --save-state: var(--ds-warning);
+
+  color: var(--save-state);
+  border-color: color-mix(in srgb, var(--save-state) 45%, transparent);
+  background: color-mix(in srgb, var(--save-state) 14%, transparent);
+}
+
+.save-state--saved {
+  color: var(--ds-success);
+  border-color: color-mix(in srgb, var(--ds-success) 35%, transparent);
+  background: color-mix(in srgb, var(--ds-success) 10%, transparent);
+}
+
+.save-state-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: currentColor;
+  animation: save-state-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes save-state-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .save-state-dot {
+    animation: none;
+  }
 }
 
 .app-header-actions {
@@ -115,32 +217,6 @@
 }
 
 .toolbar-btn:focus-visible {
-  outline: 2px solid var(--ds-accent);
-  outline-offset: -2px;
-}
-
-/* Back to the start page: icon + label, same height as the toolbar buttons. */
-.start-link {
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  min-block-size: 2.75rem;
-  padding: 0 0.85rem 0 0.7rem;
-  border: 1px solid var(--ds-border);
-  border-radius: var(--ds-radius);
-  color: var(--ds-text-muted);
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.start-link:hover {
-  color: var(--ds-text);
-  background: color-mix(in srgb, var(--ds-accent) 16%, var(--ds-bg-panel));
-}
-
-.start-link:focus-visible {
   outline: 2px solid var(--ds-accent);
   outline-offset: -2px;
 }

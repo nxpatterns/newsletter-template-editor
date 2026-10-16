@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { computed, inject, Injectable } from '@angular/core';
 import { NewsletterSession } from '../editor/newsletter-session.service';
 import { LocaleService } from '../i18n/locale.service';
 import { ConfirmDialogService } from '../ui/confirm-dialog/confirm-dialog.service';
@@ -9,6 +9,9 @@ export class UnsavedGuardService {
   private readonly session = inject(NewsletterSession);
   private readonly i18n = inject(LocaleService);
   private readonly confirm = inject(ConfirmDialogService);
+
+  /** Something to save: unsaved changes, or a document that was never saved. */
+  readonly canSave = computed(() => this.session.dirty() || !this.session.libraryId());
 
   /** True when it is fine to continue (nothing unsaved, saved, or discarded). */
   async allowLeave(): Promise<boolean> {
@@ -28,9 +31,14 @@ export class UnsavedGuardService {
     return this.save();
   }
 
-  /** Save into the bound library entry, or ask for a name the first time. */
+  /** Save into the bound library entry without asking, or ask for a name the first time. */
   async save(): Promise<boolean> {
     if (this.session.libraryId()) return this.session.saveToLibrary();
+    return this.saveAs();
+  }
+
+  /** Save as a new library entry under a name the user picks. */
+  async saveAs(): Promise<boolean> {
     const name = await this.confirm.prompt({
       title: this.i18n.t('file.saveAsTitle'),
       body: this.i18n.t('file.saveAsBody'),

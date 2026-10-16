@@ -52,7 +52,6 @@ Then('the first block in the preview should be a {string}', async ({ page }, typ
 });
 
 When('I open the HTML export', async ({ page }) => {
-  await page.getByTestId('file-menu-trigger').click();
   await page.getByTestId('file-export').click();
   const download = page.waitForEvent('download');
   await page.getByTestId('export-html-go').click();

@@ -16,6 +16,14 @@ export const routes: Routes = [
         next.url === '/' ? inject(UnsavedGuardService).allowLeave() : true,
     ],
   },
-  { path: 'about', component: AboutPage },
+  {
+    path: 'about',
+    component: AboutPage,
+    // Same rule as the editor: home asks about unsaved changes; back to the document does not.
+    canDeactivate: [
+      (_c: unknown, _r: unknown, _s: unknown, next: { url: string }) =>
+        next.url === '/' ? inject(UnsavedGuardService).allowLeave() : true,
+    ],
+  },
   { path: '**', redirectTo: '' },
 ];

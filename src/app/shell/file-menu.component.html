@@ -1,40 +1,63 @@
+<button
+  type="button"
+  class="header-btn header-btn--primary"
+  data-testid="file-save"
+  [disabled]="!canSave()"
+  [attr.title]="i18n.t('action.save') + ' (' + saveShortcut + ')'"
+  (click)="save()"
+>
+  <svg class="header-btn-icon" viewBox="0 -960 960 960" aria-hidden="true" focusable="false">
+    <path d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Z" />
+  </svg>
+  <span [textContent]="i18n.t('action.save')"></span>
+  @if (canSave()) {
+    <kbd class="header-btn-kbd" [textContent]="saveShortcut"></kbd>
+  }
+</button>
+<button
+  type="button"
+  class="header-btn header-btn--outline"
+  data-testid="file-export"
+  (click)="showExport()"
+>
+  <svg class="header-btn-icon" viewBox="0 -960 960 960" aria-hidden="true" focusable="false">
+    <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z" />
+  </svg>
+  <span [textContent]="i18n.t('file.exportButton')"></span>
+</button>
+
 <div class="file-menu" #root data-testid="file-menu">
   <button
     type="button"
-    class="toolbar-btn file-menu-trigger"
+    class="file-menu-trigger"
     data-testid="file-menu-trigger"
     [attr.aria-expanded]="open()"
     [attr.aria-label]="i18n.t('file.menu')"
     [attr.title]="i18n.t('file.menu')"
     (click)="toggleMenu($event)"
   >
-    <svg class="toolbar-icon file-menu-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d="M4 7h16v2H4V7zm0 4h16v2H4v-2zm0 4h16v2H4v-2z" />
+    <svg class="file-menu-icon" viewBox="0 -960 960 960" aria-hidden="true" focusable="false">
+      <path d="M480-160q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm0-240q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm0-240q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Z" />
     </svg>
   </button>
 
   @if (open()) {
     <div class="file-menu-panel" role="menu" data-testid="file-menu-panel">
-      <button type="button" class="file-menu-item" role="menuitem" data-testid="file-start" (click)="goStart()" [textContent]="i18n.t('start.menuItem')"></button>
-      <div class="file-menu-sep"></div>
       <div class="file-menu-section-label" [textContent]="i18n.t('file.sectionCurrent')"></div>
-      <button type="button" class="file-menu-item file-menu-item--muted" role="menuitem" disabled>
-        <span [textContent]="session.displayName()"></span>
-        @if (session.dirty()) {
-          <span class="file-menu-dirty">•</span>
-        }
-      </button>
       <button type="button" class="file-menu-item" role="menuitem" data-testid="file-rename" (click)="rename()" [textContent]="i18n.t('file.rename')"></button>
-      <button type="button" class="file-menu-item" role="menuitem" data-testid="file-save" (click)="save()" [textContent]="i18n.t('action.save')"></button>
-      <button type="button" class="file-menu-item" role="menuitem" data-testid="file-save-as" (click)="saveAs()" [textContent]="i18n.t('file.saveAs')"></button>
+      <button type="button" class="file-menu-item" role="menuitem" data-testid="file-save-as" (click)="saveAs()">
+        <span [textContent]="i18n.t('file.saveAs')"></span>
+        <kbd class="file-menu-kbd" [textContent]="'⇧' + saveShortcut"></kbd>
+      </button>
+
+      <div class="file-menu-sep"></div>
+      <div class="file-menu-section-label" [textContent]="i18n.t('file.sectionOther')"></div>
       <button type="button" class="file-menu-item" role="menuitem" data-testid="file-open-library" (click)="openLibrary()" [textContent]="i18n.t('file.openLibrary')"></button>
-      <button type="button" class="file-menu-item" role="menuitem" data-testid="file-export" (click)="showExport()" [textContent]="i18n.t('file.exportHtml')"></button>
 
       <div class="file-menu-sep"></div>
       <div class="file-menu-section-label" [textContent]="i18n.t('file.sectionProject')"></div>
       <button type="button" class="file-menu-item" role="menuitem" data-testid="file-download-project" (click)="downloadProject()" [textContent]="i18n.t('file.downloadProject')"></button>
       <button type="button" class="file-menu-item" role="menuitem" data-testid="file-open-project" (click)="openProjectPicker()" [textContent]="i18n.t('file.openProject')"></button>
-
     </div>
   }
 

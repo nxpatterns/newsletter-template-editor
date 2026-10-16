@@ -67,7 +67,6 @@ Then('the preview footer should show the {string} icon', async ({ page }, label:
 });
 
 When('I open the export dialog', async ({ page }) => {
-  await page.getByTestId('file-menu-trigger').click();
   await page.getByTestId('file-export').click();
   await expect(page.getByTestId('export-html-dialog')).toHaveClass(/is-open/);
 });

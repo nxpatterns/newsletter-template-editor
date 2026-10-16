@@ -16,7 +16,7 @@ Feature: Start page
 
   Scenario: A saved newsletter shows its subject line in the recent list
     Given I open the editor with the German demo
-    When I save the template from the file menu
+    When I save the template
     And I go back to the start page
     Then the recent newsletter 'CloudLib-EU-Example-Newsletter-Template' should show the subject 'Wie betritt man Ihren Betrieb, wenn die Tür geschlossen ist?'
 
@@ -76,7 +76,7 @@ Feature: Start page
 
   Scenario: Discarding unsaved changes keeps the saved newsletter
     Given I open the editor with the German demo
-    When I save the template from the file menu
+    When I save the template
     And I rename the newsletter to 'Changed name'
     And I reopen the app
     Then the draft to continue should be 'Changed name'
@@ -110,7 +110,7 @@ Feature: Start page
     When I rename the newsletter to 'Reload check'
     And I reload the page
     Then the editor should show the document 'Reload check'
-    When I save the template from the file menu
+    When I save the template
     Then the address should point to a saved newsletter
     When I reload the page
     Then the editor should show the document 'Reload check'
@@ -126,7 +126,7 @@ Feature: Start page
 
   Scenario: Deleting a saved template with the corner ×, then undoing it
     Given I open the editor with the German demo
-    When I save the template from the file menu
+    When I save the template
     And I go back to the start page
     And I delete the recent newsletter 'CloudLib-EU-Example-Newsletter-Template'
     Then the recent list should be empty
@@ -139,7 +139,7 @@ Feature: Start page
 
   Scenario: A deleted template stays deleted, its open copy stays as not saved
     Given I open the editor with the German demo
-    When I save the template from the file menu
+    When I save the template
     And I go back to the start page
     And I delete the recent newsletter 'CloudLib-EU-Example-Newsletter-Template'
     And I close the message

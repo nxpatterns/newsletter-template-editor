@@ -10,8 +10,7 @@ When('I note the page scroll position', async ({ page }) => {
   }, y);
 });
 
-When('I save the template from the file menu', async ({ page }) => {
-  await page.getByTestId('file-menu-trigger').click();
+When('I save the template', async ({ page }) => {
   await page.getByTestId('file-save').click();
   // Fresh sessions have no library binding → Save opens Save as prompt.
   const dialog = page.getByTestId('confirm-dialog');

@@ -55,7 +55,7 @@ When('I open the recent newsletter {string}', async ({ page }, name: string) => 
 });
 
 When('I go back to the start page', async ({ page }) => {
-  await page.getByTestId('action-start').click();
+  await page.getByTestId('action-home').click();
 });
 
 When('I rename the newsletter to {string}', async ({ page }, name: string) => {

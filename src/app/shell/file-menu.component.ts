@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, viewChild } from '@angular/core';
-import { Router } from '@angular/router';
 import {
   buildZip,
   downloadFilename,
@@ -35,7 +34,6 @@ export class FileMenuComponent {
   private readonly confirm = inject(ConfirmDialogService);
   private readonly snackbar = inject(SnackbarService);
   private readonly unsaved = inject(UnsavedGuardService);
-  private readonly router = inject(Router);
   private readonly socialIcons = inject(SocialIconsService);
 
   private readonly root = viewChild<ElementRef<HTMLElement>>('root');
@@ -45,6 +43,11 @@ export class FileMenuComponent {
   protected readonly libraryOpen = signal(false);
   protected readonly libraryRows = signal<TemplateSummary[]>([]);
   protected readonly exportOpen = signal(false);
+
+  protected readonly canSave = this.unsaved.canSave;
+
+  /** Shortcut hint on the Save button. */
+  protected readonly saveShortcut = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘S' : 'Ctrl+S';
 
   protected toggleMenu(event: Event): void {
     event.stopPropagation();
@@ -67,12 +70,6 @@ export class FileMenuComponent {
     if (!el.contains(event.target as Node)) this.closeMenu();
   }
 
-  /** Start page; the editor route asks about unsaved changes on the way out. */
-  protected goStart(): void {
-    this.closeMenu();
-    void this.router.navigateByUrl('/');
-  }
-
   protected async rename(): Promise<void> {
     this.closeMenu();
     const name = await this.confirm.prompt({
@@ -85,36 +82,15 @@ export class FileMenuComponent {
     if (name) this.session.setDisplayName(name);
   }
 
+  /** Header Save: no overwrite question; the first save asks for a name. */
   protected async save(): Promise<void> {
     this.closeMenu();
-    const id = this.session.libraryId();
-    if (id) {
-      const ok = await this.confirm.confirm({
-        title: this.i18n.t('file.saveTitle'),
-        body: this.i18n.t('file.saveOverwriteBody').replace('{name}', this.session.displayName()),
-        confirmLabel: this.i18n.t('file.overwrite'),
-        cancelLabel: this.i18n.t('modal.cancel'),
-      });
-      if (!ok) return;
-      // Secondary path: user might want save-as — use Save as menu for that.
-      await this.session.saveToLibrary();
-      return;
-    }
-    await this.saveAs();
+    await this.unsaved.save();
   }
 
   protected async saveAs(): Promise<void> {
     this.closeMenu();
-    const name = await this.confirm.prompt({
-      title: this.i18n.t('file.saveAsTitle'),
-      body: this.i18n.t('file.saveAsBody'),
-      inputLabel: this.i18n.t('file.nameLabel'),
-      initialValue: this.session.displayName(),
-      confirmLabel: this.i18n.t('action.save'),
-      cancelLabel: this.i18n.t('modal.cancel'),
-    });
-    if (!name) return;
-    await this.session.saveToLibrary({ asNew: true, name });
+    await this.unsaved.saveAs();
   }
 
   protected async openLibrary(): Promise<void> {
