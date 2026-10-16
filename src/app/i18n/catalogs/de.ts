@@ -549,4 +549,5 @@ export const DE: MessageCatalog = {
   'start.lastChanged': 'Zuletzt geändert {when}',
   'start.discardQuestion': 'Entwurf wirklich verwerfen? Das lässt sich nicht rückgängig machen.',
   'start.discardChangesQuestion': 'Änderungen wirklich verwerfen? Die gespeicherte Fassung bleibt erhalten.',
+  'preview.emptySlot': 'Ziehen Sie den ersten Block hierher',
 };

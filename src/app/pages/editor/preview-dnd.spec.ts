@@ -58,9 +58,14 @@ describe('preview-dnd', () => {
     expect(resolveDropAtPoint(400, 450, container, blocks)).toEqual({ mode: 'append' });
   });
 
-  it('appends when there is no container or no blocks', () => {
-    expect(resolveDropAtPoint(10, 10, null, [])).toEqual({ mode: 'append' });
+  it('appends when there is no container', () => {
+    expect(resolveDropAtPoint(10, 10, null, [{ id: 'a', top: 0, bottom: 50, height: 50 }])).toEqual({ mode: 'append' });
+  });
+
+  it('targets the first slot of an empty newsletter, inside the column or in the margin', () => {
     const container = { left: 0, right: 100, top: 0, bottom: 100 };
-    expect(resolveDropAtPoint(50, 50, container, [])).toEqual({ mode: 'append' });
+    expect(resolveDropAtPoint(50, 50, container, [])).toEqual({ mode: 'first' });
+    expect(resolveDropAtPoint(500, 500, container, [])).toEqual({ mode: 'first' });
+    expect(resolveDropAtPoint(10, 10, null, [])).toEqual({ mode: 'first' });
   });
 });

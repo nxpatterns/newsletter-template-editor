@@ -4,7 +4,7 @@ import { renderBlocks } from './blocks';
 import { emailDocumentCss } from './email-css';
 import { inlineEmailCss, inlineEmailCssFragment } from './inline-email-css';
 import { renderExportShell, renderPreviewDoc } from './shell';
-import { resolveListMonkForPreview } from './utils';
+import { escapeAttr, escapeHtml, resolveListMonkForPreview } from './utils';
 
 export interface ExportArtifacts {
   /** Standalone HTML with shell + content (CSS inlined for mail clients) */
@@ -15,12 +15,15 @@ export interface ExportArtifacts {
   standardTemplate: string;
 }
 
-export function renderPreview(newsletter: Newsletter): string {
-  const bodyInner = renderBlocks(newsletter.blocks, {
-    globals: newsletter.globals,
-    mode: 'preview',
-    annotate: true,
-  });
+export interface PreviewOptions {
+  /** Empty newsletter: text of the dashed slot below the header (editor preview only). */
+  emptySlotLabel?: string;
+}
+
+export function renderPreview(newsletter: Newsletter, opts: PreviewOptions = {}): string {
+  const bodyInner = newsletter.blocks.length
+    ? renderBlocks(newsletter.blocks, { globals: newsletter.globals, mode: 'preview', annotate: true })
+    : renderEmptySlot(newsletter, opts.emptySlotLabel ?? '');
   const doc = renderPreviewDoc(
     newsletter.globals,
     bodyInner,
@@ -28,6 +31,12 @@ export function renderPreview(newsletter: Newsletter): string {
   );
   // Preview keeps classes + stylesheet (no export inliner).
   return resolveListMonkForPreview(doc, newsletter.globals.campaignSubject || 'Newsletter preview');
+}
+
+/** Drop target for the first block; never part of an export. */
+function renderEmptySlot(newsletter: Newsletter, label: string): string {
+  const bg = escapeAttr(newsletter.globals.contentBgColor);
+  return `<tr class="nte-empty-slot"><td bgcolor="${bg}" class="mobile-padding content-bg block-pad-md"><div class="nte-empty-slot-box">${escapeHtml(label)}</div></td></tr>`;
 }
 
 /** Sync export using current globals (preview-quality logo master). Prefer `renderExportOptimized` for downloads. */

@@ -83,7 +83,9 @@ export class EditorPage {
   protected readonly resizing = signal(false);
 
   protected readonly previewSrcdoc = computed((): SafeHtml =>
-    this.sanitizer.bypassSecurityTrustHtml(renderPreview(this.session.newsletter())),
+    this.sanitizer.bypassSecurityTrustHtml(
+      renderPreview(this.session.newsletter(), { emptySlotLabel: this.i18n.t('preview.emptySlot') }),
+    ),
   );
 
   constructor() {
@@ -326,6 +328,18 @@ export class EditorPage {
       this.dropPlace = 'after';
     };
 
+    /** Empty newsletter: the slot below the header is the one insert target. */
+    const showFirstSlot = (): void => {
+      const slot = doc.querySelector('tr.nte-empty-slot') as HTMLElement | null;
+      if (!slot) return;
+      if (slot.classList.contains('nte-drop-before')) return;
+      this.clearDropIndicators(doc);
+      slot.classList.add('nte-drop-before');
+      this.ensureInsertLabel(slot, this.i18n.t('preview.dropInsertHere'));
+      this.dropTargetId = null;
+      this.dropPlace = null;
+    };
+
     const onDragOver = (event: DragEvent): void => {
       const types = event.dataTransfer ? Array.from(event.dataTransfer.types) : [];
       const reorder = this.dragMode === 'reorder' && !!this.dragSourceId;
@@ -355,6 +369,10 @@ export class EditorPage {
         this.dragMode = 'catalog';
         this.dragCatalogType = resolveCatalogType(event);
 
+        if (resolved.mode === 'first') {
+          showFirstSlot();
+          return;
+        }
         if (resolved.mode === 'append') {
           showAppendAtEnd();
           return;
@@ -374,7 +392,7 @@ export class EditorPage {
       event.preventDefault();
       if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
 
-      if (resolved.mode === 'append') {
+      if (resolved.mode !== 'between') {
         // Outside column while reordering: no gap chrome (keep dragging).
         if (this.dropTargetId) this.clearDropIndicators(doc);
         this.dropTargetId = null;
@@ -554,7 +572,7 @@ export class EditorPage {
   private clearDropIndicators(doc: Document): void {
     doc
       .querySelectorAll(
-        'tr.nte-block.nte-drop-before, tr.nte-block.nte-drop-after, tr.nte-block.nte-drop-open-above, tr.nte-block.nte-drop-open-below',
+        'tr.nte-block.nte-drop-before, tr.nte-block.nte-drop-after, tr.nte-block.nte-drop-open-above, tr.nte-block.nte-drop-open-below, tr.nte-empty-slot.nte-drop-before',
       )
       .forEach((el) => {
         el.classList.remove(

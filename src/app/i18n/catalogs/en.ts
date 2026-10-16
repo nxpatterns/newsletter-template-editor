@@ -546,4 +546,5 @@ export const EN: MessageCatalog = {
   'start.lastChanged': 'Last changed {when}',
   'start.discardQuestion': 'Really discard this draft? This cannot be undone.',
   'start.discardChangesQuestion': 'Really discard the changes? The saved version stays.',
+  'preview.emptySlot': 'Drag your first block here',
 };

@@ -26,7 +26,9 @@ export function insertIndexForDrop(
 
 export type DropResolve =
   | { mode: 'between'; blockId: string; place: 'before' | 'after' }
-  | { mode: 'append' };
+  | { mode: 'append' }
+  /** Empty newsletter: the one slot below the email header, wherever the pointer is. */
+  | { mode: 'first' };
 
 export interface DropBlockRect {
   id: string;
@@ -40,6 +42,7 @@ export interface DropBlockRect {
  * - Pointer inside the 600px presentation column (`table.email-container`) →
  *   always resolve the nearest block row by Y ("insert here").
  * - Pointer outside that column (gutters, body, chrome) → append at end.
+ * - No blocks yet → the first slot below the header (there is no "end" to append to).
  *
  * Do not use event.target.closest('tr.nte-block'): nested tables and the gap
  * opened by transform shifts make that oscillate with tiny mouse moves.
@@ -50,7 +53,8 @@ export function resolveDropAtPoint(
   container: Pick<DOMRect, 'left' | 'right' | 'top' | 'bottom'> | null,
   blocks: ReadonlyArray<DropBlockRect>,
 ): DropResolve {
-  if (!container || blocks.length === 0) return { mode: 'append' };
+  if (blocks.length === 0) return { mode: 'first' };
+  if (!container) return { mode: 'append' };
 
   const insideX = clientX >= container.left && clientX <= container.right;
   const insideY = clientY >= container.top && clientY <= container.bottom;

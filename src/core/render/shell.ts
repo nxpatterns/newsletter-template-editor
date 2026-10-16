@@ -404,6 +404,44 @@ const PREVIEW_EDITOR_CHROME = `
   body.nte-is-catalog-dnd {
     cursor: copy;
   }
+  /* Empty newsletter: quiet slot below the header; lights up as the insert target while dragging. */
+  tr.nte-empty-slot > td {
+    position: relative;
+  }
+  .nte-empty-slot-box {
+    padding: 28px 16px;
+    border: 2px dashed rgba(160, 180, 200, 0.35);
+    border-radius: 8px;
+    font: 600 14px/1.4 system-ui, -apple-system, sans-serif;
+    text-align: center;
+    color: rgba(200, 215, 230, 0.7);
+  }
+  tr.nte-empty-slot.nte-drop-before .nte-empty-slot-box {
+    border-color: #f5c518;
+    color: transparent;
+  }
+  tr.nte-empty-slot.nte-drop-before > td::before {
+    content: '';
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    top: 50%;
+    z-index: 44;
+    height: 3px;
+    border-radius: 999px;
+    background: #f5c518;
+    box-shadow:
+      0 0 0 4px rgba(245, 197, 24, 0.22),
+      0 0 20px rgba(245, 197, 24, 0.45);
+    pointer-events: none;
+  }
+  tr.nte-empty-slot.nte-drop-before > td .nte-insert-label {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
   /* Append-at-end floating chip (label from data-nte-drop-append-label) */
   body.nte-drop-append {
     outline: none;
