@@ -3,6 +3,7 @@ import type { Block } from '../../../core';
 /** Implemented types available in the catalog (expand as core grows). */
 export const CATALOG_TYPES: readonly Block['type'][] = [
   'hero',
+  'greeting',
   'chapter-band',
   'pull-quote',
   'paragraph',
@@ -29,6 +30,7 @@ const ICONS: Record<Block['type'], string> = {
   'cta-link-list': '→',
   image: '🖼',
   'image-text': '◧',
+  greeting: '👋',
 };
 
 export function blockTypeIcon(type: Block['type']): string {
@@ -68,6 +70,7 @@ const HUES: Record<Block['type'], BlockTypeHue> = {
   divider: { a: '#94a3b8', b: '#475569', ink: INK_LIGHT },
   image: { a: '#f87171', b: '#b91c1c', ink: INK_LIGHT },
   'image-text': { a: '#fb7185', b: '#9f1239', ink: INK_LIGHT },
+  greeting: { a: '#5eead4', b: '#0f766e', ink: INK_DARK },
 };
 
 const FALLBACK_HUE: BlockTypeHue = { a: '#94a3b8', b: '#475569', ink: INK_LIGHT };

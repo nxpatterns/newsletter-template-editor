@@ -19,7 +19,7 @@ const MIN_W = 360;
 const MIN_H = 280;
 
 /** Short editors open as tall as their content; the rest keep the fixed default height. */
-const FIT_HEIGHT_TYPES = new Set(['hero', 'cta-button', 'stat-box', 'chapter-band', 'pull-quote', 'divider', 'image', 'image-text']);
+const FIT_HEIGHT_TYPES = new Set(['hero', 'cta-button', 'stat-box', 'chapter-band', 'pull-quote', 'divider', 'image', 'image-text', 'greeting']);
 
 @Component({
   selector: 'app-block-edit-modal',

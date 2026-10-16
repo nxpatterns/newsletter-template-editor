@@ -166,6 +166,14 @@ body {
   cursor: pointer;
 }
 
+/* Switch as the whole group title: toggle first, on the left. */
+.ed-switch--start {
+  margin-inline-start: 0;
+  flex-direction: row-reverse;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
 .ed-switch input {
   position: absolute;
   inset: 0;

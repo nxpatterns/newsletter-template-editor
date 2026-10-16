@@ -194,6 +194,32 @@ describe('renderExport', () => {
     expect(full).toContain('New text beside the image.');
   });
 
+  it('renders a greeting as the fixed line by default, without any name tag', () => {
+    const n = seedNewsletter();
+    n.blocks = [createBlock('greeting')];
+    const { body } = renderExport(n);
+    expect(body).toContain('Dear business partner<');
+    expect(body).not.toContain('.Subscriber');
+  });
+
+  it('greeting by name: preview uses the sample name, export the Listmonk name with fallback', () => {
+    const n = seedNewsletter();
+    const b = createBlock('greeting');
+    if (b.type !== 'greeting') throw new Error('type');
+    Object.assign(b, { text: 'Werte Geschäftspartner', useName: true, nameLead: 'Guten Tag', size: 'l', color: 'primary' });
+    n.blocks = [b];
+    n.globals.personalization.samples['name'] = 'Maria Muster';
+    expect(renderPreview(n)).toContain('Guten Tag Maria Muster<');
+    expect(renderPreview(n)).toMatch(/class="paragraph-body greeting-line rt-size-l text-primary"/);
+    const { body } = renderExport(n);
+    expect(body).toContain('Guten Tag {{ $n }}{{- else -}}Werte Geschäftspartner{{- end -}}');
+    // Mailbox names like "Info" (Listmonk's stand-in for a missing name) count as unknown.
+    expect(body).toMatch(/has \(lower \$n\) \(list "info" "office"/);
+    expect(body).not.toContain('.Subscriber.Email');
+    n.globals.personalization.samples['name'] = ' ';
+    expect(renderPreview(n)).not.toContain('Guten Tag');
+  });
+
   it('keeps TrackLink quotes intact on CTA href', () => {
     const { full, body } = renderExport(acmeNewsletter());
     expect(full).toContain('{{ TrackLink "https://acme.example/buy" }}');

@@ -79,6 +79,7 @@ const BLOCK_SLOTS: Record<Block['type'], readonly string[]> = {
   'cta-button': ['colors.slot.cta.buttonBg', 'colors.slot.cta.buttonText'],
   image: ['colors.slot.image.caption'],
   'image-text': ['colors.slot.paragraph.body'],
+  greeting: ['colors.slot.paragraph.body'],
   'cta-link-list': [
     'colors.slot.ctaLinks.arrow',
     'colors.slot.ctaLinks.label',

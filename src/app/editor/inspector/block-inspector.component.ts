@@ -31,6 +31,8 @@ import {
   IMAGE_WIDTHS,
   intakeEmailImageFile,
   LogoPipelineError,
+  RICH_COLOR_TOKENS,
+  RICH_SIZE_TOKENS,
   type RichDoc,
 } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
@@ -68,6 +70,8 @@ export class BlockInspectorComponent {
   protected readonly imageTextSides = IMAGE_TEXT_SIDES;
   protected readonly imageTextWidths = IMAGE_TEXT_WIDTHS;
   protected readonly imageTextValigns = IMAGE_TEXT_VALIGNS;
+  protected readonly richSizes = RICH_SIZE_TOKENS;
+  protected readonly richColors = RICH_COLOR_TOKENS;
   protected readonly imageBusy = signal(false);
   private readonly snackbar = inject(SnackbarService);
   protected readonly emailFont = computed(() => fontStack(this.session.globals()));
@@ -91,6 +95,11 @@ export class BlockInspectorComponent {
   protected onText(id: string, key: string, event: Event): void {
     const value = (event.target as HTMLInputElement | HTMLTextAreaElement).value;
     this.session.updateBlock(id, { [key]: value } as never, 'coalesce');
+  }
+
+  /** Greeting preview name (Campaign personalization sample, not sent). */
+  protected onSampleName(event: Event): void {
+    this.session.updateSample('name', (event.target as HTMLInputElement).value, 'coalesce');
   }
 
   protected onFieldBlur(): void {

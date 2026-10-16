@@ -6,6 +6,7 @@ import type {
   CtaLinkListBlock,
   DividerBlock,
   Globals,
+  GreetingBlock,
   HeroBlock,
   ImageBlock,
   ImageTextBlock,
@@ -181,6 +182,48 @@ function renderImageText(b: ImageTextBlock, ctx: RenderContext): string {
         </table>
       `,
     ),
+  );
+}
+
+/**
+ * Mailbox names that are no person ("info@x.eu"). Listmonk turns a missing name into the
+ * part before the @, so such a name counts as unknown. Real names that match their address
+ * ("Thomas Schmidt" for thomas.schmidt@…) stay.
+ */
+export const GREETING_ROLE_NAMES: readonly string[] = [
+  'info', 'office', 'kontakt', 'contact', 'mail', 'email', 'post', 'service', 'support',
+  'sales', 'vertrieb', 'verkauf', 'buchhaltung', 'rechnung', 'invoice', 'team', 'hallo',
+  'hello', 'admin', 'empfang', 'rezeption', 'reception', 'reservierung', 'booking', 'buero',
+  'büro', 'marketing', 'newsletter', 'zentrale', 'noreply', 'no reply',
+];
+
+/** Uses Sprig functions shipped with Listmonk templates. */
+function greetingNameTemplate(lead: string, fallback: string): string {
+  const roles = GREETING_ROLE_NAMES.map((r) => `"${r}"`).join(' ');
+  return (
+    '{{- $n := trim .Subscriber.Name -}}' +
+    `{{- if and $n (not (contains "@" $n)) (not (has (lower $n) (list ${roles}))) -}}` +
+    `${lead} {{ $n }}{{- else -}}${fallback}{{- end -}}`
+  );
+}
+
+function renderGreeting(b: GreetingBlock, ctx: RenderContext): string {
+  const fallback = escapeHtml(b.text);
+  const lead = escapeHtml(b.nameLead.trim());
+  let line = fallback;
+  if (b.useName) {
+    if (ctx.mode === 'export') {
+      line = greetingNameTemplate(lead, fallback);
+    } else {
+      // Preview: the sample name from Campaign settings; empty sample shows the fallback.
+      const sample = (ctx.globals.personalization?.samples['name'] ?? '').trim();
+      if (sample) line = `${lead} ${escapeHtml(sample)}`;
+    }
+  }
+  return rowWrap(
+    b,
+    ctx,
+    contentTd(ctx, 'block-pad-md paragraph-block', `<p class="paragraph-body greeting-line${b.size === 'm' ? '' : ` rt-size-${b.size}`} text-${b.color}" data-field="text">${line}</p>`),
   );
 }
 
@@ -476,6 +519,8 @@ export function renderBlock(block: Block, ctx: RenderContext): string {
       return renderImage(block, ctx);
     case 'image-text':
       return renderImageText(block, ctx);
+    case 'greeting':
+      return renderGreeting(block, ctx);
     default: {
       const _exhaustive: never = block;
       throw new Error(`Unknown block: ${JSON.stringify(_exhaustive)}`);

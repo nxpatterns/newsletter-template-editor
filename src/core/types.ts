@@ -1,6 +1,6 @@
 /** Newsletter document model — JSON is source of truth; HTML is generated. */
 
-import { emptyRichDoc, type RichDoc } from './richtext/model';
+import { emptyRichDoc, type RichColorToken, type RichDoc, type RichSizeToken } from './richtext/model';
 
 export type {
   RichColorToken,
@@ -297,6 +297,22 @@ export interface ImageTextBlock extends BlockBase {
   valign: ImageTextValign;
 }
 
+/**
+ * Opening line. Default is a fixed line with no name ("Werte Geschäftspartner").
+ * With `useName`, the line becomes "{nameLead} {full name}" (no punctuation added) and the fixed line is the
+ * fallback for recipients without a real name. Never gendered (no salutation field).
+ */
+export interface GreetingBlock extends BlockBase {
+  type: 'greeting';
+  /** Fixed line; also the fallback when the name is unknown. */
+  text: string;
+  useName: boolean;
+  /** Words before the name, e.g. "Guten Tag". */
+  nameLead: string;
+  size: RichSizeToken;
+  color: RichColorToken;
+}
+
 /** Block union — expand slice by slice */
 export type Block =
   | DividerBlock
@@ -310,7 +326,8 @@ export type Block =
   | PriceBoxBlock
   | CtaLinkListBlock
   | ImageBlock
-  | ImageTextBlock;
+  | ImageTextBlock
+  | GreetingBlock;
 
 export interface Newsletter {
   schemaVersion: number;
@@ -332,46 +349,92 @@ export function newId(): string {
   return `b${Date.now().toString(36)}-${idCounter.toString(36)}`;
 }
 
-export function createBlock(type: Block['type']): Block {
+/** Starting texts for new blocks; the app fills these from the active language. */
+export interface BlockDefaultTexts {
+  heroLabel: string;
+  heroHeadline: string;
+  paragraph: string;
+  ctaButton: string;
+  chapterTitle: string;
+  pullQuote: string;
+  statNumber: string;
+  statLabel: string;
+  statGeo: string;
+  benefits: readonly [string, string, string];
+  priceBadge: string;
+  pricePeriod: string;
+  priceStrikeLabel: string;
+  priceDetails: string;
+  priceFine: string;
+  ctaLinkLabel: string;
+  ctaLinkIntro: string;
+  ctaLinkText: string;
+  imageText: string;
+  greetingText: string;
+  greetingNameLead: string;
+}
+
+export const BLOCK_DEFAULT_TEXTS_EN: BlockDefaultTexts = {
+  heroLabel: 'Your intro',
+  heroHeadline: 'New headline',
+  paragraph: 'New paragraph.',
+  ctaButton: 'Learn more',
+  chapterTitle: 'Chapter title',
+  pullQuote: '\u201cA memorable line.\u201d',
+  statNumber: '1,000+',
+  statLabel: 'Metric label',
+  statGeo: 'Region A · Region B',
+  benefits: ['Benefit one', 'Benefit two', 'Benefit three'],
+  priceBadge: 'Offer',
+  pricePeriod: '/ year',
+  priceStrikeLabel: 'Was',
+  priceDetails: 'No auto-renew · Cancel anytime',
+  priceFine: 'Limited availability.',
+  ctaLinkLabel: 'Book a call:',
+  ctaLinkIntro: 'We will call you back -',
+  ctaLinkText: 'Schedule',
+  imageText: 'New text beside the image.',
+  greetingText: 'Dear business partner',
+  greetingNameLead: 'Hello',
+};
+
+export function createBlock(type: Block['type'], texts: BlockDefaultTexts = BLOCK_DEFAULT_TEXTS_EN): Block {
   const id = newId();
+  const t = texts;
   switch (type) {
     case 'divider':
       return { id, type, style: 'thin', background: 'content' };
     case 'hero':
-      return { id, type, label: 'Your intro', headline: 'New headline' };
+      return { id, type, label: t.heroLabel, headline: t.heroHeadline };
     case 'paragraph':
-      return { id, type, body: emptyRichDoc('New paragraph.') };
+      return { id, type, body: emptyRichDoc(t.paragraph) };
     case 'cta-button':
-      return { id, type, text: 'Learn more', href: 'https://example.com' };
+      return { id, type, text: t.ctaButton, href: 'https://example.com' };
     case 'chapter-band':
-      return { id, type, title: 'Chapter title' };
+      return { id, type, title: t.chapterTitle };
     case 'pull-quote':
-      return { id, type, quote: '\u201cA memorable line.\u201d' };
+      return { id, type, quote: t.pullQuote };
     case 'stat-box':
-      return { id, type, number: '1.000+', label: 'Metric label', geo: 'Region A · Region B' };
+      return { id, type, number: t.statNumber, label: t.statLabel, geo: t.statGeo };
     case 'benefits-list':
       return {
         id,
         type,
-        items: [
-          { icon: BENEFIT_DEFAULT_ICON, text: 'Benefit one' },
-          { icon: BENEFIT_DEFAULT_ICON, text: 'Benefit two' },
-          { icon: BENEFIT_DEFAULT_ICON, text: 'Benefit three' },
-        ],
+        items: t.benefits.map((text) => ({ icon: BENEFIT_DEFAULT_ICON, text })),
       };
     case 'price-box':
       return {
         id,
         type,
-        badge: 'Offer',
+        badge: t.priceBadge,
         currency: '€',
         amount: '99',
-        periodLabel: '/ year',
+        periodLabel: t.pricePeriod,
         strikeEnabled: true,
         strikeAmount: '199',
-        strikeLabel: 'Was',
-        details: 'No auto-renew · Cancel anytime',
-        fine: 'Limited availability.',
+        strikeLabel: t.priceStrikeLabel,
+        details: t.priceDetails,
+        fine: t.priceFine,
       };
     case 'cta-link-list':
       return {
@@ -380,9 +443,9 @@ export function createBlock(type: Block['type']): Block {
         items: [
           {
             icon: CTA_LINK_DEFAULT_ICON,
-            label: 'Book a call:',
-            intro: 'We will call you back -',
-            linkText: 'Schedule',
+            label: t.ctaLinkLabel,
+            intro: t.ctaLinkIntro,
+            linkText: t.ctaLinkText,
             href: 'https://example.com/contact',
           },
         ],
@@ -396,11 +459,13 @@ export function createBlock(type: Block['type']): Block {
         src: '',
         alt: '',
         href: '',
-        body: emptyRichDoc('New text beside the image.'),
+        body: emptyRichDoc(t.imageText),
         side: 'left',
         imageWidth: 'third',
         valign: 'top',
       };
+    case 'greeting':
+      return { id, type, text: t.greetingText, useName: false, nameLead: t.greetingNameLead, size: 'm', color: 'standard' };
     default: {
       const _exhaustive: never = type;
       throw new Error(`Unknown block type: ${_exhaustive}`);
@@ -421,4 +486,5 @@ export const BLOCK_LABELS: Record<Block['type'], string> = {
   'cta-link-list': 'CTA link list',
   image: 'Image',
   'image-text': 'Image and text',
+  greeting: 'Greeting',
 };

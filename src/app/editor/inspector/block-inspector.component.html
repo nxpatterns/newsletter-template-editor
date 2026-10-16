@@ -352,6 +352,97 @@
           />
         </div>
       }
+      @case ('greeting') {
+        <div class="ed-field">
+          <label class="ed-label" for="insp-greeting-text" [textContent]="i18n.t('field.greetingText')"></label>
+          <input
+            id="insp-greeting-text"
+            class="ed-input em-field"
+            data-testid="insp-greeting-text"
+            [value]="block.text"
+            (input)="onText(block.id, 'text', $event)"
+            (blur)="onFieldBlur()"
+          />
+          <p class="ed-hint" [textContent]="i18n.t(block.useName ? 'field.greetingTextFallbackHint' : 'field.greetingTextHint')"></p>
+        </div>
+        <div class="image-text-layout">
+          <div class="ed-field">
+            <span class="ed-label" id="insp-greeting-size" [textContent]="i18n.t('rt.size')"></span>
+            <div class="ed-seg" role="radiogroup" aria-labelledby="insp-greeting-size">
+              @for (v of richSizes; track v) {
+                <button
+                  type="button"
+                  class="ed-seg-opt"
+                  role="radio"
+                  [class.is-on]="block.size === v"
+                  [attr.aria-checked]="block.size === v"
+                  [attr.data-testid]="'greeting-size-' + v"
+                  (click)="session.updateBlock(block.id, { size: v }, 'immediate')"
+                  [textContent]="i18n.t('rt.size.' + v)"
+                ></button>
+              }
+            </div>
+          </div>
+          <div class="ed-field">
+            <span class="ed-label" id="insp-greeting-color" [textContent]="i18n.t('rt.color')"></span>
+            <div class="ed-seg" role="radiogroup" aria-labelledby="insp-greeting-color">
+              @for (v of richColors; track v) {
+                <button
+                  type="button"
+                  class="ed-seg-opt"
+                  role="radio"
+                  [class.is-on]="block.color === v"
+                  [attr.aria-checked]="block.color === v"
+                  [attr.data-testid]="'greeting-color-' + v"
+                  (click)="session.updateBlock(block.id, { color: v }, 'immediate')"
+                  [textContent]="i18n.t('rt.color.' + v)"
+                ></button>
+              }
+            </div>
+          </div>
+        </div>
+        <section class="ed-group" data-testid="greeting-group-name">
+          <h3 class="ed-group-title">
+            <label class="ed-switch ed-switch--start">
+              <span [textContent]="i18n.t('field.greetingUseName')"></span>
+              <input
+                type="checkbox"
+                role="switch"
+                data-testid="greeting-use-name"
+                [checked]="block.useName"
+                (change)="onBool(block.id, 'useName', $event)"
+              />
+              <span class="ed-switch-track" aria-hidden="true"></span>
+            </label>
+          </h3>
+          @if (block.useName) {
+            <div class="ed-field">
+              <label class="ed-label" for="insp-greeting-lead" [textContent]="i18n.t('field.greetingNameLead')"></label>
+              <input
+                id="insp-greeting-lead"
+                class="ed-input em-field"
+                data-testid="insp-greeting-lead"
+                [value]="block.nameLead"
+                (input)="onText(block.id, 'nameLead', $event)"
+                (blur)="onFieldBlur()"
+              />
+              <p class="ed-hint" [textContent]="i18n.t('field.greetingNameLeadHint')"></p>
+            </div>
+            <div class="ed-field">
+              <label class="ed-label" for="insp-greeting-sample" [textContent]="i18n.t('field.greetingSampleName')"></label>
+              <input
+                id="insp-greeting-sample"
+                class="ed-input"
+                data-testid="insp-greeting-sample"
+                [value]="session.globals().personalization.samples['name'] ?? ''"
+                (input)="onSampleName($event)"
+                (blur)="onFieldBlur()"
+              />
+              <p class="ed-hint" [textContent]="i18n.t('field.greetingSampleHint')"></p>
+            </div>
+          }
+        </section>
+      }
       @case ('chapter-band') {
         <div class="ed-field">
           <div class="ed-label-row">

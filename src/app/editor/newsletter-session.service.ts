@@ -6,6 +6,7 @@ import {
   normalizeNewsletter,
   seedNewsletter,
   type Block,
+  type BlockDefaultTexts,
   type Globals,
   type Newsletter,
   type RichDoc,
@@ -361,6 +362,34 @@ export class NewsletterSession {
    * Insert a catalog block at index (0 = top).
    * Catalog drag-and-drop should pass revealInPanel: false so the All-blocks tab stays put.
    */
+  /** Starting texts for new blocks in the active UI language; placed blocks never change. */
+  private blockDefaultTexts(): BlockDefaultTexts {
+    const t = (k: string) => this.i18n.t(`blockDefaults.${k}`);
+    return {
+      heroLabel: t('heroLabel'),
+      heroHeadline: t('heroHeadline'),
+      paragraph: t('paragraph'),
+      ctaButton: t('ctaButton'),
+      chapterTitle: t('chapterTitle'),
+      pullQuote: t('pullQuote'),
+      statNumber: t('statNumber'),
+      statLabel: t('statLabel'),
+      statGeo: t('statGeo'),
+      benefits: [t('benefit1'), t('benefit2'), t('benefit3')],
+      priceBadge: t('priceBadge'),
+      pricePeriod: t('pricePeriod'),
+      priceStrikeLabel: t('priceStrikeLabel'),
+      priceDetails: t('priceDetails'),
+      priceFine: t('priceFine'),
+      ctaLinkLabel: t('ctaLinkLabel'),
+      ctaLinkIntro: t('ctaLinkIntro'),
+      ctaLinkText: t('ctaLinkText'),
+      imageText: t('imageText'),
+      greetingText: t('greetingText'),
+      greetingNameLead: t('greetingNameLead'),
+    };
+  }
+
   insertBlockAt(
     type: Block['type'],
     index: number,
@@ -368,7 +397,7 @@ export class NewsletterSession {
   ): string {
     let createdId = '';
     this.mutateImmediate((n) => {
-      const block = createBlock(type);
+      const block = createBlock(type, this.blockDefaultTexts());
       createdId = block.id;
       const blocks = [...n.blocks];
       const at = Math.max(0, Math.min(index, blocks.length));

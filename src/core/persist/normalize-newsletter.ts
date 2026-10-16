@@ -23,6 +23,8 @@ import {
   type HeroBlock,
   type ImageBlock,
   type ImageTextBlock,
+  type GreetingBlock,
+  BLOCK_DEFAULT_TEXTS_EN,
   type ImageWidth,
   type Newsletter,
   type ParagraphBlock,
@@ -31,7 +33,7 @@ import {
   type StatBoxBlock,
 } from '../types';
 import { ensureRichDoc } from '../richtext/from-html';
-import { emptyRichDoc } from '../richtext/model';
+import { emptyRichDoc, isRichColorToken, RICH_SIZE_TOKENS, type RichSizeToken } from '../richtext/model';
 import { migrateNewsletterV1ToV2 } from './migrate-v2';
 import { migrateNewsletterV2ToV3 } from './migrate-v3';
 import { migrateNewsletterV3ToV4 } from './migrate-v4';
@@ -407,8 +409,24 @@ function normalizeImageTextBlock(raw: Record<string, unknown>, id: string): Imag
   };
 }
 
+function normalizeGreetingBlock(raw: Record<string, unknown>, id: string): GreetingBlock {
+  const str = (k: string, fallback: string) => (typeof raw[k] === 'string' ? (raw[k] as string) : fallback);
+  return {
+    id,
+    type: 'greeting',
+    text: str('text', BLOCK_DEFAULT_TEXTS_EN.greetingText),
+    useName: raw['useName'] === true,
+    nameLead: str('nameLead', BLOCK_DEFAULT_TEXTS_EN.greetingNameLead),
+    size: (RICH_SIZE_TOKENS as readonly unknown[]).includes(raw['size']) ? (raw['size'] as RichSizeToken) : 'm',
+    color: isRichColorToken(raw['color']) ? raw['color'] : 'standard',
+  };
+}
+
 function normalizeBlocks(blocks: Block[]): Block[] {
   return blocks.map((block) => {
+    if (block.type === 'greeting') {
+      return normalizeGreetingBlock(block as unknown as Record<string, unknown>, block.id);
+    }
     if (block.type === 'image-text') {
       return normalizeImageTextBlock(block as unknown as Record<string, unknown>, block.id);
     }

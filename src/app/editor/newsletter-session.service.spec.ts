@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { LocaleService } from '../i18n/locale.service';
 import { NewsletterSession } from './newsletter-session.service';
 
 describe('NewsletterSession', () => {
@@ -27,6 +28,21 @@ describe('NewsletterSession', () => {
     expect(session.blocks().length).toBe(before + 1);
     expect(session.selectedBlock()?.type).toBe('paragraph');
     expect(session.panelTab()).toBe('placed');
+  });
+
+  it('new blocks start with texts in the active language; placed blocks keep theirs', () => {
+    const locale = TestBed.inject(LocaleService);
+    locale.setLocale('de');
+    session.addBlock('greeting');
+    const greeting = session.selectedBlock();
+    expect(greeting?.type === 'greeting' && greeting.text).toBe('Werte Geschäftspartner');
+    expect(greeting?.type === 'greeting' && greeting.useName).toBe(false);
+    session.addBlock('stat-box');
+    expect(session.selectedBlock()?.type === 'stat-box' && session.selectedBlock()).toMatchObject({ number: '1.000+' });
+    locale.setLocale('en');
+    session.addBlock('greeting');
+    expect(session.selectedBlock()).toMatchObject({ text: 'Dear business partner' });
+    expect(session.blocks().find((b) => b.id === greeting?.id)).toMatchObject({ text: 'Werte Geschäftspartner' });
   });
 
   it('insertBlockAt can keep the catalog tab open', () => {
