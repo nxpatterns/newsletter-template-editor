@@ -1,6 +1,3 @@
-/** Default display / stem for CloudLib seed. */
-export const DEFAULT_DISPLAY_NAME = 'CloudLib-EU-Example-Newsletter-Template';
-
 const STEM_MAX = 80;
 
 /** Explicit Latin folds (German, Turkish, South-Slavic, common EU). */

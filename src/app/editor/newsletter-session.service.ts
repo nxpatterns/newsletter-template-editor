@@ -3,7 +3,6 @@ import { computed, inject, Injectable, PLATFORM_ID, signal } from '@angular/core
 import {
   blankNewsletter,
   createBlock,
-  DEFAULT_DISPLAY_NAME,
   DEMO_DISPLAY_NAMES,
   normalizeNewsletter,
   seedNewsletter,
@@ -82,7 +81,7 @@ export class NewsletterSession {
   private readonly canUndoSignal = signal(false);
   private readonly canRedoSignal = signal(false);
 
-  private readonly displayNameSignal = signal(DEFAULT_DISPLAY_NAME);
+  private readonly displayNameSignal = signal('');
   private readonly dirtySignal = signal(false);
   private readonly libraryIdSignal = signal<string | null>(null);
   private recoveryTimer: ReturnType<typeof setTimeout> | null = null;
@@ -139,7 +138,7 @@ export class NewsletterSession {
       if (this.hasDocumentSignal()) return true;
       if (!recovered?.newsletter) return false;
       this.applyDocument(recovered.newsletter, {
-        displayName: recovered.displayName || DEFAULT_DISPLAY_NAME,
+        displayName: recovered.displayName || this.unnamedDisplayName(),
         libraryId: recovered.libraryId,
         dirty: recovered.dirty,
         clearHistory: true,
@@ -166,7 +165,7 @@ export class NewsletterSession {
     // newsletter is not "work" (dirty is false until the first change after create/open).
     const draft = recovery?.newsletter && recovery.dirty
       ? {
-          displayName: recovery.displayName || DEFAULT_DISPLAY_NAME,
+          displayName: recovery.displayName || this.unnamedDisplayName(),
           savedAt: recovery.savedAt,
           dirty: recovery.dirty,
           libraryId: recovery.libraryId,
@@ -180,7 +179,7 @@ export class NewsletterSession {
     this.endCoalesce();
     const doc = kind === 'blank' ? blankNewsletter(lang) : seedNewsletter(lang);
     this.applyDocument(doc, {
-      displayName: kind === 'blank' ? this.i18n.t('start.blankDocName') : DEMO_DISPLAY_NAMES[lang],
+      displayName: kind === 'blank' ? this.unnamedDisplayName() : DEMO_DISPLAY_NAMES[lang],
       libraryId: null,
       dirty: false,
       clearHistory: true,
@@ -190,7 +189,7 @@ export class NewsletterSession {
 
   /** Explicit library save (overwrite bound entry or create). */
   async saveToLibrary(opts?: { asNew?: boolean; name?: string }): Promise<boolean> {
-    const name = (opts?.name ?? this.displayNameSignal()).trim() || DEFAULT_DISPLAY_NAME;
+    const name = (opts?.name ?? this.displayNameSignal()).trim() || this.unnamedDisplayName();
     let id = this.libraryIdSignal();
     if (opts?.asNew || !id) {
       id = this.repo.newId();
@@ -258,8 +257,13 @@ export class NewsletterSession {
     }
   }
 
+  /** Name of a newsletter that has none: "New newsletter" in the app language. */
+  private unnamedDisplayName(): string {
+    return this.i18n.t('doc.unnamedName');
+  }
+
   setDisplayName(name: string): void {
-    const next = name.trim() || DEFAULT_DISPLAY_NAME;
+    const next = name.trim() || this.unnamedDisplayName();
     if (next === this.displayNameSignal()) return;
     this.displayNameSignal.set(next);
     this.dirtySignal.set(true);
@@ -441,6 +445,24 @@ export class NewsletterSession {
       imageText: t('imageText'),
       greetingText: t('greetingText'),
       greetingNameLead: t('greetingNameLead'),
+      quoteName: t('quoteName'),
+      quoteRole: t('quoteRole'),
+      contactIntro: t('contactIntro'),
+      contactName: t('contactName'),
+      contactRole: t('contactRole'),
+      contactPhone: t('contactPhone'),
+      contactEmail: t('contactEmail'),
+      contactButton: t('contactButton'),
+      videoTitle: t('videoTitle'),
+      videoDuration: t('videoDuration'),
+      teaserTitles: [t('teaserTitle1'), t('teaserTitle2')],
+      teaserText: t('teaserText'),
+      teaserLink: t('teaserLink'),
+      eventTitle: t('eventTitle'),
+      eventLocation: t('eventLocation'),
+      eventButton: t('eventButton'),
+      eventCalendar: t('eventCalendar'),
+      eventLocale: this.i18n.locale() === 'de' ? 'de' : 'en',
     };
   }
 
@@ -614,7 +636,7 @@ export class NewsletterSession {
     const normalized = normalizeNewsletter(n);
     this.newsletterSignal.set(normalized);
     this.hasDocumentSignal.set(true);
-    this.displayNameSignal.set(meta.displayName || DEFAULT_DISPLAY_NAME);
+    this.displayNameSignal.set(meta.displayName || this.unnamedDisplayName());
     this.libraryIdSignal.set(meta.libraryId);
     this.dirtySignal.set(meta.dirty);
     this.editingBlockIdSignal.set(null);

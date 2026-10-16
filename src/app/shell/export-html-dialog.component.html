@@ -22,6 +22,24 @@
         @for (part of placeholders(); track part) {
           <p class="ed-warn" [attr.data-testid]="'export-placeholder-' + part" [textContent]="i18n.t('file.exportPlaceholder.' + part)"></p>
         }
+        @if (hasSocial()) {
+          <div class="ed-field ex-assets">
+            <label class="ed-label" for="ex-asset-base" [textContent]="i18n.t('file.exportAssetBase')"></label>
+            <input
+              id="ex-asset-base"
+              class="ed-input"
+              data-testid="export-asset-base"
+              [placeholder]="i18n.t('file.exportAssetBasePlaceholder')"
+              [value]="assetBase()"
+              (input)="onAssetBase($event)"
+            />
+            @if (assetBaseValid()) {
+              <p class="ed-hint" data-testid="export-asset-hint" [textContent]="i18n.t('file.exportAssetHint')"></p>
+            } @else {
+              <p class="ed-warn" data-testid="export-asset-warn" [textContent]="i18n.t('file.exportAssetMissing')"></p>
+            }
+          </div>
+        }
 
         <button
           type="button"

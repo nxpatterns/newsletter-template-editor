@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from '@angular/core';
-import { placeholderParts } from '../../core';
+import { filledSocialNetworks, isAssetBaseUrl, placeholderParts } from '../../core';
 import { NewsletterSession } from '../editor/newsletter-session.service';
 import { LocaleService } from '../i18n/locale.service';
 
@@ -19,6 +19,10 @@ export class ExportHtmlDialogComponent {
   private readonly session = inject(NewsletterSession);
   /** Dummy logo / example.com links still in use (blank newsletter): warn before download. */
   protected readonly placeholders = computed(() => placeholderParts(this.session.newsletter()));
+  /** Social icons need a public place for their PNGs; without one the footer uses text links. */
+  protected readonly hasSocial = computed(() => filledSocialNetworks(this.session.globals().legal.social).length > 0);
+  protected readonly assetBase = computed(() => this.session.globals().assetBaseUrl);
+  protected readonly assetBaseValid = computed(() => isAssetBaseUrl(this.assetBase()));
 
   readonly open = input(false);
   readonly closed = output<void>();
@@ -45,6 +49,10 @@ export class ExportHtmlDialogComponent {
   protected requestClose(): void {
     this.openVisual.set(false);
     window.setTimeout(() => this.closed.emit(), 180);
+  }
+
+  protected onAssetBase(event: Event): void {
+    this.session.updateGlobals({ assetBaseUrl: (event.target as HTMLInputElement).value.trim() }, 'coalesce');
   }
 
   protected select(kind: HtmlExportKind): void {

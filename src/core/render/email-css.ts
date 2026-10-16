@@ -128,6 +128,17 @@ export function emailDocumentCss(globals: Globals): string {
     margin: 10px 0 0 0;
     text-align: center;
   }
+  .footer-social {
+    margin: 14px 0 12px 0;
+    font-family: var(--email-font);
+    font-size: 13px;
+    line-height: 20px;
+    color: var(--email-dim);
+    text-align: center;
+  }
+  .footer-social--icons { line-height: 24px; }
+  a.footer-social-link { text-decoration: none; }
+  .footer-social-icon { display: inline-block; width: 24px; height: 24px; border: 0; vertical-align: middle; }
   .footer-links {
     font-family: var(--email-font);
     font-size: 12px;
@@ -307,6 +318,157 @@ export function emailDocumentCss(globals: Globals): string {
     color: #c8dff0;
     margin: 0;
     font-style: italic;
+  }
+
+  /* Customer quote (byline set): centered quote, photo/logo + name + role below */
+  .pull-quote-centered { text-align: center; margin: 0 0 18px 0; }
+  .quote-by { margin: 0 auto; }
+  .quote-by-pic { padding-right: 12px; }
+  .quote-photo { display: block; width: 44px; height: 44px; border-radius: 50%; border: 0; }
+  .quote-logo { display: block; height: 36px; width: auto; max-width: 140px; border: 0; }
+  .quote-name {
+    margin: 0;
+    font-family: var(--email-font);
+    font-size: 15px;
+    line-height: 22px;
+    font-weight: 700;
+    color: var(--email-primary);
+  }
+  .quote-role {
+    margin: 0;
+    font-family: var(--email-font);
+    font-size: 13px;
+    line-height: 20px;
+    color: var(--email-dim);
+  }
+
+  /* Contact person */
+  .contact-table { border-top: 1px solid rgba(127, 127, 127, 0.25); }
+  .contact-col { padding-top: 18px; }
+  .contact-photo-cell { padding-right: 20px; }
+  .contact-photo { display: block; width: 72px; height: 72px; border-radius: 50%; border: 0; }
+  .contact-intro, .contact-role {
+    margin: 0;
+    font-family: var(--email-font);
+    font-size: 14px;
+    line-height: 21px;
+    color: var(--email-dim);
+  }
+  .contact-name {
+    margin: 2px 0 0 0;
+    font-family: var(--email-font);
+    font-size: 17px;
+    line-height: 24px;
+    font-weight: 700;
+    color: var(--email-primary);
+  }
+  .contact-role { margin-bottom: 6px; }
+  .contact-line {
+    margin: 0;
+    font-family: var(--email-font);
+    font-size: 15px;
+    line-height: 23px;
+    color: var(--email-standard);
+  }
+  a.contact-link { color: var(--email-secondary); text-decoration: underline; }
+  .contact-button { margin-top: 12px; }
+  a.contact-button-link { padding: 12px 24px; }
+
+  /* Video preview: play row below the thumbnail (no overlay; Gmail/Outlook) */
+  .video-play-row { margin-top: 12px; }
+  .video-play-cell { width: 32px; height: 32px; border-radius: 50%; }
+  a.video-play-link {
+    display: block;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    line-height: 32px;
+    color: #ffffff;
+    text-decoration: none;
+    padding-left: 2px;
+  }
+  .video-title-cell {
+    font-family: var(--email-font);
+    font-size: 16px;
+    line-height: 24px;
+    color: var(--email-dim);
+  }
+  a.video-title-link { color: var(--email-secondary); font-weight: 700; text-decoration: underline; }
+
+  /* Teasers */
+  .teaser-col-next { padding-top: 24px; }
+  .teaser-img { margin-bottom: 12px; }
+  .teaser-title {
+    margin: 0 0 6px 0;
+    font-family: var(--email-font);
+    font-size: 17px;
+    line-height: 23px;
+    font-weight: 700;
+    color: var(--email-primary);
+  }
+  .teaser-text {
+    margin: 0 0 8px 0;
+    font-family: var(--email-font);
+    font-size: 14px;
+    line-height: 21px;
+    color: var(--email-standard);
+  }
+  .teaser-link { margin: 0; font-family: var(--email-font); font-size: 14px; line-height: 21px; }
+  a.teaser-link-anchor { color: var(--email-secondary); font-weight: 700; text-decoration: underline; }
+
+  /* Event: calendar sheet + details */
+  .event-sheet { border: 1px solid rgba(127, 127, 127, 0.35); border-radius: 6px; border-collapse: separate; }
+  .event-month {
+    padding: 4px 0;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--email-content-bg);
+    border-radius: 5px 5px 0 0;
+  }
+  .event-day {
+    padding: 6px 0 0 0;
+    font-family: var(--email-font);
+    font-size: 32px;
+    line-height: 36px;
+    font-weight: 700;
+    color: var(--email-primary);
+  }
+  .event-weekday {
+    padding: 0 4px 8px 4px;
+    font-family: var(--email-font);
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--email-dim);
+  }
+  .event-title {
+    margin: 0 0 4px 0;
+    font-family: var(--email-font);
+    font-size: 18px;
+    line-height: 25px;
+    font-weight: 700;
+    color: var(--email-primary);
+  }
+  .event-meta {
+    margin: 0 0 12px 0;
+    font-family: var(--email-font);
+    font-size: 14px;
+    line-height: 21px;
+    color: var(--email-dim);
+  }
+  a.event-button-link { padding: 11px 20px; }
+  a.event-cal-link {
+    display: inline-block;
+    padding: 10px 16px;
+    font-family: var(--email-font);
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 700;
+    color: var(--email-secondary);
+    text-decoration: none;
+    border: 1px solid var(--email-secondary);
+    border-radius: 4px;
   }
 
   /* Stat box */
@@ -489,15 +651,15 @@ export function emailDocumentCss(globals: Globals): string {
       background-color: var(--email-chapter-bg) !important;
     }
     .price-box-bg, .price-box-inner { background-color: var(--email-price-bg) !important; }
-    .text-standard, .paragraph-body, .stat-geo { color: var(--email-standard) !important; }
-    .text-primary, .hero-headline { color: var(--email-primary) !important; }
-    .text-secondary, .text-stat, .stat-number, .cta-link-icon, a.cta-link-anchor {
+    .text-standard, .paragraph-body, .stat-geo, .contact-line, .teaser-text { color: var(--email-standard) !important; }
+    .text-primary, .hero-headline, .quote-name, .contact-name, .teaser-title, .event-title, .event-day { color: var(--email-primary) !important; }
+    .text-secondary, .text-stat, .stat-number, .cta-link-icon, a.cta-link-anchor, a.contact-link, a.video-title-link, a.teaser-link-anchor, a.event-cal-link {
       color: var(--email-secondary) !important;
     }
     .text-accent, .divider-ornament-glyph, .text-chapter-label, .hero-label, .chapter-title, .brand-stars, .footer-stars-glyph {
       color: var(--email-accent) !important;
     }
-    .text-dim, .footer-notice, .footer-company { color: var(--email-dim) !important; }
+    .text-dim, .footer-notice, .footer-company, .quote-role, .contact-intro, .contact-role, .video-title-cell, .event-meta, .event-weekday { color: var(--email-dim) !important; }
     .text-price-main, .price-main { color: #ffffff !important; }
     .text-cta-body, .cta-link-body { color: #3a6080 !important; }
     .benefit-icon, .text-benefit-icon { color: #4db8ff !important; }
@@ -511,6 +673,19 @@ export function emailDocumentCss(globals: Globals): string {
     .image-text-gap { display: none !important; }
     .image-text-pic { padding-bottom: 16px !important; }
     .image-text-img { max-width: 100% !important; }
+    .contact-col { display: block !important; width: 100% !important; }
+    .contact-photo-cell { padding-right: 0 !important; }
+    .contact-info { padding-top: 12px !important; }
+    .teaser-col { display: block !important; width: 100% !important; }
+    .teaser-col-next, .teaser-col + .teaser-gap + .teaser-col { padding-top: 24px !important; }
+    .teaser-gap { display: none !important; }
+    .teaser-img { max-width: 100% !important; }
+    .event-col { display: block !important; width: 100% !important; }
+    .event-gap { display: none !important; }
+    .event-info { padding-top: 14px !important; }
+    .event-act { display: block !important; }
+    .event-act-gap { display: none !important; }
+    .event-cal-cell { padding-top: 10px !important; }
   }
   `;
 }

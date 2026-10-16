@@ -171,8 +171,8 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   protected readonly linkPos = signal({ top: 0, left: 0, arrow: 16 });
   protected readonly linkKinds: readonly LinkKind[] = ['web', 'email', 'phone'];
   protected readonly linkPlaceholders: Record<LinkKind, string> = {
-    web: 'cloudlib.eu',
-    email: 'info@cloudlib.eu',
+    web: 'example.com',
+    email: 'info@example.com',
     phone: '+49 30 1234567',
   };
   protected readonly linkHref = computed(() =>
@@ -1202,7 +1202,11 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
       this.infoItems.set(null);
       if (restoreBm) {
         this.restoreSelectionBookmark(restoreBm);
-        requestAnimationFrame(() => this.restoreSelectionBookmark(restoreBm));
+        const restored = currentRange();
+        // Re-apply after layout, unless the user has selected something else in the meantime.
+        requestAnimationFrame(() => {
+          if (sameRange(currentRange(), restored)) this.restoreSelectionBookmark(restoreBm);
+        });
       }
       if (this.infoMode()) this.refreshInfoLabels();
     }
@@ -1215,4 +1219,19 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     this.localEdit = true;
     this.docChange.emit(next);
   }
+}
+
+function currentRange(): Range | null {
+  const sel = window.getSelection();
+  return sel && sel.rangeCount ? sel.getRangeAt(0).cloneRange() : null;
+}
+
+function sameRange(a: Range | null, b: Range | null): boolean {
+  if (!a || !b) return a === b;
+  return (
+    a.startContainer === b.startContainer &&
+    a.startOffset === b.startOffset &&
+    a.endContainer === b.endContainer &&
+    a.endOffset === b.endOffset
+  );
 }

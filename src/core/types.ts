@@ -1,3 +1,4 @@
+import type { SocialLinks } from './brand/social';
 /** Newsletter document model — JSON is source of truth; HTML is generated. */
 
 import { emptyRichDoc, type RichColorToken, type RichDoc, type RichSizeToken } from './richtext/model';
@@ -84,6 +85,8 @@ export interface LegalFooterConfig {
   imprintHref: string;
   unsubscribeLabel: string;
   viewInBrowserLabel: string;
+  /** Footer social row: link target per network; empty = not shown. */
+  social: SocialLinks;
 }
 
 export interface Globals {
@@ -103,6 +106,8 @@ export interface Globals {
   personalization: PersonalizationConfig;
   /** Pattern for export filenames; `{name}` placeholder optional later */
   exportFileNamePrefix: string;
+  /** Public base address where exported images (social icons) are uploaded, e.g. the Listmonk media URL. */
+  assetBaseUrl: string;
 }
 
 export interface BlockBase {
@@ -147,10 +152,23 @@ export interface ChapterBandBlock extends BlockBase {
   title: string;
 }
 
+export const QUOTE_IMAGE_MODES = ['none', 'photo', 'logo'] as const;
+export type QuoteImageMode = (typeof QUOTE_IMAGE_MODES)[number];
+
+/**
+ * Quote, optionally as a customer quote: name, "role and company", photo or logo.
+ * All byline fields empty → the classic quote with the side bar.
+ */
 export interface PullQuoteBlock extends BlockBase {
   type: 'pull-quote';
   /** Plain quote body; italic via CSS. */
   quote: string;
+  name: string;
+  /** One line: role and company, e.g. "Owner, Keller Optics". */
+  role: string;
+  imageMode: QuoteImageMode;
+  src: string;
+  alt: string;
 }
 
 export interface StatBoxBlock extends BlockBase {
@@ -313,6 +331,83 @@ export interface GreetingBlock extends BlockBase {
   color: RichColorToken;
 }
 
+/** Contact person: round photo left (optional), then intro, name, role, phone, email, optional button. */
+export interface ContactBlock extends BlockBase {
+  type: 'contact';
+  src: string;
+  alt: string;
+  intro: string;
+  name: string;
+  role: string;
+  phone: string;
+  email: string;
+  /** Button text; no button when empty. */
+  buttonLabel: string;
+  /** Button link target. */
+  href: string;
+}
+
+/** Video preview: thumbnail that links to the video or tour, with a play row below (no overlay). */
+export interface VideoBlock extends BlockBase {
+  type: 'video';
+  src: string;
+  alt: string;
+  href: string;
+  title: string;
+  /** Optional, e.g. "2:30". */
+  duration: string;
+}
+
+export const TEASER_COLUMNS = [2, 3] as const;
+export type TeaserColumns = (typeof TEASER_COLUMNS)[number];
+
+export interface TeaserItem {
+  src: string;
+  alt: string;
+  title: string;
+  text: string;
+  linkText: string;
+  href: string;
+}
+
+export function emptyTeaserItem(): TeaserItem {
+  return { src: '', alt: '', title: '', text: '', linkText: '', href: '' };
+}
+
+/** Teasers side by side (2 or 3 columns), each with picture, title, text and link; stacked on phones. */
+export interface TeasersBlock extends BlockBase {
+  type: 'teasers';
+  columns: TeaserColumns;
+  items: TeaserItem[];
+}
+
+export const EVENT_LOCATION_MODES = ['online', 'onsite'] as const;
+export type EventLocationMode = (typeof EVENT_LOCATION_MODES)[number];
+export const EVENT_LOCALES = ['de', 'en'] as const;
+export type EventLocale = (typeof EVENT_LOCALES)[number];
+
+/** Event: calendar sheet left, title, time and place, button and an optional Google Calendar link. */
+export interface EventBlock extends BlockBase {
+  type: 'event';
+  title: string;
+  /** YYYY-MM-DD */
+  date: string;
+  /** HH:MM; empty = all day */
+  start: string;
+  /** HH:MM; empty = one hour after the start */
+  end: string;
+  /** IANA zone the times are in, e.g. Europe/Berlin. */
+  timezone: string;
+  locationMode: EventLocationMode;
+  location: string;
+  buttonLabel: string;
+  href: string;
+  calendar: boolean;
+  calendarLabel: string;
+  /** Language of month, weekday and time words (set from the app language when created). */
+  locale: EventLocale;
+}
+
 /** Block union — expand slice by slice */
 export type Block =
   | DividerBlock
@@ -327,7 +422,11 @@ export type Block =
   | CtaLinkListBlock
   | ImageBlock
   | ImageTextBlock
-  | GreetingBlock;
+  | GreetingBlock
+  | ContactBlock
+  | VideoBlock
+  | TeasersBlock
+  | EventBlock;
 
 export interface Newsletter {
   schemaVersion: number;
@@ -372,6 +471,24 @@ export interface BlockDefaultTexts {
   imageText: string;
   greetingText: string;
   greetingNameLead: string;
+  quoteName: string;
+  quoteRole: string;
+  contactIntro: string;
+  contactName: string;
+  contactRole: string;
+  contactPhone: string;
+  contactEmail: string;
+  contactButton: string;
+  videoTitle: string;
+  videoDuration: string;
+  teaserTitles: readonly [string, string];
+  teaserText: string;
+  teaserLink: string;
+  eventTitle: string;
+  eventLocation: string;
+  eventButton: string;
+  eventCalendar: string;
+  eventLocale: EventLocale;
 }
 
 export const BLOCK_DEFAULT_TEXTS_EN: BlockDefaultTexts = {
@@ -396,7 +513,42 @@ export const BLOCK_DEFAULT_TEXTS_EN: BlockDefaultTexts = {
   imageText: 'New text beside the image.',
   greetingText: 'Dear business partner',
   greetingNameLead: 'Hello',
+  quoteName: 'Sam Keller',
+  quoteRole: 'Owner, Keller Optics',
+  contactIntro: 'Questions? I am happy to help.',
+  contactName: 'Alex Berger',
+  contactRole: 'Customer advice',
+  contactPhone: '+44 20 1234 5678',
+  contactEmail: 'alex.berger@example.com',
+  contactButton: 'Book a meeting',
+  videoTitle: 'Watch the 3D tour',
+  videoDuration: '2:30',
+  teaserTitles: ['First offer', 'Second offer'],
+  teaserText: 'One or two sentences about this offer.',
+  teaserLink: 'Learn more',
+  eventTitle: 'Online info session',
+  eventLocation: 'Microsoft Teams',
+  eventButton: 'Register now',
+  eventCalendar: 'Add to calendar',
+  eventLocale: 'en',
 };
+
+/** Browser time zone, or Europe/Berlin when none is known. */
+export function defaultTimeZone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Berlin';
+  } catch {
+    return 'Europe/Berlin';
+  }
+}
+
+/** A date two weeks from today, YYYY-MM-DD (local). */
+function inTwoWeeks(): string {
+  const d = new Date();
+  d.setDate(d.getDate() + 14);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
 
 export function createBlock(type: Block['type'], texts: BlockDefaultTexts = BLOCK_DEFAULT_TEXTS_EN): Block {
   const id = newId();
@@ -413,7 +565,7 @@ export function createBlock(type: Block['type'], texts: BlockDefaultTexts = BLOC
     case 'chapter-band':
       return { id, type, title: t.chapterTitle };
     case 'pull-quote':
-      return { id, type, quote: t.pullQuote };
+      return { id, type, quote: t.pullQuote, name: t.quoteName, role: t.quoteRole, imageMode: 'none', src: '', alt: '' };
     case 'stat-box':
       return { id, type, number: t.statNumber, label: t.statLabel, geo: t.statGeo };
     case 'benefits-list':
@@ -466,6 +618,53 @@ export function createBlock(type: Block['type'], texts: BlockDefaultTexts = BLOC
       };
     case 'greeting':
       return { id, type, text: t.greetingText, useName: false, nameLead: t.greetingNameLead, size: 'm', color: 'standard' };
+    case 'contact':
+      return {
+        id,
+        type,
+        src: '',
+        alt: '',
+        intro: t.contactIntro,
+        name: t.contactName,
+        role: t.contactRole,
+        phone: t.contactPhone,
+        email: t.contactEmail,
+        buttonLabel: t.contactButton,
+        href: 'https://example.com',
+      };
+    case 'video':
+      return { id, type, src: '', alt: '', href: 'https://example.com', title: t.videoTitle, duration: t.videoDuration };
+    case 'teasers':
+      return {
+        id,
+        type,
+        columns: 2,
+        items: t.teaserTitles.map((title) => ({
+          src: '',
+          alt: '',
+          title,
+          text: t.teaserText,
+          linkText: t.teaserLink,
+          href: 'https://example.com',
+        })),
+      };
+    case 'event':
+      return {
+        id,
+        type,
+        title: t.eventTitle,
+        date: inTwoWeeks(),
+        start: '10:00',
+        end: '10:30',
+        timezone: defaultTimeZone(),
+        locationMode: 'online',
+        location: t.eventLocation,
+        buttonLabel: t.eventButton,
+        href: 'https://example.com',
+        calendar: true,
+        calendarLabel: t.eventCalendar,
+        locale: t.eventLocale,
+      };
     default: {
       const _exhaustive: never = type;
       throw new Error(`Unknown block type: ${_exhaustive}`);
@@ -479,7 +678,7 @@ export const BLOCK_LABELS: Record<Block['type'], string> = {
   paragraph: 'Paragraph',
   'cta-button': 'CTA Button',
   'chapter-band': 'Chapter band',
-  'pull-quote': 'Pull quote',
+  'pull-quote': 'Customer quote',
   'stat-box': 'Stat box',
   'benefits-list': 'Benefits list',
   'price-box': 'Price box',
@@ -487,4 +686,8 @@ export const BLOCK_LABELS: Record<Block['type'], string> = {
   image: 'Image',
   'image-text': 'Image and text',
   greeting: 'Greeting',
+  contact: 'Contact person',
+  video: 'Video preview',
+  teasers: 'Teasers',
+  event: 'Event',
 };

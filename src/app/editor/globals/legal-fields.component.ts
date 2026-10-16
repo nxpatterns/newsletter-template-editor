@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { normalizeLinkTarget } from '../../../core';
+import { normalizeLinkTarget, SOCIAL_ICON_DIR, SOCIAL_NETWORKS, type SocialNetworkId } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
 import { NewsletterSession } from '../newsletter-session.service';
 
@@ -12,6 +12,35 @@ import { NewsletterSession } from '../newsletter-session.service';
 export class LegalFieldsComponent {
   protected readonly i18n = inject(LocaleService);
   protected readonly session = inject(NewsletterSession);
+  protected readonly networks = SOCIAL_NETWORKS;
+  protected readonly iconDir = SOCIAL_ICON_DIR;
+  protected readonly placeholders: Record<SocialNetworkId, string> = {
+    linkedin: 'linkedin.com/company/…',
+    facebook: 'facebook.com/…',
+    instagram: 'instagram.com/…',
+    x: 'x.com/…',
+    youtube: 'youtube.com/@…',
+    tiktok: 'tiktok.com/@…',
+    threads: 'threads.net/@…',
+    pinterest: 'pinterest.com/…',
+    vimeo: 'vimeo.com/…',
+    dailymotion: 'dailymotion.com/…',
+    snapchat: 'snapchat.com/add/…',
+    whatsapp: 'wa.me/…',
+  };
+
+  protected onSocial(id: SocialNetworkId, event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.session.updateLegal({ social: { ...this.session.globals().legal.social, [id]: value } }, 'coalesce');
+  }
+
+  /** "linkedin.com/company/x" becomes a working https link when the field is left. */
+  protected onSocialBlur(id: SocialNetworkId): void {
+    this.session.endCoalesce();
+    const social = this.session.globals().legal.social;
+    const built = normalizeLinkTarget(social[id] ?? '');
+    if (built) this.session.updateLegal({ social: { ...social, [id]: built } }, 'immediate');
+  }
 
   protected onLegal(
     key:

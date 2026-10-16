@@ -2,6 +2,7 @@ import type {
   BenefitsListBlock,
   Block,
   ChapterBandBlock,
+  ContactBlock,
   CtaButtonBlock,
   CtaLinkListBlock,
   DividerBlock,
@@ -14,7 +15,12 @@ import type {
   PriceBoxBlock,
   PullQuoteBlock,
   StatBoxBlock,
+  TeasersBlock,
+  EventBlock,
+  VideoBlock,
 } from '../types';
+import { eventPlace, eventSheet, eventTimeRange, googleCalendarHref } from './event';
+import { buildLinkHref } from '../richtext/link-target';
 import { richDocToHtml } from '../richtext/to-html';
 import {
   attrHref,
@@ -227,6 +233,197 @@ function renderGreeting(b: GreetingBlock, ctx: RenderContext): string {
   );
 }
 
+/** Contact person: round photo left (stacks above on phones), details right, optional button. */
+function renderContact(b: ContactBlock, ctx: RenderContext): string {
+  const src = b.src.trim();
+  const line = (cls: string, field: string, text: string) =>
+    text.trim() ? `<p class="${cls}" data-field="${field}">${escapeHtml(text)}</p>` : '';
+  const link = (field: string, text: string, href: string | null) =>
+    text.trim()
+      ? `<p class="contact-line" data-field="${field}">${
+          href ? `<a href="${escapeAttr(href)}" class="contact-link">${escapeHtml(text)}</a>` : escapeHtml(text)
+        }</p>`
+      : '';
+  const btnHref = b.href.trim() ? resolveHref(b.href, ctx.mode) : '';
+  const button =
+    b.buttonLabel.trim() && btnHref
+      ? `
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" class="contact-button">
+              <tr>
+                <td class="cta-button-cell" bgcolor="#1d6bb8">
+                  <a href="${attrHref(btnHref, ctx.mode)}" target="_blank" class="cta-button-link contact-button-link"><span data-field="buttonLabel">${escapeHtml(b.buttonLabel)}</span></a>
+                </td>
+              </tr>
+            </table>`
+      : '';
+  const photo = src
+    ? `<td class="contact-col contact-photo-cell" width="92" valign="middle"><img src="${escapeAttr(src)}" alt="${escapeAttr(b.alt)}" width="72" height="72" class="contact-photo"></td>`
+    : '';
+  return rowWrap(
+    b,
+    ctx,
+    contentTd(
+      ctx,
+      'block-pad-md contact-block',
+      `
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="contact-table">
+          <tr>
+            ${photo}
+            <td class="contact-col contact-info" valign="middle">
+              ${line('contact-intro', 'intro', b.intro)}
+              ${line('contact-name', 'name', b.name)}
+              ${line('contact-role', 'role', b.role)}
+              ${link('phone', b.phone, buildLinkHref('phone', b.phone))}
+              ${link('email', b.email, buildLinkHref('email', b.email))}
+              ${button}
+            </td>
+          </tr>
+        </table>
+      `,
+    ),
+  );
+}
+
+/** Video preview: linked thumbnail, then a play row (round play cell, title link, duration). */
+function renderVideo(b: VideoBlock, ctx: RenderContext): string {
+  const src = b.src.trim();
+  const href = b.href.trim() ? resolveHref(b.href, ctx.mode) : '';
+  const wrap = (inner: string, cls: string) =>
+    href ? `<a href="${attrHref(href, ctx.mode)}" target="_blank" class="${cls}">${inner}</a>` : inner;
+  const w = IMAGE_PX.text;
+  let pic = '';
+  if (src) pic = wrap(`<img src="${escapeAttr(src)}" alt="${escapeAttr(b.alt)}" width="${w}" class="email-image" style="--image-w:${w}px">`, 'email-image-link');
+  else if (ctx.annotate) pic = `<span class="nte-image-empty" style="--image-w:${w}px">&nbsp;</span>`;
+  const play = escapeAttr(ctx.globals.secondaryColor);
+  const duration = b.duration.trim() ? ` <span class="video-duration" data-field="duration">· ${escapeHtml(b.duration)}</span>` : '';
+  return rowWrap(
+    b,
+    ctx,
+    contentTd(
+      ctx,
+      'mobile-padding image-cell video-block',
+      `${pic}
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" class="video-play-row">
+          <tr>
+            <td class="video-play-cell" width="32" height="32" align="center" valign="middle" bgcolor="${play}">${wrap('&#9654;&#xFE0E;', 'video-play-link')}</td>
+            <td class="video-play-gap" width="10">&nbsp;</td>
+            <td class="video-title-cell" valign="middle">${wrap(`<span data-field="title">${escapeHtml(b.title)}</span>`, 'video-title-link')}${duration}</td>
+          </tr>
+        </table>
+      `,
+    ),
+  );
+}
+
+/** Column width and gutter per column count, inside the 504px text width. */
+const TEASER_LAYOUT: Record<TeasersBlock['columns'], { col: number; gap: number }> = {
+  2: { col: 242, gap: 20 },
+  3: { col: 157, gap: 16 },
+};
+
+function renderTeaserCell(item: TeasersBlock['items'][number], index: number, w: number, ctx: RenderContext): string {
+  const src = item.src.trim();
+  const href = item.href.trim() ? resolveHref(item.href, ctx.mode) : '';
+  let pic = '';
+  if (src) {
+    pic = `<img src="${escapeAttr(src)}" alt="${escapeAttr(item.alt)}" width="${w}" class="email-image teaser-img" style="--image-w:${w}px">`;
+    if (href) pic = `<a href="${attrHref(href, ctx.mode)}" target="_blank" class="email-image-link">${pic}</a>`;
+  } else if (ctx.annotate) {
+    pic = `<span class="nte-image-empty teaser-img" style="--image-w:${w}px">&nbsp;</span>`;
+  }
+  const f = (k: string) => `items.${index}.${k}`;
+  const title = item.title.trim() ? `<p class="teaser-title" data-field="${f('title')}">${escapeHtml(item.title)}</p>` : '';
+  const text = item.text.trim() ? `<p class="teaser-text" data-field="${f('text')}">${plainTextToHtml(item.text)}</p>` : '';
+  const link =
+    item.linkText.trim() && href
+      ? `<p class="teaser-link"><a href="${attrHref(href, ctx.mode)}" target="_blank" class="teaser-link-anchor" data-field="${f('linkText')}">${escapeHtml(item.linkText)}</a></p>`
+      : '';
+  return `${pic}${title}${text}${link}`;
+}
+
+/** Teasers in 2 or 3 columns; rows of `columns`, stacked into one column on phones. */
+function renderTeasers(b: TeasersBlock, ctx: RenderContext): string {
+  const { col, gap } = TEASER_LAYOUT[b.columns] ?? TEASER_LAYOUT[2];
+  const rows: string[] = [];
+  for (let start = 0; start < b.items.length; start += b.columns) {
+    const cells: string[] = [];
+    for (let c = 0; c < b.columns; c++) {
+      const i = start + c;
+      const item = b.items[i];
+      if (c > 0) cells.push(`<td class="teaser-gap" width="${gap}">&nbsp;</td>`);
+      cells.push(
+        `<td class="teaser-col${start > 0 ? ' teaser-col-next' : ''}" width="${col}" valign="top">${
+          item ? renderTeaserCell(item, i, col, ctx) : '&nbsp;'
+        }</td>`,
+      );
+    }
+    rows.push(`<tr>${cells.join('')}</tr>`);
+  }
+  return rowWrap(
+    b,
+    ctx,
+    contentTd(
+      ctx,
+      'block-pad-md teasers-block',
+      `
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="teasers-table">
+          ${rows.join('\n')}
+        </table>
+      `,
+    ),
+  );
+}
+
+/** Event: calendar sheet (month in the brand color, day, weekday), then title, time, place and buttons. */
+function renderEvent(b: EventBlock, ctx: RenderContext): string {
+  const sheet = eventSheet(b);
+  const time = eventTimeRange(b);
+  const place = eventPlace(b);
+  const meta = [time, place].filter(Boolean).map(escapeHtml).join(' · ');
+  const href = b.href.trim() ? resolveHref(b.href, ctx.mode) : '';
+  const brand = escapeAttr(ctx.globals.secondaryColor);
+  const button =
+    b.buttonLabel.trim() && href
+      ? `<td class="event-act cta-button-cell" bgcolor="#1d6bb8"><a href="${attrHref(href, ctx.mode)}" target="_blank" class="cta-button-link event-button-link"><span data-field="buttonLabel">${escapeHtml(b.buttonLabel)}</span></a></td>`
+      : '';
+  const calHref = b.calendar ? googleCalendarHref(b) : '';
+  const calendar =
+    calHref && b.calendarLabel.trim()
+      ? `<td class="event-act event-cal-cell"><a href="${attrHref(resolveHref(calHref, ctx.mode), ctx.mode)}" target="_blank" class="event-cal-link" data-field="calendarLabel">${escapeHtml(b.calendarLabel)}</a></td>`
+      : '';
+  const acts = [button, calendar].filter(Boolean).join('<td class="event-act-gap" width="10">&nbsp;</td>');
+  const date = sheet.day
+    ? `
+            <td class="event-col event-date-col" width="88" valign="top">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="88" class="event-sheet">
+                <tr><td class="event-month" align="center" bgcolor="${brand}">${escapeHtml(sheet.month)}</td></tr>
+                <tr><td class="event-day" align="center">${escapeHtml(sheet.day)}</td></tr>
+                <tr><td class="event-weekday" align="center">${escapeHtml(sheet.weekday)}</td></tr>
+              </table>
+            </td>
+            <td class="event-col event-gap" width="18">&nbsp;</td>`
+    : '';
+  return rowWrap(
+    b,
+    ctx,
+    contentTd(
+      ctx,
+      'block-pad-md event-block',
+      `
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="event-card">
+          <tr>${date}
+            <td class="event-col event-info" valign="top">
+              ${b.title.trim() ? `<p class="event-title" data-field="title">${escapeHtml(b.title)}</p>` : ''}
+              ${meta ? `<p class="event-meta">${meta}</p>` : ''}
+              ${acts ? `<table role="presentation" cellspacing="0" cellpadding="0" border="0" class="event-acts"><tr>${acts}</tr></table>` : ''}
+            </td>
+          </tr>
+        </table>
+      `,
+    ),
+  );
+}
+
 function renderHero(b: HeroBlock, ctx: RenderContext): string {
   return rowWrap(
     b,
@@ -288,7 +485,42 @@ function renderChapterBand(b: ChapterBandBlock, ctx: RenderContext): string {
   );
 }
 
+/** Customer quote byline: small round photo or logo, name, role and company. */
+function quoteByline(b: PullQuoteBlock): string {
+  const src = b.imageMode !== 'none' ? b.src.trim() : '';
+  const pic = src
+    ? b.imageMode === 'logo'
+      ? `<img src="${escapeAttr(src)}" alt="${escapeAttr(b.alt)}" height="36" class="quote-logo">`
+      : `<img src="${escapeAttr(src)}" alt="${escapeAttr(b.alt)}" width="44" height="44" class="quote-photo">`
+    : '';
+  const name = b.name.trim() ? `<p class="quote-name" data-field="name">${escapeHtml(b.name)}</p>` : '';
+  const role = b.role.trim() ? `<p class="quote-role" data-field="role">${escapeHtml(b.role)}</p>` : '';
+  return `
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" class="quote-by">
+          <tr>
+            ${pic ? `<td class="quote-by-pic" valign="middle">${pic}</td>` : ''}
+            <td class="quote-by-text" valign="middle">${name}${role}</td>
+          </tr>
+        </table>`;
+}
+
 function renderPullQuote(b: PullQuoteBlock, ctx: RenderContext): string {
+  const hasByline = !!(b.name.trim() || b.role.trim() || (b.imageMode !== 'none' && b.src.trim()));
+  if (hasByline) {
+    return rowWrap(
+      b,
+      ctx,
+      contentTd(
+        ctx,
+        'block-pad-sm quote-block',
+        `
+        <p class="pull-quote pull-quote-centered" align="center">
+          <span data-field="quote">${plainTextToHtml(b.quote)}</span>
+        </p>${quoteByline(b)}
+      `,
+      ),
+    );
+  }
   return rowWrap(
     b,
     ctx,
@@ -521,6 +753,14 @@ export function renderBlock(block: Block, ctx: RenderContext): string {
       return renderImageText(block, ctx);
     case 'greeting':
       return renderGreeting(block, ctx);
+    case 'contact':
+      return renderContact(block, ctx);
+    case 'teasers':
+      return renderTeasers(block, ctx);
+    case 'event':
+      return renderEvent(block, ctx);
+    case 'video':
+      return renderVideo(block, ctx);
     default: {
       const _exhaustive: never = block;
       throw new Error(`Unknown block: ${JSON.stringify(_exhaustive)}`);

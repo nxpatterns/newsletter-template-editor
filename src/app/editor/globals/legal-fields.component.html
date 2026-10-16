@@ -66,4 +66,26 @@
     <label class="ed-label" for="g-view" [textContent]="i18n.t('legal.viewInBrowser')"></label>
     <input id="g-view" class="ed-input" [value]="l.viewInBrowserLabel" (input)="onLegal('viewInBrowserLabel', $event)"  (blur)="onFieldBlur()" />
   </div>
+  <section class="ed-group" data-testid="social-fields">
+    <h3 class="ed-group-title" [textContent]="i18n.t('legal.socialTitle')"></h3>
+    <p class="ed-hint" [textContent]="i18n.t('legal.socialHint')"></p>
+    <div class="social-list">
+      @for (n of networks; track n.id) {
+        <label class="social-row" [attr.for]="'g-social-' + n.id">
+          <span class="social-ico" aria-hidden="true" [style.mask-image]="'url(' + iconDir + '/' + n.id + '.svg)'"></span>
+          <span class="social-name" [textContent]="n.label"></span>
+        </label>
+        <input
+          class="ed-input"
+          [id]="'g-social-' + n.id"
+          [attr.data-testid]="'g-social-' + n.id"
+          [attr.aria-label]="n.label + ': ' + i18n.t('legal.socialTarget')"
+          [placeholder]="placeholders[n.id]"
+          [value]="l.social[n.id]"
+          (input)="onSocial(n.id, $event)"
+          (blur)="onSocialBlur(n.id)"
+        />
+      }
+    </div>
+  </section>
 </section>

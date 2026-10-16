@@ -1,6 +1,14 @@
 import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { downloadFilename, renderExportOptimized } from '../../core';
+import {
+  buildZip,
+  downloadFilename,
+  filledSocialNetworks,
+  hostedSocialIcons,
+  renderExportOptimized,
+  socialIconFileName,
+} from '../../core';
+import { SocialIconsService } from '../editor/social-icons.service';
 import type { TemplateSummary } from '../../core/persist/template-repository';
 import { NewsletterSession } from '../editor/newsletter-session.service';
 import { LocaleService } from '../i18n/locale.service';
@@ -28,6 +36,7 @@ export class FileMenuComponent {
   private readonly snackbar = inject(SnackbarService);
   private readonly unsaved = inject(UnsavedGuardService);
   private readonly router = inject(Router);
+  private readonly socialIcons = inject(SocialIconsService);
 
   private readonly root = viewChild<ElementRef<HTMLElement>>('root');
   private readonly projectInput = viewChild<ElementRef<HTMLInputElement>>('projectInput');
@@ -151,23 +160,37 @@ export class FileMenuComponent {
   protected async exportHtml(kind: HtmlExportKind): Promise<void> {
     this.exportOpen.set(false);
     try {
-      const arts = await renderExportOptimized(this.session.newsletter());
+      const n = this.session.newsletter();
+      const color = n.globals.primaryColor;
+      // Icons only with a public image address; otherwise the footer falls back to text links.
+      const socialIcons = hostedSocialIcons(n.globals.legal.social, n.globals.assetBaseUrl, color) ?? undefined;
+      const arts = await renderExportOptimized(n, { socialIcons });
       const name = this.session.displayName();
       const prefix = this.session.globals().exportFileNamePrefix || name;
-      if (kind === 'full') {
-        this.triggerDownload(new Blob([arts.full], { type: 'text/html' }), downloadFilename(name, 'html'));
-      } else {
-        this.triggerDownload(
-          new Blob([arts.standardTemplate], { type: 'text/html' }),
-          downloadFilename(`${prefix}-template`, 'html'),
+      const files: { name: string; html: string }[] =
+        kind === 'full'
+          ? [{ name: downloadFilename(name, 'html'), html: arts.full }]
+          : [
+              { name: downloadFilename(`${prefix}-template`, 'html'), html: arts.standardTemplate },
+              { name: downloadFilename(`${prefix}-body`, 'html'), html: arts.body },
+            ];
+      if (socialIcons) {
+        const icons = await Promise.all(
+          filledSocialNetworks(n.globals.legal.social).map(async (net) => ({
+            path: `social/${socialIconFileName(net.id, color)}`,
+            data: await this.socialIcons.burnPng(net.id, color),
+          })),
         );
-        window.setTimeout(() => {
-          this.triggerDownload(
-            new Blob([arts.body], { type: 'text/html' }),
-            downloadFilename(`${prefix}-body`, 'html'),
-          );
-        }, 120);
+        const zip = buildZip([...files.map((f) => ({ path: f.name, data: f.html })), ...icons]);
+        this.triggerDownload(new Blob([zip as BlobPart], { type: 'application/zip' }), downloadFilename(name, 'zip'));
+        this.snackbar.success(this.i18n.t('file.exportZipDone'));
+        return;
       }
+      files.forEach((f, i) => {
+        const go = () => this.triggerDownload(new Blob([f.html], { type: 'text/html' }), f.name);
+        if (i === 0) go();
+        else window.setTimeout(go, 120 * i);
+      });
       this.snackbar.success(this.i18n.t('file.exportDone'));
     } catch {
       this.snackbar.error(this.i18n.t('file.exportFailed'));

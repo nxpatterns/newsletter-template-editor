@@ -3,3 +3,28 @@
 :host {
   display: block;
 }
+
+.social-list {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 6px 10px;
+  align-items: center;
+}
+
+.social-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ed-text, #e8f4ff);
+}
+
+.social-ico {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  background-color: currentColor;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+}

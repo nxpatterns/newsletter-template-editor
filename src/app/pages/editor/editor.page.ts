@@ -18,6 +18,7 @@ import { renderPreview } from '../../../core';
 import { EditorPanelComponent } from '../../editor/panel/editor-panel.component';
 import { NewsletterSession } from '../../editor/newsletter-session.service';
 import { LocaleService } from '../../i18n/locale.service';
+import { SocialIconsService } from '../../editor/social-icons.service';
 import { ShellUiService } from '../../shell/shell-ui.service';
 import { CatalogDragService } from './catalog-drag.service';
 import {
@@ -44,6 +45,7 @@ export class EditorPage {
   private readonly session = inject(NewsletterSession);
   protected readonly shellUi = inject(ShellUiService);
   protected readonly i18n = inject(LocaleService);
+  private readonly socialIcons = inject(SocialIconsService);
   private readonly catalogDrag = inject(CatalogDragService);
   private readonly router = inject(Router);
   private readonly snackbar = inject(SnackbarService);
@@ -84,11 +86,15 @@ export class EditorPage {
 
   protected readonly previewSrcdoc = computed((): SafeHtml =>
     this.sanitizer.bypassSecurityTrustHtml(
-      renderPreview(this.session.newsletter(), { emptySlotLabel: this.i18n.t('preview.emptySlot') }),
+      renderPreview(this.session.newsletter(), {
+        emptySlotLabel: this.i18n.t('preview.emptySlot'),
+        socialIcons: this.socialIcons.previewSources(this.session.globals().primaryColor),
+      }),
     ),
   );
 
   constructor() {
+    void this.socialIcons.load();
     // Reload / deep link: open exactly the newsletter behind the address.
     effect(() => {
       const id = this.routeId();

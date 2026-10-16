@@ -1,3 +1,4 @@
+import { emptySocialLinks } from '../brand/social';
 import { defaultGlobals } from '../brand/defaults';
 import { seedNewsletter } from '../seed';
 import { createBlock, type Newsletter } from '../types';
@@ -30,11 +31,13 @@ function acmeNewsletter(): Newsletter {
       imprintHref: 'https://acme.example/imprint',
       unsubscribeLabel: 'Unsubscribe',
       viewInBrowserLabel: 'View in browser',
+      social: emptySocialLinks(),
     },
     exportFileNamePrefix: 'Acme-Listmonk',
     logo: { ...defaultGlobals().logo, alt: 'Acme', href: 'https://acme.example' },
     personalization: defaultGlobals().personalization,
     fontFamily: 'Arial',
+    assetBaseUrl: '',
   };
 
   const cta = createBlock('cta-button');
@@ -218,6 +221,127 @@ describe('renderExport', () => {
     expect(body).not.toContain('.Subscriber.Email');
     n.globals.personalization.samples['name'] = ' ';
     expect(renderPreview(n)).not.toContain('Guten Tag');
+  });
+
+  it('renders a contact with tel and mailto links, photo column only with a photo', () => {
+    const n = seedNewsletter();
+    const b = createBlock('contact');
+    if (b.type !== 'contact') throw new Error('type');
+    n.blocks = [b];
+    let { full } = renderExport(n);
+    expect(full).toContain('href="tel:+442012345678"');
+    expect(full).toContain('href="mailto:alex.berger@example.com"');
+    expect(full).not.toContain('{{ TrackLink "tel:');
+    expect(full).not.toMatch(/<td[^>]*contact-photo-cell/);
+    expect(full).toContain('Alex Berger');
+    expect(full).toContain('Book a meeting');
+    expect(full).toMatch(/\.contact-col\s*\{\s*display:\s*block !important/);
+    Object.assign(b, { src: 'https://cdn.example.com/alex.jpg', alt: 'Alex Berger' });
+    ({ full } = renderExport(n));
+    expect(full).toMatch(/<td[^>]*contact-photo-cell/);
+    expect(full).toMatch(/<img[^>]*src="https:\/\/cdn\.example\.com\/alex\.jpg"[^>]*alt="Alex Berger"|<img[^>]*alt="Alex Berger"[^>]*src="https:\/\/cdn\.example\.com\/alex\.jpg"/);
+  });
+
+  it('leaves a contact without phone, email and button free of those rows', () => {
+    const n = seedNewsletter();
+    const b = createBlock('contact');
+    if (b.type !== 'contact') throw new Error('type');
+    Object.assign(b, { phone: '', email: '', buttonLabel: '' });
+    n.blocks = [b];
+    const { full } = renderExport(n);
+    expect(full).not.toContain('tel:');
+    expect(full).not.toContain('mailto:');
+    expect(full).not.toMatch(/<table[^>]*contact-button/);
+  });
+
+  it('keeps an old quote without name, role or picture in the bar layout', () => {
+    const n = seedNewsletter();
+    n.blocks = [
+      { id: 'q', type: 'pull-quote', quote: 'Old quote', name: '', role: '', imageMode: 'none', src: '', alt: '' },
+    ];
+    const { body } = renderExport(n);
+    expect(body).toMatch(/<td[^>]*pull-quote-bar[^>]*width="3"/);
+    expect(body).toContain('Old quote');
+    expect(body).not.toContain('pull-quote-centered');
+    expect(body).not.toContain('quote-by');
+  });
+
+  it('renders a customer quote centered with name, role and a round photo', () => {
+    const n = seedNewsletter();
+    const b = createBlock('pull-quote');
+    if (b.type !== 'pull-quote') throw new Error('type');
+    Object.assign(b, { imageMode: 'photo', src: 'https://cdn.example.com/sam.jpg', alt: 'Sam Keller' });
+    n.blocks = [b];
+    const { body } = renderExport(n);
+    expect(body).toContain('pull-quote-centered');
+    expect(body).not.toContain('pull-quote-bar');
+    expect(body).toMatch(/<img[^>]*quote-photo/);
+    expect(body).toContain('Sam Keller');
+    expect(body).toContain('Owner, Keller Optics');
+    b.imageMode = 'logo';
+    expect(renderExport(n).body).toMatch(/<img[^>]*quote-logo/);
+  });
+
+  it('renders a video preview with linked image and a play row instead of an overlay', () => {
+    const n = seedNewsletter();
+    const b = createBlock('video');
+    if (b.type !== 'video') throw new Error('type');
+    Object.assign(b, { src: 'https://cdn.example.com/tour.jpg', alt: '3D tour', href: 'https://example.com/tour' });
+    n.blocks = [b];
+    const { full } = renderExport(n);
+    expect(full).toMatch(/<a href="\{\{ TrackLink "https:\/\/example\.com\/tour" \}\}"[^>]*>\s*<img[^>]*width="504"/);
+    expect(full).toMatch(/<td[^>]*video-play-cell[^>]*bgcolor="/i);
+    expect(full).toMatch(/<a[^>]*video-title-link[^>]*>Watch the 3D tour<\/a>|video-title-link[\s\S]*Watch the 3D tour/);
+    expect(full).toContain('· 2:30');
+    expect(full).not.toMatch(/position:\s*absolute/);
+    b.src = '';
+    expect(renderExport(n).full).not.toContain('nte-image-empty');
+  });
+
+  it('renders teasers in rows of the column count, stacking on phones', () => {
+    const n = seedNewsletter();
+    const b = createBlock('teasers');
+    if (b.type !== 'teasers') throw new Error('type');
+    b.items = [0, 1, 2].map((i) => ({
+      src: `https://cdn.example.com/${i}.jpg`,
+      alt: `Pic ${i}`,
+      title: `Title ${i}`,
+      text: 'Text',
+      linkText: 'More',
+      href: `https://example.com/${i}`,
+    }));
+    n.blocks = [b];
+    let { full } = renderExport(n);
+    const table = full.match(/<table[^>]*teasers-table[\s\S]*?<\/table>/)?.[0] ?? '';
+    expect(table.match(/<tr/g)?.length).toBe(2);
+    expect(table.match(/<img[^>]*width="242"/g)?.length).toBe(3);
+    expect(full).toContain('{{ TrackLink "https://example.com/2" }}');
+    expect(full).toMatch(/\.teaser-col\s*\{\s*display:\s*block !important/);
+    b.columns = 3;
+    ({ full } = renderExport(n));
+    expect(full.match(/<img[^>]*width="157"/g)?.length).toBe(3);
+    b.items[0].src = '';
+    expect(renderExport(n).full.match(/teaser-img/g)?.length).toBeGreaterThanOrEqual(2);
+    expect(renderExport(n).full).not.toContain('nte-image-empty');
+  });
+
+  it('renders an event with calendar sheet, button and Google Calendar link', () => {
+    const n = seedNewsletter();
+    const b = createBlock('event');
+    if (b.type !== 'event') throw new Error('type');
+    Object.assign(b, { date: '2026-11-12', start: '10:00', end: '10:30', locale: 'de', timezone: 'Europe/Berlin' });
+    n.blocks = [b];
+    let { full } = renderExport(n);
+    expect(full).toMatch(/<td[^>]*event-month[^>]*>NOV<\/td>/);
+    expect(full).toMatch(/<td[^>]*event-day[^>]*>12<\/td>/);
+    expect(full).toContain('Donnerstag');
+    expect(full).toContain('10:00 bis 10:30 Uhr · Online, Microsoft Teams');
+    expect(full).toContain('Register now');
+    expect(full).toMatch(/TrackLink "https:\/\/calendar\.google\.com\/calendar\/render\?action=TEMPLATE&(amp;)?text=Online%20info%20session&(amp;)?dates=20261112T100000\/20261112T103000&(amp;)?ctz=Europe%2FBerlin/);
+    expect(full).toMatch(/\.event-col\s*\{\s*display:\s*block !important/);
+    b.calendar = false;
+    ({ full } = renderExport(n));
+    expect(full).not.toContain('calendar.google.com');
   });
 
   it('keeps TrackLink quotes intact on CTA href', () => {

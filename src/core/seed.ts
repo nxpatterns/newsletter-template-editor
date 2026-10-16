@@ -1,15 +1,14 @@
 import { CLOUDLIB_CAMPAIGN_V1 } from './seed-data/cloudlib-campaign.v1';
 import { cloudlibCampaignEn } from './seed-data/cloudlib-campaign-en.v1';
 import { normalizeNewsletter } from './persist/normalize-newsletter';
-import { defaultGlobals } from './brand/defaults';
+import { defaultGlobals, PLACEHOLDER_HREF, PLACEHOLDER_LOGO_SRC } from './brand/defaults';
 import { CURRENT_SCHEMA_VERSION, type LegalFooterConfig, type Newsletter } from './types';
-import { DEFAULT_DISPLAY_NAME } from './file/sanitize-stem';
 
 export type SeedLanguage = 'de' | 'en';
 
 /** Display names of the two demo copies. */
 export const DEMO_DISPLAY_NAMES: Record<SeedLanguage, string> = {
-  de: DEFAULT_DISPLAY_NAME,
+  de: 'CloudLib-EU-Example-Newsletter-Template',
   en: 'CloudLib-EU-Example-Newsletter-Template-EN',
 };
 
@@ -23,10 +22,7 @@ export function seedNewsletter(lang: SeedLanguage = 'de'): Newsletter {
   });
 }
 
-/** Dummy logo shipped with the app (public/static); a sent email cannot load it, so it must be replaced. */
-export const PLACEHOLDER_LOGO_SRC = 'static/placeholder-logo.png';
-/** Reserved example domain for placeholder links (never a real company's site). */
-export const PLACEHOLDER_HREF = 'https://example.com';
+export { PLACEHOLDER_HREF, PLACEHOLDER_LOGO_SRC };
 
 const BLANK_TEXTS: Record<
   SeedLanguage,
@@ -61,7 +57,7 @@ const BLANK_TEXTS: Record<
   },
 };
 
-/** No blocks and nothing from CloudLib: neutral colors, placeholder brand, logo and footer in that language. */
+/** No blocks and nothing from CloudLib: the neutral defaults, with brand, logo text and footer in that language. */
 export function blankNewsletter(lang: SeedLanguage): Newsletter {
   const t = BLANK_TEXTS[lang];
   const g = defaultGlobals();
@@ -69,49 +65,21 @@ export function blankNewsletter(lang: SeedLanguage): Newsletter {
     schemaVersion: CURRENT_SCHEMA_VERSION,
     globals: {
       ...g,
-      campaignSubject: '',
-      preheader: '',
-      // Neutral grey-blue palette on a dark page.
-      pageBgColor: '#0f1216',
-      contentBgColor: '#181c22',
-      standardColor: '#9aa4af',
-      primaryColor: '#e7ebef',
-      secondaryColor: '#9db8d2',
-      accentColor: '#d6b46a',
       brand: {
-        stars: { symbol: '★', count: 6 },
-        name: {
-          parts: [
-            { text: t.name[0], color: '#e7ebef' },
-            { text: t.name[1], color: '#9db8d2' },
-          ],
-          size: 'm',
-          bold: true,
-        },
+        ...g.brand,
+        name: { ...g.brand.name, parts: g.brand.name.parts.map((p, i) => ({ ...p, text: t.name[i] })) },
       },
-      logo: {
-        src: PLACEHOLDER_LOGO_SRC,
-        heightPx: 48,
-        href: PLACEHOLDER_HREF,
-        alt: t.logoAlt,
-        lockAspectRatio: true,
-        naturalWidth: 287,
-        naturalHeight: 310,
-      },
+      logo: { ...g.logo, alt: t.logoAlt },
       legal: {
+        ...g.legal,
         noticeHtml: t.noticeHtml,
         companyName: t.company,
         companyWebsiteLabel: t.website,
-        companyWebsiteHref: PLACEHOLDER_HREF,
         privacyLabel: t.privacyLabel,
-        privacyHref: `${PLACEHOLDER_HREF}/privacy`,
         imprintLabel: t.imprintLabel,
-        imprintHref: `${PLACEHOLDER_HREF}/imprint`,
         unsubscribeLabel: t.unsubscribeLabel,
         viewInBrowserLabel: t.viewInBrowserLabel,
       },
-      exportFileNamePrefix: 'Newsletter-Listmonk',
-      personalization: { customFields: [], samples: { name: 'Maria Muster', email: 'maria.muster@example.com' } },
     },
     blocks: [],
   });

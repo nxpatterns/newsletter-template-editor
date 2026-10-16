@@ -1,3 +1,4 @@
+import { FALLBACK_BRAND_PART_COLOR } from '../brand/defaults';
 import { seedNewsletter } from '../seed';
 import { renderExport } from '../render';
 import type { Newsletter } from '../types';
@@ -29,7 +30,7 @@ describe('schema v4 brand migration', () => {
 
   it('keeps unstyled names as one part', () => {
     expect(parseLegacyBrandName('<b>Acme &amp; Co</b>')).toEqual({
-      parts: [{ text: 'Acme & Co', color: '#4db8ff' }],
+      parts: [{ text: 'Acme & Co', color: FALLBACK_BRAND_PART_COLOR }],
       size: 'm',
       bold: true,
     });

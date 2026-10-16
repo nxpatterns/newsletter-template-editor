@@ -24,6 +24,18 @@ import {
   type ImageBlock,
   type ImageTextBlock,
   type GreetingBlock,
+  type ContactBlock,
+  type VideoBlock,
+  type TeasersBlock,
+  type TeaserItem,
+  type EventBlock,
+  type EventLocationMode,
+  type EventLocale,
+  emptyTeaserItem,
+  EVENT_LOCATION_MODES,
+  EVENT_LOCALES,
+  type QuoteImageMode,
+  QUOTE_IMAGE_MODES,
   BLOCK_DEFAULT_TEXTS_EN,
   type ImageWidth,
   type Newsletter,
@@ -37,7 +49,8 @@ import { emptyRichDoc, isRichColorToken, RICH_SIZE_TOKENS, type RichSizeToken } 
 import { migrateNewsletterV1ToV2 } from './migrate-v2';
 import { migrateNewsletterV2ToV3 } from './migrate-v3';
 import { migrateNewsletterV3ToV4 } from './migrate-v4';
-import { defaultBrand } from '../brand/defaults';
+import { defaultBrand, FALLBACK_BRAND_PART_COLOR } from '../brand/defaults';
+import { normalizeSocialLinks } from '../brand/social';
 
 /** Strip tags / collapse whitespace for legacy HTML price blobs. */
 export function plainFromHtml(html: string): string {
@@ -279,10 +292,17 @@ export function normalizePullQuoteBlock(
   fallbackId = '',
 ): PullQuoteBlock {
   const id = typeof raw.id === 'string' && raw.id ? raw.id : fallbackId;
+  const str = (k: string) => (typeof raw[k] === 'string' ? (raw[k] as string) : '');
   return {
     id,
     type: 'pull-quote',
     quote: pickPlainField(raw.quote, raw.html, true),
+    // Quotes saved before the byline existed: all empty → classic look.
+    name: str('name'),
+    role: str('role'),
+    imageMode: (QUOTE_IMAGE_MODES as readonly unknown[]).includes(raw['imageMode']) ? (raw['imageMode'] as QuoteImageMode) : 'none',
+    src: str('src'),
+    alt: str('alt'),
   };
 }
 
@@ -422,8 +442,87 @@ function normalizeGreetingBlock(raw: Record<string, unknown>, id: string): Greet
   };
 }
 
+function normalizeContactBlock(raw: Record<string, unknown>, id: string): ContactBlock {
+  const str = (k: string) => (typeof raw[k] === 'string' ? (raw[k] as string) : '');
+  return {
+    id,
+    type: 'contact',
+    src: str('src'),
+    alt: str('alt'),
+    intro: str('intro'),
+    name: str('name'),
+    role: str('role'),
+    phone: str('phone'),
+    email: str('email'),
+    buttonLabel: str('buttonLabel'),
+    href: str('href'),
+  };
+}
+
+function normalizeVideoBlock(raw: Record<string, unknown>, id: string): VideoBlock {
+  const str = (k: string) => (typeof raw[k] === 'string' ? (raw[k] as string) : '');
+  return {
+    id,
+    type: 'video',
+    src: str('src'),
+    alt: str('alt'),
+    href: str('href'),
+    title: str('title'),
+    duration: str('duration'),
+  };
+}
+
+function normalizeTeasersBlock(raw: Record<string, unknown>, id: string): TeasersBlock {
+  const source = Array.isArray(raw['items']) ? raw['items'] : [];
+  const items: TeaserItem[] = source.map((entry) => {
+    const row = entry && typeof entry === 'object' ? (entry as Record<string, unknown>) : {};
+    const str = (k: string) => (typeof row[k] === 'string' ? (row[k] as string) : '');
+    return { src: str('src'), alt: str('alt'), title: str('title'), text: str('text'), linkText: str('linkText'), href: str('href') };
+  });
+  return {
+    id,
+    type: 'teasers',
+    columns: raw['columns'] === 3 ? 3 : 2,
+    items: items.length > 0 ? items : [emptyTeaserItem()],
+  };
+}
+
+function normalizeEventBlock(raw: Record<string, unknown>, id: string): EventBlock {
+  const str = (k: string) => (typeof raw[k] === 'string' ? (raw[k] as string) : '');
+  const mode = raw['locationMode'];
+  const locale = raw['locale'];
+  return {
+    id,
+    type: 'event',
+    title: str('title'),
+    date: str('date'),
+    start: str('start'),
+    end: str('end'),
+    timezone: str('timezone') || 'Europe/Berlin',
+    locationMode: (EVENT_LOCATION_MODES as readonly unknown[]).includes(mode) ? (mode as EventLocationMode) : 'online',
+    location: str('location'),
+    buttonLabel: str('buttonLabel'),
+    href: str('href'),
+    calendar: typeof raw['calendar'] === 'boolean' ? (raw['calendar'] as boolean) : true,
+    calendarLabel: str('calendarLabel'),
+    locale: (EVENT_LOCALES as readonly unknown[]).includes(locale) ? (locale as EventLocale) : 'en',
+  };
+}
+
 function normalizeBlocks(blocks: Block[]): Block[] {
   return blocks.map((block) => {
+    if (block.type === 'contact') {
+      return normalizeContactBlock(block as unknown as Record<string, unknown>, block.id);
+    }
+    if (block.type === 'teasers') {
+      return normalizeTeasersBlock(block as unknown as Record<string, unknown>, block.id);
+    }
+    if (block.type === 'event') {
+      return normalizeEventBlock(block as unknown as Record<string, unknown>, block.id);
+    }
+    if (block.type === 'video') {
+      return normalizeVideoBlock(block as unknown as Record<string, unknown>, block.id);
+    }
     if (block.type === 'greeting') {
       return normalizeGreetingBlock(block as unknown as Record<string, unknown>, block.id);
     }
@@ -491,12 +590,19 @@ export function normalizeNewsletter(input: Newsletter): Newsletter {
     legal.companyName = legal.companyName ?? '';
     legal.companyWebsiteLabel = legal.companyWebsiteLabel ?? '';
     legal.companyWebsiteHref = legal.companyWebsiteHref ?? '';
+    legal.social = normalizeSocialLinks(legal.social);
   }
 
   return {
     ...n,
     schemaVersion: CURRENT_SCHEMA_VERSION,
-    globals: n.globals ? { ...n.globals, brand: normalizeBrand(n.globals.brand) } : n.globals,
+    globals: n.globals
+      ? {
+          ...n.globals,
+          brand: normalizeBrand(n.globals.brand),
+          assetBaseUrl: typeof n.globals.assetBaseUrl === 'string' ? n.globals.assetBaseUrl : '',
+        }
+      : n.globals,
     blocks: Array.isArray(n.blocks) ? normalizeBlocks(n.blocks) : [],
   };
 }
@@ -513,7 +619,7 @@ export function normalizeBrand(raw: unknown): BrandConfig {
   const parts = Array.isArray(name.parts)
     ? name.parts
         .filter((p) => p && typeof p.text === 'string')
-        .map((p) => ({ text: p.text, color: typeof p.color === 'string' && HEX.test(p.color) ? p.color : '#4db8ff' }))
+        .map((p) => ({ text: p.text, color: typeof p.color === 'string' && HEX.test(p.color) ? p.color : FALLBACK_BRAND_PART_COLOR }))
     : fallback.name.parts;
   return {
     stars: {

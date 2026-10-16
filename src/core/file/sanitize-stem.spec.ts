@@ -1,8 +1,8 @@
-import { DEFAULT_DISPLAY_NAME, downloadFilename, sanitizeFileStem } from './sanitize-stem';
+import { downloadFilename, sanitizeFileStem } from './sanitize-stem';
 
 describe('sanitizeFileStem', () => {
-  it('keeps default seed name stable', () => {
-    expect(sanitizeFileStem(DEFAULT_DISPLAY_NAME)).toBe(DEFAULT_DISPLAY_NAME);
+  it('keeps the demo name stable', () => {
+    expect(sanitizeFileStem('CloudLib-EU-Example-Newsletter-Template')).toBe('CloudLib-EU-Example-Newsletter-Template');
   });
 
   it('folds German umlauts and drops spaces', () => {

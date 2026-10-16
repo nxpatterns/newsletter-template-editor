@@ -50,7 +50,12 @@ const BLOCK_SLOTS: Record<Block['type'], readonly string[]> = {
   hero: ['colors.slot.hero.label', 'colors.slot.hero.headline'],
   paragraph: ['colors.slot.paragraph.body'],
   'chapter-band': ['colors.slot.chapter.surface', 'colors.slot.chapter.title'],
-  'pull-quote': ['colors.slot.pullQuote.bar', 'colors.slot.pullQuote.text'],
+  'pull-quote': [
+    'colors.slot.pullQuote.bar',
+    'colors.slot.pullQuote.text',
+    'colors.slot.pullQuote.name',
+    'colors.slot.pullQuote.role',
+  ],
   'stat-box': [
     'colors.slot.stat.surface',
     'colors.slot.stat.number',
@@ -80,6 +85,16 @@ const BLOCK_SLOTS: Record<Block['type'], readonly string[]> = {
   image: ['colors.slot.image.caption'],
   'image-text': ['colors.slot.paragraph.body'],
   greeting: ['colors.slot.paragraph.body'],
+  contact: ['colors.slot.contact.name', 'colors.slot.contact.details', 'colors.slot.contact.link', 'colors.slot.cta.buttonBg'],
+  video: ['colors.slot.video.play', 'colors.slot.video.title', 'colors.slot.video.duration'],
+  teasers: ['colors.slot.teasers.title', 'colors.slot.teasers.text', 'colors.slot.teasers.link'],
+  event: [
+    'colors.slot.event.month',
+    'colors.slot.event.day',
+    'colors.slot.event.details',
+    'colors.slot.cta.buttonBg',
+    'colors.slot.event.calendar',
+  ],
   'cta-link-list': [
     'colors.slot.ctaLinks.arrow',
     'colors.slot.ctaLinks.label',

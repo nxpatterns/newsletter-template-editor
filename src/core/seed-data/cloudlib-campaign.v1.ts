@@ -54,6 +54,7 @@ export const CLOUDLIB_CAMPAIGN_V1 = {
       }
     },
     "exportFileNamePrefix": "CloudLib-Listmonk",
+    "assetBaseUrl": "",
     "legal": {
       "noticeHtml": "Sie erhalten diese E-Mail, weil Sie im Kontext Ihrer 360°-Präsenz mit uns in Verbindung stehen. Eine Abmeldung ist jederzeit über den Link im Footer möglich.",
       "companyName": "Take Marco GmbH",
@@ -64,7 +65,21 @@ export const CLOUDLIB_CAMPAIGN_V1 = {
       "imprintLabel": "Impressum",
       "imprintHref": "https://cloudlib.eu/home/credits",
       "unsubscribeLabel": "Abmelden",
-      "viewInBrowserLabel": "Im Browser ansehen"
+      "viewInBrowserLabel": "Im Browser ansehen",
+      "social": {
+        "linkedin": "",
+        "facebook": "",
+        "instagram": "",
+        "x": "",
+        "youtube": "",
+        "tiktok": "",
+        "threads": "",
+        "pinterest": "",
+        "vimeo": "",
+        "dailymotion": "",
+        "snapchat": "",
+        "whatsapp": ""
+      }
     }
   },
   "blocks": [

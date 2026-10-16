@@ -108,3 +108,7 @@ Feature: Start page
     Given I open the address '/edit/does-not-exist'
     Then I should see a snackbar with text "This newsletter no longer exists."
     And the start page should be visible
+
+  Scenario: A stored draft without a name gets a neutral name
+    Given I open the editor with an extra greeting block
+    Then the editor should show the document 'New newsletter'

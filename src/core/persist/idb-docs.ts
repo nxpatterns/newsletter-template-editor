@@ -1,5 +1,4 @@
 import { CURRENT_SCHEMA_VERSION, type Newsletter } from '../types';
-import { DEFAULT_DISPLAY_NAME } from '../file/sanitize-stem';
 import { STORAGE_KEY, type StoredEnvelope, loadNewsletter } from './storage';
 import { normalizeNewsletter } from './normalize-newsletter';
 
@@ -135,7 +134,7 @@ export async function migrateLegacyLocalStorageIfNeeded(): Promise<RecoveryDoc |
   const legacy = loadNewsletter();
   if (!legacy) return null;
   const doc: Omit<RecoveryDoc, 'key' | 'schemaVersion' | 'savedAt'> = {
-    displayName: DEFAULT_DISPLAY_NAME,
+    displayName: '',
     libraryId: null,
     dirty: true,
     newsletter: legacy,
@@ -176,7 +175,7 @@ export function parseProjectFile(raw: string): {
       if (!p.newsletter?.globals || !Array.isArray(p.newsletter.blocks)) return null;
       return {
         newsletter: normalizeNewsletter(p.newsletter),
-        displayName: p.displayName || DEFAULT_DISPLAY_NAME,
+        displayName: p.displayName || '',
         libraryId: p.libraryId ?? null,
       };
     }
@@ -185,14 +184,14 @@ export function parseProjectFile(raw: string): {
       if (!e.newsletter?.globals) return null;
       return {
         newsletter: normalizeNewsletter(e.newsletter),
-        displayName: DEFAULT_DISPLAY_NAME,
+        displayName: '',
         libraryId: null,
       };
     }
     if (parsed && typeof parsed === 'object' && 'globals' in parsed && 'blocks' in parsed) {
       return {
         newsletter: normalizeNewsletter(parsed as Newsletter),
-        displayName: DEFAULT_DISPLAY_NAME,
+        displayName: '',
         libraryId: null,
       };
     }

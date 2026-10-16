@@ -9,11 +9,15 @@ export const CATALOG_TYPES: readonly Block['type'][] = [
   'paragraph',
   'image',
   'image-text',
+  'teasers',
+  'video',
   'stat-box',
   'benefits-list',
   'price-box',
   'cta-button',
   'cta-link-list',
+  'event',
+  'contact',
   'divider',
 ] as const;
 
@@ -31,6 +35,10 @@ const ICONS: Record<Block['type'], string> = {
   image: '🖼',
   'image-text': '◧',
   greeting: '👋',
+  contact: '☎',
+  video: '▶',
+  teasers: '▦',
+  event: '📅',
 };
 
 export function blockTypeIcon(type: Block['type']): string {
@@ -71,6 +79,10 @@ const HUES: Record<Block['type'], BlockTypeHue> = {
   image: { a: '#f87171', b: '#b91c1c', ink: INK_LIGHT },
   'image-text': { a: '#fb7185', b: '#9f1239', ink: INK_LIGHT },
   greeting: { a: '#5eead4', b: '#0f766e', ink: INK_DARK },
+  contact: { a: '#a78bfa', b: '#5b21b6', ink: INK_LIGHT },
+  video: { a: '#fca5a5', b: '#be123c', ink: INK_LIGHT },
+  teasers: { a: '#93c5fd', b: '#1e40af', ink: INK_LIGHT },
+  event: { a: '#fdba74', b: '#c2410c', ink: INK_DARK },
 };
 
 const FALLBACK_HUE: BlockTypeHue = { a: '#94a3b8', b: '#475569', ink: INK_LIGHT };

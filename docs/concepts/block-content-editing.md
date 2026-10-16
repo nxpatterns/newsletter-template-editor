@@ -199,6 +199,9 @@ Product-strength feature, not a polish pass:
 
 - Plain: `quote` multi-line; italic via CSS (`.pull-quote`), not seller HTML.
 - Legacy `html` migrates via `normalizePullQuoteBlock` / `plainMultilineFromHtml`.
+- Seller label **Customer quote** (Kundenstimme); the type name stays `pull-quote`.
+- Byline fields: `name`, `role` (role and company), `imageMode` `none|photo|logo`, `src`, `alt` (required when a picture is set). Missing fields normalize to empty / `none`, no schema bump.
+- With a byline the quote renders centered (`.pull-quote-centered`) with a small round photo (logo not rounded), bold name and role below. Without name, role and picture it keeps the original accent-bar layout unchanged.
 
 ### stat-box
 
@@ -238,6 +241,40 @@ Product-strength feature, not a polish pass:
 - Editor: one page, picker in compact mode (`[compact]`), then the layout switches, then the text.
 - Email: two table columns plus a 20px gutter. Below 600px they stack via media query. An image on the right uses `dir="rtl"` on the table, so the image comes first in the source and sits above the text on phones. Classic Outlook ignores the media query and keeps two columns.
 - Export without `src` keeps the text as a plain paragraph.
+
+### contact
+
+- Seller label **Contact person** (Ansprechpartner).
+- Fields: `src`, `alt` (required when a photo is set), `intro`, `name`, `role`, `phone`, `email`, `buttonLabel`, `href`. All optional; empty fields leave their row out.
+- Phone renders as a `tel:` link, email as `mailto:` (both untracked); the button reuses the CTA button styling.
+- Email: round photo column on the left (no photo, no column); below 600px it stacks, photo above.
+
+### video
+
+- Seller label **Video preview** (Video-Vorschau).
+- Fields: `src`, `alt` (always required), `href` (YouTube, Vimeo or a 3D tour; tidied on blur), `title`, `duration` (optional).
+- Email: full-width linked thumbnail, then a play row: round play cell in the Secondary color, title as a link, `· duration`. No overlay on the picture (not reliable in email clients). Export skips the picture without `src`.
+
+### teasers
+
+- Seller label **Teasers** (Teaser).
+- Fields: `columns` `2|3`, `items[]` with `src`, `alt` (required when a picture is set), `title`, `text`, `linkText`, `href`.
+- Editor: row editor like the link list (one teaser open, add / remove / reorder, at least one stays); compact shared picker per teaser.
+- Email: rows of `columns` cells (242px with a 20px gutter, or 157px with 16px); below 600px every teaser stacks. Picture and link text both use the link target.
+
+### event
+
+- Seller label **Event** (Termin).
+- Fields: `title`, `date` (YYYY-MM-DD), `start` / `end` (HH:MM), `timezone` (IANA, defaults to the browser zone, else Europe/Berlin), `locationMode` `online|onsite`, `location`, `buttonLabel`, `href`, `calendar` (on/off), `calendarLabel`, `locale` (`de|en`, set from the app language at creation; month, weekday and time words).
+- Email: calendar sheet left (month in Secondary, big day, weekday), then title, "10:00 bis 10:30 Uhr · Online, Teams", the button and an outlined "Add to calendar" link. Stacks below 600px.
+- "Add to calendar" is a Google Calendar link built from the fields (`action=TEMPLATE`, local times with `ctz`; no start = all day, no end = one hour). A downloadable .ics would need hosting.
+
+### Footer social row (Legal tab, not a block)
+
+- `legal.social`: one link target per network; the list mirrors `public/icons/social/<id>.svg` (a BDD scenario keeps both in sync). Only filled networks render, in the fixed order of `SOCIAL_NETWORKS`.
+- Preview: the SVGs recolored to Primary, as data URLs.
+- Export: icons are burned to PNG (48px for 24px display) in Primary at export time and referenced as `assetBaseUrl/<id>-<color>.png`; the download is a ZIP with the HTML and `social/*.png` to upload there. `assetBaseUrl` (export dialog, "Image address") is stored with the newsletter.
+- Without an image address the export warns and the footer uses text links ("LinkedIn · YouTube"), which work in every inbox.
 
 ### price-box (shipped structured fields)
 

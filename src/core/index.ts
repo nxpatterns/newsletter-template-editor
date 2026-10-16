@@ -1,6 +1,7 @@
 export * from './types';
 export * from './richtext';
 export * from './brand/defaults';
+export * from './brand/social';
 export * from './seed';
 export * from './render';
 export * from './persist/storage';
@@ -22,3 +23,4 @@ export * from './logo/logo-pipeline';
 export * from './image/email-image';
 
 export * from './file/sanitize-stem';
+export * from './file/zip';

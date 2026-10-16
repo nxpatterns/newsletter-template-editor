@@ -2,13 +2,14 @@
  * Schema v3 → v4 (alpha, one-shot conversion): the brand name stops being HTML and the
  * stars line stops being free text. normalizeBrand fills and validates the result for every version.
  */
+import { FALLBACK_BRAND_PART_COLOR } from '../brand/defaults';
 import { BRAND_STAR_MAX, type BrandName, type BrandStars } from '../types';
 
 type Json = Record<string, unknown>;
 
 const isObj = (v: unknown): v is Json => !!v && typeof v === 'object' && !Array.isArray(v);
 
-const FALLBACK_NAME_COLOR = '#4db8ff';
+const FALLBACK_NAME_COLOR = FALLBACK_BRAND_PART_COLOR;
 
 function decodeEntities(s: string): string {
   return s

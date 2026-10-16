@@ -26,6 +26,12 @@ import {
   type DividerBlock,
   DIVIDER_STYLES,
   IMAGE_TEXT_SIDES,
+  QUOTE_IMAGE_MODES,
+  TEASER_COLUMNS,
+  EVENT_LOCATION_MODES,
+  emptyTeaserItem,
+  type TeaserItem,
+  type TeasersBlock,
   IMAGE_TEXT_VALIGNS,
   IMAGE_TEXT_WIDTHS,
   IMAGE_WIDTHS,
@@ -42,7 +48,7 @@ import { ImagePickerComponent } from '../image-picker/image-picker.component';
 import { SnackbarService } from '../../ui/snackbar/snackbar.service';
 
 type IconPickerKind = 'cta' | 'benefit' | 'benefit-all';
-type RowKind = 'cta' | 'benefit';
+type RowKind = 'cta' | 'benefit' | 'teaser';
 
 @Component({
   selector: 'app-block-inspector',
@@ -71,6 +77,11 @@ export class BlockInspectorComponent {
   protected readonly imageTextWidths = IMAGE_TEXT_WIDTHS;
   protected readonly imageTextValigns = IMAGE_TEXT_VALIGNS;
   protected readonly richSizes = RICH_SIZE_TOKENS;
+  protected readonly quoteImageModes = QUOTE_IMAGE_MODES;
+  protected readonly teaserColumns = TEASER_COLUMNS;
+  protected readonly eventLocationModes = EVENT_LOCATION_MODES;
+  /** IANA zones for the event time-zone suggestions (empty where the browser cannot list them). */
+  protected readonly timeZones: readonly string[] = listTimeZones();
   protected readonly richColors = RICH_COLOR_TOKENS;
   protected readonly imageBusy = signal(false);
   private readonly snackbar = inject(SnackbarService);
@@ -80,6 +91,8 @@ export class BlockInspectorComponent {
 
   /** Link list: the one row whose fields are open (null = all collapsed). */
   protected openCtaRow: number | null = 0;
+  /** Teasers: the one teaser whose fields are open (null = all collapsed). */
+  protected openTeaserRow: number | null = 0;
 
   /** Which row icon grid is open (null = closed). */
   protected iconPicker: { kind: IconPickerKind; index: number } | null = null;
@@ -175,7 +188,7 @@ export class BlockInspectorComponent {
   protected onLinkTargetBlur(blockId: string): void {
     this.session.endCoalesce();
     const block = this.session.newsletter().blocks.find((b) => b.id === blockId);
-    if (block?.type !== 'cta-button' && block?.type !== 'image' && block?.type !== 'image-text') return;
+    if (!block || !('href' in block) || typeof block.href !== 'string') return;
     const built = normalizeLinkTarget(block.href);
     if (built) this.session.updateBlock(blockId, { href: built }, 'immediate');
   }
@@ -223,8 +236,9 @@ export class BlockInspectorComponent {
     if (!delta) return;
     event.preventDefault();
     if (kind === 'cta') this.moveCtaItem(blockId, index, delta);
+    else if (kind === 'teaser') this.moveTeaserItem(blockId, index, delta);
     else this.moveBenefitItem(blockId, index, delta);
-    const row = kind === 'cta' ? 'cta-link-row' : 'benefit-row';
+    const row = kind === 'cta' ? 'cta-link-row' : kind === 'teaser' ? 'teaser-row' : 'benefit-row';
     this.focusLater(`[data-testid="${row}-${index + delta}"] .row-drag`);
   }
 
@@ -338,6 +352,91 @@ export class BlockInspectorComponent {
     this.iconPicker = null;
   }
 
+  protected toggleTeaserRow(index: number): void {
+    this.openTeaserRow = this.openTeaserRow === index ? null : index;
+  }
+
+  protected onTeaserText(
+    blockId: string,
+    index: number,
+    key: keyof Pick<TeaserItem, 'alt' | 'title' | 'text' | 'linkText' | 'href'>,
+    event: Event,
+  ): void {
+    const value = (event.target as HTMLInputElement | HTMLTextAreaElement).value;
+    this.patchTeaser(blockId, index, { [key]: value }, 'coalesce');
+  }
+
+  protected onTeaserLinkBlur(blockId: string, index: number): void {
+    this.session.endCoalesce();
+    const built = normalizeLinkTarget(this.teasersBlock(blockId)?.items[index]?.href ?? '');
+    if (built) this.patchTeaser(blockId, index, { href: built });
+  }
+
+  protected async onTeaserImageFile(blockId: string, index: number, file: File): Promise<void> {
+    this.imageBusy.set(true);
+    try {
+      const { src } = await intakeEmailImageFile(file);
+      this.patchTeaser(blockId, index, { src });
+    } catch (err) {
+      const code = err instanceof LogoPipelineError ? err.code : 'decode_failed';
+      this.snackbar.error(
+        this.i18n.t(code === 'unsupported_type' ? 'image.errType' : code === 'too_large' ? 'image.errSize' : 'image.errGeneric'),
+      );
+    } finally {
+      this.imageBusy.set(false);
+    }
+  }
+
+  protected addTeaserItem(blockId: string): void {
+    const block = this.teasersBlock(blockId);
+    if (!block) return;
+    this.session.updateBlock(blockId, { items: [...block.items, emptyTeaserItem()] }, 'immediate');
+    this.openTeaserRow = block.items.length;
+    this.focusLater(`#insp-teaser-title-${block.items.length}`);
+  }
+
+  protected removeTeaserItem(blockId: string, index: number): void {
+    const block = this.teasersBlock(blockId);
+    if (!block || block.items.length <= 1) return;
+    this.session.updateBlock(blockId, { items: block.items.filter((_, i) => i !== index) }, 'immediate');
+    if (this.openTeaserRow === index) this.openTeaserRow = null;
+    else if (this.openTeaserRow !== null && this.openTeaserRow > index) this.openTeaserRow--;
+  }
+
+  protected dropTeaserItem(blockId: string, event: CdkDragDrop<unknown>): void {
+    this.moveTeaserItem(blockId, event.previousIndex, event.currentIndex - event.previousIndex);
+  }
+
+  protected moveTeaserItem(blockId: string, index: number, delta: number): void {
+    const block = this.teasersBlock(blockId);
+    if (!block) return;
+    const items = moveItem(block.items, index, delta);
+    if (!items) return;
+    this.session.updateBlock(blockId, { items }, 'immediate');
+    const target = index + delta;
+    const open = this.openTeaserRow;
+    if (open === index) this.openTeaserRow = target;
+    else if (open !== null && delta > 0 && open > index && open <= target) this.openTeaserRow = open - 1;
+    else if (open !== null && delta < 0 && open < index && open >= target) this.openTeaserRow = open + 1;
+  }
+
+  protected patchTeaser(
+    blockId: string,
+    index: number,
+    patch: Partial<TeaserItem>,
+    mode: 'coalesce' | 'immediate' = 'immediate',
+  ): void {
+    const block = this.teasersBlock(blockId);
+    if (!block || index < 0 || index >= block.items.length) return;
+    const items = block.items.map((item, i) => (i === index ? { ...item, ...patch } : item));
+    this.session.updateBlock(blockId, { items }, mode);
+  }
+
+  private teasersBlock(blockId: string): TeasersBlock | null {
+    const block = this.session.newsletter().blocks.find((b) => b.id === blockId);
+    return block?.type === 'teasers' ? block : null;
+  }
+
   private focusLater(selector: string): void {
     afterNextRender(() => this.host.nativeElement.querySelector<HTMLElement>(selector)?.focus(), {
       injector: this.injector,
@@ -376,6 +475,14 @@ export class BlockInspectorComponent {
     if (!block || index < 0 || index >= block.items.length) return;
     const items = block.items.map((item, i) => (i === index ? { ...item, ...patch } : item));
     this.session.updateBlock(blockId, { items }, mode);
+  }
+}
+
+function listTimeZones(): readonly string[] {
+  try {
+    return (Intl as unknown as { supportedValuesOf?: (k: string) => string[] }).supportedValuesOf?.('timeZone') ?? [];
+  } catch {
+    return [];
   }
 }
 

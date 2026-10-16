@@ -1,4 +1,5 @@
 import type { BrandName, BrandStars, Globals, LogoConfig } from '../types';
+import { filledSocialNetworks, SOCIAL_ICON_PX, type SocialIconSources } from '../brand/social';
 import { emailDocumentCss } from './email-css';
 import { attrHref, escapeAttr, escapeHtml, fontStack, resolveHref, type RenderMode } from './utils';
 
@@ -39,7 +40,28 @@ export function renderBrandName(name: BrandName | undefined): string {
     .join('');
 }
 
-export function renderHeader(globals: Globals, mode: RenderMode, bodyInner: string): string {
+/**
+ * Footer social row: icons when every filled network has an icon source, else text links
+ * ("LinkedIn · Instagram"), which work in every inbox without hosted images.
+ */
+export function renderSocialRow(globals: Globals, mode: RenderMode, icons?: SocialIconSources): string {
+  const links = globals.legal.social;
+  const filled = filledSocialNetworks(links);
+  if (!filled.length) return '';
+  const asIcons = !!icons && filled.every((n) => icons[n.id]);
+  const items = filled.map((n) => {
+    const href = attrHref(resolveHref(links[n.id], mode), mode);
+    const inner = asIcons
+      ? `<img src="${escapeAttr(icons![n.id]!)}" alt="${escapeAttr(n.label)}" width="${SOCIAL_ICON_PX}" height="${SOCIAL_ICON_PX}" class="footer-social-icon">`
+      : escapeHtml(n.label);
+    return `<a href="${href}" target="_blank" class="${asIcons ? 'footer-social-link' : 'email-footer-link'}">${inner}</a>`;
+  });
+  return `<p class="footer-social${asIcons ? ' footer-social--icons' : ''}" data-field="legal.social">${items.join(
+    asIcons ? '&nbsp;&nbsp;&nbsp;' : '&nbsp;·&nbsp;',
+  )}</p>`;
+}
+
+export function renderHeader(globals: Globals, mode: RenderMode, bodyInner: string, socialIcons?: SocialIconSources): string {
   const messageHref = mode === 'export' ? '{{ MessageURL }}' : '#';
   const logoHtml = renderLogo(globals.logo);
   const pageBg = escapeAttr(globals.pageBgColor);
@@ -103,6 +125,7 @@ export function renderHeader(globals: Globals, mode: RenderMode, bodyInner: stri
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                   <tr><td class="footer-rule-cell">&nbsp;</td></tr>
                 </table>
+                ${renderSocialRow(globals, mode, socialIcons)}
                 ${starsText ? `<p class="footer-stars-line">
                   <span class="footer-stars-glyph text-accent">${starsText}</span>
                 </p>` : ''}
@@ -135,10 +158,10 @@ export function renderHeader(globals: Globals, mode: RenderMode, bodyInner: stri
   `;
 }
 
-export function renderExportShell(globals: Globals, bodyInner: string): string {
+export function renderExportShell(globals: Globals, bodyInner: string, socialIcons?: SocialIconSources): string {
   const font = fontStack(globals);
   const preheader = escapeHtml(globals.preheader || '');
-  const header = renderHeader(globals, 'export', bodyInner);
+  const header = renderHeader(globals, 'export', bodyInner, socialIcons);
   const pageBg = escapeAttr(globals.pageBgColor);
   return `<!doctype html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
@@ -481,10 +504,15 @@ const PREVIEW_EDITOR_CHROME = `
   }
 `;
 
-export function renderPreviewDoc(globals: Globals, bodyInner: string, subject: string): string {
+export function renderPreviewDoc(
+  globals: Globals,
+  bodyInner: string,
+  subject: string,
+  socialIcons?: SocialIconSources,
+): string {
   const font = fontStack(globals);
   const preheader = escapeHtml(globals.preheader || '');
-  const header = renderHeader(globals, 'preview', bodyInner);
+  const header = renderHeader(globals, 'preview', bodyInner, socialIcons);
   const pageBg = escapeAttr(globals.pageBgColor);
   return `<!doctype html>
 <html lang="en">

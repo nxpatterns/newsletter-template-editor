@@ -1,4 +1,5 @@
 import { optimizeLogoForHtmlExport } from '../logo/logo-pipeline';
+import type { SocialIconSources } from '../brand/social';
 import type { Newsletter } from '../types';
 import { renderBlocks } from './blocks';
 import { emailDocumentCss } from './email-css';
@@ -18,6 +19,13 @@ export interface ExportArtifacts {
 export interface PreviewOptions {
   /** Empty newsletter: text of the dashed slot below the header (editor preview only). */
   emptySlotLabel?: string;
+  /** Colored icon per social network (data URLs); without them the footer shows text links. */
+  socialIcons?: SocialIconSources;
+}
+
+export interface ExportOptions {
+  /** Hosted PNG per social network; without them the footer shows text links. */
+  socialIcons?: SocialIconSources;
 }
 
 export function renderPreview(newsletter: Newsletter, opts: PreviewOptions = {}): string {
@@ -28,6 +36,7 @@ export function renderPreview(newsletter: Newsletter, opts: PreviewOptions = {})
     newsletter.globals,
     bodyInner,
     newsletter.globals.campaignSubject || 'Newsletter preview',
+    opts.socialIcons,
   );
   // Preview keeps classes + stylesheet (no export inliner).
   return resolveListMonkForPreview(doc, newsletter.globals.campaignSubject || 'Newsletter preview');
@@ -40,29 +49,29 @@ function renderEmptySlot(newsletter: Newsletter, label: string): string {
 }
 
 /** Sync export using current globals (preview-quality logo master). Prefer `renderExportOptimized` for downloads. */
-export function renderExport(newsletter: Newsletter): ExportArtifacts {
+export function renderExport(newsletter: Newsletter, opts: ExportOptions = {}): ExportArtifacts {
   const bodyRows = renderBlocks(newsletter.blocks, {
     globals: newsletter.globals,
     mode: 'export',
     annotate: false,
   });
   const css = emailDocumentCss(newsletter.globals);
-  const full = inlineEmailCss(renderExportShell(newsletter.globals, bodyRows));
+  const full = inlineEmailCss(renderExportShell(newsletter.globals, bodyRows, opts.socialIcons));
   const standardTemplate = inlineEmailCss(
-    renderExportShell(newsletter.globals, `{{ template "content" . }}`),
+    renderExportShell(newsletter.globals, `{{ template "content" . }}`, opts.socialIcons),
   );
   const body = inlineEmailCssFragment(bodyRows, css);
   return { full, body, standardTemplate };
 }
 
 /** HTML export with logo scaled/compressed to the current display size. */
-export async function renderExportOptimized(newsletter: Newsletter): Promise<ExportArtifacts> {
+export async function renderExportOptimized(newsletter: Newsletter, opts: ExportOptions = {}): Promise<ExportArtifacts> {
   const logo = await optimizeLogoForHtmlExport(newsletter.globals.logo);
   const prepared: Newsletter = {
     ...newsletter,
     globals: { ...newsletter.globals, logo },
   };
-  return renderExport(prepared);
+  return renderExport(prepared, opts);
 }
 
 export { renderBlocks, renderExportShell, renderPreviewDoc };

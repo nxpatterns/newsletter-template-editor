@@ -289,6 +289,43 @@ Inline HTML colors inside content remain until structure/light-marks remove them
 | --- | --- |
 | `pullQuote.bar` | Accent bar |
 | `pullQuote.text` | Quote text |
+| `pullQuote.name` | Name |
+| `pullQuote.role` | Role and company |
+
+### contact
+
+| Slot id | Seller label direction |
+| --- | --- |
+| `contact.name` | Name |
+| `contact.details` | Intro, role, phone and email |
+| `contact.link` | Phone and email links |
+| `cta.buttonBg` | Button background |
+
+### video
+
+| Slot id | Seller label direction |
+| --- | --- |
+| `video.play` | Play symbol |
+| `video.title` | Title |
+| `video.duration` | Duration |
+
+### teasers
+
+| Slot id | Seller label direction |
+| --- | --- |
+| `teasers.title` | Title |
+| `teasers.text` | Text |
+| `teasers.link` | Link |
+
+### event
+
+| Slot id | Seller label direction |
+| --- | --- |
+| `event.month` | Month on the calendar sheet |
+| `event.day` | Day and title |
+| `event.details` | Weekday, time and place |
+| `cta.buttonBg` | Button background |
+| `event.calendar` | Calendar link |
 
 ### stat-box
 

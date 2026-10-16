@@ -339,10 +339,12 @@ When('I select {string} in paragraph {int} of the editor', async ({ page }, word
       const range = document.createRange();
       range.setStart(node, at);
       range.setEnd(node, at + w.length);
+      // The editor records selections on `selectionchange`; resolve only after it has fired.
+      const recorded = new Promise((resolve) => document.addEventListener('selectionchange', resolve, { once: true }));
       const sel = window.getSelection()!;
       sel.removeAllRanges();
       sel.addRange(range);
-      return;
+      return recorded.then(() => undefined);
     }
     throw new Error(`"${w}" is not inside one text node`);
   }, word);
@@ -460,10 +462,12 @@ When('I place the cursor after {string} in paragraph {int}', async ({ page }, wo
       const range = document.createRange();
       range.setStart(node, at + w.length);
       range.collapse(true);
+      // The editor records selections on `selectionchange`; resolve only after it has fired.
+      const recorded = new Promise((resolve) => document.addEventListener('selectionchange', resolve, { once: true }));
       const sel = window.getSelection()!;
       sel.removeAllRanges();
       sel.addRange(range);
-      return;
+      return recorded.then(() => undefined);
     }
     throw new Error(`"${w}" is not inside one text node`);
   }, word);

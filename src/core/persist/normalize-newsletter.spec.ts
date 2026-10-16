@@ -15,8 +15,10 @@ import {
 } from '../types';
 import { renderExport, renderPreview } from '../render';
 import { seedNewsletter } from '../seed';
+import { defaultGlobals, emptyNewsletter } from '../brand/defaults';
 import {
   normalizeBenefitsListBlock,
+  normalizeBrand,
   normalizeChapterBandBlock,
   normalizeCtaLinkListBlock,
   normalizeHeroBlock,
@@ -302,7 +304,7 @@ describe('chapter / quote / stat plain-up', () => {
         id: 'q1',
         html: '„Line one<br>Line two“',
       }),
-    ).toEqual({ id: 'q1', type: 'pull-quote', quote: '„Line one\nLine two“' });
+    ).toEqual({ id: 'q1', type: 'pull-quote', quote: '„Line one\nLine two“', name: '', role: '', imageMode: 'none', src: '', alt: '' });
 
     expect(
       normalizeStatBoxBlock({
@@ -429,5 +431,28 @@ describe('cta-link-list render', () => {
       html.indexOf('Title only') + 200,
     );
     expect(firstRowSlice).not.toMatch(/<a\s/i);
+  });
+});
+
+describe('neutral fallbacks', () => {
+  const noCloudLib = (value: unknown) => expect(JSON.stringify(value).toLowerCase()).not.toContain('cloudlib');
+
+  it('fills an empty or partial newsletter without any CloudLib value', () => {
+    noCloudLib(normalizeNewsletter({} as Newsletter));
+    noCloudLib(normalizeNewsletter({ schemaVersion: 1, globals: {}, blocks: [] } as unknown as Newsletter));
+    noCloudLib(
+      normalizeNewsletter({
+        schemaVersion: 4,
+        globals: { brand: { name: { parts: [{ text: 'X', color: 'bad' }] } }, legal: {} },
+        blocks: [{ id: 'q', type: 'pull-quote' }],
+      } as unknown as Newsletter),
+    );
+    // Brand parts are split ("Cloud" + "Lib"), so check the joined name too.
+    noCloudLib(normalizeBrand(undefined).name.parts.map((p) => p.text).join(''));
+  });
+
+  it('keeps the default globals and the empty newsletter free of CloudLib', () => {
+    noCloudLib(defaultGlobals());
+    noCloudLib(emptyNewsletter());
   });
 });
