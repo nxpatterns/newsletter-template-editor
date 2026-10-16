@@ -114,7 +114,7 @@ Do **not** give the preview host `overflow: auto` and a tall iframe (`min(80vh)`
 Inspired by image2colors header bar (brand left, actions right), editor-specific content:
 
 ```text
-[ Brand: title + subtitle ]   [ Undo / Redo — flex wrap ]   [ Locale DE|EN ]  [ ☰ file menu ]
+[ Brand: title ]   [ Undo / Redo — flex wrap ]   [ Locale DE|EN ]  [ ☰ file menu ]
 ```
 
 - One bar on iPad/desktop when space allows; toolbar **flex-wrap**s on narrow widths (not a second permanent toolbar row unless wrap requires it).

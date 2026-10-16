@@ -21,7 +21,6 @@
     <div class="app-header-bar">
       <div class="app-header-brand">
         <h1 class="app-header-title" data-testid="app-title" [textContent]="i18n.t('shell.title')"></h1>
-        <div class="app-header-subtitle" [textContent]="i18n.t('shell.subtitle')"></div>
         @if (inEditor()) {
           <div class="app-header-doc" data-testid="doc-name">
             <span [textContent]="session.displayName()"></span>

@@ -45,12 +45,6 @@
   line-height: 1.15;
 }
 
-.app-header-subtitle {
-  color: var(--ds-text-muted);
-  font-size: 0.75rem;
-  line-height: 1.25;
-}
-
 .app-header-doc {
   margin-block-start: 0.2rem;
   color: var(--ds-accent);
@@ -284,10 +278,6 @@
 @media (max-width: 47.99rem) {
   .app-header-bar {
     padding: 0.5rem 0.75rem;
-  }
-
-  .app-header-subtitle {
-    font-size: 0.65rem;
   }
 
   .app-footer-bar {
