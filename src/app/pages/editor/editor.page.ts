@@ -28,6 +28,7 @@ import {
   NTE_CATALOG_MIME,
   resolveDropAtPoint,
 } from './preview-dnd';
+import { openPreviewLink, previewLinkTarget } from './preview-links';
 import { reorderBlockIds } from './preview-reorder';
 
 type DropPlace = 'before' | 'after';
@@ -257,6 +258,14 @@ export class EditorPage {
       event.preventDefault();
       event.stopPropagation();
       const id = tr.getAttribute('data-block-id');
+
+      // Links are live only inside the selected block; elsewhere a click just selects.
+      const link = target.closest('a[href]');
+      if (link && id && id === this.session.selectedBlockId()) {
+        const href = previewLinkTarget(link.getAttribute('href'));
+        if (href) openPreviewLink(href, window);
+        return;
+      }
       // In-iframe pick: stay on current panel tab; still scroll smoothly if needed.
       if (id) this.session.selectBlock(id, { revealInPanel: false, scrollPreview: true });
     };
