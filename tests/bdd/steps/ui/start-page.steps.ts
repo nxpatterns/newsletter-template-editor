@@ -183,3 +183,31 @@ Then('the Brand tab should call the logo {string}', async ({ page }, text: strin
 Then('the address should point to a saved newsletter', async ({ page }) => {
   await expect(page).toHaveURL(/\/edit\/[0-9a-f-]{36}$/);
 });
+
+When('I delete the recent newsletter {string}', async ({ page }, name: string) => {
+  const item = page.locator('.start-recent-item').filter({ hasText: name });
+  await item.hover();
+  const del = item.getByTestId('start-recent-delete');
+  await expect(del).toBeVisible();
+  await expect(del).toHaveAttribute('aria-label', `Delete template: ${name}`);
+  await del.click();
+});
+
+Then('the message should say {string}', async ({ page }, text: string) => {
+  await expect(page.getByTestId('app-snackbar').locator('.snackbar__text')).toContainText(text);
+});
+
+When('I undo in the message', async ({ page }) => {
+  await page.getByTestId('app-snackbar-action').click();
+  await expect(page.getByTestId('app-snackbar')).toHaveCount(0);
+});
+
+When('I close the message', async ({ page }) => {
+  await page.getByTestId('app-snackbar-dismiss').click();
+  await expect(page.getByTestId('app-snackbar')).toHaveCount(0);
+});
+
+Then('the start tiles should have no delete button', async ({ page }) => {
+  await expect(page.locator('.start-tile [data-testid="start-recent-delete"], .start-tile .start-recent-delete')).toHaveCount(0);
+  await expect(page.getByTestId('start-continue').getByTestId('start-recent-delete')).toHaveCount(0);
+});

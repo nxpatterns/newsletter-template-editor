@@ -7,6 +7,13 @@ export interface SnackbarMessage {
   text: string;
   tone: SnackbarTone;
   durationMs: number;
+  /** Optional button next to the text, e.g. "Undo"; clicking it runs `run` and closes the message. */
+  action?: SnackbarAction;
+}
+
+export interface SnackbarAction {
+  label: string;
+  run: () => void;
 }
 
 /** Default auto-dismiss. UI-configurable later. */
@@ -32,14 +39,14 @@ export class SnackbarService {
   /** true while hover/focus pauses the countdown (drives progress animation). */
   readonly timerPaused = signal(false);
 
-  show(text: string, tone: SnackbarTone = 'info', durationMs = DEFAULT_DURATION[tone]): void {
+  show(text: string, tone: SnackbarTone = 'info', durationMs = DEFAULT_DURATION[tone], action?: SnackbarAction): void {
     this.clearTimer();
     this.paused = false;
     this.timerPaused.set(false);
     const id = ++this.seq;
     const ms = durationMs > 0 ? durationMs : 0;
     this.remainingMs = ms;
-    this.message.set({ id, text, tone, durationMs: ms });
+    this.message.set({ id, text, tone, durationMs: ms, ...(action ? { action } : {}) });
     if (ms > 0) this.armTimer(id, ms);
   }
 
@@ -53,6 +60,14 @@ export class SnackbarService {
 
   info(text: string, durationMs?: number): void {
     this.show(text, 'info', durationMs ?? DEFAULT_DURATION.info);
+  }
+
+  /** Runs the current message's action, then closes it. */
+  runAction(): void {
+    const current = this.message();
+    if (!current?.action) return;
+    this.dismiss(current.id);
+    current.action.run();
   }
 
   dismiss(id?: number): void {

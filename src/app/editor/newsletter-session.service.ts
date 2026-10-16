@@ -257,6 +257,27 @@ export class NewsletterSession {
     }
   }
 
+  /**
+   * Start page "delete": removes the saved template and returns how to undo it. The open draft keeps
+   * its changes; undo puts the entry back and, if the draft was bound to it, binds it again.
+   */
+  async deleteLibraryWithUndo(id: string): Promise<(() => Promise<void>) | null> {
+    await this.hydrateFromStorage();
+    const entry = await this.repo.get(id);
+    if (!entry) return null;
+    const wasBound = this.libraryIdSignal() === id;
+    const wasDirty = this.dirtySignal();
+    await this.deleteLibrary(id);
+    return async () => {
+      await this.repo.put(entry);
+      if (wasBound && this.libraryIdSignal() === null) {
+        this.libraryIdSignal.set(id);
+        this.dirtySignal.set(wasDirty);
+        await this.persistRecovery();
+      }
+    };
+  }
+
   /** Name of a newsletter that has none: "New newsletter" in the app language. */
   private unnamedDisplayName(): string {
     return this.i18n.t('doc.unnamedName');

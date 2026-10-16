@@ -112,3 +112,27 @@ Feature: Start page
   Scenario: A stored draft without a name gets a neutral name
     Given I open the editor with an extra greeting block
     Then the editor should show the document 'New newsletter'
+
+  Scenario: Deleting a saved template with the corner ×, then undoing it
+    Given I open the editor with the German demo
+    When I save the template from the file menu
+    And I go back to the start page
+    And I delete the recent newsletter 'CloudLib-EU-Example-Newsletter-Template'
+    Then the recent list should be empty
+    And the message should say '“CloudLib-EU-Example-Newsletter-Template” deleted'
+    When I undo in the message
+    Then the recent list should contain 'CloudLib-EU-Example-Newsletter-Template'
+    And there should be no draft to continue
+    When I reopen the app
+    Then the recent list should contain 'CloudLib-EU-Example-Newsletter-Template'
+
+  Scenario: A deleted template stays deleted, its open copy stays as not saved
+    Given I open the editor with the German demo
+    When I save the template from the file menu
+    And I go back to the start page
+    And I delete the recent newsletter 'CloudLib-EU-Example-Newsletter-Template'
+    And I close the message
+    And I reopen the app
+    Then the recent list should be empty
+    And the draft to continue should be 'CloudLib-EU-Example-Newsletter-Template'
+    And the start tiles should have no delete button

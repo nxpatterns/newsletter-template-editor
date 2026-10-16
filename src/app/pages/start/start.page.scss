@@ -287,3 +287,44 @@
     }
   }
 }
+
+/* Saved template: × at the top-right corner, same chip as a block's delete button in the preview. */
+.start-recent-item {
+  position: relative;
+}
+
+.start-recent-delete {
+  position: absolute;
+  top: -0.6rem;
+  inset-inline-end: -0.6rem;
+  z-index: 1;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.9rem;
+  block-size: 1.9rem;
+  padding: 0;
+  border: 1px solid rgba(255, 140, 90, 0.95);
+  border-radius: var(--ds-radius);
+  background: #ff8c4a;
+  color: #2a1008;
+  font: 800 1.1rem/1 system-ui, -apple-system, sans-serif;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+
+  &:hover { background: #ff9a6b; }
+  &:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
+}
+
+.start-recent-item:hover .start-recent-delete,
+.start-recent-item:focus-within .start-recent-delete {
+  display: inline-flex;
+}
+
+/* Touch screens have no hover: always show it. */
+@media (hover: none) {
+  .start-recent-delete { display: inline-flex; }
+}

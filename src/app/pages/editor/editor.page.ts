@@ -14,7 +14,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
 import { SnackbarService } from '../../ui/snackbar/snackbar.service';
-import { renderPreview } from '../../../core';
+import { filledSocialNetworks, renderPreview, type SocialIconSources } from '../../../core';
 import { EditorPanelComponent } from '../../editor/panel/editor-panel.component';
 import { NewsletterSession } from '../../editor/newsletter-session.service';
 import { LocaleService } from '../../i18n/locale.service';
@@ -88,10 +88,20 @@ export class EditorPage {
     this.sanitizer.bypassSecurityTrustHtml(
       renderPreview(this.session.newsletter(), {
         emptySlotLabel: this.i18n.t('preview.emptySlot'),
-        socialIcons: this.socialIcons.previewSources(this.session.globals().primaryColor),
+        socialIcons: this.previewSocialIcons(),
       }),
     ),
   );
+
+  /**
+   * Footer icons for the preview. Read only when the footer has social links: the icons load
+   * asynchronously, and their arrival must not rebuild (and so reset) a preview that has none,
+   * e.g. in the middle of a drag.
+   */
+  private previewSocialIcons(): SocialIconSources | undefined {
+    const g = this.session.globals();
+    return filledSocialNetworks(g.legal.social).length ? this.socialIcons.previewSources(g.primaryColor) : undefined;
+  }
 
   constructor() {
     void this.socialIcons.load();

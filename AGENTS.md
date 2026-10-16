@@ -58,6 +58,7 @@ When touching `src/core/render/`, prefer classes in `email-css.ts` / shared emai
 - One narrow path beats broad exploration. Prefer the direct file/symbol over repo-wide searches “just in case.”
 - Stop when the ask is satisfied. Extra refactors, docs, releases, or “while I’m here” cleanups need an explicit user request.
 - Tool calls are cost. Batch only what you need; do not fan out reads, greps, or shell commands that cannot change the answer for a trivial edit.
+- One task, one fresh session. Start each new independent task in a fresh thread/session with small context; never keep feeding a long session. Decisions live in project memory and repo docs, not chat history.
 
 If a session starts burning many steps on something that should be a two-edit change, you are doing it wrong — simplify and finish.
 

@@ -86,12 +86,20 @@
       @if (o.saved.length) {
         <ul class="start-recent" data-testid="start-recent-list">
           @for (row of o.saved; track row.id) {
-            <li>
+            <li class="start-recent-item">
               <button type="button" class="start-recent-row" data-testid="start-recent" (click)="openSaved(row.id)">
                 <ng-container [ngTemplateOutlet]="iconDoc" />
                 <b class="start-name" [textContent]="row.displayName"></b>
                 <span class="start-meta" [textContent]="formatDate(row.updatedAt)"></span>
               </button>
+              <button
+                type="button"
+                class="start-recent-delete"
+                data-testid="start-recent-delete"
+                [attr.aria-label]="i18n.t('start.deleteTemplate') + ': ' + row.displayName"
+                [title]="i18n.t('start.deleteTemplate')"
+                (click)="deleteSaved(row.id, row.displayName)"
+              >×</button>
             </li>
           }
         </ul>

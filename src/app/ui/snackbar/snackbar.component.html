@@ -23,7 +23,12 @@
       ×
     </button>
     <div class="snackbar__inner">
-      <p class="snackbar__text">{{ msg.text }}</p>
+      <p class="snackbar__text">
+        {{ msg.text }}
+        @if (msg.action; as action) {
+          <button type="button" class="snackbar__action" data-testid="app-snackbar-action" (click)="snackbar.runAction()">{{ action.label }}</button>
+        }
+      </p>
     </div>
     @if (msg.durationMs > 0) {
       <div

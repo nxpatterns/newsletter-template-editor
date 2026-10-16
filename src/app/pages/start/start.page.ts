@@ -7,6 +7,9 @@ import { LocaleService } from '../../i18n/locale.service';
 import { UnsavedGuardService } from '../../shell/unsaved-guard.service';
 import { SnackbarService } from '../../ui/snackbar/snackbar.service';
 
+/** How long "Undo" stays available after deleting a saved template. */
+const UNDO_MS = 8000;
+
 /** First screen: start blank or from a demo, continue the draft, or reopen a saved template. */
 @Component({
   selector: 'app-start-page',
@@ -73,6 +76,26 @@ export class StartPage {
       if (!ok) this.snackbar.error(this.i18n.t('start.notFound'));
       return ok;
     });
+  }
+
+  /** Delete right away (like a block's ×), with "Undo" in the message. */
+  protected async deleteSaved(id: string, name: string): Promise<void> {
+    if (this.busy) return;
+    this.busy = true;
+    try {
+      const undo = await this.session.deleteLibraryWithUndo(id);
+      this.overview.set(await this.session.recentOverview());
+      if (!undo) return;
+      this.snackbar.show(this.i18n.t('start.deleted', { name }), 'info', UNDO_MS, {
+        label: this.i18n.t('start.undo'),
+        run: () =>
+          void undo()
+            .then(() => this.session.recentOverview())
+            .then((o) => this.overview.set(o)),
+      });
+    } finally {
+      this.busy = false;
+    }
   }
 
   /** "heute, 08:05" / "gestern, 16:40" / "12.10.2026, 09:12" (and the English equivalents). */
