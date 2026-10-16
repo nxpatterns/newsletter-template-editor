@@ -9,6 +9,17 @@ Feature: Start page
     And there should be no draft to continue
     And the recent list should be empty
 
+  Scenario: The demo tiles show the flags of the countries they are written for
+    Given I open the start page
+    Then the start tile 'start-demo-de' should show the flags 'de,at,ch'
+    And the start tile 'start-demo-en' should show the flags 'uk,us,ca,au,nz,ie'
+
+  Scenario: A saved newsletter shows its subject line in the recent list
+    Given I open the editor with the German demo
+    When I save the template from the file menu
+    And I go back to the start page
+    Then the recent newsletter 'CloudLib-EU-Example-Newsletter-Template' should show the subject 'Wie betritt man Ihren Betrieb, wenn die Tür geschlossen ist?'
+
   Scenario Outline: A blank newsletter has no blocks, nothing from CloudLib and the app language
     Given I open the start page
     When I switch the app language to '<lang>'

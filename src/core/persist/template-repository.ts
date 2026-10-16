@@ -18,6 +18,8 @@ export interface TemplateSummary {
   displayName: string;
   updatedAt: string;
   blockCount: number;
+  /** Campaign subject line, so issues with the same header can be told apart. */
+  subject: string;
 }
 
 export type DraftDoc = Omit<RecoveryDoc, 'key' | 'schemaVersion' | 'savedAt'>;
@@ -47,6 +49,7 @@ export const indexedDbTemplateRepository: TemplateRepository = {
       displayName: e.displayName,
       updatedAt: e.updatedAt,
       blockCount: e.newsletter?.blocks?.length ?? 0,
+      subject: e.newsletter?.globals?.campaignSubject?.trim() ?? '',
     }));
   },
   get: getLibraryEntry,

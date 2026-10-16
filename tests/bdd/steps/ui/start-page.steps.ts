@@ -211,3 +211,14 @@ Then('the start tiles should have no delete button', async ({ page }) => {
   await expect(page.locator('.start-tile [data-testid="start-recent-delete"], .start-tile .start-recent-delete')).toHaveCount(0);
   await expect(page.getByTestId('start-continue').getByTestId('start-recent-delete')).toHaveCount(0);
 });
+
+Then('the start tile {string} should show the flags {string}', async ({ page }, id: string, codes: string) => {
+  const flags = page.getByTestId(id).locator('.start-lang-flags app-flag');
+  await expect(flags).toHaveCount(codes.split(',').length);
+  expect(await flags.evaluateAll((els) => els.map((e) => e.getAttribute('data-flag')))).toEqual(codes.split(','));
+});
+
+Then('the recent newsletter {string} should show the subject {string}', async ({ page }, name: string, subject: string) => {
+  const row = page.getByTestId('start-recent').filter({ hasText: name });
+  await expect(row.getByTestId('start-recent-subject')).toHaveText(subject);
+});

@@ -93,6 +93,83 @@
   }
 }
 
+/* Demo tiles: colored by the flags of their region, always several colors at once.
+   A single tint (a → b) means "block type" in the catalog, so it never appears here. */
+.start-tile.start-lang {
+  position: relative;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--lang-tint) 35%, var(--ds-border));
+  background:
+    radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--lang-tint) 16%, transparent), transparent 60%),
+    radial-gradient(90% 80% at 100% 0%, color-mix(in srgb, var(--lang-glow) 9%, transparent), transparent 60%),
+    var(--ds-bg-panel);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    block-size: 4px;
+    background: var(--lang-stripe);
+  }
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--ds-accent);
+  }
+}
+
+.start-lang--de {
+  --lang-tint: #dd0000;
+  --lang-glow: #ffce00;
+  --lang-stripe: linear-gradient(90deg, #000 0 33.3%, #dd0000 0 66.6%, #ffce00 0);
+}
+
+.start-lang--en {
+  --lang-tint: #c8102e;
+  --lang-glow: #ffffff;
+  --lang-stripe: linear-gradient(90deg, #012169 0 25%, #fff 0 33%, #c8102e 0 58%, #fff 0 66%, #012169 0);
+}
+
+.start-lang-icon {
+  position: relative;
+  inline-size: 3.5rem;
+  block-size: 3.5rem;
+
+  app-flag {
+    position: absolute;
+    inset-inline-end: -0.1rem;
+    inset-block-end: 0.1rem;
+    inline-size: 1.9rem;
+    block-size: 1.3rem;
+    border-radius: 3px;
+    box-shadow: 0 0 0 2px var(--ds-bg-panel), 0 3px 8px rgb(0 0 0 / 50%);
+  }
+}
+
+.start-tile .start-lang-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.75rem;
+  margin: auto -1.15rem -1.15rem;
+  padding: 0.55rem 1.15rem;
+  border-top: 1px solid var(--ds-border);
+  background: rgb(0 0 0 / 30%);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ds-text);
+
+  span {
+    color: inherit;
+    font-size: inherit;
+  }
+}
+
+.start-lang-flags {
+  display: inline-flex;
+  gap: 0.4rem;
+}
+
 .start-continue {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -180,6 +257,16 @@
   text-overflow: ellipsis;
 }
 
+/* Subject line: issues of one sender share the header, the subject tells them apart. */
+.start-subject {
+  font-size: 0.85rem;
+  color: var(--ds-text);
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .start-meta {
   display: inline-flex;
   flex-wrap: wrap;
@@ -202,13 +289,12 @@
   inline-size: 100%;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  grid-template-rows: auto auto;
   column-gap: 0.75rem;
   align-items: center;
   padding: 0.65rem 0.85rem;
 
   .start-icon {
-    grid-row: 1 / span 2;
+    grid-row: 1 / span 3;
     inline-size: 2.4rem;
     block-size: 2.4rem;
   }

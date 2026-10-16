@@ -5,6 +5,7 @@ import type { SeedLanguage } from '../../../core';
 import { NewsletterSession, type RecentOverview } from '../../editor/newsletter-session.service';
 import { LocaleService } from '../../i18n/locale.service';
 import { UnsavedGuardService } from '../../shell/unsaved-guard.service';
+import { FlagComponent, type FlagCode } from '../../ui/flag/flag.component';
 import { SnackbarService } from '../../ui/snackbar/snackbar.service';
 
 /** How long "Undo" stays available after deleting a saved template. */
@@ -13,7 +14,7 @@ const UNDO_MS = 8000;
 /** First screen: start blank or from a demo, continue the draft, or reopen a saved template. */
 @Component({
   selector: 'app-start-page',
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, FlagComponent],
   templateUrl: './start.page.html',
   styleUrl: './start.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,6 +25,10 @@ export class StartPage {
   private readonly unsaved = inject(UnsavedGuardService);
   private readonly snackbar = inject(SnackbarService);
   private readonly router = inject(Router);
+
+  /** Regions each demo language is written for. */
+  protected readonly demoDeFlags: FlagCode[] = ['de', 'at', 'ch'];
+  protected readonly demoEnFlags: FlagCode[] = ['uk', 'us', 'ca', 'au', 'nz', 'ie'];
 
   protected readonly overview = signal<RecentOverview | null>(null);
   protected readonly returning = computed(() => {

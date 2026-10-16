@@ -18,6 +18,18 @@
     <rect x="15" y="38" width="10" height="4" rx="1.5" class="ic-brand" />
   </svg>
 </ng-template>
+<ng-template #iconLang let-flag>
+  <span class="start-lang-icon">
+    <svg class="start-icon" viewBox="0 0 56 56" aria-hidden="true" focusable="false">
+      <rect x="8" y="4" width="30" height="40" rx="3" class="ic-paper" />
+      <rect x="12" y="8" width="22" height="7" rx="1.5" class="ic-dark" />
+      <rect x="12" y="19" width="22" height="2" rx="1" class="ic-text" />
+      <rect x="12" y="23" width="22" height="2" rx="1" class="ic-text" />
+      <rect x="12" y="27" width="14" height="2" rx="1" class="ic-text" />
+    </svg>
+    <app-flag [code]="flag" />
+  </span>
+</ng-template>
 <ng-template #iconStack>
   <svg class="start-icon" viewBox="0 0 56 56" aria-hidden="true" focusable="false">
     <rect x="17" y="6" width="28" height="36" rx="3" class="ic-back" />
@@ -68,15 +80,31 @@
           <b [textContent]="i18n.t('start.blank')"></b>
           <span [textContent]="i18n.t('start.blankHint')"></span>
         </button>
-        <button type="button" class="start-tile" data-testid="start-demo-de" (click)="startNew('demo', 'de')">
-          <ng-container [ngTemplateOutlet]="iconDoc" />
+        <button type="button" class="start-tile start-lang start-lang--de" data-testid="start-demo-de" (click)="startNew('demo', 'de')">
+          <ng-container [ngTemplateOutlet]="iconLang" [ngTemplateOutletContext]="{ $implicit: 'de' }" />
           <b [textContent]="i18n.t('start.demoDe')"></b>
           <span [textContent]="i18n.t('start.demoDeHint')"></span>
+          <span class="start-lang-foot">
+            <span class="start-lang-flags">
+              @for (code of demoDeFlags; track code) {
+                <app-flag [code]="code" />
+              }
+            </span>
+            <span [textContent]="i18n.t('start.demoDeCountries')"></span>
+          </span>
         </button>
-        <button type="button" class="start-tile" data-testid="start-demo-en" (click)="startNew('demo', 'en')">
-          <ng-container [ngTemplateOutlet]="iconDoc" />
+        <button type="button" class="start-tile start-lang start-lang--en" data-testid="start-demo-en" (click)="startNew('demo', 'en')">
+          <ng-container [ngTemplateOutlet]="iconLang" [ngTemplateOutletContext]="{ $implicit: 'uk' }" />
           <b [textContent]="i18n.t('start.demoEn')"></b>
           <span [textContent]="i18n.t('start.demoEnHint')"></span>
+          <span class="start-lang-foot">
+            <span class="start-lang-flags">
+              @for (code of demoEnFlags; track code) {
+                <app-flag [code]="code" />
+              }
+            </span>
+            <span [textContent]="i18n.t('start.demoEnCountries')"></span>
+          </span>
         </button>
       </div>
     </div>
@@ -90,6 +118,9 @@
               <button type="button" class="start-recent-row" data-testid="start-recent" (click)="openSaved(row.id)">
                 <ng-container [ngTemplateOutlet]="iconDoc" />
                 <b class="start-name" [textContent]="row.displayName"></b>
+                @if (row.subject) {
+                  <span class="start-subject" data-testid="start-recent-subject" [textContent]="row.subject"></span>
+                }
                 <span class="start-meta" [textContent]="formatDate(row.updatedAt)"></span>
               </button>
               <button

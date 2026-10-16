@@ -534,6 +534,8 @@ export const DE: MessageCatalog = {
   'start.demoDeHint': 'CloudLib.EU, fertig gefüllt zum Ausprobieren',
   'start.demoEn': 'Demovorlage Englisch',
   'start.demoEnHint': 'CloudLib.EU auf Englisch, fertig gefüllt zum Ausprobieren',
+  'start.demoDeCountries': 'Deutschland · Österreich · Schweiz',
+  'start.demoEnCountries': 'UK · USA · Kanada · Australien · Neuseeland · Irland',
   'start.recentSection': 'Zuletzt verwendet',
   'start.recentEmpty': 'Hier erscheinen Ihre gespeicherten Newsletter.',
   'start.recentEmptyDraft': 'Noch keine gespeicherten Newsletter. Mit Datei-Menü → Speichern bewahren Sie einen auf.',
