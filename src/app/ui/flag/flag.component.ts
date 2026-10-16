@@ -116,7 +116,8 @@ const US_STRIPES = [0, 2, 4, 6, 8, 10, 12].map((i) => (i * 100) / 13);
       block-size: 1rem;
       border-radius: 2px;
       overflow: hidden;
-      box-shadow: 0 0 0 1px rgb(255 255 255 / 14%);
+      /* Light edge: dark stripes (black in DE) must not melt into the dark UI. */
+      box-shadow: 0 0 0 1px rgb(255 255 255 / 35%);
     }
 
     :host(.flag--square) {
