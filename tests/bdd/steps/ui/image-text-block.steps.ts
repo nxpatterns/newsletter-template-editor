@@ -7,7 +7,7 @@ const { Given, When, Then } = createBdd();
 const row = (page: Page) =>
   page.frameLocator('[data-testid="preview-frame"]').locator('tr[data-block-id="test-image-text"]');
 
-Given('I open the home page with an extra image and text block', async ({ page }) => {
+Given('I open the editor with an extra image and text block', async ({ page }) => {
   const seed = JSON.parse(readFileSync('src/core/seed-data/cloudlib-campaign.v1.json', 'utf8'));
   seed.blocks.push({
     id: 'test-image-text',
@@ -21,7 +21,7 @@ Given('I open the home page with an extra image and text block', async ({ page }
     valign: 'top',
   });
   await page.addInitScript((value) => localStorage.setItem('nte:newsletter:v1', value), JSON.stringify(seed));
-  await page.goto('/');
+  await page.goto('/edit/draft');
 });
 
 When('I choose the image text option {string} {string}', async ({ page }, key: string, value: string) => {

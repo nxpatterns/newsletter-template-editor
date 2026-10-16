@@ -126,13 +126,13 @@ Then('the button should link to {string} and show {string}', async ({ page }, hr
   await expect(modal(page).getByTestId('insp-cta-kind')).toHaveText(kind);
 });
 
-Given('I open the home page with an extra thin divider', async ({ page }) => {
+Given('I open the editor with an extra thin divider', async ({ page }) => {
   const seed = JSON.parse(readFileSync('src/core/seed-data/cloudlib-campaign.v1.json', 'utf8'));
   seed.blocks.push({ id: 'test-divider', type: 'divider', style: 'thin' });
   await page.addInitScript((value) => {
     localStorage.setItem('nte:newsletter:v1', value);
   }, JSON.stringify(seed));
-  await page.goto('/');
+  await page.goto('/edit/draft');
 });
 
 Then('the divider tile {string} should be selected', async ({ page }, style: string) => {

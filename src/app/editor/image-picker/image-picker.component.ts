@@ -11,7 +11,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import { embeddedFileBytes, embeddedFormat, isEmbeddedSrc, isSvgSrc } from '../../../core';
+import { embeddedFileBytes, embeddedFormat, isEmbeddedSrc, isSvgSrc, PLACEHOLDER_LOGO_SRC } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
 import { EmailSizeMeterComponent } from './email-size-meter.component';
 
@@ -68,6 +68,8 @@ export class ImagePickerComponent {
     const st = this.state();
     if (st === 'loading') return { tone: 'info', text: this.i18n.t('image.status.loading') };
     if (st === 'error') return { tone: 'warn', text: this.i18n.t('image.status.error') };
+    // Blank newsletter dummy: say what it is, not that it is a working online image.
+    if (this.src() === PLACEHOLDER_LOGO_SRC) return { tone: 'warn', text: this.i18n.t('image.status.placeholder') };
     const s = this.size();
     const dims = s ? `${s.width} × ${s.height}` : '';
     if (!this.embedded()) return { tone: 'ok', text: this.i18n.t('image.status.online', { size: dims }) };

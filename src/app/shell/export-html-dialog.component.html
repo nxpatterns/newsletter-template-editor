@@ -19,6 +19,9 @@
 
       <div class="ex-body">
         <p class="ex-lead" [textContent]="i18n.t('file.exportDialogLead')"></p>
+        @for (part of placeholders(); track part) {
+          <p class="ed-warn" [attr.data-testid]="'export-placeholder-' + part" [textContent]="i18n.t('file.exportPlaceholder.' + part)"></p>
+        }
 
         <button
           type="button"

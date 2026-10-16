@@ -15,6 +15,8 @@
 
   @if (open()) {
     <div class="file-menu-panel" role="menu" data-testid="file-menu-panel">
+      <button type="button" class="file-menu-item" role="menuitem" data-testid="file-start" (click)="goStart()" [textContent]="i18n.t('start.menuItem')"></button>
+      <div class="file-menu-sep"></div>
       <div class="file-menu-section-label" [textContent]="i18n.t('file.sectionCurrent')"></div>
       <button type="button" class="file-menu-item file-menu-item--muted" role="menuitem" disabled>
         <span [textContent]="session.displayName()"></span>
@@ -33,8 +35,6 @@
       <button type="button" class="file-menu-item" role="menuitem" data-testid="file-download-project" (click)="downloadProject()" [textContent]="i18n.t('file.downloadProject')"></button>
       <button type="button" class="file-menu-item" role="menuitem" data-testid="file-open-project" (click)="openProjectPicker()" [textContent]="i18n.t('file.openProject')"></button>
 
-      <div class="file-menu-sep"></div>
-      <button type="button" class="file-menu-item file-menu-item--danger" role="menuitem" data-testid="file-reset" (click)="resetDemo()" [textContent]="i18n.t('action.reset')"></button>
     </div>
   }
 

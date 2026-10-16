@@ -121,6 +121,13 @@ export async function loadRecovery(): Promise<RecoveryDoc | null> {
   });
 }
 
+export async function deleteRecovery(): Promise<void> {
+  const db = await openDb();
+  const tx = db.transaction(STORE_RECOVERY, 'readwrite');
+  tx.objectStore(STORE_RECOVERY).delete(RECOVERY_KEY);
+  await txDone(tx);
+}
+
 /** Migrate legacy localStorage draft into IDB recovery once. */
 export async function migrateLegacyLocalStorageIfNeeded(): Promise<RecoveryDoc | null> {
   const existing = await loadRecovery();
@@ -195,6 +202,7 @@ export function parseProjectFile(raw: string): {
   return null;
 }
 
+/** Stable random id; older `lib-…` ids stay valid. */
 export function newLibraryId(): string {
-  return `lib-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  return crypto.randomUUID();
 }

@@ -45,6 +45,19 @@ describe('NewsletterSession', () => {
     expect(session.blocks().find((b) => b.id === greeting?.id)).toMatchObject({ text: 'Werte Geschäftspartner' });
   });
 
+  it('start page choices open a fresh copy as an unsaved draft', async () => {
+    expect(session.hasDocument()).toBe(false);
+    await session.startNew('blank', 'en');
+    expect(session.blocks()).toEqual([]);
+    expect(session.displayName()).toBe('New newsletter');
+    expect(session.routeId()).toBe('draft');
+    expect(session.hasDocument()).toBe(true);
+    expect(await session.openForRoute('draft')).toBe(true);
+    await session.startNew('demo', 'en');
+    expect(session.globals().campaignSubject).toContain('walk into your business');
+    expect(session.dirty()).toBe(false);
+  });
+
   it('insertBlockAt can keep the catalog tab open', () => {
     session.setPanelTab('catalog');
     const before = session.blocks().length;

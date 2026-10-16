@@ -44,10 +44,12 @@ Related: `email-colors.md` (colors inside the document), `logo-upload.md` (embed
 - **File stem** — derived via `sanitizeFileStem` for downloads (never trust raw user text as a path segment).
 - **Export prefix** (`globals.exportFileNamePrefix`) — Campaign field for ListMonk pair stems when set.
 
-**Default display name (seed / reset demo):**
+**Default display names (start page):**
 
 ```text
-CloudLib-EU-Example-Newsletter-Template
+CloudLib-EU-Example-Newsletter-Template      (demo German)
+CloudLib-EU-Example-Newsletter-Template-EN   (demo English)
+New newsletter / Neuer Newsletter            (blank, app language)
 ```
 
 **Casual export filenames:** `{sanitizeFileStem(displayName)}.html`
@@ -166,10 +168,18 @@ Body:  “{displayName}” already exists as the current template.
 
 Do **not** split this into mysterious toolbar buttons. One Save affordance → smart dialog when needed.
 
+## Start page and editor addresses
+
+- `/` is the start page on every app launch: tiles **Blank newsletter** (first), **Demo template German**, **Demo template English**; a **Continue** card for unsaved work (never saved, or unsaved changes); **Recently used** = saved library entries, newest first.
+- Blank = no blocks, house style (brand, logo, colors, legal footer) and texts in the app language. Demos always open as a fresh copy; the originals are never changed.
+- `/edit/:id` is the editor for library entry `id` (UUID); `/edit/draft` is a newsletter not saved yet. Reload reopens exactly that newsletter. Save as / Open… replace the address. Unknown id → start page with a short notice.
+- Leaving the editor for the start page with unsaved changes asks **Save / Discard / Cancel**. Discard returns a saved newsletter to its saved version and drops a never-saved draft.
+- Storage sits behind one `TemplateRepository` (`core/persist/template-repository.ts`, IndexedDB today); components never talk to IndexedDB directly.
+
 ### Header vs menu
 
-- Toolbar: **Undo / Redo only**.
-- Hamburger (**rightmost**, after locale): all file + export + reset-to-demo.
+- Header (editor only): **Start** (icon + label), then **Undo / Redo**.
+- Hamburger (**rightmost**, after locale): Start page, then all file + export.
 
 ## Hamburger menu IA
 
@@ -184,8 +194,7 @@ Do **not** split this into mysterious toolbar buttons. One Save affordance → s
 ├── Transfer
 │   ├── Export current template
 │   └── Open exported template…
-└── Danger zone
-    └── Reset to demo template…
+└── (top) Start page
 ```
 
 Section label **Transfer** (or keep “Project” if copy already shipped — prefer **Transfer** when next touching i18n so sellers do not hear “project/JSON”). Implementation may still use `kind: 'nte-project'` internally.
@@ -229,14 +238,14 @@ Naming:
 
 ## Dirty navigation guards
 
-Before Open, Reset to demo, load library entry, browser tab close:
+Before Open, load library entry, open exported template, start page choices and leaving the editor for the start page:
 
-- If `dirty` → confirm: Stay / Discard / Save first.
+- If `dirty` → Save / Discard / Cancel (in-app dialog, never `window.confirm`).
 - `beforeunload` when dirty.
 
 ## i18n and copy
 
-- Plain verbs: Save, Save as, Open, Export, Rename, Reset demo.
+- Plain verbs: Save, Save as, Open, Export, Rename, Start.
 - No “.json” in seller-facing labels.
 - Preferred transfer labels (DE/EN catalogs):
 
@@ -261,6 +270,8 @@ Before Open, Reset to demo, load library entry, browser tab close:
 
 ## Later (not now)
 
+- **Accounts and cloud storage:** sellers from other companies sign in and keep their templates in the cloud. Add a cloud `TemplateRepository` next to the IndexedDB one; ids are already UUIDs, so entries can move between the two.
+
 - Export **all** saved library templates, or a **multi-select** of them; import all or selected. Same mental model as current transfer, wider scope.
 - Optional FSA “true Save” polish where supported.
 - PDF menu after product unlock path in next-session / pdf-export sessions.
@@ -272,7 +283,7 @@ Before Open, Reset to demo, load library entry, browser tab close:
 - No old-style multi-button save row.
 - Overwrite vs new name is always an explicit choice when it matters.
 - Export uses the **currently shown** template name.
-- Hamburger (rightmost) holds file + HTML export + transfer + reset; toolbar is undo/redo only.
+- Hamburger (rightmost) holds Start page + file + HTML export + transfer; header has Start plus undo/redo.
 - HTML export always asks Full vs ListMonk pair.
 - Library lives in IndexedDB; disk transfer is portability/backup.
 - **v1 disk transfer = current template only.**

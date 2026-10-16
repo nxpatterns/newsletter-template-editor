@@ -4,7 +4,7 @@ import { createBdd } from 'playwright-bdd';
 
 const { Given, When, Then } = createBdd();
 
-Given('I open the home page with an extra greeting block', async ({ page }) => {
+Given('I open the editor with an extra greeting block', async ({ page }) => {
   const seed = JSON.parse(readFileSync('src/core/seed-data/cloudlib-campaign.v1.json', 'utf8'));
   seed.blocks.unshift({
     id: 'test-greeting',
@@ -14,7 +14,7 @@ Given('I open the home page with an extra greeting block', async ({ page }) => {
     nameLead: 'Guten Tag',
   });
   await page.addInitScript((value) => localStorage.setItem('nte:newsletter:v1', value), JSON.stringify(seed));
-  await page.goto('/');
+  await page.goto('/edit/draft');
 });
 
 When('I switch on the greeting by name', async ({ page }) => {

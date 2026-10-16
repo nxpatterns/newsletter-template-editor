@@ -119,7 +119,7 @@ Inspired by image2colors header bar (brand left, actions right), editor-specific
 
 - One bar on iPad/desktop when space allows; toolbar **flex-wrap**s on narrow widths (not a second permanent toolbar row unless wrap requires it).
 - Shell/work layout uses **CSS Grid**; header action cluster uses **Flexbox** + wrap.
-- Toolbar actions: **Undo / Redo only**. All save / open / export / reset live in the **hamburger**, **rightmost** after locale (`file-management.md`).
+- Toolbar actions (editor only): **Start** (icon + label) and **Undo / Redo**. All save / open / export live in the **hamburger**, **rightmost** after locale (`file-management.md`).
 - No theme toggle in v0 (Glacier dark only). Email Dark/Light starter lives on the Colors tab when email-colors ships — not app chrome.
 - Safe-area: `padding-top: var(--ds-safe-top)`.
 
@@ -177,7 +177,7 @@ Every newsletter building block and every shell field (brand, logo, colors, lega
 
 ### Intent
 
-Short, professional feedback after user actions (Save, Reset seed, export, errors). Must be obvious on desktop, iPad, and phone without stealing focus from the editor or jumping the page scroll.
+Short, professional feedback after user actions (Save, export, errors). Must be obvious on desktop, iPad, and phone without stealing focus from the editor or jumping the page scroll.
 
 ### Placement
 

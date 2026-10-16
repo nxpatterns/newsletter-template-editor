@@ -8,7 +8,7 @@ import {
   output,
   signal,
 } from '@angular/core';
-import type { LibraryEntry } from '../../core/persist/idb-docs';
+import type { TemplateSummary } from '../../core/persist/template-repository';
 import { LocaleService } from '../i18n/locale.service';
 
 export type LibrarySort = 'date-desc' | 'date-asc' | 'name-asc';
@@ -26,7 +26,7 @@ export class LibraryPickerComponent {
   protected readonly i18n = inject(LocaleService);
 
   readonly open = input(false);
-  readonly rows = input<LibraryEntry[]>([]);
+  readonly rows = input<TemplateSummary[]>([]);
 
   readonly closed = output<void>();
   readonly picked = output<string>();

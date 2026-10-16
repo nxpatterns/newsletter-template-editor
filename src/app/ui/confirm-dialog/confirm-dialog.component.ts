@@ -65,7 +65,11 @@ export class ConfirmDialogComponent {
     this.promptValue.set((event.target as HTMLInputElement).value);
   }
 
-  private beginClose(ok: boolean): void {
+  protected onAlt(): void {
+    this.beginClose('alt');
+  }
+
+  private beginClose(ok: boolean | 'alt'): void {
     const p = this.confirm.pending();
     if (!p || this.closing) return;
     this.closing = true;
@@ -75,8 +79,10 @@ export class ConfirmDialogComponent {
       if (p.mode === 'prompt') {
         const v = this.promptValue().trim();
         this.confirm.completePrompt(ok && v ? v : null);
+      } else if (p.mode === 'choice') {
+        this.confirm.completeChoice(ok === 'alt' ? 'alt' : ok ? 'confirm' : 'cancel');
       } else {
-        this.confirm.completeConfirm(ok);
+        this.confirm.completeConfirm(ok === true);
       }
     }, 200);
   }

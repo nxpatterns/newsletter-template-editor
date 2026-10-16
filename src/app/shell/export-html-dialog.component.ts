@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from '@angular/core';
+import { placeholderParts } from '../../core';
+import { NewsletterSession } from '../editor/newsletter-session.service';
 import { LocaleService } from '../i18n/locale.service';
 
 export type HtmlExportKind = 'full' | 'listmonk';
@@ -14,6 +16,9 @@ export type HtmlExportKind = 'full' | 'listmonk';
 })
 export class ExportHtmlDialogComponent {
   protected readonly i18n = inject(LocaleService);
+  private readonly session = inject(NewsletterSession);
+  /** Dummy logo / example.com links still in use (blank newsletter): warn before download. */
+  protected readonly placeholders = computed(() => placeholderParts(this.session.newsletter()));
 
   readonly open = input(false);
   readonly closed = output<void>();

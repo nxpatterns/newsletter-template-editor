@@ -4,5 +4,5 @@ Feature: Home page
   So that I see the product is running
 
   Scenario: Home page shows app title
-    Given I open the home page
+    Given I open the start page
     Then I should see the app title "Newsletter Template Editor"

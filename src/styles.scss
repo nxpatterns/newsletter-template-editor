@@ -449,6 +449,18 @@ body {
   gap: 0.75rem;
 }
 
+/* Amber notice: something still needs the seller's attention (placeholder logo, example links). */
+.ed-warn {
+  margin: 0;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid color-mix(in srgb, #ffb547 45%, var(--ds-border));
+  border-radius: 0.4rem;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--ds-text);
+  background: color-mix(in srgb, #ffb547 8%, var(--ds-bg-page));
+}
+
 /* Hint chip beside a link target field: which kind of address it looks like. */
 .link-kind-chip {
   display: inline-flex;

@@ -1,12 +1,14 @@
 import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { downloadFilename, renderExportOptimized } from '../../core';
-import type { LibraryEntry } from '../../core/persist/idb-docs';
+import type { TemplateSummary } from '../../core/persist/template-repository';
 import { NewsletterSession } from '../editor/newsletter-session.service';
 import { LocaleService } from '../i18n/locale.service';
 import { ConfirmDialogService } from '../ui/confirm-dialog/confirm-dialog.service';
 import { SnackbarService } from '../ui/snackbar/snackbar.service';
 import { ExportHtmlDialogComponent, type HtmlExportKind } from './export-html-dialog.component';
 import { LibraryPickerComponent } from './library-picker.component';
+import { UnsavedGuardService } from './unsaved-guard.service';
 
 @Component({
   selector: 'app-file-menu',
@@ -24,13 +26,15 @@ export class FileMenuComponent {
   protected readonly session = inject(NewsletterSession);
   private readonly confirm = inject(ConfirmDialogService);
   private readonly snackbar = inject(SnackbarService);
+  private readonly unsaved = inject(UnsavedGuardService);
+  private readonly router = inject(Router);
 
   private readonly root = viewChild<ElementRef<HTMLElement>>('root');
   private readonly projectInput = viewChild<ElementRef<HTMLInputElement>>('projectInput');
 
   protected readonly open = signal(false);
   protected readonly libraryOpen = signal(false);
-  protected readonly libraryRows = signal<LibraryEntry[]>([]);
+  protected readonly libraryRows = signal<TemplateSummary[]>([]);
   protected readonly exportOpen = signal(false);
 
   protected toggleMenu(event: Event): void {
@@ -52,6 +56,12 @@ export class FileMenuComponent {
     const el = this.root()?.nativeElement;
     if (!el || !this.open()) return;
     if (!el.contains(event.target as Node)) this.closeMenu();
+  }
+
+  /** Start page; the editor route asks about unsaved changes on the way out. */
+  protected goStart(): void {
+    this.closeMenu();
+    void this.router.navigateByUrl('/');
   }
 
   protected async rename(): Promise<void> {
@@ -110,7 +120,7 @@ export class FileMenuComponent {
   }
 
   protected async pickLibrary(id: string): Promise<void> {
-    if (!(await this.guardDirty())) return;
+    if (!(await this.unsaved.allowLeave())) return;
     const ok = await this.session.openLibraryEntry(id);
     this.libraryOpen.set(false);
     if (!ok) this.snackbar.error(this.i18n.t('file.openFailed'));
@@ -181,7 +191,7 @@ export class FileMenuComponent {
     input.value = '';
     this.closeMenu();
     if (!file) return;
-    if (!(await this.guardDirty())) return;
+    if (!(await this.unsaved.allowLeave())) return;
     try {
       const text = await file.text();
       if (!this.session.loadProjectJsonText(text)) {
@@ -192,30 +202,6 @@ export class FileMenuComponent {
     } catch {
       this.snackbar.error(this.i18n.t('file.openFailed'));
     }
-  }
-
-  protected async resetDemo(): Promise<void> {
-    this.closeMenu();
-    if (!(await this.guardDirty())) return;
-    const ok = await this.confirm.confirm({
-      title: this.i18n.t('file.resetTitle'),
-      body: this.i18n.t('file.resetBody'),
-      confirmLabel: this.i18n.t('action.reset'),
-      cancelLabel: this.i18n.t('modal.cancel'),
-      danger: true,
-    });
-    if (ok) await this.session.resetSeed();
-  }
-
-  private async guardDirty(): Promise<boolean> {
-    if (!this.session.dirty()) return true;
-    return this.confirm.confirm({
-      title: this.i18n.t('file.dirtyTitle'),
-      body: this.i18n.t('file.dirtyBody'),
-      confirmLabel: this.i18n.t('file.discard'),
-      cancelLabel: this.i18n.t('modal.cancel'),
-      danger: true,
-    });
   }
 
   private triggerDownload(blob: Blob, filename: string): void {

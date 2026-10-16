@@ -5,7 +5,7 @@ Feature: Image block and logo picker
     Given hosted test images are served
 
   Scenario: A linked image needs a description and shows in the preview
-    Given I open the home page with an extra empty image block
+    Given I open the editor with an extra empty image block
     When I open the block editor for seed block 'test-image'
     Then the image description should be marked as required
     When I paste the image link 'https://cdn.example.test/hotel.png'
@@ -16,7 +16,7 @@ Feature: Image block and logo picker
     Then the image description should not be marked as required
 
   Scenario: A dropped file is embedded at email width and warned about
-    Given I open the home page with an extra empty image block
+    Given I open the editor with an extra empty image block
     When I open the block editor for seed block 'test-image'
     And I choose a 1200 × 600 picture file
     Then the image status should start with 'Embedded'
@@ -24,7 +24,7 @@ Feature: Image block and logo picker
     And the embedded image warning and the email size meter should be shown
 
   Scenario: The logo can be switched from an embedded SVG to a hosted link
-    Given I open the home page
+    Given I open the editor with the German demo
     When I open the Brand tab
     Then the logo should be flagged as SVG and embedded
     When I paste the logo link 'https://cdn.example.test/logo.png'

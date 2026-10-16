@@ -3,7 +3,7 @@ Feature: Greeting block
   and the neutral line for recipients whose name is not known.
 
   Scenario: Switching on the name, with the neutral line as fallback
-    Given I open the home page with an extra greeting block
+    Given I open the editor with an extra greeting block
     Then the greeting preview should read 'Werte Geschäftspartner'
     When I open the block editor for seed block 'test-greeting'
     And I switch on the greeting by name
@@ -12,7 +12,7 @@ Feature: Greeting block
     Then the greeting preview should read 'Werte Geschäftspartner'
 
   Scenario: Size and color of the greeting
-    Given I open the home page with an extra greeting block
+    Given I open the editor with an extra greeting block
     When I open the block editor for seed block 'test-greeting'
     And I choose the greeting option 'size' 'l'
     And I choose the greeting option 'color' 'primary'

@@ -10,6 +10,10 @@ import {
   viewChild,
 } from '@angular/core';
 import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
+import { map } from 'rxjs';
+import { SnackbarService } from '../../ui/snackbar/snackbar.service';
 import { renderPreview } from '../../../core';
 import { EditorPanelComponent } from '../../editor/panel/editor-panel.component';
 import { NewsletterSession } from '../../editor/newsletter-session.service';
@@ -41,6 +45,13 @@ export class EditorPage {
   protected readonly shellUi = inject(ShellUiService);
   protected readonly i18n = inject(LocaleService);
   private readonly catalogDrag = inject(CatalogDragService);
+  private readonly router = inject(Router);
+  private readonly snackbar = inject(SnackbarService);
+  /** `/edit/:id`: library id, or `draft` before the first save. */
+  private readonly routeReady = signal(false);
+  private readonly routeId = toSignal(inject(ActivatedRoute).paramMap.pipe(map((p) => p.get('id') ?? '')), {
+    initialValue: '',
+  });
 
   private readonly previewFrame = viewChild<ElementRef<HTMLIFrameElement>>('previewFrame');
 
@@ -76,8 +87,31 @@ export class EditorPage {
   );
 
   constructor() {
+    // Reload / deep link: open exactly the newsletter behind the address.
+    effect(() => {
+      const id = this.routeId();
+      if (!id) return;
+      void this.session.openForRoute(id).then((ok) => {
+        if (this.routeId() !== id) return;
+        if (ok) {
+          this.routeReady.set(true);
+          return;
+        }
+        this.snackbar.error(this.i18n.t('start.notFound'));
+        void this.router.navigateByUrl('/', { replaceUrl: true });
+      });
+    });
+
+    // Save as / Open… / delete change which document is open: keep the address in step.
+    // Not while a navigation runs (e.g. saving from the leave question on the way to Start).
+    effect(() => {
+      const docId = this.session.routeId();
+      if (this.router.currentNavigation()) return;
+      if (!this.routeReady() || !this.session.hasDocument() || docId === this.routeId()) return;
+      void this.router.navigate(['/edit', docId], { replaceUrl: true });
+    });
+
     afterNextRender(() => {
-      void this.session.hydrateFromStorage();
       // Catalog drags start on the host; Escape / drop-outside fire dragend there,
       // not inside the iframe — clear gap chrome so it cannot stick.
       document.addEventListener(

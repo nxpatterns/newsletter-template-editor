@@ -42,11 +42,20 @@
           [textContent]="p.cancelLabel"
           (click)="onCancel()"
         ></button>
+        @if (p.mode === 'choice') {
+          <button
+            type="button"
+            class="confirm-btn confirm-btn--ghost confirm-btn--alt"
+            data-testid="confirm-alt"
+            [textContent]="p.altLabel"
+            (click)="onAlt()"
+          ></button>
+        }
         <button
           type="button"
           class="confirm-btn"
           data-testid="confirm-ok"
-          [class.confirm-btn--primary]="p.mode === 'prompt' || !p.danger"
+          [class.confirm-btn--primary]="p.mode !== 'confirm' || !p.danger"
           [class.confirm-btn--danger]="p.mode === 'confirm' && !!p.danger"
           [textContent]="p.confirmLabel"
           (click)="onConfirm()"

@@ -10,6 +10,7 @@ import {
   type BrandStars,
   intakeLogoFile,
   LogoPipelineError,
+  PLACEHOLDER_LOGO_SRC,
 } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
 import { ImagePickerComponent, type ImageSize } from '../image-picker/image-picker.component';
@@ -27,6 +28,7 @@ import { NewsletterSession } from '../newsletter-session.service';
 export class BrandFieldsComponent {
   protected readonly i18n = inject(LocaleService);
   protected readonly session = inject(NewsletterSession);
+  protected readonly placeholderLogo = PLACEHOLDER_LOGO_SRC;
   private readonly snackbar = inject(SnackbarService);
   private readonly confirmDialog = inject(ConfirmDialogService);
 

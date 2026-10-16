@@ -1,0 +1,106 @@
+<ng-template #iconBlank>
+  <svg class="start-icon" viewBox="0 0 56 56" aria-hidden="true" focusable="false">
+    <path d="M14 6h20l10 10v32a3 3 0 0 1-3 3H14a3 3 0 0 1-3-3V9a3 3 0 0 1 3-3z" class="ic-paper ic-line" />
+    <path d="M34 6v10h10" class="ic-fold ic-line" />
+    <circle cx="40" cy="42" r="10" class="ic-accent" />
+    <path d="M40 37v10M35 42h10" class="ic-plus" />
+  </svg>
+</ng-template>
+<ng-template #iconDoc>
+  <svg class="start-icon" viewBox="0 0 56 56" aria-hidden="true" focusable="false">
+    <rect x="15" y="9" width="30" height="40" rx="3" class="ic-shadow" />
+    <rect x="11" y="5" width="30" height="40" rx="3" class="ic-paper ic-line-brand" />
+    <rect x="15" y="9" width="22" height="7" rx="1.5" class="ic-dark" />
+    <rect x="15" y="19" width="16" height="3" rx="1.5" class="ic-brand" />
+    <rect x="15" y="25" width="22" height="2" rx="1" class="ic-text" />
+    <rect x="15" y="29" width="22" height="2" rx="1" class="ic-text" />
+    <rect x="15" y="33" width="14" height="2" rx="1" class="ic-text" />
+    <rect x="15" y="38" width="10" height="4" rx="1.5" class="ic-brand" />
+  </svg>
+</ng-template>
+<ng-template #iconStack>
+  <svg class="start-icon" viewBox="0 0 56 56" aria-hidden="true" focusable="false">
+    <rect x="17" y="6" width="28" height="36" rx="3" class="ic-back" />
+    <rect x="13" y="10" width="28" height="36" rx="3" class="ic-mid" />
+    <rect x="9" y="14" width="28" height="36" rx="3" class="ic-paper ic-line" />
+    <circle cx="38" cy="40" r="9" class="ic-clock" />
+    <path d="M38 35v5l3 2" class="ic-hand" />
+  </svg>
+</ng-template>
+
+<section class="start" data-testid="start-page">
+  @if (overview(); as o) {
+    <header class="start-hello">
+      <h2 class="start-title" data-testid="start-title" [textContent]="i18n.t(returning() ? 'start.titleBack' : 'start.titleFirst')"></h2>
+      <p class="start-lead" [textContent]="i18n.t('start.lead')"></p>
+    </header>
+
+    @if (o.draft; as d) {
+      <div class="start-continue" data-testid="start-continue">
+        <ng-container [ngTemplateOutlet]="iconStack" />
+        <span class="start-continue-text">
+          <span class="start-kicker" [textContent]="i18n.t('start.notSaved')"></span>
+          <b class="start-name" data-testid="start-continue-name" [textContent]="d.displayName"></b>
+          <span class="start-meta" [textContent]="i18n.t('start.lastChanged', { when: formatDate(d.savedAt) })"></span>
+        </span>
+        @if (confirmDiscard()) {
+          <span class="start-continue-confirm" role="group" data-testid="start-discard-confirm">
+            <span class="start-confirm-text" [textContent]="i18n.t(d.libraryId ? 'start.discardChangesQuestion' : 'start.discardQuestion')"></span>
+            <span class="start-continue-actions">
+              <button type="button" class="start-btn start-btn--danger" data-testid="start-discard-yes" (click)="discardDraft()" [textContent]="i18n.t('file.discard')"></button>
+              <button type="button" class="start-btn start-btn--ghost" data-testid="start-discard-no" (click)="confirmDiscard.set(false)" [textContent]="i18n.t('modal.cancel')"></button>
+            </span>
+          </span>
+        } @else {
+          <span class="start-continue-actions">
+            <button type="button" class="start-btn start-btn--primary" data-testid="start-continue-open" (click)="continueDraft()" [textContent]="i18n.t('start.continueAction')"></button>
+            <button type="button" class="start-btn start-btn--ghost" data-testid="start-discard" (click)="confirmDiscard.set(true)" [textContent]="i18n.t('file.discard')"></button>
+          </span>
+        }
+      </div>
+    }
+
+    <div>
+      <h3 class="start-sec" [textContent]="i18n.t('start.newSection')"></h3>
+      <div class="start-tiles">
+        <button type="button" class="start-tile is-primary" data-testid="start-blank" (click)="startNew('blank')">
+          <ng-container [ngTemplateOutlet]="iconBlank" />
+          <b [textContent]="i18n.t('start.blank')"></b>
+          <span [textContent]="i18n.t('start.blankHint')"></span>
+        </button>
+        <button type="button" class="start-tile" data-testid="start-demo-de" (click)="startNew('demo', 'de')">
+          <ng-container [ngTemplateOutlet]="iconDoc" />
+          <b [textContent]="i18n.t('start.demoDe')"></b>
+          <span [textContent]="i18n.t('start.demoDeHint')"></span>
+        </button>
+        <button type="button" class="start-tile" data-testid="start-demo-en" (click)="startNew('demo', 'en')">
+          <ng-container [ngTemplateOutlet]="iconDoc" />
+          <b [textContent]="i18n.t('start.demoEn')"></b>
+          <span [textContent]="i18n.t('start.demoEnHint')"></span>
+        </button>
+      </div>
+    </div>
+
+    <div>
+      <h3 class="start-sec" [textContent]="i18n.t('start.recentSection')"></h3>
+      @if (o.saved.length) {
+        <ul class="start-recent" data-testid="start-recent-list">
+          @for (row of o.saved; track row.id) {
+            <li>
+              <button type="button" class="start-recent-row" data-testid="start-recent" (click)="openSaved(row.id)">
+                <ng-container [ngTemplateOutlet]="iconDoc" />
+                <b class="start-name" [textContent]="row.displayName"></b>
+                <span class="start-meta" [textContent]="formatDate(row.updatedAt)"></span>
+              </button>
+            </li>
+          }
+        </ul>
+      } @else {
+        <div class="start-empty" data-testid="start-recent-empty">
+          <ng-container [ngTemplateOutlet]="iconStack" />
+          <span [textContent]="i18n.t(o.draft ? 'start.recentEmptyDraft' : 'start.recentEmpty')"></span>
+        </div>
+      }
+    </div>
+  }
+</section>

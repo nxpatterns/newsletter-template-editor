@@ -1,8 +1,10 @@
 import { isPlatformBrowser } from '@angular/common';
 import { computed, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import {
+  blankNewsletter,
   createBlock,
   DEFAULT_DISPLAY_NAME,
+  DEMO_DISPLAY_NAMES,
   normalizeNewsletter,
   seedNewsletter,
   type Block,
@@ -10,22 +12,22 @@ import {
   type Globals,
   type Newsletter,
   type RichDoc,
+  type SeedLanguage,
 } from '../../core';
 import { clearParagraphStash } from './paragraph-draft-stash';
-import {
-  buildProjectEnvelope,
-  deleteLibraryEntry,
-  getLibraryEntry,
-  listLibrary,
-  migrateLegacyLocalStorageIfNeeded,
-  newLibraryId,
-  parseProjectFile,
-  putLibraryEntry,
-  saveRecovery,
-  type LibraryEntry,
-} from '../../core/persist/idb-docs';
+import { buildProjectEnvelope, parseProjectFile, type LibraryEntry } from '../../core/persist/idb-docs';
+import type { TemplateSummary } from '../../core/persist/template-repository';
+import { TEMPLATE_REPOSITORY } from './template-repository.token';
 import { LocaleService } from '../i18n/locale.service';
 import { SnackbarService } from '../ui/snackbar/snackbar.service';
+
+export interface RecentOverview {
+  draft: { displayName: string; savedAt: string; dirty: boolean; libraryId: string | null } | null;
+  saved: TemplateSummary[];
+}
+
+/** Editor URL segment for a document that is not saved in the library yet. */
+export const DRAFT_ROUTE_ID = 'draft';
 
 export type EditorPanelTab =
   | 'placed'
@@ -49,6 +51,7 @@ export class NewsletterSession {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly snackbar = inject(SnackbarService);
   private readonly i18n = inject(LocaleService);
+  private readonly repo = inject(TEMPLATE_REPOSITORY);
 
   private readonly newsletterSignal = signal<Newsletter>(seedNewsletter());
   private readonly selectedBlockIdSignal = signal<string | null>(null);
@@ -83,6 +86,10 @@ export class NewsletterSession {
   private readonly dirtySignal = signal(false);
   private readonly libraryIdSignal = signal<string | null>(null);
   private recoveryTimer: ReturnType<typeof setTimeout> | null = null;
+  private hydration: Promise<boolean> | null = null;
+  /** True once a document is open (stored draft or a start page choice). */
+  private readonly hasDocumentSignal = signal(false);
+  readonly hasDocument = this.hasDocumentSignal.asReadonly();
   private readonly recoveryDelayMs = 700;
 
   readonly newsletter = this.newsletterSignal.asReadonly();
@@ -111,39 +118,74 @@ export class NewsletterSession {
   });
 
   readonly blocks = computed(() => this.newsletterSignal().blocks);
+  /** URL segment of the open document: library id, or `draft` before the first save. */
+  readonly routeId = computed(() => this.libraryIdSignal() ?? DRAFT_ROUTE_ID);
   readonly globals = computed(() => this.newsletterSignal().globals);
 
-  async hydrateFromStorage(): Promise<void> {
-    if (!isPlatformBrowser(this.platformId)) return;
+  /**
+   * Load the working draft once per app run. Resolves true when a document is open
+   * (stored draft, or one chosen on the start page); false sends the user to the start page.
+   */
+  hydrateFromStorage(): Promise<boolean> {
+    this.hydration ??= this.hydrate();
+    return this.hydration;
+  }
+
+  private async hydrate(): Promise<boolean> {
+    if (!isPlatformBrowser(this.platformId)) return false;
+    this.bindBeforeUnload();
     try {
-      const recovered = await migrateLegacyLocalStorageIfNeeded();
-      if (recovered?.newsletter) {
-        this.applyDocument(recovered.newsletter, {
-          displayName: recovered.displayName || DEFAULT_DISPLAY_NAME,
-          libraryId: recovered.libraryId,
-          dirty: recovered.dirty,
-          clearHistory: true,
-        });
-      } else {
-        const seeded = seedNewsletter();
-        this.applyDocument(seeded, {
-          displayName: DEFAULT_DISPLAY_NAME,
-          libraryId: null,
-          dirty: false,
-          clearHistory: true,
-        });
-        await this.persistRecovery();
-      }
-    } catch {
-      const seeded = seedNewsletter();
-      this.applyDocument(seeded, {
-        displayName: DEFAULT_DISPLAY_NAME,
-        libraryId: null,
-        dirty: false,
+      const recovered = await this.repo.loadDraft();
+      if (this.hasDocumentSignal()) return true;
+      if (!recovered?.newsletter) return false;
+      this.applyDocument(recovered.newsletter, {
+        displayName: recovered.displayName || DEFAULT_DISPLAY_NAME,
+        libraryId: recovered.libraryId,
+        dirty: recovered.dirty,
         clearHistory: true,
       });
+      return true;
+    } catch {
+      return this.hasDocumentSignal();
     }
-    this.bindBeforeUnload();
+  }
+
+  /** Start page: unsaved work in progress (if any) and saved templates, newest first. */
+  async recentOverview(): Promise<RecentOverview> {
+    await this.hydrateFromStorage();
+    if (this.recoveryTimer) {
+      clearTimeout(this.recoveryTimer);
+      this.recoveryTimer = null;
+      await this.persistRecovery();
+    }
+    const [recovery, entries] = await Promise.all([
+      this.repo.loadDraft().catch(() => null),
+      this.repo.list().catch(() => [] as TemplateSummary[]),
+    ]);
+    // Only real edits that are not saved: an untouched blank/demo copy or a saved, unchanged
+    // newsletter is not "work" (dirty is false until the first change after create/open).
+    const draft = recovery?.newsletter && recovery.dirty
+      ? {
+          displayName: recovery.displayName || DEFAULT_DISPLAY_NAME,
+          savedAt: recovery.savedAt,
+          dirty: recovery.dirty,
+          libraryId: recovery.libraryId,
+        }
+      : null;
+    return { draft, saved: entries };
+  }
+
+  /** Start page: open a fresh copy (blank or demo); never touches the demo originals. */
+  async startNew(kind: 'blank' | 'demo', lang: SeedLanguage): Promise<void> {
+    this.endCoalesce();
+    const doc = kind === 'blank' ? blankNewsletter(lang) : seedNewsletter(lang);
+    this.applyDocument(doc, {
+      displayName: kind === 'blank' ? this.i18n.t('start.blankDocName') : DEMO_DISPLAY_NAMES[lang],
+      libraryId: null,
+      dirty: false,
+      clearHistory: true,
+    });
+    await this.persistRecovery();
   }
 
   /** Explicit library save (overwrite bound entry or create). */
@@ -151,7 +193,7 @@ export class NewsletterSession {
     const name = (opts?.name ?? this.displayNameSignal()).trim() || DEFAULT_DISPLAY_NAME;
     let id = this.libraryIdSignal();
     if (opts?.asNew || !id) {
-      id = newLibraryId();
+      id = this.repo.newId();
     }
     const entry: LibraryEntry = {
       id,
@@ -159,7 +201,7 @@ export class NewsletterSession {
       updatedAt: new Date().toISOString(),
       newsletter: cloneNewsletter(this.newsletterSignal()),
     };
-    await putLibraryEntry(entry);
+    await this.repo.put(entry);
     this.displayNameSignal.set(name);
     this.libraryIdSignal.set(id);
     this.dirtySignal.set(false);
@@ -168,12 +210,34 @@ export class NewsletterSession {
     return true;
   }
 
-  async listLibraryEntries(): Promise<LibraryEntry[]> {
-    return listLibrary();
+  async listLibraryEntries(): Promise<TemplateSummary[]> {
+    return this.repo.list();
+  }
+
+  /**
+   * Editor route: make the document behind `/edit/:id` current. Keeps the open draft when it
+   * belongs to that id (reload); false when the template does not exist.
+   */
+  async openForRoute(id: string): Promise<boolean> {
+    await this.hydrateFromStorage();
+    if (this.hasDocumentSignal() && this.routeId() === id) return true;
+    if (id === DRAFT_ROUTE_ID) return false;
+    return this.openLibraryEntry(id).catch(() => false);
+  }
+
+  /** Drop unsaved changes: back to the saved version, or no open document for a never-saved draft. */
+  async discardChanges(): Promise<void> {
+    this.endCoalesce();
+    const id = this.libraryIdSignal();
+    if (id && (await this.openLibraryEntry(id).catch(() => false))) return;
+    await this.repo.clearDraft().catch(() => undefined);
+    this.libraryIdSignal.set(null);
+    this.dirtySignal.set(false);
+    this.hasDocumentSignal.set(false);
   }
 
   async openLibraryEntry(id: string): Promise<boolean> {
-    const entry = await getLibraryEntry(id);
+    const entry = await this.repo.get(id);
     if (!entry) return false;
     this.applyDocument(entry.newsletter, {
       displayName: entry.displayName,
@@ -186,7 +250,7 @@ export class NewsletterSession {
   }
 
   async deleteLibrary(id: string): Promise<void> {
-    await deleteLibraryEntry(id);
+    await this.repo.remove(id);
     if (this.libraryIdSignal() === id) {
       this.libraryIdSignal.set(null);
       this.dirtySignal.set(true);
@@ -199,7 +263,10 @@ export class NewsletterSession {
     if (next === this.displayNameSignal()) return;
     this.displayNameSignal.set(next);
     this.dirtySignal.set(true);
-    this.scheduleRecovery();
+    // A rename is one deliberate step: store it now, not after the typing debounce.
+    if (this.recoveryTimer) clearTimeout(this.recoveryTimer);
+    this.recoveryTimer = null;
+    void this.persistRecovery();
   }
 
   exportProjectJson(): Blob {
@@ -222,19 +289,6 @@ export class NewsletterSession {
     });
     this.scheduleRecovery();
     return true;
-  }
-
-  async resetSeed(): Promise<void> {
-    this.endCoalesce();
-    const next = seedNewsletter();
-    this.applyDocument(next, {
-      displayName: DEFAULT_DISPLAY_NAME,
-      libraryId: null,
-      dirty: false,
-      clearHistory: true,
-    });
-    await this.persistRecovery();
-    this.snackbar.success(this.i18n.t('snackbar.reset'));
   }
 
   /** @deprecated use saveToLibrary — kept for any leftover callers */
@@ -559,6 +613,7 @@ export class NewsletterSession {
   ): void {
     const normalized = normalizeNewsletter(n);
     this.newsletterSignal.set(normalized);
+    this.hasDocumentSignal.set(true);
     this.displayNameSignal.set(meta.displayName || DEFAULT_DISPLAY_NAME);
     this.libraryIdSignal.set(meta.libraryId);
     this.dirtySignal.set(meta.dirty);
@@ -580,7 +635,7 @@ export class NewsletterSession {
   private async persistRecovery(): Promise<void> {
     if (!isPlatformBrowser(this.platformId)) return;
     try {
-      await saveRecovery({
+      await this.repo.saveDraft({
         displayName: this.displayNameSignal(),
         libraryId: this.libraryIdSignal(),
         dirty: this.dirtySignal(),

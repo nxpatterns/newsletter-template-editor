@@ -5,7 +5,7 @@ Feature: Image and text block
     Given hosted test images are served
 
   Scenario: The picture moves to the chosen side of the text
-    Given I open the home page with an extra image and text block
+    Given I open the editor with an extra image and text block
     When I open the block editor for seed block 'test-image-text'
     And I paste the image link 'https://cdn.example.test/room.png'
     Then the image status should read 'Online image · 40 × 30'

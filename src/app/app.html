@@ -11,8 +11,8 @@
       <symbol id="icon-save" viewBox="0 -960 960 960">
         <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-120H640v80h-80v-80H200v120Zm0-200h560v-360H200v360Zm0 200v-560 560Z" />
       </symbol>
-      <symbol id="icon-reset" viewBox="0 -960 960 960">
-        <path d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z" />
+      <symbol id="icon-start" viewBox="0 -960 960 960">
+        <path d="M240-200h120v-240h240v240h120v-360L480-750 240-560v360Zm-80 80v-480l320-240 320 240v480H520v-240h-80v240H160Zm320-350Z" />
       </symbol>
     </defs>
   </svg>
@@ -22,52 +22,67 @@
       <div class="app-header-brand">
         <h1 class="app-header-title" data-testid="app-title" [textContent]="i18n.t('shell.title')"></h1>
         <div class="app-header-subtitle" [textContent]="i18n.t('shell.subtitle')"></div>
-        <div class="app-header-doc" data-testid="doc-name">
-          <span [textContent]="session.displayName()"></span>
-          @if (session.dirty()) {
-            <span class="app-header-dirty" title="Unsaved changes">•</span>
-          }
-        </div>
+        @if (inEditor()) {
+          <div class="app-header-doc" data-testid="doc-name">
+            <span [textContent]="session.displayName()"></span>
+            @if (session.dirty()) {
+              <span class="app-header-dirty" [attr.title]="i18n.t('file.dirtyTitle')">•</span>
+            }
+          </div>
+        }
       </div>
 
       <div class="app-header-actions">
-        <div
-          ngToolbar
-          class="app-toolbar"
-          aria-label="Editor actions"
-          data-testid="app-toolbar"
-        >
-          <button
-            type="button"
-            ngToolbarWidget
-            class="toolbar-btn"
-            value="undo"
-            data-testid="action-undo"
-            [disabled]="!session.canUndo()"
-            [attr.aria-label]="i18n.t('action.undo')"
-            [attr.title]="i18n.t('action.undo')"
-            (click)="session.undo()"
+        @if (inEditor()) {
+          <a
+            class="start-link"
+            routerLink="/"
+            data-testid="action-start"
+            [attr.title]="i18n.t('start.headerTitle')"
           >
             <svg class="toolbar-icon" aria-hidden="true" focusable="false">
-              <use href="#icon-undo"></use>
+              <use href="#icon-start"></use>
             </svg>
-          </button>
-          <button
-            type="button"
-            ngToolbarWidget
-            class="toolbar-btn"
-            value="redo"
-            data-testid="action-redo"
-            [disabled]="!session.canRedo()"
-            [attr.aria-label]="i18n.t('action.redo')"
-            [attr.title]="i18n.t('action.redo')"
-            (click)="session.redo()"
+            <span [textContent]="i18n.t('start.header')"></span>
+          </a>
+          <div
+            ngToolbar
+            class="app-toolbar"
+            aria-label="Editor actions"
+            data-testid="app-toolbar"
           >
-            <svg class="toolbar-icon" aria-hidden="true" focusable="false">
-              <use href="#icon-redo"></use>
-            </svg>
-          </button>
-        </div>
+            <button
+              type="button"
+              ngToolbarWidget
+              class="toolbar-btn"
+              value="undo"
+              data-testid="action-undo"
+              [disabled]="!session.canUndo()"
+              [attr.aria-label]="i18n.t('action.undo')"
+              [attr.title]="i18n.t('action.undo')"
+              (click)="session.undo()"
+            >
+              <svg class="toolbar-icon" aria-hidden="true" focusable="false">
+                <use href="#icon-undo"></use>
+              </svg>
+            </button>
+            <button
+              type="button"
+              ngToolbarWidget
+              class="toolbar-btn"
+              value="redo"
+              data-testid="action-redo"
+              [disabled]="!session.canRedo()"
+              [attr.aria-label]="i18n.t('action.redo')"
+              [attr.title]="i18n.t('action.redo')"
+              (click)="session.redo()"
+            >
+              <svg class="toolbar-icon" aria-hidden="true" focusable="false">
+                <use href="#icon-redo"></use>
+              </svg>
+            </button>
+          </div>
+        }
 
         <div class="locale-switch" role="group" [attr.aria-label]="i18n.t('action.locale')">
           <button
@@ -90,7 +105,9 @@
           ></button>
         </div>
 
-        <app-file-menu />
+        @if (inEditor()) {
+          <app-file-menu />
+        }
       </div>
     </div>
   </header>

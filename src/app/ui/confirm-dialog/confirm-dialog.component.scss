@@ -156,6 +156,12 @@
   background: color-mix(in srgb, var(--ds-danger) 88%, #000);
 }
 
+/* Discard in a Save / Discard / Cancel choice: quiet, but clearly not the safe option. */
+.confirm-btn--alt {
+  color: color-mix(in srgb, var(--ds-danger) 70%, var(--ds-text));
+  border-color: color-mix(in srgb, var(--ds-danger) 45%, transparent);
+}
+
 .confirm-btn:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 2px;

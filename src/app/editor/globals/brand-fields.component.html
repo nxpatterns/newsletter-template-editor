@@ -15,6 +15,9 @@
       (removed)="clearLogo()"
       (loaded)="onLogoLoaded($event)"
     />
+    @if (g.logo.src === placeholderLogo) {
+      <p class="ed-warn" data-testid="g-logo-placeholder" [textContent]="i18n.t('brand.logoPlaceholderHint')"></p>
+    }
     <div class="ed-field" [class.is-invalid]="!!g.logo.src && !(g.logo.alt ?? '').trim()">
       <label class="ed-label" for="g-logo-description" [textContent]="i18n.t('field.imageDescription')"></label>
       <input

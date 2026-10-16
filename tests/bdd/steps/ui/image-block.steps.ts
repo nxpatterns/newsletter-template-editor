@@ -43,10 +43,10 @@ async function openWithSeed(page: Page, extra?: object): Promise<void> {
   const seed = JSON.parse(readFileSync('src/core/seed-data/cloudlib-campaign.v1.json', 'utf8'));
   if (extra) seed.blocks.push(extra);
   await page.addInitScript((value) => localStorage.setItem('nte:newsletter:v1', value), JSON.stringify(seed));
-  await page.goto('/');
+  await page.goto('/edit/draft');
 }
 
-Given('I open the home page with an extra empty image block', async ({ page }) => {
+Given('I open the editor with an extra empty image block', async ({ page }) => {
   await openWithSeed(page, { id: 'test-image', type: 'image', src: '', alt: '', href: '', caption: '', width: 'text' });
 });
 

@@ -35,7 +35,7 @@ export class LegalFieldsComponent {
     this.session.endCoalesce();
   }
 
-  /** "cloudlib.eu/impressum" becomes a working https link when the field is left. */
+  /** "ihrefirma.de/impressum" becomes a working https link when the field is left. */
   protected onTargetBlur(key: 'companyWebsiteHref' | 'privacyHref' | 'imprintHref'): void {
     this.session.endCoalesce();
     const built = normalizeLinkTarget(this.session.globals().legal[key] ?? '');

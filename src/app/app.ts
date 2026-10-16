@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { Toolbar, ToolbarWidget } from '@angular/aria/toolbar';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { filter, map } from 'rxjs';
 import { APP_VERSION } from '../environments/app-version';
 import { BlockEditModalComponent } from './editor/inspector/block-edit-modal.component';
 import { NewsletterSession } from './editor/newsletter-session.service';
@@ -40,6 +42,15 @@ export class App {
 
   protected readonly legalKind = signal<LegalModalKind>(null);
 
+  /** Editor-only header controls (document name, Start, undo/redo, file menu). */
+  protected readonly inEditor = toSignal(
+    inject(Router).events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map((e) => e.urlAfterRedirects.startsWith('/edit/')),
+    ),
+    { initialValue: false },
+  );
+
   protected openLegal(kind: Exclude<LegalModalKind, null>): void {
     this.legalKind.set(kind);
   }
@@ -54,7 +65,7 @@ export class App {
 
   protected onDocumentKeydown(event: KeyboardEvent): void {
     const mod = event.metaKey || event.ctrlKey;
-    if (!mod) return;
+    if (!mod || !this.inEditor()) return;
     const key = event.key.toLowerCase();
     if (key === 'z' && !event.shiftKey) {
       if (!this.session.canUndo()) return;
