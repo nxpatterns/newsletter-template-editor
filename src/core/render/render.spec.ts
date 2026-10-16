@@ -16,8 +16,8 @@ function acmeNewsletter(): Newsletter {
     primaryColor: '#fedcba',
     campaignSubject: 'Acme subject',
     brand: {
-      starsText: '***',
-      nameHtml: '<span>Acme Corp</span>',
+      stars: { symbol: '*', count: 3 },
+      name: { parts: [{ text: 'Acme Corp', color: '#123456' }], size: 'm', bold: true },
     },
     legal: {
       noticeHtml: 'Acme legal notice',

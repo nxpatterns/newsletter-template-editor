@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { normalizeLinkTarget } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
 import { NewsletterSession } from '../newsletter-session.service';
 
@@ -32,5 +33,12 @@ export class LegalFieldsComponent {
 
   protected onFieldBlur(): void {
     this.session.endCoalesce();
+  }
+
+  /** "cloudlib.eu/impressum" becomes a working https link when the field is left. */
+  protected onTargetBlur(key: 'companyWebsiteHref' | 'privacyHref' | 'imprintHref'): void {
+    this.session.endCoalesce();
+    const built = normalizeLinkTarget(this.session.globals().legal[key] ?? '');
+    if (built) this.session.updateLegal({ [key]: built }, 'immediate');
   }
 }

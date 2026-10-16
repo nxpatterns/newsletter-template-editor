@@ -51,23 +51,23 @@ Given('I open the home page with an extra empty image block', async ({ page }) =
 });
 
 Then('the image description should be marked as required', async ({ page }) => {
-  await expect(modal(page).getByTestId('insp-image-alt')).toHaveAttribute('aria-invalid', 'true');
-  await expect(modal(page).getByTestId('insp-image-alt-required')).toBeVisible();
+  await expect(modal(page).getByTestId('insp-image-description')).toHaveAttribute('aria-invalid', 'true');
+  await expect(modal(page).getByTestId('insp-image-description-required')).toBeVisible();
 });
 
 Then('the image description should not be marked as required', async ({ page }) => {
-  await expect(modal(page).getByTestId('insp-image-alt')).toHaveAttribute('aria-invalid', 'false');
-  await expect(modal(page).getByTestId('insp-image-alt-required')).toHaveCount(0);
+  await expect(modal(page).getByTestId('insp-image-description')).toHaveAttribute('aria-invalid', 'false');
+  await expect(modal(page).getByTestId('insp-image-description-required')).toHaveCount(0);
 });
 
 When('I paste the image link {string}', async ({ page }, url: string) => {
-  const input = modal(page).getByTestId('image-url');
+  const input = modal(page).getByTestId('image-address');
   await input.fill(url);
   await input.press('Enter');
 });
 
 When('I describe the image as {string}', async ({ page }, text: string) => {
-  await modal(page).getByTestId('insp-image-alt').fill(text);
+  await modal(page).getByTestId('insp-image-description').fill(text);
 });
 
 Then('the image status should read {string}', async ({ page }, text: string) => {
@@ -113,7 +113,7 @@ Then('the logo should be flagged as SVG and embedded', async ({ page }) => {
 });
 
 When('I paste the logo link {string}', async ({ page }, url: string) => {
-  const input = brand(page).getByTestId('image-url');
+  const input = brand(page).getByTestId('image-address');
   await input.fill(url);
   await input.press('Enter');
 });

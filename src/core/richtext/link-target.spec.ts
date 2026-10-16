@@ -1,4 +1,4 @@
-import { buildLinkHref, detectLinkKind, parseLinkHref } from './link-address';
+import { buildLinkHref, detectLinkKind, parseLinkHref } from './link-target';
 
 describe('detectLinkKind', () => {
   it.each([
@@ -45,10 +45,10 @@ describe('parseLinkHref', () => {
   it('round-trips email with subject and phone', () => {
     expect(parseLinkHref('mailto:info@cloudlib.eu?subject=Anfrage%203D')).toEqual({
       kind: 'email',
-      address: 'info@cloudlib.eu',
+      target: 'info@cloudlib.eu',
       subject: 'Anfrage 3D',
     });
-    expect(parseLinkHref('tel:+49301234567')).toEqual({ kind: 'phone', address: '+49301234567', subject: '' });
-    expect(parseLinkHref('https://cloudlib.eu')).toEqual({ kind: 'web', address: 'https://cloudlib.eu', subject: '' });
+    expect(parseLinkHref('tel:+49301234567')).toEqual({ kind: 'phone', target: '+49301234567', subject: '' });
+    expect(parseLinkHref('https://cloudlib.eu')).toEqual({ kind: 'web', target: 'https://cloudlib.eu', subject: '' });
   });
 });

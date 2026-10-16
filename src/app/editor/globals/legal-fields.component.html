@@ -17,44 +17,45 @@
   </div>
   <div class="ed-field-row">
     <div class="ed-field">
-      <label class="ed-label" for="g-company-site-l" [textContent]="i18n.t('legal.companyWebsiteLabel')"></label>
+      <label class="ed-label" for="g-company-site-l" [textContent]="i18n.t('legal.companyWebsiteText')"></label>
       <input
         id="g-company-site-l"
         class="ed-input"
-        data-testid="g-company-site-label"
+        data-testid="g-company-site-text"
         [value]="l.companyWebsiteLabel"
         (input)="onLegal('companyWebsiteLabel', $event)"
        (blur)="onFieldBlur()" />
     </div>
     <div class="ed-field">
-      <label class="ed-label" for="g-company-site-h" [textContent]="i18n.t('legal.companyWebsiteHref')"></label>
+      <label class="ed-label" for="g-company-site-h" [textContent]="i18n.t('legal.companyWebsiteTarget')"></label>
       <input
         id="g-company-site-h"
         class="ed-input"
-        data-testid="g-company-site-href"
+        data-testid="g-company-site-target"
+        [placeholder]="i18n.t('legal.companyWebsitePlaceholder')"
         [value]="l.companyWebsiteHref"
         (input)="onLegal('companyWebsiteHref', $event)"
-       (blur)="onFieldBlur()" />
+        (blur)="onTargetBlur('companyWebsiteHref')" />
     </div>
   </div>
   <div class="ed-field-row">
     <div class="ed-field">
-      <label class="ed-label" for="g-priv-l" [textContent]="i18n.t('legal.privacyLabel')"></label>
+      <label class="ed-label" for="g-priv-l" [textContent]="i18n.t('legal.privacyText')"></label>
       <input id="g-priv-l" class="ed-input" [value]="l.privacyLabel" (input)="onLegal('privacyLabel', $event)"  (blur)="onFieldBlur()" />
     </div>
     <div class="ed-field">
-      <label class="ed-label" for="g-priv-h" [textContent]="i18n.t('legal.privacyHref')"></label>
-      <input id="g-priv-h" class="ed-input" [value]="l.privacyHref" (input)="onLegal('privacyHref', $event)"  (blur)="onFieldBlur()" />
+      <label class="ed-label" for="g-priv-h" [textContent]="i18n.t('legal.privacyTarget')"></label>
+      <input id="g-priv-h" class="ed-input" [value]="l.privacyHref" [placeholder]="i18n.t('legal.privacyPlaceholder')" (input)="onLegal('privacyHref', $event)" (blur)="onTargetBlur('privacyHref')" />
     </div>
   </div>
   <div class="ed-field-row">
     <div class="ed-field">
-      <label class="ed-label" for="g-imp-l" [textContent]="i18n.t('legal.imprintLabel')"></label>
+      <label class="ed-label" for="g-imp-l" [textContent]="i18n.t('legal.imprintText')"></label>
       <input id="g-imp-l" class="ed-input" [value]="l.imprintLabel" (input)="onLegal('imprintLabel', $event)"  (blur)="onFieldBlur()" />
     </div>
     <div class="ed-field">
-      <label class="ed-label" for="g-imp-h" [textContent]="i18n.t('legal.imprintHref')"></label>
-      <input id="g-imp-h" class="ed-input" [value]="l.imprintHref" (input)="onLegal('imprintHref', $event)"  (blur)="onFieldBlur()" />
+      <label class="ed-label" for="g-imp-h" [textContent]="i18n.t('legal.imprintTarget')"></label>
+      <input id="g-imp-h" class="ed-input" [value]="l.imprintHref" [placeholder]="i18n.t('legal.imprintPlaceholder')" (input)="onLegal('imprintHref', $event)" (blur)="onTargetBlur('imprintHref')" />
     </div>
   </div>
   <div class="ed-field">

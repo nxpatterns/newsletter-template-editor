@@ -60,15 +60,17 @@
           />
         </div>
         <div class="ed-field">
-          <label class="ed-label" for="insp-cta-href" [textContent]="i18n.t('field.ctaHref')"></label>
+          <label class="ed-label" for="insp-button-link-target" [textContent]="i18n.t('field.buttonLinkTarget')"></label>
           <input
-            id="insp-cta-href"
+            id="insp-button-link-target"
             class="ed-input"
-            data-testid="insp-cta-href"
+            data-testid="insp-button-link-target"
+            [placeholder]="i18n.t('link.targetPlaceholder')"
             [value]="block.href"
             (input)="onText(block.id, 'href', $event)"
-            (blur)="onHrefBlur(block.id)"
+            (blur)="onLinkTargetBlur(block.id)"
           />
+          <p class="ed-hint" [textContent]="i18n.t('field.buttonLinkTargetHint')"></p>
           @if (linkKindKey(block.href); as kindKey) {
             <p class="link-kind" data-testid="insp-cta-kind">
               <span class="link-kind-chip" [textContent]="i18n.t(kindKey)"></span>
@@ -168,13 +170,14 @@
         />
         <div class="ed-field" [class.is-invalid]="!block.alt.trim()">
           <div class="ed-label-row">
-            <label class="ed-label" for="insp-image-alt" [textContent]="i18n.t('field.imageAlt')"></label>
+            <label class="ed-label" for="insp-image-description" [textContent]="i18n.t('field.imageDescription')"></label>
             <span class="ed-count" [class.is-over]="block.alt.length > 120" [textContent]="block.alt.length + ' / 120'"></span>
           </div>
           <input
-            id="insp-image-alt"
+            id="insp-image-description"
             class="ed-input"
-            data-testid="insp-image-alt"
+            data-testid="insp-image-description"
+            [placeholder]="i18n.t('field.imageDescriptionPlaceholder')"
             required
             [attr.aria-invalid]="!block.alt.trim()"
             [value]="block.alt"
@@ -182,25 +185,27 @@
             (blur)="onFieldBlur()"
           />
           @if (!block.alt.trim()) {
-            <p class="ed-hint is-error" data-testid="insp-image-alt-required" [textContent]="i18n.t('field.imageAltRequired')"></p>
+            <p class="ed-hint is-error" data-testid="insp-image-description-required" [textContent]="i18n.t('field.imageDescriptionRequired')"></p>
           }
         </div>
         <div class="image-grid">
           <div class="ed-field">
             <div class="ed-label-row">
-              <label class="ed-label" for="insp-image-href" [textContent]="i18n.t('field.imageHref')"></label>
+              <label class="ed-label" for="insp-image-link-target" [textContent]="i18n.t('field.imageLinkTarget')"></label>
               @if (linkKindKey(block.href); as kindKey) {
                 <span class="link-kind-chip" data-testid="insp-image-kind" [textContent]="i18n.t(kindKey)"></span>
               }
             </div>
             <input
-              id="insp-image-href"
+              id="insp-image-link-target"
               class="ed-input"
-              data-testid="insp-image-href"
+              data-testid="insp-image-link-target"
+              [placeholder]="i18n.t('link.targetPlaceholder')"
               [value]="block.href"
               (input)="onText(block.id, 'href', $event)"
-              (blur)="onHrefBlur(block.id)"
+              (blur)="onLinkTargetBlur(block.id)"
             />
+            <p class="ed-hint" [textContent]="i18n.t('link.targetHint')"></p>
           </div>
           <div class="ed-field">
             <label class="ed-label" for="insp-image-caption" [textContent]="i18n.t('field.imageCaption')"></label>
@@ -249,13 +254,14 @@
         <div class="image-grid">
           <div class="ed-field" [class.is-invalid]="!block.alt.trim()">
             <div class="ed-label-row">
-              <label class="ed-label" for="insp-it-alt" [textContent]="i18n.t('field.imageTextAlt')"></label>
+              <label class="ed-label" for="insp-it-description" [textContent]="i18n.t('field.imageDescription')"></label>
               <span class="ed-count" [class.is-over]="block.alt.length > 120" [textContent]="block.alt.length + ' / 120'"></span>
             </div>
             <input
-              id="insp-it-alt"
+              id="insp-it-description"
               class="ed-input"
-              data-testid="insp-image-text-alt"
+              data-testid="insp-image-text-description"
+              [placeholder]="i18n.t('field.imageDescriptionPlaceholder')"
               required
               [attr.aria-invalid]="!block.alt.trim()"
               [value]="block.alt"
@@ -263,24 +269,26 @@
               (blur)="onFieldBlur()"
             />
             @if (!block.alt.trim()) {
-              <p class="ed-hint is-error" data-testid="insp-image-text-alt-required" [textContent]="i18n.t('field.imageAltRequired')"></p>
+              <p class="ed-hint is-error" data-testid="insp-image-text-description-required" [textContent]="i18n.t('field.imageDescriptionRequired')"></p>
             }
           </div>
           <div class="ed-field">
             <div class="ed-label-row">
-              <label class="ed-label" for="insp-it-href" [textContent]="i18n.t('field.imageTextHref')"></label>
+              <label class="ed-label" for="insp-it-link-target" [textContent]="i18n.t('field.imageTextLinkTarget')"></label>
               @if (linkKindKey(block.href); as kindKey) {
                 <span class="link-kind-chip" data-testid="insp-image-text-kind" [textContent]="i18n.t(kindKey)"></span>
               }
             </div>
             <input
-              id="insp-it-href"
+              id="insp-it-link-target"
               class="ed-input"
-              data-testid="insp-image-text-href"
+              data-testid="insp-image-text-link-target"
+              [placeholder]="i18n.t('link.targetPlaceholder')"
               [value]="block.href"
               (input)="onText(block.id, 'href', $event)"
-              (blur)="onHrefBlur(block.id)"
+              (blur)="onLinkTargetBlur(block.id)"
             />
+            <p class="ed-hint" [textContent]="i18n.t('link.targetHint')"></p>
           </div>
         </div>
         <div class="image-text-layout">
@@ -762,15 +770,17 @@
                       />
                     </div>
                     <div class="ed-field">
-                      <label class="ed-label" [attr.for]="'insp-cta-href-' + i" [textContent]="i18n.t('field.ctaLinkHref')"></label>
+                      <label class="ed-label" [attr.for]="'insp-cta-link-target-' + i" [textContent]="i18n.t('field.ctaLinkTarget')"></label>
                       <input
                         class="ed-input"
-                        [id]="'insp-cta-href-' + i"
-                        [attr.data-testid]="'cta-link-href-' + i"
+                        [id]="'insp-cta-link-target-' + i"
+                        [attr.data-testid]="'cta-link-target-' + i"
+                        [placeholder]="i18n.t('link.targetPlaceholder')"
                         [value]="item.href"
                         (input)="onCtaItemText(block.id, i, 'href', $event)"
-                        (blur)="onCtaHrefBlur(block.id, i)"
+                        (blur)="onCtaLinkTargetBlur(block.id, i)"
                       />
+                      <p class="ed-hint" [textContent]="i18n.t('link.targetHint')"></p>
                       @if (linkKindKey(item.href); as kindKey) {
                         <p class="link-kind" [attr.data-testid]="'cta-link-kind-' + i">
                           <span class="link-kind-chip" [textContent]="i18n.t(kindKey)"></span>

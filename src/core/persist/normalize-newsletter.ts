@@ -1,5 +1,7 @@
 import {
   BENEFIT_DEFAULT_ICON,
+  BRAND_NAME_SIZES,
+  BRAND_STAR_MAX,
   CTA_LINK_DEFAULT_ICON,
   CURRENT_SCHEMA_VERSION,
   DIVIDER_STYLES,
@@ -10,6 +12,7 @@ import {
   emptyBenefitsListItem,
   emptyCtaLinkListItem,
   type BenefitsListBlock,
+  type BrandConfig,
   type BenefitsListItem,
   type Block,
   type ChapterBandBlock,
@@ -31,6 +34,8 @@ import { ensureRichDoc } from '../richtext/from-html';
 import { emptyRichDoc } from '../richtext/model';
 import { migrateNewsletterV1ToV2 } from './migrate-v2';
 import { migrateNewsletterV2ToV3 } from './migrate-v3';
+import { migrateNewsletterV3ToV4 } from './migrate-v4';
+import { defaultBrand } from '../brand/defaults';
 
 /** Strip tags / collapse whitespace for legacy HTML price blobs. */
 export function plainFromHtml(html: string): string {
@@ -446,7 +451,8 @@ export function normalizeNewsletter(input: Newsletter): Newsletter {
   // Missing version = pre-versioning draft → treat as v1.
   const fromVersion = typeof input.schemaVersion === 'number' ? input.schemaVersion : 1;
   const v2 = fromVersion < 2 ? migrateNewsletterV1ToV2(input) : input;
-  const n = fromVersion < 3 ? migrateNewsletterV2ToV3(v2) : v2;
+  const v3 = fromVersion < 3 ? migrateNewsletterV2ToV3(v2) : v2;
+  const n = fromVersion < 4 ? migrateNewsletterV3ToV4(v3) : v3;
   const legal = n.globals?.legal as Newsletter['globals']['legal'] & {
     companyLine?: string;
   };
@@ -472,6 +478,34 @@ export function normalizeNewsletter(input: Newsletter): Newsletter {
   return {
     ...n,
     schemaVersion: CURRENT_SCHEMA_VERSION,
+    globals: n.globals ? { ...n.globals, brand: normalizeBrand(n.globals.brand) } : n.globals,
     blocks: Array.isArray(n.blocks) ? normalizeBlocks(n.blocks) : [],
+  };
+}
+
+const HEX = /^#[0-9a-f]{3,8}$/i;
+
+/** Valid v4 brand for any input: unknown symbols stay (a custom one from a migration), bad values fall back. */
+export function normalizeBrand(raw: unknown): BrandConfig {
+  const fallback = defaultBrand();
+  const b = (raw && typeof raw === 'object' ? raw : {}) as Partial<BrandConfig>;
+  const stars = b.stars && typeof b.stars === 'object' ? b.stars : fallback.stars;
+  const count = Number.isFinite(stars.count) ? Math.round(stars.count) : fallback.stars.count;
+  const name = b.name && typeof b.name === 'object' ? b.name : fallback.name;
+  const parts = Array.isArray(name.parts)
+    ? name.parts
+        .filter((p) => p && typeof p.text === 'string')
+        .map((p) => ({ text: p.text, color: typeof p.color === 'string' && HEX.test(p.color) ? p.color : '#4db8ff' }))
+    : fallback.name.parts;
+  return {
+    stars: {
+      symbol: typeof stars.symbol === 'string' && stars.symbol.trim() ? stars.symbol : '★',
+      count: Math.max(0, Math.min(BRAND_STAR_MAX, count)),
+    },
+    name: {
+      parts,
+      size: (BRAND_NAME_SIZES as readonly unknown[]).includes(name.size) ? name.size : 'm',
+      bold: typeof name.bold === 'boolean' ? name.bold : true,
+    },
   };
 }

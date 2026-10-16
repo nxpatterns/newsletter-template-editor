@@ -70,7 +70,7 @@ export class ImagePickerComponent {
     if (st === 'error') return { tone: 'warn', text: this.i18n.t('image.status.error') };
     const s = this.size();
     const dims = s ? `${s.width} × ${s.height}` : '';
-    if (!this.embedded()) return { tone: 'ok', text: this.i18n.t('image.status.linked', { size: dims }) };
+    if (!this.embedded()) return { tone: 'ok', text: this.i18n.t('image.status.online', { size: dims }) };
     const kb = Math.max(1, Math.round(embeddedFileBytes(this.src()) / 1024));
     return {
       tone: 'warn',

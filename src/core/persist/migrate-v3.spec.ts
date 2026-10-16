@@ -1,5 +1,5 @@
 import { seedNewsletter } from '../seed';
-import type { DividerBlock, Newsletter } from '../types';
+import { CURRENT_SCHEMA_VERSION, type DividerBlock, type Newsletter } from '../types';
 import { normalizeNewsletter } from './normalize-newsletter';
 
 function docWith(schemaVersion: number, dividers: Record<string, unknown>[]): Newsletter {
@@ -14,7 +14,7 @@ describe('schema v3 divider migration', () => {
   it('renames secondary-double to two-tone and fills the background token', () => {
     const n = normalizeNewsletter(docWith(2, [{ style: 'secondary-double' }, { style: 'thin' }]));
     const [a, b] = n.blocks as DividerBlock[];
-    expect(n.schemaVersion).toBe(3);
+    expect(n.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
     expect(a).toEqual({ id: 'd0', type: 'divider', style: 'two-tone', background: 'content' });
     expect(b.style).toBe('thin');
   });

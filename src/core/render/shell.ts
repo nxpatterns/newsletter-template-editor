@@ -1,4 +1,4 @@
-import type { Globals, LogoConfig } from '../types';
+import type { BrandName, BrandStars, Globals, LogoConfig } from '../types';
 import { emailDocumentCss } from './email-css';
 import { attrHref, escapeAttr, escapeHtml, fontStack, resolveHref, type RenderMode } from './utils';
 
@@ -17,16 +17,38 @@ function renderLogo(logo: LogoConfig | undefined): string {
   return imgTag;
 }
 
+/** "★ ★ ★" for the header and footer; empty when the count is 0. */
+export function brandStarsText(stars: BrandStars | undefined): string {
+  if (!stars || stars.count < 1) return '';
+  return Array.from({ length: stars.count }, () => stars.symbol).join(' ');
+}
+
+const BRAND_NAME_PX: Record<BrandName['size'], number> = { s: 16, m: 20, l: 24 };
+
+/** One inline-styled span per part: the colors are the brand's own, not theme tokens. */
+export function renderBrandName(name: BrandName | undefined): string {
+  if (!name) return '';
+  const px = BRAND_NAME_PX[name.size] ?? BRAND_NAME_PX.m;
+  const weight = name.bold ? 700 : 400;
+  return name.parts
+    .filter((p) => p.text)
+    .map(
+      (p) =>
+        `<span style="font-family:Helvetica,Arial,sans-serif;font-size:${px}px;font-weight:${weight};color:${escapeAttr(p.color)};letter-spacing:1px">${escapeHtml(p.text)}</span>`,
+    )
+    .join('');
+}
+
 export function renderHeader(globals: Globals, mode: RenderMode, bodyInner: string): string {
   const messageHref = mode === 'export' ? '{{ MessageURL }}' : '#';
   const logoHtml = renderLogo(globals.logo);
   const pageBg = escapeAttr(globals.pageBgColor);
   const contentBg = escapeAttr(globals.contentBgColor);
-  const starsText = escapeHtml(globals.brand?.starsText || '');
+  const starsText = escapeHtml(brandStarsText(globals.brand?.stars));
   const starsRow = starsText
-    ? `<p class="brand-stars text-accent" data-field="brand.starsText">${starsText}</p>`
+    ? `<p class="brand-stars text-accent" data-field="brand.stars">${starsText}</p>`
     : '';
-  const brandName = globals.brand?.nameHtml || '';
+  const brandName = renderBrandName(globals.brand?.name);
   const legal = globals.legal;
   const unsubHref = mode === 'export' ? '{{ UnsubscribeURL }}' : '#';
   const privacyHref = attrHref(resolveHref(legal.privacyHref, mode), mode);
@@ -54,7 +76,7 @@ export function renderHeader(globals: Globals, mode: RenderMode, bodyInner: stri
                   <tr>
                     <td valign="top" class="v-top">
                       ${starsRow}
-                      <span data-field="brand.nameHtml">${brandName}</span>
+                      <span data-field="brand.name">${brandName}</span>
                     </td>
                     <td align="right" valign="top" class="t-right">
                       ${logoHtml}
@@ -81,9 +103,9 @@ export function renderHeader(globals: Globals, mode: RenderMode, bodyInner: stri
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                   <tr><td class="footer-rule-cell">&nbsp;</td></tr>
                 </table>
-                <p class="footer-stars-line">
-                  <span class="footer-stars-glyph text-accent">${starsText || '★ ★ ★ ★ ★ ★'}</span>
-                </p>
+                ${starsText ? `<p class="footer-stars-line">
+                  <span class="footer-stars-glyph text-accent">${starsText}</span>
+                </p>` : ''}
                 <p class="footer-company text-dim" data-field="legal.companyName">
                   ${companyRow}
                 </p>

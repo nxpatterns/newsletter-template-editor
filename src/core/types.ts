@@ -29,11 +29,33 @@ export interface PersonalizationConfig {
   samples: Record<string, string>;
 }
 
+export const BRAND_STAR_SYMBOLS = ['★', '☆', '✦', '◆', '●'] as const;
+export const BRAND_STAR_MAX = 9;
+
+/** Decorative row above the brand name and in the footer; count 0 hides both. */
+export interface BrandStars {
+  symbol: string;
+  count: number;
+}
+
+export const BRAND_NAME_SIZES = ['s', 'm', 'l'] as const;
+export type BrandNameSize = (typeof BRAND_NAME_SIZES)[number];
+
+/** One colored piece of the brand name, e.g. "Cloud" in light blue. */
+export interface BrandNamePart {
+  text: string;
+  color: string;
+}
+
+export interface BrandName {
+  parts: BrandNamePart[];
+  size: BrandNameSize;
+  bold: boolean;
+}
+
 export interface BrandConfig {
-  /** e.g. star row; empty hides it */
-  starsText: string;
-  /** HTML for brand name in header (may include styled spans) */
-  nameHtml: string;
+  stars: BrandStars;
+  name: BrandName;
 }
 
 export interface LogoConfig {
@@ -299,8 +321,9 @@ export interface Newsletter {
 /**
  * v2: color tokens standard/primary/secondary/accent/dim, sizes xs–xl (persist/migrate-v2.ts).
  * v3: divider style secondary-double → two-tone, divider background token (persist/migrate-v3.ts).
+ * v4: brand starsText/nameHtml → structured stars and name parts (persist/migrate-v4.ts).
  */
-export const CURRENT_SCHEMA_VERSION = 3;
+export const CURRENT_SCHEMA_VERSION = 4;
 
 let idCounter = 0;
 

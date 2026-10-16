@@ -40,7 +40,7 @@
 </div>
 
 @if (!s) {
-  <div class="ip-or" [textContent]="i18n.t('image.orLink')"></div>
+  <div class="ip-or" [textContent]="i18n.t('image.orAddress')"></div>
 }
 @if (!(compact() && s)) {
   <ng-container [ngTemplateOutlet]="urlField" />
@@ -49,20 +49,21 @@
 <ng-template #urlField>
   <div class="ed-field ip-url">
     @if (s) {
-      <label class="ed-label" [for]="idPrefix() + '-url'" [textContent]="i18n.t('image.address')"></label>
+      <label class="ed-label" [for]="idPrefix() + '-address'" [textContent]="i18n.t('image.address')"></label>
     }
     <input
       class="ed-input"
       type="url"
       inputmode="url"
-      [id]="idPrefix() + '-url'"
-      data-testid="image-url"
+      [id]="idPrefix() + '-address'"
+      data-testid="image-address"
       [attr.aria-label]="i18n.t('image.address')"
-      [placeholder]="i18n.t(embedded() ? 'image.urlReplaceEmbedded' : 'image.urlPlaceholder')"
+      [placeholder]="i18n.t(embedded() ? 'image.addressReplaceEmbedded' : 'image.addressPlaceholder')"
       [value]="linkValue()"
       (change)="commitUrl($event)"
       (keydown.enter)="commitUrl($event)"
     />
+    <p class="ed-hint" [textContent]="i18n.t('image.addressHint')"></p>
   </div>
 </ng-template>
 

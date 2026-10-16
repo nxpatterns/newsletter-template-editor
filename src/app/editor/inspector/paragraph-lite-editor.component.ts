@@ -164,7 +164,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   protected readonly linkMode = signal<'selection' | 'insert' | 'view' | 'edit'>('selection');
   protected readonly linkLabel = signal('');
   protected readonly linkKind = signal<LinkKind>('web');
-  protected readonly linkAddress = signal('');
+  protected readonly linkTarget = signal('');
   protected readonly linkSubject = signal('');
   protected readonly linkNewTab = signal(true);
   /** Popover position inside .rt-kit, right under the text it belongs to. */
@@ -176,7 +176,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     phone: '+49 30 1234567',
   };
   protected readonly linkHref = computed(() =>
-    buildLinkHref(this.linkKind(), this.linkAddress(), this.linkSubject()),
+    buildLinkHref(this.linkKind(), this.linkTarget(), this.linkSubject()),
   );
   /** Link needs a place in the text: a cursor or a selection made since the last repaint. */
   protected readonly hasCursor = signal(false);
@@ -200,7 +200,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
 
   private readonly editorHost = viewChild<ElementRef<HTMLDivElement>>('editor');
   private readonly kitHost = viewChild<ElementRef<HTMLDivElement>>('kit');
-  private readonly linkAddressInput = viewChild<ElementRef<HTMLInputElement>>('linkAddressInput');
+  private readonly linkTargetInput = viewChild<ElementRef<HTMLInputElement>>('linkTargetInput');
   private readonly injector = inject(Injector);
   private applying = false;
   private localEdit = false;
@@ -874,13 +874,13 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     this.linkMode.set('view');
     this.linkLabel.set(anchor.textContent ?? '');
     const parsed = parseLinkHref(anchor.getAttribute('href') || '');
-    this.setLinkFields(parsed.kind, parsed.address, parsed.subject, anchor.getAttribute('target') !== '_self');
+    this.setLinkFields(parsed.kind, parsed.target, parsed.subject, anchor.getAttribute('target') !== '_self');
     this.showLinkPopover(anchor.getBoundingClientRect());
   }
 
-  private setLinkFields(kind: LinkKind, address: string, subject: string, newTab: boolean): void {
+  private setLinkFields(kind: LinkKind, target: string, subject: string, newTab: boolean): void {
     this.linkKind.set(kind);
-    this.linkAddress.set(address);
+    this.linkTarget.set(target);
     this.linkSubject.set(subject);
     this.linkNewTab.set(newTab);
   }
@@ -897,7 +897,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     }
     this.linkOpen.set(true);
     this.revealLinkPopover();
-    if (this.linkMode() !== 'view') this.focusLinkAddress();
+    if (this.linkMode() !== 'view') this.focusLinkTarget();
   }
 
   /** The modal body scrolls; keep the whole popover in view whenever it opens or grows. */
@@ -911,19 +911,19 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   /** Existing link in words: the web address, the email address (and subject), or the number. */
   protected linkViewText(): string {
     const kind = this.linkKind();
-    if (kind === 'web') return this.linkHref() ?? this.linkAddress();
+    if (kind === 'web') return this.linkHref() ?? this.linkTarget();
     const subject = kind === 'email' ? this.linkSubject().trim() : '';
-    return subject ? `${this.linkAddress()} · ${subject}` : this.linkAddress();
+    return subject ? `${this.linkTarget()} · ${subject}` : this.linkTarget();
   }
 
-  private focusLinkAddress(): void {
-    afterNextRender(() => this.linkAddressInput()?.nativeElement.focus({ preventScroll: true }), {
+  private focusLinkTarget(): void {
+    afterNextRender(() => this.linkTargetInput()?.nativeElement.focus({ preventScroll: true }), {
       injector: this.injector,
     });
   }
 
-  protected onLinkAddressInput(value: string): void {
-    this.linkAddress.set(value);
+  protected onLinkTargetInput(value: string): void {
+    this.linkTarget.set(value);
     const kind = detectLinkKind(value);
     if (kind && kind !== this.linkKind()) this.linkKind.set(kind);
     this.revealLinkPopover();
@@ -932,19 +932,19 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   protected chooseLinkKind(kind: LinkKind): void {
     this.linkKind.set(kind);
     this.revealLinkPopover();
-    this.focusLinkAddress();
+    this.focusLinkTarget();
   }
 
   protected editLink(): void {
     this.linkMode.set('edit');
     this.revealLinkPopover();
-    this.focusLinkAddress();
+    this.focusLinkTarget();
   }
 
   /** What the link will do, in words; null while the address is incomplete. */
   protected linkHint(): { ok: boolean; text: string } | null {
     const href = this.linkHref();
-    if (!this.linkAddress().trim()) return null;
+    if (!this.linkTarget().trim()) return null;
     if (!href) return { ok: false, text: this.i18n.t(`rt.linkForm.invalid.${this.linkKind()}`) };
     const kind = this.linkKind();
     const shown = kind === 'web' ? href : href.replace(/^(mailto|tel):/, '').split('?')[0];
@@ -1015,7 +1015,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
       a.target = target;
       if (target === '_blank') a.rel = 'noopener noreferrer';
       a.className = 'rt-link text-secondary';
-      a.textContent = this.linkLabel().trim() || this.linkAddress().trim();
+      a.textContent = this.linkLabel().trim() || this.linkTarget().trim();
       range.insertNode(a);
       this.ensureLinkSpacing(a);
       const after = document.createRange();

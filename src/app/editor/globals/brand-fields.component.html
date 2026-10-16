@@ -1,33 +1,12 @@
 @let g = session.globals();
+@let name = g.brand.name;
+@let stars = g.brand.stars;
 
 <section data-testid="brand-fields">
-  <div class="ed-field">
-    <label class="ed-label" for="g-stars" [textContent]="i18n.t('brand.stars')"></label>
-    <input
-      id="g-stars"
-      class="ed-input"
-      data-testid="g-stars"
-      [value]="g.brand.starsText"
-      (input)="onBrand('starsText', $event)"
-      (blur)="onFieldBlur()"
-    />
-  </div>
-  <div class="ed-field">
-    <label class="ed-label" for="g-brand-name" [textContent]="i18n.t('brand.nameHtml')"></label>
-    <textarea
-      id="g-brand-name"
-      class="ed-textarea"
-      data-testid="g-brand-name"
-      rows="3"
-      [value]="g.brand.nameHtml"
-      (input)="onBrand('nameHtml', $event)"
-      (blur)="onFieldBlur()"
-    ></textarea>
-  </div>
-
-  <div class="ed-field logo-block" data-testid="logo-block">
-    <span class="ed-label" [textContent]="i18n.t('brand.logoSection')"></span>
+  <div class="ed-group" data-testid="logo-block">
+    <p class="ed-group-title" [textContent]="i18n.t('brand.logoSection')"></p>
     <app-image-picker
+      class="ed-field"
       idPrefix="g-logo"
       [src]="g.logo.src"
       [busy]="busy()"
@@ -36,43 +15,157 @@
       (removed)="clearLogo()"
       (loaded)="onLogoLoaded($event)"
     />
+    <div class="ed-field" [class.is-invalid]="!!g.logo.src && !(g.logo.alt ?? '').trim()">
+      <label class="ed-label" for="g-logo-description" [textContent]="i18n.t('field.imageDescription')"></label>
+      <input
+        id="g-logo-description"
+        class="ed-input"
+        data-testid="g-logo-description"
+        [placeholder]="i18n.t('brand.logoDescriptionPlaceholder')"
+        [attr.aria-invalid]="!!g.logo.src && !(g.logo.alt ?? '').trim()"
+        [value]="g.logo.alt ?? ''"
+        (input)="onLogo('alt', $event)"
+        (blur)="onFieldBlur()"
+      />
+      @if (g.logo.src && !(g.logo.alt ?? '').trim()) {
+        <p class="ed-hint is-error" data-testid="g-logo-description-required" [textContent]="i18n.t('field.imageDescriptionRequired')"></p>
+      }
+    </div>
+    <div class="ed-field">
+      <div class="ed-label-row">
+        <label class="ed-label" for="g-logo-link-target" [textContent]="i18n.t('brand.logoLinkTarget')"></label>
+        @if (linkKindKey(g.logo.href ?? ''); as kindKey) {
+          <span class="link-kind-chip" data-testid="g-logo-link-kind" [textContent]="i18n.t(kindKey)"></span>
+        }
+      </div>
+      <input
+        id="g-logo-link-target"
+        class="ed-input"
+        data-testid="g-logo-link-target"
+        [placeholder]="i18n.t('brand.logoLinkTargetPlaceholder')"
+        [value]="g.logo.href ?? ''"
+        (input)="onLogo('href', $event)"
+        (blur)="onLogoLinkTargetBlur()"
+      />
+      <p class="ed-hint" [textContent]="i18n.t('link.targetHint')"></p>
+    </div>
+    <div class="ed-field">
+      <label class="ed-label" for="g-logo-h" [textContent]="i18n.t('brand.logoHeight')"></label>
+      <input
+        id="g-logo-h"
+        class="ed-input brand-narrow"
+        type="number"
+        min="16"
+        max="480"
+        data-testid="g-logo-h"
+        [value]="g.logo.heightPx"
+        (input)="onLogoHeight($event)"
+        (blur)="onFieldBlur()"
+      />
+      <p class="ed-hint" [textContent]="i18n.t('brand.logoHeightHint')"></p>
+    </div>
   </div>
 
-  <div class="ed-field">
-    <label class="ed-label" for="g-logo-href" [textContent]="i18n.t('brand.logoHref')"></label>
-    <input
-      id="g-logo-href"
-      class="ed-input"
-      data-testid="g-logo-href"
-      [value]="g.logo.href ?? ''"
-      (input)="onLogo('href', $event)"
-      (blur)="onFieldBlur()"
-    />
+  <div class="ed-group" data-testid="brand-name">
+    <p class="ed-group-title" [textContent]="i18n.t('brand.name')"></p>
+    <div class="brand-parts">
+      @for (part of name.parts; track $index; let i = $index) {
+        <div class="brand-part">
+          <input
+            class="ed-input"
+            [attr.data-testid]="'brand-part-text-' + i"
+            [attr.aria-label]="i18n.t('brand.namePartText', { n: i + 1 })"
+            [value]="part.text"
+            (input)="onPartText(i, $event)"
+            (blur)="onFieldBlur()"
+          />
+          <input
+            class="brand-swatch"
+            type="color"
+            [attr.data-testid]="'brand-part-color-' + i"
+            [attr.aria-label]="i18n.t('brand.namePartColor', { n: i + 1 })"
+            [value]="part.color"
+            (input)="onPartColor(i, $event)"
+            (change)="onFieldBlur()"
+          />
+          <button
+            type="button"
+            class="brand-part-remove"
+            [attr.data-testid]="'brand-part-remove-' + i"
+            [attr.aria-label]="i18n.t('brand.namePartRemove', { n: i + 1 })"
+            [disabled]="name.parts.length < 2"
+            (click)="removePart(i)"
+          >✕</button>
+        </div>
+      }
+    </div>
+    <button type="button" class="brand-add" data-testid="brand-part-add" [textContent]="i18n.t('brand.namePartAdd')" (click)="addPart()"></button>
+    <p class="ed-hint" [textContent]="i18n.t('brand.nameHint')"></p>
+    <div class="brand-row">
+      <div class="ed-field">
+        <span class="ed-label" id="g-brand-size" [textContent]="i18n.t('brand.nameSize')"></span>
+        <div class="ed-seg" role="radiogroup" aria-labelledby="g-brand-size">
+          @for (s of nameSizes; track s) {
+            <button
+              type="button"
+              class="ed-seg-opt"
+              role="radio"
+              [class.is-on]="name.size === s"
+              [attr.aria-checked]="name.size === s"
+              [attr.data-testid]="'brand-size-' + s"
+              [textContent]="s.toUpperCase()"
+              (click)="updateName({ size: s })"
+            ></button>
+          }
+        </div>
+      </div>
+      <div class="ed-field">
+        <span class="ed-label" id="g-brand-weight" [textContent]="i18n.t('brand.nameWeight')"></span>
+        <div class="ed-seg" role="radiogroup" aria-labelledby="g-brand-weight">
+          @for (bold of [false, true]; track bold) {
+            <button
+              type="button"
+              class="ed-seg-opt"
+              role="radio"
+              [class.is-on]="name.bold === bold"
+              [attr.aria-checked]="name.bold === bold"
+              [attr.data-testid]="bold ? 'brand-weight-bold' : 'brand-weight-normal'"
+              [textContent]="i18n.t(bold ? 'brand.nameWeight.bold' : 'brand.nameWeight.normal')"
+              (click)="updateName({ bold })"
+            ></button>
+          }
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="ed-field">
-    <label class="ed-label" for="g-logo-alt" [textContent]="i18n.t('brand.logoAlt')"></label>
-    <input
-      id="g-logo-alt"
-      class="ed-input"
-      data-testid="g-logo-alt"
-      [value]="g.logo.alt ?? ''"
-      (input)="onLogo('alt', $event)"
-      (blur)="onFieldBlur()"
-    />
-  </div>
-  <div class="ed-field">
-    <label class="ed-label" for="g-logo-h" [textContent]="i18n.t('brand.logoHeight')"></label>
-    <input
-      id="g-logo-h"
-      class="ed-input"
-      type="number"
-      min="16"
-      max="480"
-      data-testid="g-logo-h"
-      [value]="g.logo.heightPx"
-      (input)="onLogoHeight($event)"
-      (blur)="onFieldBlur()"
-    />
-    <p class="ed-hint" [textContent]="i18n.t('brand.logoHeightHint')"></p>
+
+  <div class="ed-group" data-testid="brand-stars">
+    <p class="ed-group-title" [textContent]="i18n.t('brand.stars')"></p>
+    <div class="ed-field">
+      <span class="ed-label" id="g-stars-symbol" [textContent]="i18n.t('brand.starsSymbol')"></span>
+      <div class="brand-symbols" role="radiogroup" aria-labelledby="g-stars-symbol">
+        @for (sym of starSymbols(); track sym; let i = $index) {
+          <button
+            type="button"
+            class="brand-symbol"
+            role="radio"
+            [class.is-on]="stars.symbol === sym"
+            [attr.aria-checked]="stars.symbol === sym"
+            [attr.data-testid]="'brand-star-symbol-' + i"
+            [textContent]="sym"
+            (click)="updateStars({ symbol: sym })"
+          ></button>
+        }
+      </div>
+    </div>
+    <div class="ed-field">
+      <span class="ed-label" id="g-stars-count" [textContent]="i18n.t('brand.starsCount')"></span>
+      <div class="brand-stepper" role="group" aria-labelledby="g-stars-count">
+        <button type="button" data-testid="brand-stars-fewer" [attr.aria-label]="i18n.t('brand.starsFewer')" [disabled]="stars.count < 1" (click)="updateStars({ count: stars.count - 1 })">−</button>
+        <output data-testid="brand-stars-count" [textContent]="stars.count"></output>
+        <button type="button" data-testid="brand-stars-more" [attr.aria-label]="i18n.t('brand.starsMore')" [disabled]="stars.count >= starMax" (click)="updateStars({ count: stars.count + 1 })">+</button>
+      </div>
+      <p class="ed-hint" [textContent]="i18n.t('brand.starsHint')"></p>
+    </div>
   </div>
 </section>

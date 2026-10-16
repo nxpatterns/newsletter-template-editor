@@ -11,7 +11,7 @@ const SELLER_FIELD_KEYS = [
   'field.chapterTitle',
   'field.quoteHtml',
   'field.statGeo',
-  'brand.nameHtml',
+  'brand.name',
   'legal.notice',
   'block.paragraph.hint',
 ] as const;

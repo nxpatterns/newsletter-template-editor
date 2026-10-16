@@ -1,5 +1,5 @@
 /**
- * Link addresses as sellers type them: web page, email or phone.
+ * Link targets as sellers type them: web page, email or phone.
  * Turns "cloudlib.eu", "info@cloudlib.eu" or "+49 30 123456" into a safe href and back.
  */
 
@@ -48,12 +48,19 @@ export function buildLinkHref(kind: LinkKind, raw: string, subject = ''): string
 }
 
 /** Split an existing href back into what the link form shows. */
-export function parseLinkHref(href: string): { kind: LinkKind; address: string; subject: string } {
+export function parseLinkHref(href: string): { kind: LinkKind; target: string; subject: string } {
   if (/^mailto:/i.test(href)) {
     const [addr, query = ''] = href.slice(7).split('?');
     const subject = new URLSearchParams(query).get('subject') ?? '';
-    return { kind: 'email', address: decodeURIComponent(addr), subject };
+    return { kind: 'email', target: decodeURIComponent(addr), subject };
   }
-  if (/^tel:/i.test(href)) return { kind: 'phone', address: href.slice(4), subject: '' };
-  return { kind: 'web', address: href, subject: '' };
+  if (/^tel:/i.test(href)) return { kind: 'phone', target: href.slice(4), subject: '' };
+  return { kind: 'web', target: href, subject: '' };
+}
+
+/** "cloudlib.eu" → "https://cloudlib.eu", "info@x.de" → "mailto:…"; null when nothing changes. */
+export function normalizeLinkTarget(raw: string): string | null {
+  const kind = detectLinkKind(raw);
+  const built = kind ? buildLinkHref(kind, raw) : null;
+  return built && built !== raw.trim() ? built : null;
 }

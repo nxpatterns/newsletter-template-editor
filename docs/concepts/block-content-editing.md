@@ -60,13 +60,27 @@ Fix the model before introducing a text editor.
 | Constrained rich text (lite kit) | Paragraph body (primary); later brand name / legal notice if needed | Semantic size + theme color + inline marks |
 | Full HTML textarea | Escape hatch only, advanced | Temporary legacy / power users |
 
+## Seller vocabulary (EN / DE)
+
+Every address field uses one of these terms, with a placeholder and a helper line. No "URL", "Label", "href" or "Alt-Text" in the UI.
+
+| Term | Means | Saved field |
+| --- | --- | --- |
+| Image address / Bildadresse | Where the picture is stored | `src` |
+| Link target / Linkziel | Where a click leads (web, email, phone); normalized on blur | `href`, `*Href` |
+| Link text / Linktext | Words the reader clicks | `*Label` |
+| Image description / Bildbeschreibung | Text when images are blocked; required | `alt` |
+| Caption / Bildunterschrift | Visible line under the picture | `caption` |
+
+Saved field names stay HTML-like on purpose; i18n keys and test ids use the terms (`linkTarget`, `imageDescription`, `image-address`).
+
 ## Global fields (not blocks, same rules)
 
 | Area | Approach |
 | --- | --- |
 | Campaign | Plain: preheader, subject (preview), font preset, export prefix |
-| Brand | Plain stars line; brand name may later reuse the lite kit |
-| Logo | File upload → master embed + display size (`logo-upload.md`). No seller-facing raw URL/base64 field |
+| Brand | Stars: symbol + count, 0 hides header and footer row. Name: parts `{ text, color }` plus size S/M/L and bold (schema v4, `migrate-v4.ts` converts old HTML spans) |
+| Logo | Shared image picker (link or file), image description, link target, height (`logo-upload.md`) |
 | Colors | Colors tab only — defaults and slots (`email-colors.md`). No free hex in block inspectors or the text kit |
 | Legal | Mostly plain labels/URLs; notice may later reuse the lite kit |
 

@@ -219,9 +219,9 @@ describe('NewsletterSession', () => {
 
   it('updates globals brand and colors', () => {
     session.updateGlobals({ secondaryColor: '#112233' });
-    session.updateBrand({ starsText: '★' });
+    session.updateBrand({ stars: { symbol: '✦', count: 3 } });
     expect(session.globals().secondaryColor).toBe('#112233');
-    expect(session.globals().brand.starsText).toBe('★');
+    expect(session.globals().brand.stars).toEqual({ symbol: '✦', count: 3 });
   });
 
   it('undo/redo restores discrete mutations', () => {

@@ -355,7 +355,7 @@ Inline HTML colors inside content remain until structure/light-marks remove them
 
 ### Brand name note
 
-`brand.nameHtml` is still multi-span HTML. Do not block email-colors on full decomposition; expose clean shell slots first; brand multi-stop colors follow structured marks later.
+Since schema v4 the brand name is `brand.name.parts` (`{ text, color }` each). Its colors are the brand's own hex values, edited in the Brand tab, not theme tokens.
 
 ## Custom blocks (future)
 

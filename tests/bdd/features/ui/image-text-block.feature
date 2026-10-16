@@ -8,7 +8,7 @@ Feature: Image and text block
     Given I open the home page with an extra image and text block
     When I open the block editor for seed block 'test-image-text'
     And I paste the image link 'https://cdn.example.test/room.png'
-    Then the image status should read 'Linked image · 40 × 30'
+    Then the image status should read 'Online image · 40 × 30'
     And the preview should show the picture left of the text
     When I choose the image text option 'side' 'right'
     Then the preview should show the picture right of the text

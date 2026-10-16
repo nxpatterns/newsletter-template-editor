@@ -21,11 +21,16 @@ export function defaultPersonalization(): PersonalizationConfig {
 
 export function defaultBrand(): BrandConfig {
   return {
-    starsText: '★ ★ ★ ★ ★ ★',
-    nameHtml:
-      '<span style="font-family:Helvetica,Arial,sans-serif;font-size:20px;font-weight:700;color:#4db8ff;letter-spacing:1px">Cloud</span>' +
-      '<span style="font-family:Helvetica,Arial,sans-serif;font-size:20px;color:#a8d8f8;font-weight:700;letter-spacing:1px">Lib</span>' +
-      '<span style="font-family:Helvetica,Arial,sans-serif;font-size:20px;font-weight:700;color:#59abf0;letter-spacing:1px">.EU</span>',
+    stars: { symbol: '★', count: 6 },
+    name: {
+      parts: [
+        { text: 'Cloud', color: '#4db8ff' },
+        { text: 'Lib', color: '#a8d8f8' },
+        { text: '.EU', color: '#59abf0' },
+      ],
+      size: 'm',
+      bold: true,
+    },
   };
 }
 

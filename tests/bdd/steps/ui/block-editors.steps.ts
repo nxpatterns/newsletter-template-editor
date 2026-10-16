@@ -28,7 +28,7 @@ When('I open link list row {int}', async ({ page }, n: number) => {
 });
 
 When('I enter the link address {string} in link list row {int}', async ({ page }, address: string, n: number) => {
-  const href = linkRow(page, n).getByTestId(`cta-link-href-${n - 1}`);
+  const href = linkRow(page, n).getByTestId(`cta-link-target-${n - 1}`);
   await href.fill(address);
   await href.blur();
 });
@@ -36,7 +36,7 @@ When('I enter the link address {string} in link list row {int}', async ({ page }
 Then(
   'link list row {int} should link to {string} and show {string}',
   async ({ page }, n: number, href: string, kind: string) => {
-    await expect(linkRow(page, n).getByTestId(`cta-link-href-${n - 1}`)).toHaveValue(href);
+    await expect(linkRow(page, n).getByTestId(`cta-link-target-${n - 1}`)).toHaveValue(href);
     await expect(linkRow(page, n).getByTestId(`cta-link-kind-${n - 1}`)).toHaveText(kind);
   },
 );
@@ -116,13 +116,13 @@ Then('the button text counter should warn', async ({ page }) => {
 });
 
 When('I enter the button link {string}', async ({ page }, href: string) => {
-  const input = modal(page).getByTestId('insp-cta-href');
+  const input = modal(page).getByTestId('insp-button-link-target');
   await input.fill(href);
   await input.blur();
 });
 
 Then('the button should link to {string} and show {string}', async ({ page }, href: string, kind: string) => {
-  await expect(modal(page).getByTestId('insp-cta-href')).toHaveValue(href);
+  await expect(modal(page).getByTestId('insp-button-link-target')).toHaveValue(href);
   await expect(modal(page).getByTestId('insp-cta-kind')).toHaveText(kind);
 });
 

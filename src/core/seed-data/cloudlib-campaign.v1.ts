@@ -2,7 +2,7 @@ import type { Newsletter } from '../types';
 
 /** Full previously-sent CloudLib campaign seed (demo config). */
 export const CLOUDLIB_CAMPAIGN_V1 = {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "globals": {
     "preheader": "Ihre Kunden sind nicht naiv. Sie vergleichen. Schnell. Still. Und meistens ohne zweite Chance. \n\nWas sieht jemand, der Ihren Betrieb online findet? Ein Logo, eine Adresse - oder Ihren Betrieb, betretbar in 3D?\n\n22.000 Unternehmen in neun Ländern haben das bereits geändert - mit 3D-Rundgängen, die man direkt über Google und Social Media betreten kann.",
     "fontFamily": "Georgia",
@@ -23,8 +23,28 @@ export const CLOUDLIB_CAMPAIGN_V1 = {
       "naturalHeight": 150
     },
     "brand": {
-      "starsText": "★ ★ ★ ★ ★ ★",
-      "nameHtml": "<span style=\"font-family:Helvetica,Arial,sans-serif;font-size:20px;font-weight:700;color:#4db8ff;letter-spacing:1px\">Cloud</span><span style=\"font-family:Helvetica,Arial,sans-serif;font-size:20px;color:#a8d8f8;font-weight:700;letter-spacing:1px\">Lib</span><span style=\"font-family:Helvetica,Arial,sans-serif;font-size:20px;font-weight:700;color:#59abf0;letter-spacing:1px\">.EU</span>"
+      "stars": {
+        "symbol": "★",
+        "count": 6
+      },
+      "name": {
+        "parts": [
+          {
+            "text": "Cloud",
+            "color": "#4db8ff"
+          },
+          {
+            "text": "Lib",
+            "color": "#a8d8f8"
+          },
+          {
+            "text": ".EU",
+            "color": "#59abf0"
+          }
+        ],
+        "size": "m",
+        "bold": true
+      }
     },
     "personalization": {
       "customFields": [],

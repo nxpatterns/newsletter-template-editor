@@ -207,15 +207,15 @@
           </label>
         }
         <label class="rt-link-pop__field">
-          <span [textContent]="i18n.t('rt.linkForm.address')"></span>
+          <span [textContent]="i18n.t('rt.linkForm.target')"></span>
           <input
-            #linkAddressInput
+            #linkTargetInput
             class="ed-input"
-            data-testid="rt-link-href"
+            data-testid="rt-link-target"
             [attr.type]="linkKind() === 'email' ? 'email' : linkKind() === 'phone' ? 'tel' : 'url'"
             [placeholder]="linkPlaceholders[linkKind()]"
-            [value]="linkAddress()"
-            (input)="onLinkAddressInput($any($event.target).value)"
+            [value]="linkTarget()"
+            (input)="onLinkTargetInput($any($event.target).value)"
           />
         </label>
         @if (linkKind() === 'email') {

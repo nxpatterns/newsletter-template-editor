@@ -14,7 +14,7 @@ import {
   BENEFIT_DEFAULT_ICON,
   CTA_LINK_ICONS,
   detectLinkKind,
-  buildLinkHref,
+  normalizeLinkTarget,
   fontStack,
   emptyBenefitsListItem,
   emptyCtaLinkListItem,
@@ -156,18 +156,18 @@ export class BlockInspectorComponent {
   }
 
   /** "info@x.de" or "+49 30 …" become mailto:/tel: so the email link works. */
-  protected onCtaHrefBlur(blockId: string, index: number): void {
+  protected onCtaLinkTargetBlur(blockId: string, index: number): void {
     this.session.endCoalesce();
     const href = this.ctaBlock(blockId)?.items[index]?.href ?? '';
-    const built = normalizedHref(href);
+    const built = normalizeLinkTarget(href);
     if (built) this.patchCtaItem(blockId, index, { href: built }, 'immediate');
   }
 
-  protected onHrefBlur(blockId: string): void {
+  protected onLinkTargetBlur(blockId: string): void {
     this.session.endCoalesce();
     const block = this.session.newsletter().blocks.find((b) => b.id === blockId);
     if (block?.type !== 'cta-button' && block?.type !== 'image' && block?.type !== 'image-text') return;
-    const built = normalizedHref(block.href);
+    const built = normalizeLinkTarget(block.href);
     if (built) this.session.updateBlock(blockId, { href: built }, 'immediate');
   }
 
@@ -381,8 +381,3 @@ function moveItem<T>(items: readonly T[], index: number, delta: number): T[] | n
 }
 
 /** The usable href for a typed address, or null when it is already fine or not recognizable. */
-function normalizedHref(href: string): string | null {
-  const kind = detectLinkKind(href);
-  const built = kind ? buildLinkHref(kind, href) : null;
-  return built && built !== href.trim() ? built : null;
-}

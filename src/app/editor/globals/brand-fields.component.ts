@@ -1,6 +1,13 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import {
+  BRAND_NAME_SIZES,
+  BRAND_STAR_MAX,
+  BRAND_STAR_SYMBOLS,
+  detectLinkKind,
   displaySizeFromHeight,
+  normalizeLinkTarget,
+  type BrandName,
+  type BrandStars,
   intakeLogoFile,
   LogoPipelineError,
 } from '../../../core';
@@ -14,7 +21,7 @@ import { NewsletterSession } from '../newsletter-session.service';
   selector: 'app-brand-fields',
   imports: [ImagePickerComponent],
   templateUrl: './brand-fields.component.html',
-  styleUrl: './globals-forms.component.scss',
+  styleUrl: './brand-fields.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BrandFieldsComponent {
@@ -25,9 +32,61 @@ export class BrandFieldsComponent {
 
   protected readonly busy = signal(false);
 
-  protected onBrand(key: 'starsText' | 'nameHtml', event: Event): void {
-    const value = (event.target as HTMLInputElement | HTMLTextAreaElement).value;
-    this.session.updateBrand({ [key]: value }, 'coalesce');
+  protected readonly nameSizes = BRAND_NAME_SIZES;
+  protected readonly starMax = BRAND_STAR_MAX;
+  /** The fixed choices, plus a symbol carried over from an older template. */
+  protected readonly starSymbols = computed(() => {
+    const current = this.session.globals().brand.stars.symbol;
+    return (BRAND_STAR_SYMBOLS as readonly string[]).includes(current)
+      ? [...BRAND_STAR_SYMBOLS]
+      : [...BRAND_STAR_SYMBOLS, current];
+  });
+
+  protected updateName(patch: Partial<BrandName>, history: 'immediate' | 'coalesce' = 'immediate'): void {
+    this.session.updateBrand({ name: { ...this.session.globals().brand.name, ...patch } }, history);
+  }
+
+  protected updateStars(patch: Partial<BrandStars>): void {
+    const stars = { ...this.session.globals().brand.stars, ...patch };
+    stars.count = Math.max(0, Math.min(BRAND_STAR_MAX, stars.count));
+    this.session.updateBrand({ stars }, 'immediate');
+  }
+
+  private patchPart(index: number, patch: Partial<BrandName['parts'][number]>): void {
+    const parts = this.session.globals().brand.name.parts.map((p, i) => (i === index ? { ...p, ...patch } : p));
+    this.updateName({ parts }, 'coalesce');
+  }
+
+  protected onPartText(index: number, event: Event): void {
+    this.patchPart(index, { text: (event.target as HTMLInputElement).value });
+  }
+
+  protected onPartColor(index: number, event: Event): void {
+    this.patchPart(index, { color: (event.target as HTMLInputElement).value });
+  }
+
+  /** A new part starts with the last part's color, so it blends in until changed. */
+  protected addPart(): void {
+    const parts = this.session.globals().brand.name.parts;
+    this.updateName({ parts: [...parts, { text: '', color: parts.at(-1)?.color ?? '#4db8ff' }] });
+  }
+
+  protected removePart(index: number): void {
+    const parts = this.session.globals().brand.name.parts;
+    if (parts.length < 2) return;
+    this.updateName({ parts: parts.filter((_, i) => i !== index) });
+  }
+
+  /** i18n key of the link type the address looks like, for the hint chip. */
+  protected linkKindKey(href: string): string | null {
+    const kind = detectLinkKind(href);
+    return kind ? `rt.linkForm.type.${kind}` : null;
+  }
+
+  protected onLogoLinkTargetBlur(): void {
+    this.session.endCoalesce();
+    const built = normalizeLinkTarget(this.session.globals().logo.href ?? '');
+    if (built) this.session.updateLogo({ href: built }, 'immediate');
   }
 
   protected onLogo(key: 'src' | 'href' | 'alt', event: Event): void {

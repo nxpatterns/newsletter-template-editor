@@ -177,16 +177,6 @@
   margin: 0.2rem 0 0;
 }
 
-.link-kind-chip {
-  display: inline-flex;
-  padding: 0.05rem 0.45rem;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--ds-accent) 40%, transparent);
-  font-size: 0.68rem;
-  color: var(--ds-accent);
-  background: color-mix(in srgb, var(--ds-accent) 12%, transparent);
-}
-
 /* Price box: currency, amount and unit in one line, as they read. */
 .ed-price-row {
   display: grid;

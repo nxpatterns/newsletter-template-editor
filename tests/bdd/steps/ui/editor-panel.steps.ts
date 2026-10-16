@@ -423,7 +423,7 @@ Then('paragraph {int} should have bold text again', async ({ page }, n: number) 
 
 When('I link the selection to {string}', async ({ page }, href: string) => {
   await page.getByTestId('block-edit-modal').getByTestId('rt-link').click();
-  await page.getByTestId('rt-link-href').fill(href);
+  await page.getByTestId('rt-link-target').fill(href);
   await page.getByTestId('rt-link-apply').click();
   await expect(page.getByTestId('rt-link-popover')).toHaveCount(0);
 });
@@ -479,7 +479,7 @@ When('I fill the link text with {string}', async ({ page }, text: string) => {
 });
 
 When('I type the link address {string}', async ({ page }, address: string) => {
-  await page.getByTestId('rt-link-href').fill(address);
+  await page.getByTestId('rt-link-target').fill(address);
 });
 
 Then('the link type should be {string}', async ({ page }, kind: string) => {
@@ -523,7 +523,7 @@ When('I remove the link in the popover', async ({ page }) => {
 });
 
 When('I press Escape in the link form', async ({ page }) => {
-  await page.getByTestId('rt-link-href').press('Escape');
+  await page.getByTestId('rt-link-target').press('Escape');
 });
 
 Then('the link form should be closed', async ({ page }) => {

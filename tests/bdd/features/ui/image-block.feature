@@ -9,7 +9,7 @@ Feature: Image block and logo picker
     When I open the block editor for seed block 'test-image'
     Then the image description should be marked as required
     When I paste the image link 'https://cdn.example.test/hotel.png'
-    Then the image status should read 'Linked image · 40 × 30'
+    Then the image status should read 'Online image · 40 × 30'
     And no embedded image warning should be shown
     And the preview should show the image 'https://cdn.example.test/hotel.png'
     When I describe the image as 'Hotel room in 3D'
@@ -28,5 +28,5 @@ Feature: Image block and logo picker
     When I open the Brand tab
     Then the logo should be flagged as SVG and embedded
     When I paste the logo link 'https://cdn.example.test/logo.png'
-    Then the image status should read 'Linked image · 40 × 30'
+    Then the image status should read 'Online image · 40 × 30'
     And the logo should not be flagged
