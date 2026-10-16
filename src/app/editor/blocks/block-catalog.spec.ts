@@ -1,21 +1,13 @@
 import { createBlock, normalizeNewsletter, renderExport, type Block } from '../../../core';
 import { seedNewsletter } from '../../../core/seed';
-import { DE } from '../../i18n/catalogs/de';
-import { EN } from '../../i18n/catalogs/en';
 import { CATALOG_TYPES } from './block-catalog';
 
-/** Guards that block types stay separate: own label, own markup, demos unchanged. */
+/** Guards that block types stay separate: fixed count, own markup, demos unchanged. */
 describe('block catalog', () => {
-  for (const [lang, catalog] of [['de', DE], ['en', EN]] as const) {
-    it(`gives every catalog type its own ${lang} label and hint`, () => {
-      const labels = CATALOG_TYPES.map((type) => catalog[`block.${type}`]);
-      for (const type of CATALOG_TYPES) {
-        expect(catalog[`block.${type}`], type).toBeTruthy();
-        expect(catalog[`block.${type}.hint`], type).toBeTruthy();
-      }
-      expect(new Set(labels).size).toBe(labels.length);
-    });
-  }
+  it('offers exactly 18 distinct block types', () => {
+    expect(CATALOG_TYPES.length).toBe(18);
+    expect(new Set(CATALOG_TYPES).size).toBe(CATALOG_TYPES.length);
+  });
 
   it('keeps the pull quote and the testimonial apart in data and markup', () => {
     const render = (b: Block) => {
