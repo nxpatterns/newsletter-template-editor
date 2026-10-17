@@ -20,3 +20,19 @@ Feature: Colors tab
     When I confirm the color question
     Then the general color 'link' should be '#778899'
     And the block 'stat-box' should still use its own 'number' color '#445566'
+
+  Scenario: Block colors belong to one color set and can be reset per block
+    Given I open the editor with the German demo
+    When I open the colors tab
+    And I give the block 'stat-box' its own 'number' color '#445566'
+    And I switch to the 'light' color set
+    Then the block 'stat-box' should not use its own 'number' color '#445566'
+    When I switch to the 'dark' color set
+    Then the block 'stat-box' should still use its own 'number' color '#445566'
+    When I reset the colors of the block 'stat-box'
+    Then the block 'stat-box' should not use its own 'number' color '#445566'
+
+  Scenario: Every placed block has its own entry in the block colors
+    Given I open the editor with the German demo
+    When I open the colors tab
+    Then the block colors should list every placed block once

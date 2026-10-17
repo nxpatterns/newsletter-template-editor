@@ -67,3 +67,20 @@ Feature: Block editors
     Given I open the editor with an extra thin divider
     When I click 8px above the divider 'test-divider' in the preview
     Then the preview block 'test-divider' should be selected
+
+  Scenario: Cancelling the block editor throws the edit away and says so
+    Given I open the editor with the German demo
+    When I set the hero label to "Acme Labs"
+    And I cancel the block editor
+    Then the block editor should be closed
+    And the preview frame should not contain "Acme Labs"
+    And the discarded notice should be shown
+    And the discarded notice should go away by itself
+    And the header should show no save state
+
+  Scenario: Cancelling the block editor without a change shows no notice
+    Given I open the editor with the German demo
+    When I open the first block editor
+    And I cancel the block editor
+    Then the block editor should be closed
+    And the discarded notice should not be shown

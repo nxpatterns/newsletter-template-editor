@@ -179,6 +179,88 @@ describe('NewsletterSession', () => {
     expect(session.discardedNotice()).toBe(true);
   });
 
+  describe('cancelBlockEditor on a document that was already unsaved', () => {
+    it('keeps the earlier edit and the unsaved state, and drops only the modal edit', () => {
+      const hero = session.blocks().find((b) => b.type === 'hero')!;
+      session.updateBlock(hero.id, { label: 'EARLIER' });
+      expect(session.dirty()).toBe(true);
+      session.openBlockEditor(hero.id);
+      session.updateBlock(hero.id, { label: 'IN-MODAL' }, 'coalesce');
+      session.cancelBlockEditor();
+      const after = session.blocks().find((b) => b.id === hero.id);
+      expect(after?.type === 'hero' && after.label).toBe('EARLIER');
+      expect(session.dirty()).toBe(true);
+      expect(session.editingBlockId()).toBeNull();
+    });
+
+    it('never makes a clean document unsaved, however often the field changed', () => {
+      expect(session.dirty()).toBe(false);
+      const hero = session.blocks().find((b) => b.type === 'hero')!;
+      session.openBlockEditor(hero.id);
+      session.updateBlock(hero.id, { label: 'TEMP' }, 'coalesce');
+      session.updateBlock(hero.id, { label: 'TEMP 2' }, 'coalesce');
+      session.cancelBlockEditor();
+      expect(session.dirty()).toBe(false);
+    });
+  });
+
+  describe('discarded notice', () => {
+    beforeEach(() => vi.useFakeTimers());
+    afterEach(() => vi.useRealTimers());
+
+    it('is off by default and stays off when cancelling without a change', () => {
+      const hero = session.blocks().find((b) => b.type === 'hero')!;
+      expect(session.discardedNotice()).toBe(false);
+      session.openBlockEditor(hero.id);
+      session.cancelBlockEditor();
+      expect(session.discardedNotice()).toBe(false);
+    });
+
+    it('stays off when a change was typed and then reverted to the original value', () => {
+      const hero = session.blocks().find((b) => b.type === 'hero')!;
+      const original = hero.type === 'hero' ? hero.label : '';
+      session.openBlockEditor(hero.id);
+      session.updateBlock(hero.id, { label: 'TEMP' }, 'coalesce');
+      session.updateBlock(hero.id, { label: original }, 'coalesce');
+      session.cancelBlockEditor();
+      expect(session.discardedNotice()).toBe(false);
+    });
+
+    it('appears when real edits are thrown away and disappears by itself', () => {
+      const hero = session.blocks().find((b) => b.type === 'hero')!;
+      session.openBlockEditor(hero.id);
+      session.updateBlock(hero.id, { label: 'TEMP' }, 'coalesce');
+      session.cancelBlockEditor();
+      expect(session.discardedNotice()).toBe(true);
+      vi.runOnlyPendingTimers();
+      expect(session.discardedNotice()).toBe(false);
+    });
+
+    it('does not appear when the editor is saved', () => {
+      const hero = session.blocks().find((b) => b.type === 'hero')!;
+      session.openBlockEditor(hero.id);
+      session.updateBlock(hero.id, { label: 'KEEP' }, 'coalesce');
+      session.saveBlockEditor();
+      expect(session.discardedNotice()).toBe(false);
+    });
+
+    it('a second cancel restarts the timer instead of hiding the notice early', () => {
+      const hero = session.blocks().find((b) => b.type === 'hero')!;
+      const edit = () => {
+        session.openBlockEditor(hero.id);
+        session.updateBlock(hero.id, { label: 'TEMP' }, 'coalesce');
+        session.cancelBlockEditor();
+      };
+      edit();
+      vi.advanceTimersByTime(3000);
+      edit();
+      vi.advanceTimersByTime(3000);
+      expect(session.discardedNotice()).toBe(true);
+      vi.runOnlyPendingTimers();
+      expect(session.discardedNotice()).toBe(false);
+    });
+  });
+
   it('paragraph draft does not mutate newsletter until save', () => {
     const para = session.blocks().find((b) => b.type === 'paragraph');
     expect(para).toBeTruthy();

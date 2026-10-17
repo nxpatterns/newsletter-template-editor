@@ -62,3 +62,21 @@ Then('the block {string} should still use its own {string} color {string}', asyn
   const id = await blockId(page, type);
   await expect(page.getByTestId(`color-slot-${id}.${slot}`)).toContainText(hex.toUpperCase());
 });
+
+Then('the block {string} should not use its own {string} color {string}', async ({ page }, type: string, slot: string, hex: string) => {
+  const id = await blockId(page, type);
+  await expect(page.getByTestId(`color-slot-${id}.${slot}`)).not.toContainText(hex.toUpperCase());
+});
+
+When('I reset the colors of the block {string}', async ({ page }, type: string) => {
+  const id = await blockId(page, type);
+  await page.getByTestId(`color-block-reset-${id}`).click();
+});
+
+Then('the block colors should list every placed block once', async ({ page }) => {
+  const inPreview = page.frameLocator('[data-testid="preview-frame"]').locator('tr[data-block-id]');
+  await expect(inPreview.first()).toBeVisible();
+  const ids = await inPreview.evaluateAll((rows) => rows.map((r) => r.getAttribute('data-block-id')));
+  const listed = page.getByTestId('colors-block-accordions').locator('[data-testid^="colors-acc-"]');
+  await expect(listed).toHaveCount(new Set(ids).size);
+});

@@ -108,3 +108,28 @@ describe('normalizeColors', () => {
     }
   });
 });
+
+describe('standard colors are readable from the start', () => {
+  for (const mode of ['dark', 'light'] as const) {
+    it(`no text color of any block type falls below the minimum contrast in the ${mode} set`, () => {
+      const colors = setColorMode(defaultColors(), mode);
+      const problems: string[] = [];
+      for (const type of Object.keys(BLOCK_COLOR_SLOTS)) {
+        for (const slot of BLOCK_COLOR_SLOTS[type]) {
+          const issue = slotContrastIssue(colors, mode, { id: type, type }, slot.key);
+          if (issue) problems.push(`${type}.${slot.key} ${issue.ratio.toFixed(2)}`);
+        }
+      }
+      expect(problems).toEqual([]);
+    });
+
+    it(`the general text colors are readable on the page, content and surface in the ${mode} set`, () => {
+      const set = STANDARD_SETS[mode];
+      for (const text of ['body', 'head', 'dim', 'link', 'accent'] as const) {
+        for (const bg of ['page', 'content', 'surface'] as const) {
+          expect(contrastRatio(set[text], set[bg]), `${text} on ${bg}`).toBeGreaterThanOrEqual(TEXT_CONTRAST_MIN);
+        }
+      }
+    });
+  }
+});

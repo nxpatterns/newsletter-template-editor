@@ -134,7 +134,7 @@ export const BLOCK_COLOR_SLOTS: Readonly<Record<string, readonly ColorSlotDef[]>
   video: [
     BG(),
     { key: 'play', role: 'link', kind: 'fill', css: [bg('.video-play-cell')], attr: true },
-    { key: 'playIcon', role: 'btnText', kind: 'text', on: 'play', css: [fg('a.video-play-link')] },
+    { key: 'playIcon', role: 'content', kind: 'text', on: 'play', css: [fg('a.video-play-link')] },
     { key: 'text', role: 'dim', kind: 'text', css: [fg('.video-title-cell')] },
     { key: 'link', role: 'link', kind: 'text', css: [fg('a.video-title-link')] },
   ],

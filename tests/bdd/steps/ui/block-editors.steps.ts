@@ -185,3 +185,33 @@ Then('the preview block {string} should be selected', async ({ page }, id: strin
   const tr = page.frameLocator('[data-testid="preview-frame"]').locator(`tr[data-block-id="${id}"]`);
   await expect(tr).toHaveClass(/\bis-selected\b/);
 });
+
+When('I open the first block editor', async ({ page }) => {
+  await page.locator('[data-testid^="edit-block-"]').first().click();
+  await expect(modal(page)).toHaveClass(/is-open/);
+});
+
+When('I cancel the block editor', async ({ page }) => {
+  await page.getByTestId('block-edit-cancel').click();
+});
+
+Then('the block editor should be closed', async ({ page }) => {
+  await expect(modal(page)).not.toHaveClass(/is-open/);
+});
+
+Then('the preview frame should not contain {string}', async ({ page }, text: string) => {
+  const frame = page.frameLocator('[data-testid="preview-frame"]');
+  await expect(frame.locator('body')).not.toContainText(text);
+});
+
+Then('the discarded notice should be shown', async ({ page }) => {
+  await expect(page.getByTestId('save-state-discarded')).toBeVisible();
+});
+
+Then('the discarded notice should not be shown', async ({ page }) => {
+  await expect(page.getByTestId('save-state-discarded')).toHaveCount(0);
+});
+
+Then('the discarded notice should go away by itself', async ({ page }) => {
+  await expect(page.getByTestId('save-state-discarded')).toHaveCount(0, { timeout: 10_000 });
+});
