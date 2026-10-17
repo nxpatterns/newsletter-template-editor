@@ -13,6 +13,16 @@ import {
   PLACEHOLDER_LOGO_SRC,
   isFramePartShown,
   type FramePart,
+  makeReadable,
+  parseHexColor,
+  resetGeneralColor,
+  resolveGeneralColors,
+  setGeneralColor,
+  starsContrastIssues,
+  STARS_ROLE,
+  type ColorRole,
+  TEXT_CONTRAST_MIN,
+  type StarsContrastIssue,
 } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
 import { ImagePickerComponent, type ImageSize } from '../image-picker/image-picker.component';
@@ -21,6 +31,20 @@ import { SnackbarService } from '../../ui/snackbar/snackbar.service';
 import { NewsletterSession } from '../newsletter-session.service';
 import { FramePartSwitchComponent } from './frame-part-switch.component';
 import { ClearableInputDirective } from '../../ui/clearable-input.directive';
+
+const STARS_FRAMES: readonly { frame: 'header' | 'footer'; part: FramePart }[] = [
+  { frame: 'header', part: 'starsTop' },
+  { frame: 'footer', part: 'starsBottom' },
+];
+
+interface StarsColorVm {
+  frame: 'header' | 'footer';
+  role: ColorRole;
+  part: FramePart;
+  hex: string;
+  changed: boolean;
+  issue: StarsContrastIssue | null;
+}
 
 @Component({
   selector: 'app-brand-fields',
@@ -51,6 +75,64 @@ export class BrandFieldsComponent {
 
   protected updateName(patch: Partial<BrandName>, history: 'immediate' | 'coalesce' = 'immediate'): void {
     this.session.updateBrand({ name: { ...this.session.globals().brand.name, ...patch } }, history);
+  }
+
+  /** Top (header) and bottom (footer) star colors of the active color set (dark or light). */
+  protected readonly starsColors = computed((): StarsColorVm[] => {
+    const g = this.session.globals();
+    const set = resolveGeneralColors(g.colors);
+    const issues = g.brand.stars.count < 1 ? [] : starsContrastIssues(g.colors);
+    return STARS_FRAMES.map(({ frame, part }) => {
+      const role = STARS_ROLE[frame];
+      return {
+        frame,
+        role,
+        part,
+        hex: set[role],
+        changed: g.colors[g.colors.mode].general[role] !== undefined,
+        // Only where the stars are actually shown.
+        issue: this.shown(part) ? (issues.find((i) => i.frame === frame) ?? null) : null,
+      };
+    });
+  });
+
+  protected readonly colorModeLabel = computed(() => this.i18n.t(`colors.mode.${this.session.globals().colors.mode}`));
+
+  protected onStarsColorInput(row: StarsColorVm, event: Event): void {
+    const hex = parseHexColor((event.target as HTMLInputElement).value);
+    if (hex) this.session.updateColors((c) => setGeneralColor(c, row.role, hex), 'coalesce');
+  }
+
+  protected onStarsColorCommit(row: StarsColorVm, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const hex = parseHexColor(input.value);
+    if (!hex) {
+      input.value = row.hex.toUpperCase();
+      return;
+    }
+    this.session.endCoalesce();
+    this.session.updateColors((c) => setGeneralColor(c, row.role, hex));
+  }
+
+  protected resetStarsColor(row: StarsColorVm): void {
+    this.session.updateColors((c) => resetGeneralColor(c, row.role));
+  }
+
+  protected fixStarsColor(row: StarsColorVm): void {
+    const issue = row.issue;
+    if (!issue) return;
+    this.session.updateColors((c) => setGeneralColor(c, row.role, makeReadable(issue.fg, issue.bg)));
+  }
+
+  protected starsIssueText(issue: StarsContrastIssue): string {
+    const num = (n: number) => n.toFixed(1).replace('.', this.i18n.locale() === 'de' ? ',' : '.');
+    return this.i18n.t('colors.contrast.text', {
+      fg: issue.fg.toUpperCase(),
+      bg: issue.bg.toUpperCase(),
+      ratio: num(issue.ratio),
+      min: num(TEXT_CONTRAST_MIN),
+      cause: this.i18n.t(`brand.starsColorCause.${issue.frame}`),
+    });
   }
 
   protected updateStars(patch: Partial<BrandStars>): void {

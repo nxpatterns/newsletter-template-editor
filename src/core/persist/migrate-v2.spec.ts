@@ -41,7 +41,7 @@ describe('schema v1 → v2 migration', () => {
   it('renames globals keys in one pass (accent→link, gold→accent)', () => {
     const globals = normalizeNewsletter(v1Doc()).globals;
     const g = globals as unknown as Record<string, unknown>;
-    expect(globals.colors.dark.general).toEqual({ link: '#0000ff', accent: '#ffcc00', head: '#ffffff', body: '#888888' });
+    expect(globals.colors.dark.general).toEqual({ link: '#0000ff', accent: '#ffcc00', head: '#ffffff', body: '#888888', starsTop: '#ffcc00', starsBottom: '#ffcc00' });
     expect(g['goldColor']).toBeUndefined();
     expect(g['headingColor']).toBeUndefined();
     expect(g['bodyTextColor']).toBeUndefined();

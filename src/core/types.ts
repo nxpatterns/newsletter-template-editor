@@ -463,8 +463,9 @@ export interface Newsletter {
  * v3: divider style secondary-double → two-tone, divider background token (persist/migrate-v3.ts).
  * v4: brand starsText/nameHtml → structured stars and name parts (persist/migrate-v4.ts).
  * v5: the six campaign colors → `colors` with a dark and a light set (persist/migrate-v5.ts).
+ * v6: the stars get their own general color instead of the accent (persist/migrate-v6.ts).
  */
-export const CURRENT_SCHEMA_VERSION = 5;
+export const CURRENT_SCHEMA_VERSION = 6;
 
 let idCounter = 0;
 

@@ -2,7 +2,7 @@ import type { Newsletter } from '../types';
 
 /** Full previously-sent CloudLib campaign seed (demo config). */
 export const CLOUDLIB_CAMPAIGN_V1 = {
-  "schemaVersion": 5,
+  "schemaVersion": 6,
   "globals": {
     "colors": { "mode": "dark", "dark": { "general": {}, "blocks": {} }, "light": { "general": {}, "blocks": {} } },
     "preheader": "Ihre Kunden sind nicht naiv. Sie vergleichen. Schnell. Still. Und meistens ohne zweite Chance. \n\nWas sieht jemand, der Ihren Betrieb online findet? Ein Logo, eine Adresse - oder Ihren Betrieb, betretbar in 3D?\n\n22.000 Unternehmen in neun Ländern haben das bereits geändert - mit 3D-Rundgängen, die man direkt über Google und Social Media betreten kann.",
@@ -129,7 +129,7 @@ export const CLOUDLIB_CAMPAIGN_V1 = {
     {
       "id": "bmo8rynqo-9",
       "type": "paragraph",
-      "html": "<span style=\"color:rgb(50,187,255)\">Ihre Fotos werden zu virtuellen Rundgängen, und auf Wunsch zu noch viel mehr: Werbevideos, Social-Media-Inhalte und professionelle Online-Auftritte.</span><br><br>Ihre Sichtbarkeit wächst auf einem zweiten, unabhängigen Kanal - <strong>zusätzlich zu Google, nicht statt Google.</strong>"
+      "html": "Ihre Fotos werden zu virtuellen Rundgängen, und auf Wunsch zu noch viel mehr: Werbevideos, Social-Media-Inhalte und professionelle Online-Auftritte.<br><br>Ihre Sichtbarkeit wächst auf einem zweiten, unabhängigen Kanal - <strong>zusätzlich zu Google, nicht statt Google.</strong>"
     },
     {
       "id": "bmo8rynqo-a",

@@ -36,6 +36,48 @@
       </div>
       <p class="ed-hint" [textContent]="i18n.t('brand.starsHint')"></p>
     </div>
+    <div class="ed-field" data-testid="brand-stars-color">
+      <span class="ed-label" [textContent]="i18n.t('brand.starsColor')"></span>
+      @for (row of starsColors(); track row.frame) {
+        <div class="brand-color-row" [class.is-hidden-part]="!shown(row.part)" [attr.data-testid]="'brand-stars-color-' + row.frame">
+          <span class="brand-color-where" [id]="'g-stars-color-' + row.frame" [textContent]="i18n.t('brand.starsColor.' + row.frame)"></span>
+          <input
+            class="brand-swatch"
+            type="color"
+            [attr.data-testid]="'brand-stars-color-picker-' + row.frame"
+            [attr.aria-labelledby]="'g-stars-color-' + row.frame"
+            [value]="row.hex"
+            (input)="onStarsColorInput(row, $event)"
+            (change)="onStarsColorCommit(row, $event)"
+          />
+          <input
+            class="ed-input brand-hex"
+            [attr.data-testid]="'brand-stars-color-hex-' + row.frame"
+            [attr.aria-labelledby]="'g-stars-color-' + row.frame"
+            [value]="row.hex.toUpperCase()"
+            (change)="onStarsColorCommit(row, $event)"
+          />
+          <span class="brand-color-status" [class.is-own]="row.changed" [textContent]="i18n.t(row.changed ? 'colors.status.changed' : 'colors.status.standard')"></span>
+          @if (row.changed) {
+            <button
+              type="button"
+              class="brand-color-reset"
+              [attr.data-testid]="'brand-stars-color-reset-' + row.frame"
+              [title]="i18n.t('brand.starsColorReset')"
+              [attr.aria-label]="i18n.t('brand.starsColorReset')"
+              (click)="resetStarsColor(row)"
+            >↺</button>
+          }
+        </div>
+        @if (row.issue; as issue) {
+          <div class="brand-color-warn" role="note" [attr.data-testid]="'brand-stars-color-warn-' + row.frame">
+            <span [textContent]="starsIssueText(issue)"></span>
+            <button type="button" class="brand-color-fix" [attr.data-testid]="'brand-stars-color-fix-' + row.frame" [textContent]="i18n.t('colors.contrast.fix')" (click)="fixStarsColor(row)"></button>
+          </div>
+        }
+      }
+      <p class="ed-hint" [textContent]="i18n.t('brand.starsColorHint', { mode: colorModeLabel() })"></p>
+    </div>
   </div>
 
   <div class="ed-group" data-testid="brand-name" [class.is-hidden-part]="!shown('brandName')">

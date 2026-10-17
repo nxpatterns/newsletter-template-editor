@@ -38,14 +38,12 @@ const BG = (sel = '.content-bg'): ColorSlotDef => ({
 export const BLOCK_COLOR_SLOTS: Readonly<Record<string, readonly ColorSlotDef[]>> = {
   header: [
     { key: 'background', role: 'content', kind: 'fill', css: [bg('.header-bg')] },
-    { key: 'stars', role: 'accent', kind: 'mark', css: [fg('.brand-stars')] },
     { key: 'viewInBrowser', role: 'dim', kind: 'text', css: [fg('.view-in-browser'), fg('a.email-muted-link')] },
   ],
   footer: [
     { key: 'background', role: 'page', kind: 'fill', css: [bg('.footer-bg')] },
     { key: 'text', role: 'dim', kind: 'text', css: [fg('.footer-notice'), fg('.footer-company'), fg('.footer-social'), fg('a.email-footer-link')] },
     { key: 'line', role: 'line', kind: 'line', css: [bg('.footer-rule-cell'), fg('.footer-stars-line')] },
-    { key: 'stars', role: 'accent', kind: 'mark', css: [fg('.footer-stars-glyph')] },
   ],
   divider: [
     { key: 'line', role: 'line', kind: 'line', css: [bg('.divider-line')] },

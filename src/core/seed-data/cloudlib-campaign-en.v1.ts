@@ -23,7 +23,7 @@ const BLOCK_TEXTS_EN: Record<string, Record<string, unknown>> = {
   },
   'bmo8rynqo-8': { title: 'What this means for you' },
   'bmo8rynqo-9': {
-    html: '<span style="color:rgb(50,187,255)">Your photos become virtual tours, and if you like, much more: promo videos, social media content and a professional online presence.</span><br><br>Your visibility grows on a second, independent channel - <strong>alongside Google, not instead of it.</strong>',
+    html: 'Your photos become virtual tours, and if you like, much more: promo videos, social media content and a professional online presence.<br><br>Your visibility grows on a second, independent channel - <strong>alongside Google, not instead of it.</strong>',
   },
   'bmo8rynqo-a': {
     items: [

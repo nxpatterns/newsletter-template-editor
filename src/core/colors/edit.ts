@@ -1,5 +1,6 @@
 import { contrastRatio, TEXT_CONTRAST_MIN } from './contrast';
 import {
+  isBrandColorRole,
   parseHexColor,
   resolveGeneralColors,
   type ColorMode,
@@ -114,8 +115,12 @@ export function resetGeneralColor(colors: ColorsConfig, role: ColorRole): Colors
   return withMode(colors, colors.mode, { ...colors[colors.mode], general });
 }
 
+/** Every general color of the Colors tab; the ones set in the Brand tab stay. */
 export function resetAllGeneralColors(colors: ColorsConfig): ColorsConfig {
-  return withMode(colors, colors.mode, { ...colors[colors.mode], general: {} });
+  const kept = Object.fromEntries(
+    Object.entries(colors[colors.mode].general).filter(([role]) => isBrandColorRole(role as ColorRole)),
+  );
+  return withMode(colors, colors.mode, { ...colors[colors.mode], general: kept });
 }
 
 function withoutSlot(
@@ -189,4 +194,29 @@ export function slotContrastIssue(
     cause: fg.source === 'own' || bg.source === 'own' ? 'own' : 'inherited',
     onKey,
   };
+}
+
+export interface StarsContrastIssue {
+  /** Frame part the stars sit in. */
+  frame: 'header' | 'footer';
+  fg: string;
+  bg: string;
+  ratio: number;
+  min: number;
+}
+
+/** General color of the stars in the header and in the footer. */
+export const STARS_ROLE: Readonly<Record<'header' | 'footer', ColorRole>> = { header: 'starsTop', footer: 'starsBottom' };
+
+/** Contrast problems of the top stars against the header and the bottom stars against the footer background. */
+export function starsContrastIssues(colors: ColorsConfig, mode: ColorMode = colors.mode): StarsContrastIssue[] {
+  const general = resolveGeneralColors(colors, mode);
+  const out: StarsContrastIssue[] = [];
+  for (const target of FRAME_TARGETS) {
+    const fg = general[STARS_ROLE[target.id as 'header' | 'footer']];
+    const bg = resolveSlot(colors, mode, target, 'background').hex;
+    const ratio = contrastRatio(fg, bg);
+    if (ratio < TEXT_CONTRAST_MIN) out.push({ frame: target.id as 'header' | 'footer', fg, bg, ratio, min: TEXT_CONTRAST_MIN });
+  }
+  return out;
 }

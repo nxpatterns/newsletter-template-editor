@@ -84,7 +84,7 @@ export function renderHeader(
   const footerScope = colorScopeClass(globals, FOOTER_TARGET.id);
   const starsText = escapeHtml(brandStarsText(globals.brand?.stars));
   const starsRow = starsText && shown('starsTop')
-    ? `<p class="brand-stars text-accent" data-field="brand.stars">${starsText}</p>`
+    ? `<p class="brand-stars" data-field="brand.stars">${starsText}</p>`
     : '';
   const brandNameRow = shown('brandName')
     ? `<span data-field="brand.name">${renderBrandName(globals.brand?.name)}</span>`
@@ -161,7 +161,7 @@ export function renderHeader(
                 </table>
                 ${shown('social') ? renderSocialRow(globals, mode, socialIcons) : ''}
                 ${starsText && shown('starsBottom') ? `<p class="footer-stars-line">
-                  <span class="footer-stars-glyph text-accent">${starsText}</span>
+                  <span class="footer-stars-glyph">${starsText}</span>
                 </p>` : ''}
                 ${shown('company') ? `<p class="footer-company text-dim" data-field="legal.companyName">
                   ${companyRow}

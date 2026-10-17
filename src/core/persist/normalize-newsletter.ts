@@ -53,6 +53,7 @@ import { migrateNewsletterV1ToV2 } from './migrate-v2';
 import { migrateNewsletterV2ToV3 } from './migrate-v3';
 import { migrateNewsletterV3ToV4 } from './migrate-v4';
 import { hasLegacyColors, migrateNewsletterV4ToV5 } from './migrate-v5';
+import { hasSharedStarsColor, migrateNewsletterV5ToV6 } from './migrate-v6';
 import { normalizeColors } from '../colors/model';
 import { defaultBrand, FALLBACK_BRAND_PART_COLOR } from '../brand/defaults';
 import { normalizeSocialLinks } from '../brand/social';
@@ -591,7 +592,8 @@ export function normalizeNewsletter(input: Newsletter): Newsletter {
   const v3 = fromVersion < 3 ? migrateNewsletterV2ToV3(v2) : v2;
   const v4 = fromVersion < 4 ? migrateNewsletterV3ToV4(v3) : v3;
   // Seeds and imports may carry the old fields under a current version number.
-  const n = fromVersion < 5 || hasLegacyColors(v4.globals) ? migrateNewsletterV4ToV5(v4) : v4;
+  const v5 = fromVersion < 5 || hasLegacyColors(v4.globals) ? migrateNewsletterV4ToV5(v4) : v4;
+  const n = fromVersion < 6 || hasSharedStarsColor(v5.globals) ? migrateNewsletterV5ToV6(v5) : v5;
   const legal = n.globals?.legal as Newsletter['globals']['legal'] & {
     companyLine?: string;
   };

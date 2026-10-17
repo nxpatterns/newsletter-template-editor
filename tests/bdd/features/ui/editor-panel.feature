@@ -77,11 +77,11 @@ Feature: Editor side panel
 
   Scenario: Formatting info explains and removes paragraph formatting
     Given I open the editor with the German demo
-    When I open the paragraph editor for seed block 'bmo8rynqo-9'
+    When I open the paragraph editor for seed block 'bmo8rynqo-6'
     And I turn on the formatting info
-    Then a paragraph info label should mention 'Contains: .*Links and numbers'
+    Then a paragraph info label should mention 'Contains: .*Headings'
     When I click the first inline-colored text
-    Then the info panel should list 'Color: Links and numbers'
+    Then the info panel should list 'Color: Headings'
     When I remove the color in the info panel
     Then that text should have no inline color anymore
 

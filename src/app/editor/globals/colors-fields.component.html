@@ -146,6 +146,15 @@
                       (change)="onSlotCommit(row, $event)"
                     />
                   </div>
+                  @if (row.promoteRole; as role) {
+                    <button
+                      type="button"
+                      class="colors-link-btn slot-promote"
+                      [attr.data-testid]="'color-slot-promote-' + row.id"
+                      [textContent]="i18n.t('colors.editor.promote', { hex: row.hex.toUpperCase(), role: roleLabel(role) })"
+                      (click)="askPromote(section, row)"
+                    ></button>
+                  }
                 </div>
               }
             </li>
@@ -153,14 +162,26 @@
         </ul>
         <div class="colors-row-end">
           <span class="colors-small" [textContent]="i18n.t('colors.block.label')"></span>
-          <button
-            type="button"
-            class="colors-ghost-btn"
-            [disabled]="section.ownCount === 0"
-            [attr.data-testid]="'color-block-reset-' + section.target.id"
-            [textContent]="i18n.t('colors.block.reset')"
-            (click)="resetBlock(section)"
-          ></button>
+          <span class="colors-row-actions">
+            @if (section.sameTypeCount > 1) {
+              <button
+                type="button"
+                class="colors-ghost-btn"
+                [disabled]="!section.copyChanges"
+                [attr.data-testid]="'color-block-copy-' + section.target.id"
+                [textContent]="i18n.t('colors.block.copyAll', { n: section.sameTypeCount, type: section.label })"
+                (click)="askCopy(section)"
+              ></button>
+            }
+            <button
+              type="button"
+              class="colors-ghost-btn"
+              [disabled]="section.ownCount === 0"
+              [attr.data-testid]="'color-block-reset-' + section.target.id"
+              [textContent]="i18n.t('colors.block.reset')"
+              (click)="resetBlock(section)"
+            ></button>
+          </span>
         </div>
       </div>
     </div>
@@ -334,42 +355,88 @@
   </div>
 
   @if (pending(); as p) {
+    @let title = p.source
+      ? i18n.t('colors.promote.title', { role: roleLabel(p.role), block: p.source.block })
+      : i18n.t('colors.dialog.title', { role: roleLabel(p.role) });
     <div class="colors-dialog-backdrop" (click)="cancelPending()"></div>
-    <div class="colors-dialog" role="dialog" aria-modal="true" data-testid="colors-dialog" [attr.aria-label]="i18n.t('colors.dialog.title', { role: roleLabel(p.role) })">
-      <h3 class="colors-dialog-title" [textContent]="i18n.t('colors.dialog.title', { role: roleLabel(p.role) })"></h3>
+    <div class="colors-dialog" role="dialog" aria-modal="true" data-testid="colors-dialog" [attr.aria-label]="title">
+      <h3 class="colors-dialog-title" [textContent]="title"></h3>
       <p
         [textContent]="
-          i18n.t('colors.dialog.intro', { role: roleLabel(p.role), from: p.from.toUpperCase(), to: p.to.toUpperCase() })
+          i18n.t(p.source ? 'colors.promote.intro' : 'colors.dialog.intro', {
+            role: roleLabel(p.role),
+            from: p.from.toUpperCase(),
+            to: p.to.toUpperCase(),
+          })
         "
       ></p>
-      <p [textContent]="i18n.t('colors.dialog.count', { n: pendingBlockCount() })"></p>
+      @if (p.source && promoteInfo(); as info) {
+        <p
+          data-testid="colors-dialog-affects"
+          [textContent]="
+            i18n.t('colors.promote.affects', { n: info.places, m: info.blocks, role: roleLabel(p.role), block: p.source.block })
+          "
+        ></p>
+      }
+      @if (pendingRows().length) {
+        <p [textContent]="i18n.t('colors.dialog.count', { n: pendingBlockCount() })"></p>
+        <ul class="colors-dialog-list">
+          @for (row of pendingRows(); track $index) {
+            <li>
+              <span [textContent]="row.label"></span>
+              <span class="colors-dialog-hex"><i [style.background]="row.hex"></i><b [textContent]="row.hex.toUpperCase()"></b></span>
+            </li>
+          }
+        </ul>
+        <p class="colors-dialog-q" [textContent]="i18n.t('colors.dialog.question', { n: pendingRows().length })"></p>
+        <label class="colors-dialog-opt" [class.is-on]="p.choice === 'all'">
+          <input type="radio" name="colors-choice" data-testid="colors-dialog-all" [checked]="p.choice === 'all'" (change)="choose('all')" />
+          <span>
+            <b [textContent]="i18n.t('colors.dialog.everywhere')"></b>
+            <small [textContent]="i18n.t('colors.dialog.everywhereHint', { to: p.to.toUpperCase() })"></small>
+          </span>
+        </label>
+        <label class="colors-dialog-opt" [class.is-on]="p.choice === 'keep'">
+          <input type="radio" name="colors-choice" data-testid="colors-dialog-keep" [checked]="p.choice === 'keep'" (change)="choose('keep')" />
+          <span>
+            <b [textContent]="i18n.t('colors.dialog.keep')"></b>
+            <small [textContent]="i18n.t('colors.dialog.keepHint')"></small>
+          </span>
+        </label>
+      }
+      @if (p.source && promoteInfo()?.unreadable?.length) {
+        @let bad = promoteInfo()!.unreadable;
+        <div class="slot-warn" role="note" data-testid="colors-dialog-contrast">
+          <span [textContent]="'! ' + i18n.t('colors.promote.contrast', { n: bad.length, list: bad.join(', ') })"></span>
+        </div>
+      }
+      <p class="colors-hint" [textContent]="i18n.t('colors.dialog.scope', { mode: modeName() })"></p>
+      <div class="colors-dialog-actions">
+        <button type="button" class="colors-ghost-btn" data-testid="colors-dialog-cancel" [textContent]="i18n.t('colors.dialog.cancel')" (click)="cancelPending()"></button>
+        <button type="button" class="colors-primary-btn" data-testid="colors-dialog-apply" [textContent]="i18n.t('colors.dialog.apply')" (click)="applyPending()"></button>
+      </div>
+    </div>
+  }
+
+  @if (pendingCopy(); as c) {
+    @let copyTitle = i18n.t('colors.copy.title', { type: c.type });
+    <div class="colors-dialog-backdrop" (click)="cancelCopy()"></div>
+    <div class="colors-dialog" role="dialog" aria-modal="true" data-testid="colors-copy-dialog" [attr.aria-label]="copyTitle">
+      <h3 class="colors-dialog-title" [textContent]="copyTitle"></h3>
+      <p [textContent]="i18n.t('colors.copy.intro', { n: c.count, type: c.type, block: c.block })"></p>
+      <p [textContent]="i18n.t('colors.copy.count')"></p>
       <ul class="colors-dialog-list">
-        @for (row of pendingRows(); track $index) {
+        @for (row of copyRows(); track $index) {
           <li>
             <span [textContent]="row.label"></span>
             <span class="colors-dialog-hex"><i [style.background]="row.hex"></i><b [textContent]="row.hex.toUpperCase()"></b></span>
           </li>
         }
       </ul>
-      <p class="colors-dialog-q" [textContent]="i18n.t('colors.dialog.question', { n: pendingRows().length })"></p>
-      <label class="colors-dialog-opt" [class.is-on]="p.choice === 'all'">
-        <input type="radio" name="colors-choice" data-testid="colors-dialog-all" [checked]="p.choice === 'all'" (change)="choose('all')" />
-        <span>
-          <b [textContent]="i18n.t('colors.dialog.everywhere')"></b>
-          <small [textContent]="i18n.t('colors.dialog.everywhereHint', { to: p.to.toUpperCase() })"></small>
-        </span>
-      </label>
-      <label class="colors-dialog-opt" [class.is-on]="p.choice === 'keep'">
-        <input type="radio" name="colors-choice" data-testid="colors-dialog-keep" [checked]="p.choice === 'keep'" (change)="choose('keep')" />
-        <span>
-          <b [textContent]="i18n.t('colors.dialog.keep')"></b>
-          <small [textContent]="i18n.t('colors.dialog.keepHint')"></small>
-        </span>
-      </label>
-      <p class="colors-hint" [textContent]="i18n.t('colors.dialog.scope', { mode: modeName() })"></p>
+      <p class="colors-hint" [textContent]="i18n.t('colors.dialog.scope', { mode: modeName() }) + ' ' + i18n.t('colors.copy.later')"></p>
       <div class="colors-dialog-actions">
-        <button type="button" class="colors-ghost-btn" data-testid="colors-dialog-cancel" [textContent]="i18n.t('colors.dialog.cancel')" (click)="cancelPending()"></button>
-        <button type="button" class="colors-primary-btn" data-testid="colors-dialog-apply" [textContent]="i18n.t('colors.dialog.apply')" (click)="applyPending()"></button>
+        <button type="button" class="colors-ghost-btn" data-testid="colors-copy-cancel" [textContent]="i18n.t('colors.dialog.cancel')" (click)="cancelCopy()"></button>
+        <button type="button" class="colors-primary-btn" data-testid="colors-copy-apply" [textContent]="i18n.t('colors.copy.apply')" (click)="applyCopy()"></button>
       </div>
     </div>
   }

@@ -20,8 +20,14 @@ export const COLOR_ROLES = [
   'btn',
   'btnText',
   'line',
+  'starsTop',
+  'starsBottom',
 ] as const;
 export type ColorRole = (typeof COLOR_ROLES)[number];
+
+/** General colors that are edited in the Brand tab instead of the Colors tab. */
+export const BRAND_COLOR_ROLES: readonly ColorRole[] = ['starsTop', 'starsBottom'];
+export const isBrandColorRole = (role: ColorRole): boolean => BRAND_COLOR_ROLES.includes(role);
 
 export const COLOR_MODES = ['dark', 'light'] as const;
 export type ColorMode = (typeof COLOR_MODES)[number];
@@ -58,6 +64,8 @@ export const STANDARD_SETS: Readonly<Record<ColorMode, Readonly<ColorSet>>> = {
     btn: '#1d6bb8',
     btnText: '#ffffff',
     line: '#1e3a5c',
+    starsTop: '#f5c518',
+    starsBottom: '#f5c518',
   },
   light: {
     page: '#e9eff6',
@@ -71,6 +79,8 @@ export const STANDARD_SETS: Readonly<Record<ColorMode, Readonly<ColorSet>>> = {
     btn: '#1d6bb8',
     btnText: '#ffffff',
     line: '#cfdbe8',
+    starsTop: '#8a6200',
+    starsBottom: '#8a6200',
   },
 };
 

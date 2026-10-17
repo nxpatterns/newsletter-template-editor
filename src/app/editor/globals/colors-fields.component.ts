@@ -6,17 +6,24 @@ import {
   COLOR_ROLES,
   colorSlotsOf,
   contrastRatio,
+  copyBlockColors,
+  copyConflicts,
   FRAME_TARGETS,
+  isBrandColorRole,
   isOutdatedOverride,
   makeReadable,
   overridesOfRole,
   parseHexColor,
+  promotableRole,
+  promoteToGeneral,
   resetAllGeneralColors,
   resetBlockColor,
   resetBlockColors,
   resetGeneralColor,
   resolveGeneralColors,
   resolveSlot,
+  sameBlockColors,
+  sameTypeTargets,
   setBlockColor,
   setColorMode,
   setGeneralColor,
@@ -26,13 +33,18 @@ import {
   type Block,
   type ColorMode,
   type ColorRole,
+  type ColorsConfig,
   type ColorTarget,
   type ContrastIssue,
   type SlotRef,
 } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
+import { SnackbarService } from '../../ui/snackbar/snackbar.service';
 import { blockTypeHue, blockTypeIcon, type BlockTypeHue } from '../blocks/block-catalog';
 import { NewsletterSession } from '../newsletter-session.service';
+
+/** How long "Undo" stays offered after copying or taking over colors. */
+const UNDO_MS = 8000;
 
 /** UI-only open accordion ids (localStorage). Never part of project export. */
 const OPEN_PREFS_KEY = 'newsletter-template-editor.colors-open.v3';
@@ -66,6 +78,8 @@ interface SlotRowVm {
   /** Current general color when the block still uses an older fixed value. */
   outdatedGeneral: string | null;
   issue: ContrastIssue | null;
+  /** General color this fixed value can become ("use as general color"); null when not offered. */
+  promoteRole: ColorRole | null;
 }
 
 /** Header and footer are no block type: a neutral stone hue that no block uses. */
@@ -81,6 +95,10 @@ interface SectionVm {
   ownCount: number;
   warnCount: number;
   rows: SlotRowVm[];
+  /** Blocks of this type in the newsletter, this one included; 0 for header and footer. */
+  sameTypeCount: number;
+  /** Copying this block's colors to the others of its type would change something. */
+  copyChanges: boolean;
 }
 
 interface GeneralVm {
@@ -97,6 +115,16 @@ interface PendingChange {
   to: string;
   refs: SlotRef[];
   choice: 'keep' | 'all';
+  /** Set when a fixed block value becomes the general color ("use as general color"). */
+  source?: { target: ColorTarget; key: string; block: string };
+}
+
+interface PendingCopy {
+  source: ColorTarget;
+  block: string;
+  type: string;
+  count: number;
+  refs: SlotRef[];
 }
 
 @Component({
@@ -110,9 +138,11 @@ export class ColorsFieldsComponent {
   private readonly platformId = inject(PLATFORM_ID);
   protected readonly i18n = inject(LocaleService);
   protected readonly session = inject(NewsletterSession);
+  private readonly snackbar = inject(SnackbarService);
 
   protected readonly modes = COLOR_MODES;
-  protected readonly roles = COLOR_ROLES;
+  /** Roles a block color can follow; the brand colors are set in the Brand tab. */
+  protected readonly roles = COLOR_ROLES.filter((r) => !isBrandColorRole(r));
   protected readonly groups = GROUPS;
 
   protected readonly mode = computed(() => this.session.globals().colors.mode);
@@ -120,6 +150,7 @@ export class ColorsFieldsComponent {
   /** The role editor of one block color that is open (`<targetId>.<key>`). */
   protected readonly editing = signal<string | null>(null);
   protected readonly pending = signal<PendingChange | null>(null);
+  protected readonly pendingCopy = signal<PendingCopy | null>(null);
 
   private readonly openIds = signal<ReadonlySet<string>>(this.readOpenIds());
 
@@ -144,7 +175,9 @@ export class ColorsFieldsComponent {
   protected readonly sections = computed((): { frame: SectionVm[]; blocks: SectionVm[] } => {
     const colors = this.session.globals().colors;
     const m = colors.mode;
+    const blockTargets = this.blockTargets();
     const build = (target: ColorTarget, label: string, icon: string, index: number | null, hue: BlockTypeHue): SectionVm => {
+      const others = index === null ? [] : sameTypeTargets(target, blockTargets);
       const rows = colorSlotsOf(target.type).map((def): SlotRowVm => {
         const r = resolveSlot(colors, m, target, def.key);
         const o = slotOverride(colors, m, target.id, def.key);
@@ -160,6 +193,7 @@ export class ColorsFieldsComponent {
             ? resolveGeneralColors(colors, m)[def.role]
             : null,
           issue: slotContrastIssue(colors, m, target, def.key),
+          promoteRole: this.offeredRole(promotableRole(colors, m, target, def.key)),
         };
       });
       return {
@@ -172,6 +206,8 @@ export class ColorsFieldsComponent {
         ownCount: blockOverrideCount(colors, m, target.id),
         warnCount: rows.filter((r) => r.issue).length,
         rows,
+        sameTypeCount: others.length ? others.length + 1 : 0,
+        copyChanges: others.some((o) => !sameBlockColors(colors, m, target.id, o.id)),
       };
     };
     return {
@@ -199,14 +235,50 @@ export class ColorsFieldsComponent {
     const colors = this.session.globals().colors;
     return p.refs.map((r) => {
       const o = slotOverride(colors, colors.mode, r.target.id, r.key);
-      const label = FRAME_TARGETS.some((f) => f.id === r.target.id)
-        ? this.i18n.t(`colors.frame.${r.target.id}`)
-        : this.i18n.t(`block.${r.target.type}`);
-      return {
-        label: `${label} · ${this.slotLabel(r.target.type, r.key)}`,
-        hex: o && 'hex' in o ? o.hex : '',
-      };
+      return { label: this.placeLabel(r), hex: o && 'hex' in o ? o.hex : '' };
     });
+  });
+
+  /** "Use as general color": how far the change reaches and which places become hard to read. */
+  protected readonly promoteInfo = computed(() => {
+    const p = this.pending();
+    if (!p?.source) return null;
+    const { target: src, key: srcKey } = p.source;
+    const colors = this.session.globals().colors;
+    const m = colors.mode;
+    const next = promoteToGeneral(colors, src, srcKey, p.refs, p.choice === 'keep');
+    const users = new Set<string>();
+    let places = 0;
+    const unreadable: string[] = [];
+    for (const target of this.allTargets()) {
+      for (const def of colorSlotsOf(target.type)) {
+        const self = target.id === src.id && def.key === srcKey;
+        const r = resolveSlot(colors, m, target, def.key);
+        if (!self && r.source === 'general' && r.role === p.role) {
+          places++;
+          users.add(target.id);
+        }
+        if (slotContrastIssue(next, m, target, def.key) && !slotContrastIssue(colors, m, target, def.key)) {
+          unreadable.push(this.placeLabel({ target, key: def.key }));
+        }
+      }
+    }
+    const before = resolveGeneralColors(colors, m);
+    const after = resolveGeneralColors(next, m);
+    for (const [fg, bg] of Object.entries(GENERAL_PAIRS) as [ColorRole, ColorRole][]) {
+      if (fg !== p.role && bg !== p.role) continue;
+      if (contrastRatio(after[fg], after[bg]) < TEXT_CONTRAST_MIN && contrastRatio(before[fg], before[bg]) >= TEXT_CONTRAST_MIN) {
+        unreadable.unshift(this.roleLabel(fg));
+      }
+    }
+    return { places, blocks: users.size, unreadable };
+  });
+
+  protected readonly copyRows = computed(() => {
+    const p = this.pendingCopy();
+    if (!p) return [];
+    const colors = this.session.globals().colors;
+    return p.refs.map((r) => ({ label: this.placeLabel(r), hex: resolveSlot(colors, colors.mode, r.target, r.key).hex }));
   });
 
   protected modeLabel(mode: ColorMode): string {
@@ -284,7 +356,16 @@ export class ColorsFieldsComponent {
   protected applyPending(): void {
     const p = this.pending();
     if (!p) return;
-    this.session.updateColors((c) => setGeneralColor(c, p.role, p.to, p.refs, p.choice === 'keep'));
+    const keep = p.choice === 'keep';
+    const src = p.source;
+    if (src) {
+      this.applyWithUndo(
+        (c) => promoteToGeneral(c, src.target, src.key, p.refs, keep),
+        this.i18n.t('colors.promote.done', { role: this.roleLabel(p.role), hex: p.to.toUpperCase() }),
+      );
+    } else {
+      this.session.updateColors((c) => setGeneralColor(c, p.role, p.to, p.refs, keep));
+    }
     this.pending.set(null);
   }
 
@@ -330,6 +411,63 @@ export class ColorsFieldsComponent {
     this.session.updateColors((c) => resetBlockColors(c, section.target.id));
   }
 
+  /** Ask before using a fixed block value as the general color (always, it reaches every block). */
+  protected askPromote(section: SectionVm, row: SlotRowVm): void {
+    const role = row.promoteRole;
+    if (!role) return;
+    const source = { target: section.target, key: row.key, block: this.targetName(section.target) };
+    const refs = this.refsOf(role).filter((r) => !(r.target.id === section.target.id && r.key === row.key));
+    const from = this.generalByRole().get(role)?.hex ?? '';
+    this.pending.set({ role, from, to: row.hex, refs, choice: 'keep', source });
+  }
+
+  /** Give all blocks of this type the colors of `section`; asks first when that replaces their own colors. */
+  protected askCopy(section: SectionVm): void {
+    const colors = this.session.globals().colors;
+    const pending: PendingCopy = {
+      source: section.target,
+      block: this.targetName(section.target),
+      type: section.label,
+      count: section.sameTypeCount - 1,
+      refs: copyConflicts(colors, colors.mode, section.target, this.blockTargets()),
+    };
+    if (pending.refs.length) this.pendingCopy.set(pending);
+    else this.runCopy(pending);
+  }
+
+  protected applyCopy(): void {
+    const p = this.pendingCopy();
+    if (p) this.runCopy(p);
+    this.pendingCopy.set(null);
+  }
+
+  protected cancelCopy(): void {
+    this.pendingCopy.set(null);
+  }
+
+  private runCopy(p: PendingCopy): void {
+    const targets = this.blockTargets();
+    this.applyWithUndo(
+      (c) => copyBlockColors(c, p.source, targets),
+      this.i18n.t('colors.copy.done', { n: p.count, type: p.type }),
+    );
+  }
+
+  /** One history step plus a message whose "Undo" restores the colors as they were before. */
+  private applyWithUndo(fn: (colors: ColorsConfig) => ColorsConfig, text: string): void {
+    const before = this.session.globals().colors;
+    this.session.updateColors(fn);
+    const after = this.session.globals().colors;
+    if (after === before) return;
+    this.snackbar.show(text, 'info', UNDO_MS, {
+      label: this.i18n.t('action.undo'),
+      run: () => {
+        // Only while nothing else changed the colors since.
+        if (this.session.globals().colors === after) this.session.updateColors(() => before);
+      },
+    });
+  }
+
   protected fixSlot(row: SlotRowVm): void {
     const issue = row.issue;
     if (!issue) return;
@@ -361,8 +499,31 @@ export class ColorsFieldsComponent {
 
   private refsOf(role: ColorRole): SlotRef[] {
     const colors = this.session.globals().colors;
-    const s = this.sections();
-    return overridesOfRole(colors, colors.mode, [...s.frame, ...s.blocks].map((x) => x.target), role);
+    return overridesOfRole(colors, colors.mode, this.allTargets(), role);
+  }
+
+  private blockTargets(): ColorTarget[] {
+    return this.session.blocks().map((b) => ({ id: b.id, type: b.type }));
+  }
+
+  private allTargets(): ColorTarget[] {
+    return [...FRAME_TARGETS, ...this.blockTargets()];
+  }
+
+  /** Only general colors this tab edits can be taken over from a block. */
+  private offeredRole(role: ColorRole | null): ColorRole | null {
+    return role && this.roles.includes(role) ? role : null;
+  }
+
+  /** "Kapitel 2", or "Kopfbereich" for the frame. */
+  private targetName(target: ColorTarget): string {
+    if (FRAME_TARGETS.some((f) => f.id === target.id)) return this.i18n.t(`colors.frame.${target.id}`);
+    const index = this.session.blocks().findIndex((b) => b.id === target.id);
+    return `${this.i18n.t(`block.${target.type}`)} ${index + 1}`;
+  }
+
+  private placeLabel(ref: SlotRef): string {
+    return `${this.targetName(ref.target)} · ${this.slotLabel(ref.target.type, ref.key)}`;
   }
 
   private slotLabel(type: string, key: string): string {

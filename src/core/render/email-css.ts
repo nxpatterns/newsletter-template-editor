@@ -29,6 +29,8 @@ export function emailDocumentCss(globals: Globals, blocks: readonly Block[] = []
     --email-btn: ${c('btn')};
     --email-btn-text: ${c('btnText')};
     --email-line: ${c('line')};
+    --email-stars-top: ${c('starsTop')};
+    --email-stars-bottom: ${c('starsBottom')};
     --email-font: ${font};
     --email-sans: ${sans};
   }
@@ -80,7 +82,7 @@ export function emailDocumentCss(globals: Globals, blocks: readonly Block[] = []
   .brand-stars {
     font-family: var(--email-font);
     font-size: 11px;
-    color: var(--email-accent);
+    color: var(--email-stars-top);
     letter-spacing: 5px;
     margin: 0 0 10px 0;
     line-height: 1;
@@ -118,7 +120,7 @@ export function emailDocumentCss(globals: Globals, blocks: readonly Block[] = []
     letter-spacing: 3px;
   }
   .footer-stars-glyph {
-    color: var(--email-accent);
+    color: var(--email-stars-bottom);
     font-size: 9px;
   }
   .footer-company {
@@ -666,9 +668,11 @@ export function emailDocumentCss(globals: Globals, blocks: readonly Block[] = []
     .text-link, .text-stat, .stat-number, .cta-link-icon, a.cta-link-anchor, a.contact-link, a.video-title-link, a.teaser-link-anchor, a.event-cal-link {
       color: var(--email-link) !important;
     }
-    .text-accent, .divider-ornament-glyph, .text-chapter-label, .hero-label, .chapter-title, .brand-stars, .footer-stars-glyph {
+    .text-accent, .divider-ornament-glyph, .text-chapter-label, .hero-label, .chapter-title {
       color: var(--email-accent) !important;
     }
+    .brand-stars { color: var(--email-stars-top) !important; }
+    .footer-stars-glyph { color: var(--email-stars-bottom) !important; }
     .text-dim, .footer-notice, .footer-company, .testimonial-role, .contact-intro, .contact-role, .video-title-cell, .event-meta, .event-weekday { color: var(--email-dim) !important; }
     .text-price-main, .price-main { color: var(--email-head) !important; }
     .text-cta-body, .cta-link-body { color: var(--email-dim) !important; }

@@ -30,6 +30,7 @@ import {
 } from './preview-dnd';
 import { openPreviewLink, previewLinkTarget } from './preview-links';
 import { reorderBlockIds } from './preview-reorder';
+import { isPreviewBackdropClick } from './preview-selection';
 
 type DropPlace = 'before' | 'after';
 type DragMode = 'reorder' | 'catalog';
@@ -250,6 +251,12 @@ export class EditorPage {
         const tr = deleteBtn.closest('tr[data-block-id]');
         const id = tr?.getAttribute('data-block-id');
         if (id) this.session.removeBlock(id);
+        return;
+      }
+
+      // Empty surface around the blocks: drop the selection to show the template unmarked.
+      if (isPreviewBackdropClick(target)) {
+        this.session.selectBlock(null);
         return;
       }
 
