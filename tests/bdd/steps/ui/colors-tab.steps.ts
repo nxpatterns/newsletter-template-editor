@@ -80,3 +80,30 @@ Then('the block colors should list every placed block once', async ({ page }) =>
   const listed = page.getByTestId('colors-block-accordions').locator('[data-testid^="colors-acc-"]');
   await expect(listed).toHaveCount(new Set(ids).size);
 });
+
+const ids = (list: string) => list.split(',').map((s) => s.trim());
+const sectionHead = (page: Page, id: string) => page.getByTestId(`colors-acc-${id}`);
+
+Then('the color sections should be {string} in this order', async ({ page }, list: string) => {
+  const sections = page.getByTestId('colors-fields').locator(':scope > [data-testid^="colors-section-"]');
+  await expect(sections).toHaveCount(ids(list).length);
+  for (const [i, id] of ids(list).entries()) await expect(sections.nth(i)).toHaveAttribute('data-testid', `colors-section-${id}`);
+});
+
+Then('the color sections {string} should each be listed once', async ({ page }, list: string) => {
+  for (const id of ids(list)) await expect(sectionHead(page, id)).toHaveCount(1);
+});
+
+Then('the color sections {string} should be closed', async ({ page }, list: string) => {
+  for (const id of ids(list)) await expect(sectionHead(page, id)).toHaveAttribute('aria-expanded', 'false');
+});
+
+When('I open the color section {string}', async ({ page }, id: string) => {
+  await sectionHead(page, id).click();
+  await expect(sectionHead(page, id)).toHaveAttribute('aria-expanded', 'true');
+});
+
+Then('the color section {string} should be open', async ({ page }, id: string) => {
+  await expect(sectionHead(page, id)).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.locator(`#colors-panel-${id}`)).not.toHaveAttribute('inert');
+});

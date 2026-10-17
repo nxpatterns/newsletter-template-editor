@@ -36,3 +36,15 @@ Feature: Colors tab
     Given I open the editor with the German demo
     When I open the colors tab
     Then the block colors should list every placed block once
+
+  Scenario: Header and footer are own sections that start closed and stay open after a reload
+    Given I open the editor with the German demo
+    When I open the colors tab
+    Then the color sections should be 'general, header, footer, blocks' in this order
+    And the color sections 'header, footer' should each be listed once
+    And the color sections 'header, footer' should be closed
+    When I open the color section 'footer'
+    And I reload the page
+    And I open the colors tab
+    Then the color section 'footer' should be open
+    And the color sections 'header' should be closed

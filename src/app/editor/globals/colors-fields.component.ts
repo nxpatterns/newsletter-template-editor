@@ -39,6 +39,7 @@ import {
   type SlotRef,
 } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
+import type { GroupHue } from '../../ui/group-accordion/group-accordion.component';
 import { SnackbarService } from '../../ui/snackbar/snackbar.service';
 import { blockTypeHue, blockTypeIcon, type BlockTypeHue } from '../blocks/block-catalog';
 import { NewsletterSession } from '../newsletter-session.service';
@@ -82,12 +83,18 @@ interface SlotRowVm {
   promoteRole: ColorRole | null;
 }
 
-/** Header and footer are no block type: a neutral stone hue that no block uses. */
-const FRAME_HUE: BlockTypeHue = { a: '#a8a29e', b: '#57534e', ink: '#ffffff' };
+/** Header and footer are own group cards: flat muted hues that no block type uses. */
+const FRAME_CARDS: Readonly<Record<string, { icon: string; card: GroupHue }>> = {
+  header: { icon: '⌂', card: 'blue' },
+  footer: { icon: '⌄', card: 'green' },
+};
 
 interface SectionVm {
   id: string;
-  hue: BlockTypeHue;
+  /** Block-type hue of a block; null for header and footer. */
+  hue: BlockTypeHue | null;
+  /** Group card hue of header and footer; null for a block. */
+  card: GroupHue | null;
   target: ColorTarget;
   label: string;
   icon: string;
@@ -176,7 +183,14 @@ export class ColorsFieldsComponent {
     const colors = this.session.globals().colors;
     const m = colors.mode;
     const blockTargets = this.blockTargets();
-    const build = (target: ColorTarget, label: string, icon: string, index: number | null, hue: BlockTypeHue): SectionVm => {
+    const build = (
+      target: ColorTarget,
+      label: string,
+      icon: string,
+      index: number | null,
+      hue: BlockTypeHue | null,
+      card: GroupHue | null,
+    ): SectionVm => {
       const others = index === null ? [] : sameTypeTargets(target, blockTargets);
       const rows = colorSlotsOf(target.type).map((def): SlotRowVm => {
         const r = resolveSlot(colors, m, target, def.key);
@@ -197,8 +211,9 @@ export class ColorsFieldsComponent {
         };
       });
       return {
-        id: `block-${target.id}`,
+        id: index === null ? `frame-${target.id}` : `block-${target.id}`,
         hue,
+        card,
         target,
         label,
         icon,
@@ -212,11 +227,13 @@ export class ColorsFieldsComponent {
     };
     return {
       frame: FRAME_TARGETS.map((t) =>
-        build(t, this.i18n.t(`colors.frame.${t.id}`), t.id === 'header' ? '⌂' : '⌄', null, FRAME_HUE),
+        build(t, this.i18n.t(`colors.frame.${t.id}`), FRAME_CARDS[t.id].icon, null, null, FRAME_CARDS[t.id].card),
       ),
       blocks: this.session
         .blocks()
-        .map((b: Block, i) => build({ id: b.id, type: b.type }, this.i18n.t(`block.${b.type}`), blockTypeIcon(b.type), i + 1, blockTypeHue(b.type))),
+        .map((b: Block, i) =>
+          build({ id: b.id, type: b.type }, this.i18n.t(`block.${b.type}`), blockTypeIcon(b.type), i + 1, blockTypeHue(b.type), null),
+        ),
     };
   });
 
@@ -300,9 +317,9 @@ export class ColorsFieldsComponent {
   }
 
   /** Open/close a block accordion and scroll the preview to that block. */
-  protected onBlockClick(section: SectionVm, isBlock: boolean): void {
+  protected onBlockClick(section: SectionVm): void {
     this.toggle(section.id);
-    if (isBlock) this.session.selectBlock(section.target.id, { revealInPanel: false, scrollPreview: true });
+    this.session.selectBlock(section.target.id, { revealInPanel: false, scrollPreview: true });
   }
 
   protected setMode(mode: ColorMode): void {

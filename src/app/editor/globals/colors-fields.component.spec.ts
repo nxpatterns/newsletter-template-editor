@@ -129,6 +129,59 @@ describe('ColorsFieldsComponent', () => {
     });
   });
 
+  describe('header and footer as own sections', () => {
+    const topSections = () =>
+      Array.from(host.querySelectorAll<HTMLElement>('[data-testid="colors-fields"] > [data-testid^="colors-section-"]')).map((el) =>
+        el.getAttribute('data-testid')!.replace('colors-section-', ''),
+      );
+    const expanded = (id: string) => q(`colors-acc-${id}`)!.getAttribute('aria-expanded');
+
+    it('shows general, header, footer and blocks in this order', () => {
+      expect(topSections()).toEqual(['general', 'header', 'footer', 'blocks']);
+    });
+
+    it('lists header and footer exactly once, outside general and blocks', () => {
+      for (const id of ['header', 'footer']) {
+        expect(host.querySelectorAll(`[data-testid="colors-acc-${id}"]`).length).toBe(1);
+        expect(q('colors-section-general')!.querySelector(`[data-testid="colors-acc-${id}"]`)).toBeNull();
+        expect(q('colors-section-blocks')!.querySelector(`[data-testid="colors-acc-${id}"]`)).toBeNull();
+        expect(q(`colors-section-${id}`)!.querySelectorAll(`[data-testid^="color-slot-${id}."]`).length).toBe(colorSlotsOf(id).length);
+      }
+    });
+
+    it('uses flat group cards in hues apart from general and blocks', () => {
+      const hue = (id: string) => Array.from(q(`colors-section-${id}`)!.classList).find((c) => c.startsWith('group-card--'));
+      const hues = ['general', 'header', 'footer', 'blocks'].map(hue);
+      expect(hues.every(Boolean)).toBe(true);
+      expect(new Set(hues).size).toBe(hues.length);
+      expect(q('colors-section-header')!.querySelector('.group-icon')).not.toBeNull();
+    });
+
+    it('starts closed and remembers the open state for the next visit', () => {
+      expect(expanded('header')).toBe('false');
+      expect(expanded('footer')).toBe('false');
+      click('colors-acc-header');
+      expect(expanded('header')).toBe('true');
+      expect(expanded('footer')).toBe('false');
+
+      const again = TestBed.createComponent(ColorsFieldsComponent);
+      again.detectChanges();
+      const btn = (id: string) => again.nativeElement.querySelector(`[data-testid="colors-acc-${id}"]`) as HTMLElement;
+      expect(btn('header').getAttribute('aria-expanded')).toBe('true');
+      expect(btn('footer').getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('resets the own colors of the header without touching a block', () => {
+      const id = firstBlock().id;
+      session.updateColors((c) => setBlockColor(setBlockColor(c, 'header', colorSlotsOf('header')[0].key, { hex: '#445566' }), id, 'number', { hex: '#445566' }));
+      fixture.detectChanges();
+      expect(q('colors-acc-header')!.querySelector('.colors-own-meta')).not.toBeNull();
+      click('color-block-reset-header');
+      expect(session.globals().colors.dark.blocks['header']).toBeUndefined();
+      expect(session.globals().colors.dark.blocks[id]).toBeDefined();
+    });
+  });
+
   describe('colors of the blocks in use (Current Blocks)', () => {
     const accordions = () => q('colors-block-accordions');
     const sectionIds = () =>
