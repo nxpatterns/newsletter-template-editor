@@ -61,7 +61,7 @@ describe('richDocFromHtml', () => {
     const doc = richDocFromHtml('<span style="color:rgb(50,187,255)">ice</span>');
     const t = doc[0].children[0];
     expect(t.type).toBe('text');
-    if (t.type === 'text') expect(t.marks?.color).toBe('secondary');
+    if (t.type === 'text') expect(t.marks?.color).toBe('link');
   });
 });
 
@@ -70,7 +70,7 @@ describe('clearMarksOnDoc', () => {
     const doc = clearMarksOnDoc([
       {
         type: 'p',
-        color: 'secondary',
+        color: 'link',
         children: [
           {
             type: 'text',
@@ -102,7 +102,7 @@ describe('cleanAiCharsOnDoc', () => {
     const doc = cleanAiCharsOnDoc([
       {
         type: 'p',
-        color: 'primary',
+        color: 'head',
         children: [
           {
             type: 'text',
@@ -112,7 +112,7 @@ describe('cleanAiCharsOnDoc', () => {
         ],
       },
     ]);
-    expect(doc[0].color).toBe('primary');
+    expect(doc[0].color).toBe('head');
     const t = doc[0].children[0];
     expect(t.type).toBe('text');
     if (t.type === 'text') {
@@ -241,22 +241,22 @@ describe('paragraph lite kit mark operations (toolbar functionality)', () => {
   it('span color applies primary/heading and body clears span color', () => {
     const doc = plainTextToRichDoc(sample);
     const r = rangeOf(sample, 'internationale');
-    const colored = applyColorOnDoc(doc, r.start, r.end, 'primary');
-    expect(spanWith(colored, 'internationale')?.marks?.color).toBe('primary');
-    expect(richDocToHtml(colored)).toContain('text-primary');
+    const colored = applyColorOnDoc(doc, r.start, r.end, 'head');
+    expect(spanWith(colored, 'internationale')?.marks?.color).toBe('head');
+    expect(richDocToHtml(colored)).toContain('text-head');
     expect(richDocPlainText(colored)).toBe(sample);
 
-    const cleared = applyColorOnDoc(colored, r.start, r.end, 'standard');
+    const cleared = applyColorOnDoc(colored, r.start, r.end, 'body');
     expect(spanWith(cleared, 'internationale')?.marks?.color).toBeUndefined();
   });
 
   it('paragraph base color applies at caret offset without wiping span marks', () => {
     let doc = plainTextToRichDoc(sample);
     const r = rangeOf(sample, 'sichtbar');
-    doc = applyColorOnDoc(doc, r.start, r.end, 'secondary');
-    doc = applyParagraphBaseColorOnDoc(doc, 0, 'primary');
-    expect(doc[0].color).toBe('primary');
-    expect(spanWith(doc, 'sichtbar')?.marks?.color).toBe('secondary');
+    doc = applyColorOnDoc(doc, r.start, r.end, 'link');
+    doc = applyParagraphBaseColorOnDoc(doc, 0, 'head');
+    expect(doc[0].color).toBe('head');
+    expect(spanWith(doc, 'sichtbar')?.marks?.color).toBe('link');
     expect(richDocPlainText(doc)).toBe(sample);
   });
 
@@ -301,7 +301,7 @@ describe('paragraph lite kit mark operations (toolbar functionality)', () => {
     doc = toggleMarkOnDoc(doc, r.start, r.end, 'bold');
     doc = toggleMarkOnDoc(doc, r.start, r.end, 'italic');
     doc = applySizeOnDoc(doc, r.start, r.end, 'xl');
-    doc = applyColorOnDoc(doc, r.start, r.end, 'primary');
+    doc = applyColorOnDoc(doc, r.start, r.end, 'head');
     const html = richDocToHtml(doc, { forEditor: true });
     const root = document.createElement('div');
     root.innerHTML = html;
@@ -310,7 +310,7 @@ describe('paragraph lite kit mark operations (toolbar functionality)', () => {
     expect(s?.marks?.bold).toBe(true);
     expect(s?.marks?.italic).toBe(true);
     expect(s?.marks?.size).toBe('xl');
-    expect(s?.marks?.color).toBe('primary');
+    expect(s?.marks?.color).toBe('head');
     expect(richDocPlainText(again)).toBe(sample);
   });
 

@@ -20,6 +20,8 @@ import type {
   EventBlock,
   VideoBlock,
 } from '../types';
+import type { ColorTarget } from '../colors/edit';
+import { colorScopeClass, renderPalette, slotHex } from './colors';
 import { eventPlace, eventSheet, eventTimeRange, googleCalendarHref } from './event';
 import { buildLinkHref } from '../richtext/link-target';
 import { richDocToHtml } from '../richtext/to-html';
@@ -38,10 +40,17 @@ export interface RenderContext {
   globals: Globals;
   mode: RenderMode;
   annotate?: boolean;
+  /** The block being rendered; set by renderBlocks, used for the block's own colors. */
+  target?: ColorTarget;
+}
+
+/** Effective color of a color of the block being rendered. */
+function color(ctx: RenderContext, key: string): string {
+  return slotHex(ctx.globals, ctx.target ?? { id: '', type: '' }, key);
 }
 
 function contentBg(ctx: RenderContext): string {
-  return escapeAttr(ctx.globals.contentBgColor);
+  return color(ctx, 'background');
 }
 
 /** Dual-write bgcolor + class-driven background (email client exception). */
@@ -51,8 +60,9 @@ function contentTd(ctx: RenderContext, extraClass: string, inner: string): strin
 }
 
 function rowWrap(block: Block, ctx: RenderContext, innerTdHtml: string): string {
-  if (!ctx.annotate) return `<tr>${innerTdHtml}</tr>`;
-  return `<tr class="nte-block" data-block-id="${escapeAttr(block.id)}" data-block-type="${escapeAttr(block.type)}">${innerTdHtml}</tr>`;
+  const scope = colorScopeClass(ctx.globals, block.id);
+  if (!ctx.annotate) return scope ? `<tr class="${scope}">${innerTdHtml}</tr>` : `<tr>${innerTdHtml}</tr>`;
+  return `<tr class="nte-block${scope ? ` ${scope}` : ''}" data-block-id="${escapeAttr(block.id)}" data-block-type="${escapeAttr(block.type)}">${innerTdHtml}</tr>`;
 }
 
 /** Glow line: [share of Secondary, cell width %], brightest in the middle. */
@@ -68,7 +78,9 @@ const GLOW_STEPS: readonly (readonly [number, number])[] = [
 
 function renderDivider(b: DividerBlock, ctx: RenderContext): string {
   const page = b.background === 'page';
-  const bgHex = page ? ctx.globals.pageBgColor : ctx.globals.contentBgColor;
+  const palette = renderPalette(ctx.globals);
+  const bgHex = page ? palette.page : palette.content;
+  const tone = color(ctx, 'tone');
   const bg = escapeAttr(bgHex);
   const bgClass = page ? 'email-bg' : 'content-bg';
   let inner = '';
@@ -93,7 +105,7 @@ function renderDivider(b: DividerBlock, ctx: RenderContext): string {
       </td>
     `;
   } else if (b.style === 'ornament') {
-    const rule = escapeAttr(mixHex(ctx.globals.secondaryColor, bgHex, 0.25));
+    const rule = escapeAttr(mixHex(tone, bgHex, 0.25));
     const hair = `<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td class="divider-hair" bgcolor="${rule}" style="background-color:${rule}">&nbsp;</td></tr></table>`;
     inner = `
       <td bgcolor="${bg}" class="${bgClass} divider-row-spaced">
@@ -108,7 +120,7 @@ function renderDivider(b: DividerBlock, ctx: RenderContext): string {
     `;
   } else if (b.style === 'glow') {
     const steps = GLOW_STEPS.map(([share, width]) => {
-      const c = escapeAttr(mixHex(ctx.globals.secondaryColor, bgHex, share));
+      const c = escapeAttr(mixHex(tone, bgHex, share));
       return `<td class="divider-glow-step" width="${width}%" bgcolor="${c}" style="background-color:${c}">&nbsp;</td>`;
     }).join('');
     inner = `
@@ -251,7 +263,7 @@ function renderContact(b: ContactBlock, ctx: RenderContext): string {
       ? `
             <table role="presentation" cellspacing="0" cellpadding="0" border="0" class="contact-button">
               <tr>
-                <td class="cta-button-cell" bgcolor="#1d6bb8">
+                <td class="cta-button-cell" bgcolor="${color(ctx, 'button')}">
                   <a href="${attrHref(btnHref, ctx.mode)}" target="_blank" class="cta-button-link contact-button-link"><span data-field="buttonLabel">${escapeHtml(b.buttonLabel)}</span></a>
                 </td>
               </tr>
@@ -295,7 +307,7 @@ function renderVideo(b: VideoBlock, ctx: RenderContext): string {
   let pic = '';
   if (src) pic = wrap(`<img src="${escapeAttr(src)}" alt="${escapeAttr(b.alt)}" width="${w}" class="email-image" style="--image-w:${w}px">`, 'email-image-link');
   else if (ctx.annotate) pic = `<span class="nte-image-empty" style="--image-w:${w}px">&nbsp;</span>`;
-  const play = escapeAttr(ctx.globals.secondaryColor);
+  const play = color(ctx, 'play');
   const duration = b.duration.trim() ? ` <span class="video-duration" data-field="duration">· ${escapeHtml(b.duration)}</span>` : '';
   return rowWrap(
     b,
@@ -382,10 +394,10 @@ function renderEvent(b: EventBlock, ctx: RenderContext): string {
   const place = eventPlace(b);
   const meta = [time, place].filter(Boolean).map(escapeHtml).join(' · ');
   const href = b.href.trim() ? resolveHref(b.href, ctx.mode) : '';
-  const brand = escapeAttr(ctx.globals.secondaryColor);
+  const brand = color(ctx, 'month');
   const button =
     b.buttonLabel.trim() && href
-      ? `<td class="event-act cta-button-cell" bgcolor="#1d6bb8"><a href="${attrHref(href, ctx.mode)}" target="_blank" class="cta-button-link event-button-link"><span data-field="buttonLabel">${escapeHtml(b.buttonLabel)}</span></a></td>`
+      ? `<td class="event-act cta-button-cell" bgcolor="${color(ctx, 'button')}"><a href="${attrHref(href, ctx.mode)}" target="_blank" class="cta-button-link event-button-link"><span data-field="buttonLabel">${escapeHtml(b.buttonLabel)}</span></a></td>`
       : '';
   const calHref = b.calendar ? googleCalendarHref(b) : '';
   const calendar =
@@ -436,7 +448,7 @@ function renderHero(b: HeroBlock, ctx: RenderContext): string {
         <p class="hero-label text-accent">
           <span data-field="label">${escapeHtml(b.label)}</span>
         </p>
-        <h1 class="mobile-font-large text-primary hero-headline">
+        <h1 class="mobile-font-large text-head hero-headline">
           <span data-field="headline" class="hero-headline-inner">${plainTextToHtml(b.headline)}</span>
         </h1>
       `,
@@ -460,7 +472,7 @@ function renderCtaButton(b: CtaButtonBlock, ctx: RenderContext): string {
       `
         <table role="presentation" cellspacing="0" cellpadding="0" border="0">
           <tr>
-            <td class="cta-button-cell" bgcolor="#1d6bb8">
+            <td class="cta-button-cell" bgcolor="${color(ctx, 'button')}">
               <a href="${attrHref(href, ctx.mode)}" target="_blank" class="cta-button-link">
                 <span data-field="text">${escapeHtml(b.text)}</span>
               </a>
@@ -477,7 +489,7 @@ function renderChapterBand(b: ChapterBandBlock, ctx: RenderContext): string {
     b,
     ctx,
     `
-      <td bgcolor="#060e1a" class="mobile-padding chapter-bg block-pad-chapter">
+      <td bgcolor="${color(ctx, 'background')}" class="mobile-padding chapter-bg block-pad-chapter">
         <p class="chapter-title text-accent text-chapter-label">
           <span data-field="title">${plainTextToHtml(b.title)}</span>
         </p>
@@ -555,7 +567,7 @@ function renderStatBox(b: StatBoxBlock, ctx: RenderContext): string {
       `
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
           <tr>
-            <td bgcolor="#060e1a" class="chapter-bg stat-box-bg stat-box-inner">
+            <td bgcolor="${color(ctx, 'box')}" class="chapter-bg stat-box-bg stat-box-inner">
               <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                 <tr>
                   <td class="stat-col-num" width="50%">
@@ -658,7 +670,7 @@ function renderPriceBox(b: PriceBoxBlock, ctx: RenderContext): string {
       `
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
           <tr>
-            <td bgcolor="#060d1a" class="chapter-bg price-box-bg price-box-inner">
+            <td bgcolor="${color(ctx, 'box')}" class="chapter-bg price-box-bg price-box-inner">
               <p class="price-badge">
                 <span data-field="badge">${escapeHtml(b.badge)}</span>
               </p>
@@ -773,5 +785,5 @@ export function renderBlock(block: Block, ctx: RenderContext): string {
 }
 
 export function renderBlocks(blocks: Block[], ctx: RenderContext): string {
-  return blocks.map((b) => renderBlock(b, ctx)).join('\n');
+  return blocks.map((b) => renderBlock(b, { ...ctx, target: { id: b.id, type: b.type } })).join('\n');
 }

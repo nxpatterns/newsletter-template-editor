@@ -7,6 +7,7 @@ import type {
   PersonalizationConfig,
 } from '../types';
 import { CURRENT_SCHEMA_VERSION } from '../types';
+import { defaultColors, STANDARD_SETS } from '../colors/model';
 import { emptySocialLinks } from './social';
 
 /**
@@ -19,18 +20,9 @@ export const PLACEHOLDER_LOGO_SRC = 'static/placeholder-logo.png';
 /** Reserved example domain for placeholder links (never a real company's site). */
 export const PLACEHOLDER_HREF = 'https://example.com';
 
-/** Neutral grey-blue palette on a dark page. */
-export const NEUTRAL_COLORS = {
-  pageBgColor: '#0f1216',
-  contentBgColor: '#181c22',
-  standardColor: '#9aa4af',
-  primaryColor: '#e7ebef',
-  secondaryColor: '#9db8d2',
-  accentColor: '#d6b46a',
-} as const;
-
-/** Color of a brand-name part without a valid color of its own. */
-export const FALLBACK_BRAND_PART_COLOR = NEUTRAL_COLORS.secondaryColor;
+/** Color of a brand-name part without a valid color of its own (standard dark: links; headings). */
+export const FALLBACK_BRAND_PART_COLOR = STANDARD_SETS.dark.link;
+const FALLBACK_BRAND_HEAD_COLOR = STANDARD_SETS.dark.head;
 
 export function defaultPersonalization(): PersonalizationConfig {
   return {
@@ -47,8 +39,8 @@ export function defaultBrand(): BrandConfig {
     stars: { symbol: '★', count: 6 },
     name: {
       parts: [
-        { text: 'YourCompany', color: NEUTRAL_COLORS.primaryColor },
-        { text: '.com', color: NEUTRAL_COLORS.secondaryColor },
+        { text: 'YourCompany', color: FALLBACK_BRAND_HEAD_COLOR },
+        { text: '.com', color: FALLBACK_BRAND_PART_COLOR },
       ],
       size: 'm',
       bold: true,
@@ -89,7 +81,7 @@ export function defaultGlobals(): Globals {
   return {
     preheader: '',
     fontFamily: 'Georgia',
-    ...NEUTRAL_COLORS,
+    colors: defaultColors(),
     campaignSubject: '',
     logo: defaultLogo(),
     brand: defaultBrand(),

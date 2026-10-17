@@ -6,13 +6,7 @@ import { normalizeNewsletter } from './normalize-newsletter';
 /** A v1 document as older builds stored it (old color/size tokens and globals keys). */
 function v1Doc(): Newsletter {
   const { globals } = seedNewsletter();
-  const {
-    secondaryColor: _s,
-    accentColor: _a,
-    primaryColor: _p,
-    standardColor: _st,
-    ...rest
-  } = globals;
+  const { colors: _colors, ...rest } = globals;
   return {
     schemaVersion: 1,
     globals: {
@@ -44,12 +38,10 @@ function v1Doc(): Newsletter {
 }
 
 describe('schema v1 → v2 migration', () => {
-  it('renames globals keys in one pass (accent→secondary, gold→accent)', () => {
-    const g = normalizeNewsletter(v1Doc()).globals as unknown as Record<string, unknown>;
-    expect(g['secondaryColor']).toBe('#0000ff');
-    expect(g['accentColor']).toBe('#ffcc00');
-    expect(g['primaryColor']).toBe('#ffffff');
-    expect(g['standardColor']).toBe('#888888');
+  it('renames globals keys in one pass (accent→link, gold→accent)', () => {
+    const globals = normalizeNewsletter(v1Doc()).globals;
+    const g = globals as unknown as Record<string, unknown>;
+    expect(globals.colors.dark.general).toEqual({ link: '#0000ff', accent: '#ffcc00', head: '#ffffff', body: '#888888' });
     expect(g['goldColor']).toBeUndefined();
     expect(g['headingColor']).toBeUndefined();
     expect(g['bodyTextColor']).toBeUndefined();
@@ -59,9 +51,9 @@ describe('schema v1 → v2 migration', () => {
     const n = normalizeNewsletter(v1Doc());
     const p = n.blocks[0];
     if (p.type !== 'paragraph') throw new Error('expected paragraph');
-    expect(p.body[0].color).toBe('primary');
+    expect(p.body[0].color).toBe('head');
     const marks = p.body[0].children.map((c) => (c.type === 'text' ? c.marks : undefined));
-    expect(marks[0]).toMatchObject({ color: 'secondary', size: 'l' });
+    expect(marks[0]).toMatchObject({ color: 'link', size: 'l' });
     expect(marks[1]).toMatchObject({ color: 'accent', size: 'xl' });
     expect(marks[2]).toMatchObject({ size: 'xs' });
   });

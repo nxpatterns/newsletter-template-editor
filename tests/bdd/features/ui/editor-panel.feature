@@ -79,9 +79,9 @@ Feature: Editor side panel
     Given I open the editor with the German demo
     When I open the paragraph editor for seed block 'bmo8rynqo-9'
     And I turn on the formatting info
-    Then a paragraph info label should mention 'Contains: .*Secondary'
+    Then a paragraph info label should mention 'Contains: .*Links and numbers'
     When I click the first inline-colored text
-    Then the info panel should list 'Color: Secondary'
+    Then the info panel should list 'Color: Links and numbers'
     When I remove the color in the info panel
     Then that text should have no inline color anymore
 
@@ -93,9 +93,9 @@ Feature: Editor side panel
     Then paragraph 2 should color exactly 'cloudlib.eu' as 'accent'
     And the color control should show 'accent'
     When I select 'Sichtbarkeit' in paragraph 3 of the editor
-    And I set the text color to 'secondary'
-    Then paragraph 3 should color exactly 'Sichtbarkeit' as 'secondary'
-    And the color control should show 'secondary'
+    And I set the text color to 'link'
+    Then paragraph 3 should color exactly 'Sichtbarkeit' as 'link'
+    And the color control should show 'link'
     And the size control should show 'xl'
 
   Scenario: Formatting info lists and removes bold text

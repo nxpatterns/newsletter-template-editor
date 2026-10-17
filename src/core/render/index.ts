@@ -2,6 +2,7 @@ import { optimizeLogoForHtmlExport } from '../logo/logo-pipeline';
 import type { SocialIconSources } from '../brand/social';
 import type { Newsletter } from '../types';
 import { renderBlocks } from './blocks';
+import { renderPalette } from './colors';
 import { emailDocumentCss } from './email-css';
 import { inlineEmailCss, inlineEmailCssFragment } from './inline-email-css';
 import { renderExportShell, renderPreviewDoc } from './shell';
@@ -37,6 +38,7 @@ export function renderPreview(newsletter: Newsletter, opts: PreviewOptions = {})
     bodyInner,
     newsletter.globals.campaignSubject || 'Newsletter preview',
     opts.socialIcons,
+    newsletter.blocks,
   );
   // Preview keeps classes + stylesheet (no export inliner).
   return resolveListMonkForPreview(doc, newsletter.globals.campaignSubject || 'Newsletter preview');
@@ -44,7 +46,7 @@ export function renderPreview(newsletter: Newsletter, opts: PreviewOptions = {})
 
 /** Drop target for the first block; never part of an export. */
 function renderEmptySlot(newsletter: Newsletter, label: string): string {
-  const bg = escapeAttr(newsletter.globals.contentBgColor);
+  const bg = escapeAttr(renderPalette(newsletter.globals).content);
   return `<tr class="nte-empty-slot"><td bgcolor="${bg}" class="mobile-padding content-bg block-pad-md"><div class="nte-empty-slot-box">${escapeHtml(label)}</div></td></tr>`;
 }
 
@@ -55,10 +57,10 @@ export function renderExport(newsletter: Newsletter, opts: ExportOptions = {}): 
     mode: 'export',
     annotate: false,
   });
-  const css = emailDocumentCss(newsletter.globals);
-  const full = inlineEmailCss(renderExportShell(newsletter.globals, bodyRows, opts.socialIcons));
+  const css = emailDocumentCss(newsletter.globals, newsletter.blocks);
+  const full = inlineEmailCss(renderExportShell(newsletter.globals, bodyRows, opts.socialIcons, newsletter.blocks));
   const standardTemplate = inlineEmailCss(
-    renderExportShell(newsletter.globals, `{{ template "content" . }}`, opts.socialIcons),
+    renderExportShell(newsletter.globals, `{{ template "content" . }}`, opts.socialIcons, newsletter.blocks),
   );
   const body = inlineEmailCssFragment(bodyRows, css);
   return { full, body, standardTemplate };

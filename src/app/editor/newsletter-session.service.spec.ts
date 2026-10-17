@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { setGeneralColor } from '../../core/colors';
 import { LocaleService } from '../i18n/locale.service';
 import { NewsletterSession } from './newsletter-session.service';
 
@@ -247,9 +248,9 @@ describe('NewsletterSession', () => {
   });
 
   it('updates globals brand and colors', () => {
-    session.updateGlobals({ secondaryColor: '#112233' });
+    session.updateColors((c) => setGeneralColor(c, 'link', '#112233'));
     session.updateBrand({ stars: { symbol: '✦', count: 3 } });
-    expect(session.globals().secondaryColor).toBe('#112233');
+    expect(session.palette().link).toBe('#112233');
     expect(session.globals().brand.stars).toEqual({ symbol: '✦', count: 3 });
   });
 

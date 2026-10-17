@@ -303,14 +303,14 @@ input.ed-input.ed-input--clearable.ed-input--clear-hover {
   width: 3px;
   margin: 0.5rem 0 0.5rem 0.5rem;
   border-radius: 2px;
-  background: var(--em-secondary);
+  background: var(--em-link);
 }
 
 .em-quote-wrap {
   display: flex;
   border: 1px solid color-mix(in srgb, var(--ds-accent) 25%, var(--ds-border));
   border-radius: var(--ds-radius);
-  background: var(--em-content-bg);
+  background: var(--em-content);
 }
 
 .stat-grid {
@@ -361,7 +361,7 @@ input.ed-input.ed-input--clearable.ed-input--clear-hover {
   align-items: center;
   height: 2.4rem;
   border-radius: var(--ds-radius);
-  background: var(--em-content-bg);
+  background: var(--em-content);
 }
 
 .divider-art-thin {
@@ -386,13 +386,13 @@ input.ed-input.ed-input--clearable.ed-input--clear-hover {
 
 .divider-art-end {
   width: 42%;
-  background: var(--em-secondary);
+  background: var(--em-link);
 }
 
 .divider-art-hair {
   flex: 1;
   height: 1px;
-  background: color-mix(in srgb, var(--em-secondary) 25%, var(--em-content-bg));
+  background: color-mix(in srgb, var(--em-link) 25%, var(--em-content));
 }
 
 .divider-art-diamond {
@@ -405,7 +405,7 @@ input.ed-input.ed-input--clearable.ed-input--clear-hover {
 .divider-art-glow {
   flex: 1;
   height: 2px;
-  background: linear-gradient(90deg, transparent, var(--em-secondary) 40% 60%, transparent);
+  background: linear-gradient(90deg, transparent, var(--em-link) 40% 60%, transparent);
 }
 
 .divider-art-space {
@@ -522,7 +522,7 @@ input.ed-input.ed-input--clearable.ed-input--clear-hover {
   height: 1.3rem;
   margin: 0 auto;
   border-radius: 2px;
-  background: linear-gradient(135deg, #3e84c6, color-mix(in srgb, var(--em-secondary, #7ecfff) 70%, #3e84c6));
+  background: linear-gradient(135deg, #3e84c6, color-mix(in srgb, var(--em-link, #7ecfff) 70%, #3e84c6));
 }
 
 .image-art--full {

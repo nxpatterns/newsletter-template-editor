@@ -7,7 +7,7 @@ export const RICH_SIZE_TOKENS = ['xs', 's', 'm', 'l', 'xl'] as const;
 export type RichSizeToken = (typeof RICH_SIZE_TOKENS)[number];
 
 /** Theme color slots usable as span/paragraph base color (no free hex). */
-export const RICH_COLOR_TOKENS = ['standard', 'primary', 'secondary', 'accent', 'dim'] as const;
+export const RICH_COLOR_TOKENS = ['body', 'head', 'link', 'accent', 'dim'] as const;
 export type RichColorToken = (typeof RICH_COLOR_TOKENS)[number];
 
 export type RichLinkTarget = '_blank' | '_self';
@@ -361,7 +361,7 @@ export function applyColorOnDoc(
   const { a, b } = resolved;
   return mapRangeSpans(doc, a, b, (base) => {
     const marks: RichMarks = { ...base };
-    if (!color || color === 'standard') delete marks.color;
+    if (!color || color === 'body') delete marks.color;
     else marks.color = color;
     return marks;
   });
@@ -392,7 +392,7 @@ export function applyParagraphBaseColorOnDoc(
   return compactDoc(
     doc.map((p, pi) => ({
       type: 'p' as const,
-      color: pi === target ? (color && color !== 'standard' ? color : undefined) : p.color,
+      color: pi === target ? (color && color !== 'body' ? color : undefined) : p.color,
       children: p.children,
     })),
   );

@@ -33,9 +33,9 @@ function marksFromClassList(el: HTMLElement, base: RichMarks = {}): RichMarks {
   for (const size of ['l', 'xl', 's', 'xs', 'm'] as const) {
     if (cls.includes(`rt-size-${size}`)) m.size = size === 'm' ? undefined : size;
   }
-  for (const color of ['primary', 'secondary', 'accent', 'dim', 'standard'] as const) {
+  for (const color of ['head', 'link', 'accent', 'dim', 'body'] as const) {
     if (cls.includes(`text-${color}`) || cls.includes(`rt-color-${color}`)) {
-      if (isRichColorToken(color)) m.color = color === 'standard' ? undefined : color;
+      if (isRichColorToken(color)) m.color = color === 'body' ? undefined : color;
     }
   }
   const dataColor = el.getAttribute('data-rt-color');

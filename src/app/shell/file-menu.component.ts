@@ -14,6 +14,7 @@ import { LocaleService } from '../i18n/locale.service';
 import { ConfirmDialogService } from '../ui/confirm-dialog/confirm-dialog.service';
 import { SnackbarService } from '../ui/snackbar/snackbar.service';
 import { ExportHtmlDialogComponent, type HtmlExportKind } from './export-html-dialog.component';
+import { activeColors } from '../../core/colors';
 import { LibraryPickerComponent } from './library-picker.component';
 import { UnsavedGuardService } from './unsaved-guard.service';
 
@@ -137,7 +138,7 @@ export class FileMenuComponent {
     this.exportOpen.set(false);
     try {
       const n = this.session.newsletter();
-      const color = n.globals.primaryColor;
+      const color = activeColors(n.globals.colors).head;
       // Icons only with a public image address; otherwise the footer falls back to text links.
       const socialIcons = hostedSocialIcons(n.globals.legal.social, n.globals.assetBaseUrl, color) ?? undefined;
       const arts = await renderExportOptimized(n, { socialIcons });

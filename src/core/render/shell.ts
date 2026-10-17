@@ -1,5 +1,6 @@
-import { isFramePartShown, type BrandName, type BrandStars, type FramePart, type Globals, type LogoConfig } from '../types';
+import { isFramePartShown, type Block, type BrandName, type BrandStars, type FramePart, type Globals, type LogoConfig } from '../types';
 import { filledSocialNetworks, SOCIAL_ICON_PX, type SocialIconSources } from '../brand/social';
+import { colorScopeClass, FOOTER_TARGET, HEADER_TARGET, renderPalette, slotHex } from './colors';
 import { emailDocumentCss } from './email-css';
 import { attrHref, escapeAttr, escapeHtml, fontStack, resolveHref, type RenderMode } from './utils';
 
@@ -61,12 +62,26 @@ export function renderSocialRow(globals: Globals, mode: RenderMode, icons?: Soci
   )}</p>`;
 }
 
-export function renderHeader(globals: Globals, mode: RenderMode, bodyInner: string, socialIcons?: SocialIconSources): string {
+/** A light set says so; a dark set stays open to both, as before. */
+function colorSchemes(globals: Globals): string {
+  return globals.colors.mode === 'light' ? 'light only' : 'light dark';
+}
+
+export function renderHeader(
+  globals: Globals,
+  mode: RenderMode,
+  bodyInner: string,
+  socialIcons?: SocialIconSources,
+  blocks: readonly Block[] = [],
+): string {
   const shown = (part: FramePart) => isFramePartShown(globals, part);
   const messageHref = mode === 'export' ? '{{ MessageURL }}' : '#';
   const logoHtml = shown('logo') ? renderLogo(globals.logo) : '';
-  const pageBg = escapeAttr(globals.pageBgColor);
-  const contentBg = escapeAttr(globals.contentBgColor);
+  const pageBg = escapeAttr(renderPalette(globals).page);
+  const headerBg = slotHex(globals, HEADER_TARGET, 'background');
+  const footerBg = slotHex(globals, FOOTER_TARGET, 'background');
+  const headerScope = colorScopeClass(globals, HEADER_TARGET.id);
+  const footerScope = colorScopeClass(globals, FOOTER_TARGET.id);
   const starsText = escapeHtml(brandStarsText(globals.brand?.stars));
   const starsRow = starsText && shown('starsTop')
     ? `<p class="brand-stars text-accent" data-field="brand.stars">${starsText}</p>`
@@ -108,7 +123,7 @@ export function renderHeader(globals: Globals, mode: RenderMode, bodyInner: stri
     .map(([, href, label]) => `<a href="${href}" target="_blank" class="email-footer-link">${escapeHtml(label)}</a>`);
   const noticeRow = shown('notice')
     ? `<tr>
-              <td bgcolor="${pageBg}" class="mobile-padding footer-bg footer-notice-pad">
+              <td bgcolor="${footerBg}" class="mobile-padding footer-bg footer-notice-pad ${footerScope}">
                 <p class="footer-notice text-dim" data-field="legal.noticeHtml">
                   ${legal.noticeHtml}
                 </p>
@@ -122,7 +137,7 @@ export function renderHeader(globals: Globals, mode: RenderMode, bodyInner: stri
         <td align="center" bgcolor="${pageBg}" class="email-bg email-outer-pad">
           <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="email-container">
             <tr>
-              <td bgcolor="${contentBg}" class="mobile-padding header-bg">
+              <td bgcolor="${headerBg}" class="mobile-padding header-bg ${headerScope}">
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                   <tr>
                     <td valign="top" class="v-top">
@@ -140,7 +155,7 @@ export function renderHeader(globals: Globals, mode: RenderMode, bodyInner: stri
             ${bodyInner}
             ${noticeRow}
             <tr>
-              <td bgcolor="${pageBg}" class="mobile-padding footer-bg footer-meta-pad">
+              <td bgcolor="${footerBg}" class="mobile-padding footer-bg footer-meta-pad ${footerScope}">
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                   <tr><td class="footer-rule-cell">&nbsp;</td></tr>
                 </table>
@@ -165,22 +180,28 @@ export function renderHeader(globals: Globals, mode: RenderMode, bodyInner: stri
   `;
 }
 
-export function renderExportShell(globals: Globals, bodyInner: string, socialIcons?: SocialIconSources): string {
+export function renderExportShell(
+  globals: Globals,
+  bodyInner: string,
+  socialIcons?: SocialIconSources,
+  blocks: readonly Block[] = [],
+): string {
   const font = fontStack(globals);
   const preheader = escapeHtml(globals.preheader || '');
-  const header = renderHeader(globals, 'export', bodyInner, socialIcons);
-  const pageBg = escapeAttr(globals.pageBgColor);
+  const header = renderHeader(globals, 'export', bodyInner, socialIcons, blocks);
+  const schemes = colorSchemes(globals);
+  const pageBg = escapeAttr(renderPalette(globals).page);
   return `<!doctype html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="color-scheme" content="light dark" />
-  <meta name="supported-color-schemes" content="light dark" />
+  <meta name="color-scheme" content="${schemes}" />
+  <meta name="supported-color-schemes" content="${schemes}" />
   <title>{{ .Campaign.Subject }}</title>
-  <style>${emailDocumentCss(globals)}</style>
+  <style>${emailDocumentCss(globals, blocks)}</style>
 </head>
-<body bgcolor="${pageBg}" class="email-body" style="--email-page-bg:${pageBg};font-family:${font}">
+<body bgcolor="${pageBg}" class="email-body" style="--email-page:${pageBg};font-family:${font}">
   <div class="preheader-hide">${preheader}&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌</div>
   ${header}
   {{ TrackView }}
@@ -516,21 +537,23 @@ export function renderPreviewDoc(
   bodyInner: string,
   subject: string,
   socialIcons?: SocialIconSources,
+  blocks: readonly Block[] = [],
 ): string {
   const font = fontStack(globals);
   const preheader = escapeHtml(globals.preheader || '');
-  const header = renderHeader(globals, 'preview', bodyInner, socialIcons);
-  const pageBg = escapeAttr(globals.pageBgColor);
+  const header = renderHeader(globals, 'preview', bodyInner, socialIcons, blocks);
+  const pageBg = escapeAttr(renderPalette(globals).page);
+  const schemes = colorSchemes(globals);
   return `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="color-scheme" content="light dark" />
-  <meta name="supported-color-schemes" content="light dark" />
+  <meta name="color-scheme" content="${schemes}" />
+  <meta name="supported-color-schemes" content="${schemes}" />
   <title>${escapeHtml(subject || 'Preview')}</title>
-  <style>${emailDocumentCss(globals)}${PREVIEW_EDITOR_CHROME}</style>
+  <style>${emailDocumentCss(globals, blocks)}${PREVIEW_EDITOR_CHROME}</style>
 </head>
-<body bgcolor="${pageBg}" class="email-body" style="--email-page-bg:${pageBg};font-family:${font}">
+<body bgcolor="${pageBg}" class="email-body" style="--email-page:${pageBg};font-family:${font}">
   <div class="preheader-hide">${preheader}</div>
   ${header}
 </body>

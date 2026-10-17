@@ -449,7 +449,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
       }
       const bits: string[] = [];
       const base = p.getAttribute('data-rt-color');
-      if (base && base !== 'standard' && isRichColorToken(base)) {
+      if (base && base !== 'body' && isRichColorToken(base)) {
         bits.push(`${t('rt.info.paragraphColor')}: ${t(`rt.color.${base}`)}`);
       }
       const sizes = new Set<RichSizeToken>();
@@ -458,7 +458,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
         const size = sizeOfElement(el);
         if (size && size !== 'm') sizes.add(size);
         const color = inlineColorOfElement(el);
-        if (color && color !== 'standard') colors.add(color);
+        if (color && color !== 'body') colors.add(color);
       });
       const contains = [
         ...RICH_SIZE_TOKENS.filter((s) => sizes.has(s)).map((s) => t(`rt.size.${s}`)),
@@ -493,7 +493,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     for (let el: HTMLElement | null = start; el && el !== root; el = el.parentElement) {
       if (el.tagName === 'P') {
         const base = el.getAttribute('data-rt-color');
-        if (base && base !== 'standard' && isRichColorToken(base)) {
+        if (base && base !== 'body' && isRichColorToken(base)) {
           add('paragraphColor', `${t('rt.info.paragraphColor')}: ${t(`rt.color.${base}`)}`, el);
         }
         break;
@@ -501,7 +501,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
       const size = sizeOfElement(el);
       if (size && size !== 'm') add('size', `${t('rt.size')}: ${t(`rt.size.${size}`)}`, el);
       const color = inlineColorOfElement(el);
-      if (color && color !== 'standard') add('color', `${t('rt.color')}: ${t(`rt.color.${color}`)}`, el);
+      if (color && color !== 'body') add('color', `${t('rt.color')}: ${t(`rt.color.${color}`)}`, el);
       if (el.tagName === 'CODE' && el.classList.contains('rt-mono')) add('mono', t('rt.info.legendMono'), el);
       if (el.tagName === 'A' && el.classList.contains('rt-link')) {
         add('link', `${t('rt.info.legendLink')}: ${el.getAttribute('href') ?? ''}`, el);
@@ -533,7 +533,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     const doc = richDocFromEditorRoot(root);
     if (item.kind === 'paragraphColor') {
       const inside = Math.floor((bm.start + bm.end) / 2);
-      const next = applyParagraphBaseColorOnDoc(doc, inside, 'standard');
+      const next = applyParagraphBaseColorOnDoc(doc, inside, 'body');
       this.commitDoc(next, true, { start: inside, end: inside });
       return;
     }
@@ -541,7 +541,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
       item.kind === 'size'
         ? applySizeOnDoc(doc, bm.start, bm.end, 'm')
         : item.kind === 'color'
-          ? applyColorOnDoc(doc, bm.start, bm.end, 'standard')
+          ? applyColorOnDoc(doc, bm.start, bm.end, 'body')
           : item.kind === 'link'
             ? applyLinkOnDoc(doc, bm.start, bm.end, '')
             : toggleMarkOnDoc(doc, bm.start, bm.end, item.kind);
@@ -578,7 +578,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
       size ??= sizeOfElement(n);
       color ??= inlineColorOfElement(n);
     }
-    this.caretFormat.set({ size: size ?? 'm', color: color ?? 'standard' });
+    this.caretFormat.set({ size: size ?? 'm', color: color ?? 'body' });
   }
 
   /** Capture current selection before toolbar controls steal focus. */
@@ -1006,7 +1006,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
       a.setAttribute('target', target);
       if (target === '_blank') a.setAttribute('rel', 'noopener noreferrer');
       else a.removeAttribute('rel');
-      a.classList.add('rt-link', 'text-secondary');
+      a.classList.add('rt-link', 'text-link');
       const label = this.linkLabel().trim();
       if (label && label !== a.textContent) a.textContent = label;
     } else if (mode === 'insert') {
@@ -1016,7 +1016,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
       a.href = href;
       a.target = target;
       if (target === '_blank') a.rel = 'noopener noreferrer';
-      a.className = 'rt-link text-secondary';
+      a.className = 'rt-link text-link';
       a.textContent = this.linkLabel().trim() || this.linkTarget().trim();
       range.insertNode(a);
       this.ensureLinkSpacing(a);

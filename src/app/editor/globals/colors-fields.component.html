@@ -1,138 +1,286 @@
-@let g = session.globals();
-@let blocks = session.blocks();
+@let secs = sections();
 
-<section class="colors-tab" data-testid="colors-fields">
-  <div class="colors-acc colors-acc--section" [class.is-open]="isOpen('palette')" data-testid="colors-section-palette">
-    <h2 class="colors-acc-h">
+<ng-template #sectionTpl let-section let-isBlock="isBlock">
+  <div class="colors-acc colors-acc--nested" [class.is-open]="isOpen(section.id)">
+    <h3 class="colors-acc-h">
       <button
         type="button"
         class="colors-acc-trigger"
-        data-testid="colors-acc-palette"
-        [attr.aria-expanded]="isOpen('palette')"
-        aria-controls="colors-acc-panel-palette"
-        id="colors-acc-btn-palette"
-        (click)="toggle('palette')"
+        [attr.data-testid]="'colors-acc-' + section.target.id"
+        [attr.aria-expanded]="isOpen(section.id)"
+        [attr.aria-controls]="'colors-panel-' + section.target.id"
+        (click)="onBlockClick(section, isBlock)"
       >
         <span class="colors-acc-chevron" aria-hidden="true"></span>
-        <span class="colors-acc-title" [textContent]="i18n.t('colors.paletteTitle')"></span>
+        @if (section.index) {
+          <span class="colors-acc-index" aria-hidden="true" [textContent]="section.index"></span>
+        }
+        <span class="colors-acc-icon" aria-hidden="true" [textContent]="section.icon"></span>
+        <span class="colors-acc-title" [textContent]="section.label"></span>
+        @if (section.warnCount > 0) {
+          <span class="colors-warn-count" aria-hidden="true">!</span>
+        }
+        @if (section.ownCount > 0) {
+          <span class="colors-own-meta" [textContent]="'● ' + i18n.t('colors.own.count', { n: section.ownCount })"></span>
+        }
       </button>
-    </h2>
+    </h3>
     <div
       class="colors-acc-panel"
-      id="colors-acc-panel-palette"
+      [attr.id]="'colors-panel-' + section.target.id"
       role="region"
-      aria-labelledby="colors-acc-btn-palette"
-      [attr.inert]="isOpen('palette') ? null : ''"
+      [attr.inert]="isOpen(section.id) ? null : ''"
     >
-      <div class="colors-acc-panel-inner colors-acc-panel-inner--pad">
-        <p class="ed-hint colors-section-hint" [textContent]="i18n.t('colors.paletteHint')"></p>
-        <div
-          class="palette-grid"
-          data-testid="colors-palette-grid"
-          role="group"
-          [attr.aria-label]="i18n.t('colors.paletteTitle')"
-        >
-          @for (token of paletteTokens; track token.key) {
-            <div class="palette-cell">
-              <label class="ed-label" [attr.for]="'g-' + token.key" [textContent]="i18n.t(token.labelKey)"></label>
-              <div class="palette-controls">
-                <input
-                  class="palette-swatch"
-                  [id]="'g-' + token.key"
-                  type="color"
-                  [attr.data-testid]="token.testId"
-                  [value]="g[token.key]"
-                  (input)="onColor(token.key, $event)"
-                  (blur)="onFieldBlur()"
-                />
-                <input
-                  class="ed-input palette-hex"
-                  [attr.aria-label]="i18n.t(token.labelKey)"
-                  [value]="g[token.key]"
-                  (input)="onColor(token.key, $event)"
-                  (blur)="onFieldBlur()"
-                />
+      <div class="colors-acc-panel-inner">
+        <ul class="slot-list">
+          @for (row of section.rows; track row.id) {
+            <li class="slot-row" [class.is-own]="row.hasOverride" [attr.data-testid]="'color-slot-' + row.id">
+              <div class="slot-head">
+                <button
+                  type="button"
+                  class="slot-swatch"
+                  [style.background]="row.hex"
+                  [attr.aria-label]="row.label"
+                  [attr.aria-expanded]="editing() === row.id"
+                  [attr.data-testid]="'color-slot-open-' + row.id"
+                  (click)="toggleEditor(row.id)"
+                ></button>
+                <div class="slot-text">
+                  <span class="slot-label" [textContent]="row.label"></span>
+                  <span
+                    class="slot-status"
+                    [class.is-own]="!row.followsLabel"
+                    [textContent]="
+                      row.followsLabel
+                        ? i18n.t('colors.slot.follows', { role: row.followsLabel })
+                        : i18n.t('colors.slot.own', { hex: row.hex.toUpperCase() })
+                    "
+                  ></span>
+                </div>
+                @if (row.hasOverride) {
+                  <button
+                    type="button"
+                    class="slot-reset"
+                    [title]="i18n.t('colors.slot.reset')"
+                    [attr.aria-label]="i18n.t('colors.slot.reset')"
+                    [attr.data-testid]="'color-slot-reset-' + row.id"
+                    (click)="resetSlot(row)"
+                  >
+                    ↺
+                  </button>
+                }
               </div>
-            </div>
+
+              @if (row.outdatedGeneral) {
+                <div class="slot-note" [attr.data-testid]="'color-slot-outdated-' + row.id">
+                  <span
+                    [textContent]="
+                      i18n.t('colors.outdated', {
+                        general: row.outdatedGeneral.toUpperCase(),
+                        own: row.hex.toUpperCase(),
+                      })
+                    "
+                  ></span>
+                  <button
+                    type="button"
+                    class="colors-link-btn"
+                    [attr.data-testid]="'color-slot-take-' + row.id"
+                    [textContent]="i18n.t('colors.outdated.take')"
+                    (click)="resetSlot(row)"
+                  ></button>
+                </div>
+              }
+
+              @if (row.issue; as issue) {
+                <div class="slot-warn" role="note" [attr.data-testid]="'color-slot-warn-' + row.id">
+                  <span [textContent]="contrastText(issue.fg, issue.bg, issue.ratio, issueCause(issue))"></span>
+                  <button
+                    type="button"
+                    class="colors-link-btn"
+                    [attr.data-testid]="'color-slot-fix-' + row.id"
+                    [textContent]="i18n.t('colors.contrast.fix')"
+                    (click)="fixSlot(row)"
+                  ></button>
+                </div>
+              }
+
+              @if (editing() === row.id) {
+                <div class="slot-editor">
+                  <div class="colors-small" [textContent]="i18n.t('colors.editor.useGeneral')"></div>
+                  <div class="role-chips">
+                    @for (role of roles; track role) {
+                      <button
+                        type="button"
+                        class="role-chip"
+                        [style.background]="generalByRole().get(role)?.hex"
+                        [title]="roleLabel(role)"
+                        [attr.aria-label]="roleLabel(role)"
+                        [attr.data-testid]="'color-slot-role-' + row.id + '-' + role"
+                        (click)="pickRole(row, role)"
+                      ></button>
+                    }
+                  </div>
+                  <div class="colors-small" [textContent]="i18n.t('colors.editor.orOwn')"></div>
+                  <div class="hex-line">
+                    <input
+                      class="hex-swatch"
+                      type="color"
+                      [value]="row.hex"
+                      [attr.aria-label]="i18n.t('colors.editor.pick')"
+                      [attr.data-testid]="'color-slot-picker-' + row.id"
+                      (input)="onSlotInput(row, $event)"
+                      (change)="onSlotCommit(row, $event)"
+                    />
+                    <label class="colors-small" [textContent]="i18n.t('colors.editor.hex')"></label>
+                    <input
+                      class="ed-input hex-input"
+                      [value]="row.hex.toUpperCase()"
+                      [attr.aria-label]="i18n.t('colors.editor.hex')"
+                      [attr.data-testid]="'color-slot-hex-' + row.id"
+                      (change)="onSlotCommit(row, $event)"
+                    />
+                  </div>
+                </div>
+              }
+            </li>
           }
+        </ul>
+        <div class="colors-row-end">
+          <span class="colors-small" [textContent]="i18n.t('colors.block.label')"></span>
+          <button
+            type="button"
+            class="colors-ghost-btn"
+            [disabled]="section.ownCount === 0"
+            [attr.data-testid]="'color-block-reset-' + section.target.id"
+            [textContent]="i18n.t('colors.block.reset')"
+            (click)="resetBlock(section)"
+          ></button>
         </div>
       </div>
     </div>
   </div>
+</ng-template>
 
-  <div class="colors-shell" data-testid="colors-shell-accordions">
-    <div class="colors-acc" [class.is-open]="isOpen('shell-header')">
-      <h3 class="colors-acc-h">
+<section class="colors-tab" data-testid="colors-fields">
+  <div class="mode-box">
+    <div class="mode-title" [textContent]="i18n.t('colors.mode.title')"></div>
+    <div class="mode-seg" role="group" [attr.aria-label]="i18n.t('colors.mode.title')">
+      @for (m of modes; track m) {
         <button
           type="button"
-          class="colors-acc-trigger"
-          data-testid="colors-acc-header"
-          [attr.aria-expanded]="isOpen('shell-header')"
-          aria-controls="colors-acc-panel-header"
-          id="colors-acc-btn-header"
-          (click)="toggle('shell-header')"
+          [class.is-on]="mode() === m"
+          [attr.aria-pressed]="mode() === m"
+          [attr.data-testid]="'colors-mode-' + m"
+          (click)="setMode(m)"
         >
-          <span class="colors-acc-chevron" aria-hidden="true"></span>
-          <span class="colors-acc-title" [textContent]="i18n.t('colors.mailHeader')"></span>
-          <span class="colors-acc-meta" [textContent]="i18n.t('colors.shellMeta')"></span>
+          <i [class]="'mode-dot mode-dot--' + m" aria-hidden="true"></i>
+          <span [textContent]="modeLabel(m)"></span>
         </button>
-      </h3>
-      <div
-        class="colors-acc-panel"
-        id="colors-acc-panel-header"
-        role="region"
-        aria-labelledby="colors-acc-btn-header"
-        [attr.inert]="isOpen('shell-header') ? null : ''"
-      >
-        <div class="colors-acc-panel-inner">
-          <p class="colors-acc-note" [textContent]="i18n.t('colors.structurePreview')"></p>
-          <ul class="slot-list">
-            @for (slotKey of headerSlots; track slotKey) {
-              <li class="slot-row">
-                <span class="slot-label" [textContent]="i18n.t(slotKey)"></span>
-                <span class="slot-swatch is-placeholder" aria-hidden="true"></span>
-                <span class="slot-value" [textContent]="i18n.t('colors.slotPlaceholder')"></span>
-              </li>
-            }
-          </ul>
-        </div>
-      </div>
+      }
     </div>
+    <p class="colors-hint" [textContent]="i18n.t('colors.mode.hint')"></p>
+  </div>
 
-    <div class="colors-acc" [class.is-open]="isOpen('shell-footer')">
-      <h3 class="colors-acc-h">
-        <button
-          type="button"
-          class="colors-acc-trigger"
-          data-testid="colors-acc-footer"
-          [attr.aria-expanded]="isOpen('shell-footer')"
-          aria-controls="colors-acc-panel-footer"
-          id="colors-acc-btn-footer"
-          (click)="toggle('shell-footer')"
-        >
-          <span class="colors-acc-chevron" aria-hidden="true"></span>
-          <span class="colors-acc-title" [textContent]="i18n.t('colors.mailFooter')"></span>
-          <span class="colors-acc-meta" [textContent]="i18n.t('colors.shellMeta')"></span>
-        </button>
-      </h3>
-      <div
-        class="colors-acc-panel"
-        id="colors-acc-panel-footer"
-        role="region"
-        aria-labelledby="colors-acc-btn-footer"
-        [attr.inert]="isOpen('shell-footer') ? null : ''"
+  <div class="colors-legend">
+    <span [textContent]="i18n.t('colors.legend.inherited')"></span>
+    <span class="is-own" [textContent]="i18n.t('colors.legend.own')"></span>
+    <span [textContent]="i18n.t('colors.legend.reset')"></span>
+  </div>
+
+  <div class="colors-acc colors-acc--section" [class.is-open]="isOpen('general')" data-testid="colors-section-general">
+    <h2 class="colors-acc-h">
+      <button
+        type="button"
+        class="colors-acc-trigger"
+        data-testid="colors-acc-general"
+        [attr.aria-expanded]="isOpen('general')"
+        aria-controls="colors-panel-general"
+        (click)="toggle('general')"
       >
-        <div class="colors-acc-panel-inner">
-          <p class="colors-acc-note" [textContent]="i18n.t('colors.structurePreview')"></p>
-          <ul class="slot-list">
-            @for (slotKey of footerSlots; track slotKey) {
-              <li class="slot-row">
-                <span class="slot-label" [textContent]="i18n.t(slotKey)"></span>
-                <span class="slot-swatch is-placeholder" aria-hidden="true"></span>
-                <span class="slot-value" [textContent]="i18n.t('colors.slotPlaceholder')"></span>
-              </li>
+        <span class="colors-acc-chevron" aria-hidden="true"></span>
+        <span class="colors-acc-title" [textContent]="i18n.t('colors.general.title')"></span>
+        <span class="colors-acc-meta" [textContent]="i18n.t('colors.general.meta')"></span>
+      </button>
+    </h2>
+    <div class="colors-acc-panel" id="colors-panel-general" role="region" [attr.inert]="isOpen('general') ? null : ''">
+      <div class="colors-acc-panel-inner colors-acc-panel-inner--pad">
+        <div class="general-cards">
+        @for (group of groups; track group.titleKey) {
+          <section class="general-card">
+          <h4 class="general-group" [textContent]="i18n.t(group.titleKey)"></h4>
+          <div class="general-grid">
+            @for (role of group.roles; track role) {
+              @let g = generalByRole().get(role)!;
+              <div class="general-cell" [class.is-own]="g.changed" [attr.data-testid]="'color-general-' + role">
+                <div class="general-head">
+                  <input
+                    class="general-swatch"
+                    type="color"
+                    [value]="g.hex"
+                    [attr.aria-label]="g.label"
+                    [attr.data-testid]="'color-general-picker-' + role"
+                    (input)="onGeneralInput(role, $event)"
+                    (change)="onGeneralCommit(role, $event)"
+                  />
+                  <div class="general-text">
+                    <span class="general-label" [textContent]="g.label"></span>
+                    <span class="slot-status" [class.is-own]="g.changed" [textContent]="g.changed ? i18n.t('colors.status.changed') : i18n.t('colors.status.standard')"></span>
+                  </div>
+                  @if (g.changed) {
+                    <button
+                      type="button"
+                      class="slot-reset"
+                      [title]="i18n.t('colors.general.resetOne')"
+                      [attr.aria-label]="i18n.t('colors.general.resetOne')"
+                      [attr.data-testid]="'color-general-reset-' + role"
+                      (click)="resetGeneral(role)"
+                    >
+                      ↺
+                    </button>
+                  }
+                </div>
+                <input
+                  class="ed-input hex-input"
+                  [value]="g.hex.toUpperCase()"
+                  [attr.aria-label]="g.label"
+                  [attr.data-testid]="'color-general-hex-' + role"
+                  (change)="onGeneralCommit(role, $event)"
+                />
+                @if (g.issue; as issue) {
+                  <div class="slot-warn" role="note" [attr.data-testid]="'color-general-warn-' + role">
+                    <span
+                      [textContent]="contrastText(issue.fg, issue.bg, issue.ratio, i18n.t('colors.contrast.general'))"
+                    ></span>
+                    <button
+                      type="button"
+                      class="colors-link-btn"
+                      [attr.data-testid]="'color-general-fix-' + role"
+                      [textContent]="i18n.t('colors.contrast.fix')"
+                      (click)="fixGeneral(g)"
+                    ></button>
+                  </div>
+                }
+              </div>
             }
-          </ul>
+          </div>
+          </section>
+        }
+        </div>
+        <div class="colors-frame-list">
+          @for (section of secs.frame; track section.id) {
+            <ng-container *ngTemplateOutlet="sectionTpl; context: { $implicit: section, isBlock: false }" />
+          }
+        </div>
+
+        <div class="colors-row-end">
+          <span></span>
+          <button
+            type="button"
+            class="colors-ghost-btn"
+            data-testid="color-general-reset-all"
+            [textContent]="i18n.t('colors.general.reset')"
+            (click)="resetAllGeneral()"
+          ></button>
         </div>
       </div>
     </div>
@@ -145,76 +293,78 @@
         class="colors-acc-trigger"
         data-testid="colors-acc-blocks"
         [attr.aria-expanded]="isOpen('blocks')"
-        aria-controls="colors-acc-panel-blocks"
-        id="colors-acc-btn-blocks"
+        aria-controls="colors-panel-blocks"
         (click)="toggle('blocks')"
       >
         <span class="colors-acc-chevron" aria-hidden="true"></span>
-        <span class="colors-acc-title" [textContent]="i18n.t('colors.blocksSection')"></span>
-        @if (blocks.length > 0) {
-          <span class="colors-acc-count" aria-hidden="true" [textContent]="blocks.length"></span>
+        <span class="colors-acc-title" [textContent]="i18n.t('colors.blocks.title')"></span>
+        @if (secs.blocks.length > 0) {
+          <span class="colors-acc-count" aria-hidden="true" [textContent]="secs.blocks.length"></span>
         }
+        <span class="colors-acc-meta">
+          @if (totalWarn() > 0) {
+            <span class="colors-warn-count" aria-hidden="true" [textContent]="'! ' + totalWarn()"></span>
+          }
+          @if (totalOwn() > 0) {
+            <span class="colors-own-meta" [textContent]="'● ' + i18n.t('colors.own.count', { n: totalOwn() })"></span>
+          }
+        </span>
       </button>
     </h2>
-    <div
-      class="colors-acc-panel"
-      id="colors-acc-panel-blocks"
-      role="region"
-      aria-labelledby="colors-acc-btn-blocks"
-      [attr.inert]="isOpen('blocks') ? null : ''"
-    >
+    <div class="colors-acc-panel" id="colors-panel-blocks" role="region" [attr.inert]="isOpen('blocks') ? null : ''">
       <div class="colors-acc-panel-inner colors-acc-panel-inner--pad">
-        <p class="ed-hint colors-section-hint" [textContent]="i18n.t('colors.blocksHint')"></p>
-
-        @if (blocks.length === 0) {
-          <p class="colors-empty" [textContent]="i18n.t('colors.blocksEmpty')"></p>
+        <p class="colors-hint" [textContent]="i18n.t('colors.blocks.hint')"></p>
+        @if (secs.blocks.length === 0) {
+          <p class="colors-empty" [textContent]="i18n.t('colors.blocks.empty')"></p>
         } @else {
           <div class="colors-block-list" data-testid="colors-block-accordions">
-            @for (block of blocks; track block.id; let i = $index) {
-              @let accId = 'block-' + block.id;
-              <div class="colors-acc colors-acc--nested" [class.is-open]="isOpen(accId)">
-                <h3 class="colors-acc-h">
-                  <button
-                    type="button"
-                    class="colors-acc-trigger"
-                    [attr.data-testid]="'colors-acc-block-' + block.id"
-                    [attr.aria-expanded]="isOpen(accId)"
-                    [attr.aria-controls]="'colors-acc-panel-' + block.id"
-                    [attr.id]="'colors-acc-btn-' + block.id"
-                    (click)="onBlockAccClick(block.id)"
-                  >
-                    <span class="colors-acc-chevron" aria-hidden="true"></span>
-                    <span class="colors-acc-index" aria-hidden="true" [textContent]="i + 1"></span>
-                    <span class="colors-acc-icon" aria-hidden="true" [textContent]="icon(block.type)"></span>
-                    <span class="colors-acc-title" [textContent]="blockLabel(block.type)"></span>
-                    <span class="colors-acc-meta" [textContent]="i18n.t('colors.blockMeta')"></span>
-                  </button>
-                </h3>
-                <div
-                  class="colors-acc-panel"
-                  [attr.id]="'colors-acc-panel-' + block.id"
-                  role="region"
-                  [attr.aria-labelledby]="'colors-acc-btn-' + block.id"
-                  [attr.inert]="isOpen(accId) ? null : ''"
-                >
-                  <div class="colors-acc-panel-inner">
-                    <p class="colors-acc-note" [textContent]="i18n.t('colors.structurePreview')"></p>
-                    <ul class="slot-list">
-                      @for (slotKey of slotsFor(block.type); track slotKey) {
-                        <li class="slot-row">
-                          <span class="slot-label" [textContent]="i18n.t(slotKey)"></span>
-                          <span class="slot-swatch is-placeholder" aria-hidden="true"></span>
-                          <span class="slot-value" [textContent]="i18n.t('colors.slotPlaceholder')"></span>
-                        </li>
-                      }
-                    </ul>
-                  </div>
-                </div>
-              </div>
+            @for (section of secs.blocks; track section.target.id) {
+              <ng-container *ngTemplateOutlet="sectionTpl; context: { $implicit: section, isBlock: true }" />
             }
           </div>
         }
       </div>
     </div>
   </div>
+
+  @if (pending(); as p) {
+    <div class="colors-dialog-backdrop" (click)="cancelPending()"></div>
+    <div class="colors-dialog" role="dialog" aria-modal="true" data-testid="colors-dialog" [attr.aria-label]="i18n.t('colors.dialog.title', { role: roleLabel(p.role) })">
+      <h3 class="colors-dialog-title" [textContent]="i18n.t('colors.dialog.title', { role: roleLabel(p.role) })"></h3>
+      <p
+        [textContent]="
+          i18n.t('colors.dialog.intro', { role: roleLabel(p.role), from: p.from.toUpperCase(), to: p.to.toUpperCase() })
+        "
+      ></p>
+      <p [textContent]="i18n.t('colors.dialog.count', { n: pendingBlockCount() })"></p>
+      <ul class="colors-dialog-list">
+        @for (row of pendingRows(); track $index) {
+          <li>
+            <span [textContent]="row.label"></span>
+            <span class="colors-dialog-hex"><i [style.background]="row.hex"></i><b [textContent]="row.hex.toUpperCase()"></b></span>
+          </li>
+        }
+      </ul>
+      <p class="colors-dialog-q" [textContent]="i18n.t('colors.dialog.question', { n: pendingRows().length })"></p>
+      <label class="colors-dialog-opt" [class.is-on]="p.choice === 'all'">
+        <input type="radio" name="colors-choice" data-testid="colors-dialog-all" [checked]="p.choice === 'all'" (change)="choose('all')" />
+        <span>
+          <b [textContent]="i18n.t('colors.dialog.everywhere')"></b>
+          <small [textContent]="i18n.t('colors.dialog.everywhereHint', { to: p.to.toUpperCase() })"></small>
+        </span>
+      </label>
+      <label class="colors-dialog-opt" [class.is-on]="p.choice === 'keep'">
+        <input type="radio" name="colors-choice" data-testid="colors-dialog-keep" [checked]="p.choice === 'keep'" (change)="choose('keep')" />
+        <span>
+          <b [textContent]="i18n.t('colors.dialog.keep')"></b>
+          <small [textContent]="i18n.t('colors.dialog.keepHint')"></small>
+        </span>
+      </label>
+      <p class="colors-hint" [textContent]="i18n.t('colors.dialog.scope', { mode: modeName() })"></p>
+      <div class="colors-dialog-actions">
+        <button type="button" class="colors-ghost-btn" data-testid="colors-dialog-cancel" [textContent]="i18n.t('colors.dialog.cancel')" (click)="cancelPending()"></button>
+        <button type="button" class="colors-primary-btn" data-testid="colors-dialog-apply" [textContent]="i18n.t('colors.dialog.apply')" (click)="applyPending()"></button>
+      </div>
+    </div>
+  }
 </section>

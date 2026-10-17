@@ -14,6 +14,7 @@ import {
   type RichDoc,
   type SeedLanguage,
 } from '../../core';
+import { activeColors, type ColorsConfig } from '../../core/colors';
 import { clearParagraphStash } from './paragraph-draft-stash';
 import { buildProjectEnvelope, parseProjectFile, type LibraryEntry } from '../../core/persist/idb-docs';
 import type { TemplateSummary } from '../../core/persist/template-repository';
@@ -122,6 +123,8 @@ export class NewsletterSession {
   /** URL segment of the open document: library id, or `draft` before the first save. */
   readonly routeId = computed(() => this.libraryIdSignal() ?? DRAFT_ROUTE_ID);
   readonly globals = computed(() => this.newsletterSignal().globals);
+  /** Colors of the set that is currently edited, previewed and exported. */
+  readonly palette = computed(() => activeColors(this.globals().colors));
 
   /**
    * Load the working draft once per app run. Resolves true when a document is open
@@ -566,6 +569,14 @@ export class NewsletterSession {
     this.mutate(history, (n) => ({
       ...n,
       globals: { ...n.globals, ...patch },
+    }));
+  }
+
+  /** Change the color sets (general colors, block colors, active set) in one history step. */
+  updateColors(fn: (colors: ColorsConfig) => ColorsConfig, history: HistoryMode = 'immediate'): void {
+    this.mutate(history, (n) => ({
+      ...n,
+      globals: { ...n.globals, colors: fn(n.globals.colors) },
     }));
   }
 

@@ -145,7 +145,8 @@ function parseCss(css: string): ParsedCss {
       .map((s) => s.trim())
       .filter(Boolean);
     if (selectors.length === 0 || Object.keys(decls).length === 0) continue;
-    const simple = selectors.filter((s) => !s.includes(' ') && !s.includes('>'));
+    // Descendant selectors are only supported for block color scopes (`.cb-<id> …`).
+    const simple = selectors.filter((s) => s.startsWith('.cb-') || (!s.includes(' ') && !s.includes('>')));
     if (simple.length === 0) continue;
     rules.push({ selectors: simple, decls });
   }

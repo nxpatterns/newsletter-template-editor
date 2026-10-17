@@ -15,5 +15,5 @@ Feature: Greeting block
     Given I open the editor with an extra greeting block
     When I open the block editor for seed block 'test-greeting'
     And I choose the greeting option 'size' 'l'
-    And I choose the greeting option 'color' 'primary'
-    Then the greeting preview should use size 'l' and color 'primary'
+    And I choose the greeting option 'color' 'head'
+    Then the greeting preview should use size 'l' and color 'head'

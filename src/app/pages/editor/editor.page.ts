@@ -101,7 +101,7 @@ export class EditorPage {
    */
   private previewSocialIcons(): SocialIconSources | undefined {
     const g = this.session.globals();
-    return filledSocialNetworks(g.legal.social).length ? this.socialIcons.previewSources(g.primaryColor) : undefined;
+    return filledSocialNetworks(g.legal.social).length ? this.socialIcons.previewSources(this.session.palette().head) : undefined;
   }
 
   constructor() {

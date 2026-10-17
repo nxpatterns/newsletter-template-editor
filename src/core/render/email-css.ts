@@ -1,36 +1,36 @@
-import type { Globals } from '../types';
+import type { Block, Globals } from '../types';
+import { blockColorCss, renderPalette } from './colors';
 import { EMAIL_CONTENT_WIDTH_PX, escapeAttr, fontStack } from './utils';
 
 /**
  * Shared email document stylesheet (preview + export head).
  * Author with classes here; do not dump layout as inline styles in block markup.
  * Export-time CSS inlining (if needed for clients) is a separate pipeline step.
+ * Colors come from the active color set: general colors as `--email-*` variables, colors set in
+ * a block as rules scoped to that block (`blocks` is needed for those).
  */
-export function emailDocumentCss(globals: Globals): string {
-  const pageBg = escapeAttr(globals.pageBgColor);
-  const contentBg = escapeAttr(globals.contentBgColor);
-  const secondary = escapeAttr(globals.secondaryColor);
-  const accent = escapeAttr(globals.accentColor);
-  const primary = escapeAttr(globals.primaryColor);
-  const standard = escapeAttr(globals.standardColor);
+export function emailDocumentCss(globals: Globals, blocks: readonly Block[] = []): string {
+  const pal = renderPalette(globals);
+  const c = (k: keyof typeof pal) => escapeAttr(pal[k]);
   const font = fontStack(globals);
   const sans = 'Helvetica, Arial, sans-serif';
 
   return `
   :root {
-    color-scheme: light dark;
-    --email-page-bg: ${pageBg};
-    --email-content-bg: ${contentBg};
-    --email-secondary: ${secondary};
-    --email-accent: ${accent};
-    --email-primary: ${primary};
-    --email-standard: ${standard};
+    color-scheme: ${globals.colors.mode === 'light' ? 'light only' : 'light dark'};
+    --email-page: ${c('page')};
+    --email-content: ${c('content')};
+    --email-surface: ${c('surface')};
+    --email-body: ${c('body')};
+    --email-head: ${c('head')};
+    --email-dim: ${c('dim')};
+    --email-link: ${c('link')};
+    --email-accent: ${c('accent')};
+    --email-btn: ${c('btn')};
+    --email-btn-text: ${c('btnText')};
+    --email-line: ${c('line')};
     --email-font: ${font};
     --email-sans: ${sans};
-    --email-chapter-bg: #060e1a;
-    --email-price-bg: #060d1a;
-    --email-rule: #1a3050;
-    --email-dim: #4a6a88;
   }
   body, table, td, a { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
   table, td { mso-table-lspace:0pt; mso-table-rspace:0pt; }
@@ -40,20 +40,20 @@ export function emailDocumentCss(globals: Globals): string {
     margin:0 !important;
     padding:0 !important;
     width:100% !important;
-    background-color: var(--email-page-bg) !important;
+    background-color: var(--email-page) !important;
     font-family: var(--email-font);
   }
 
-  .email-bg { background-color: var(--email-page-bg); }
-  .email-outer-pad { padding: 28px 16px; background-color: var(--email-page-bg); }
+  .email-bg { background-color: var(--email-page); }
+  .email-outer-pad { padding: 28px 16px; background-color: var(--email-page); }
   .email-container { max-width: 600px; width: 600px; }
-  .content-bg { background-color: var(--email-content-bg); }
-  .header-bg { background-color: var(--email-content-bg); padding: 32px 48px 28px 48px; }
-  .footer-bg { background-color: var(--email-page-bg); }
+  .content-bg { background-color: var(--email-content); }
+  .header-bg { background-color: var(--email-content); padding: 32px 48px 28px 48px; }
+  .footer-bg { background-color: var(--email-page); }
   .footer-notice-pad { padding: 28px 48px; }
   .footer-meta-pad { padding: 0 48px 36px 48px; }
-  .chapter-bg, .stat-box-bg { background-color: var(--email-chapter-bg); }
-  .price-box-bg { background-color: var(--email-price-bg); }
+  .chapter-bg, .stat-box-bg { background-color: var(--email-surface); }
+  .price-box-bg { background-color: var(--email-surface); }
 
   .v-top { vertical-align: top; }
   .t-right { text-align: right; vertical-align: top; }
@@ -69,7 +69,7 @@ export function emailDocumentCss(globals: Globals): string {
   }
   .email-logo-link { display: inline-block; border: 0; }
   a.email-muted-link {
-    color: #1e3a5c;
+    color: var(--email-dim);
     text-decoration: none;
   }
   a.email-footer-link {
@@ -88,7 +88,7 @@ export function emailDocumentCss(globals: Globals): string {
   .view-in-browser {
     font-family: var(--email-font);
     font-size: 10px;
-    color: #1e3a5c;
+    color: var(--email-dim);
     letter-spacing: 2px;
     text-transform: uppercase;
     margin: 0;
@@ -105,14 +105,14 @@ export function emailDocumentCss(globals: Globals): string {
   }
   .footer-rule-cell {
     height: 1px;
-    background-color: #0c1a2e;
+    background-color: var(--email-line);
     font-size: 0;
     line-height: 0;
   }
   .footer-stars-line {
     font-family: var(--email-font);
     font-size: 11px;
-    color: #1a3050;
+    color: var(--email-line);
     margin: 18px 0 0 0;
     text-align: center;
     letter-spacing: 3px;
@@ -153,14 +153,14 @@ export function emailDocumentCss(globals: Globals): string {
     overflow: hidden;
     opacity: 0;
     line-height: 1px;
-    color: var(--email-page-bg);
+    color: var(--email-page);
   }
 
   /* Shared block section pads */
-  .block-pad-hero { padding: 52px 48px 48px 48px; background-color: var(--email-content-bg); }
-  .block-pad-md { padding: 24px 48px; background-color: var(--email-content-bg); }
-  .block-pad-sm { padding: 20px 48px; background-color: var(--email-content-bg); }
-  .block-pad-chapter { padding: 16px 48px; background-color: var(--email-chapter-bg); }
+  .block-pad-hero { padding: 52px 48px 48px 48px; background-color: var(--email-content); }
+  .block-pad-md { padding: 24px 48px; background-color: var(--email-content); }
+  .block-pad-sm { padding: 20px 48px; background-color: var(--email-content); }
+  .block-pad-chapter { padding: 16px 48px; background-color: var(--email-surface); }
 
   /* Divider: full row width, no side padding */
   .divider-row { padding: 0; }
@@ -175,7 +175,7 @@ export function emailDocumentCss(globals: Globals): string {
   .divider-glow-step { height: 2px; font-size: 0; line-height: 0; }
   .divider-line {
     height: 1px;
-    background-color: var(--email-rule);
+    background-color: var(--email-line);
     font-size: 0;
     line-height: 0;
   }
@@ -187,14 +187,14 @@ export function emailDocumentCss(globals: Globals): string {
   .divider-two-tone-mid {
     width: 80px;
     height: 3px;
-    background-color: #1e6bb8;
+    background-color: var(--email-btn);
     font-size: 0;
     line-height: 0;
   }
   .divider-two-tone-end {
     width: 120px;
     height: 3px;
-    background-color: var(--email-secondary);
+    background-color: var(--email-link);
     font-size: 0;
     line-height: 0;
   }
@@ -243,7 +243,7 @@ export function emailDocumentCss(globals: Globals): string {
   }
   .hero-headline {
     font-family: var(--email-font);
-    color: var(--email-primary);
+    color: var(--email-head);
     margin: 0;
     font-weight: 400;
     font-style: italic;
@@ -256,7 +256,7 @@ export function emailDocumentCss(globals: Globals): string {
     font-family: var(--email-font);
     font-size: 17px;
     line-height: 30px;
-    color: var(--email-standard);
+    color: var(--email-body);
     margin: 0 0 16px 0;
   }
   .paragraph-body:last-child { margin-bottom: 0; }
@@ -266,7 +266,7 @@ export function emailDocumentCss(globals: Globals): string {
   .rt-size-xs { font-size: 12px; line-height: 18px; }
   /* Ice-blue links: no underline at rest; underline on hover/focus only. */
   a.rt-link {
-    color: var(--email-secondary);
+    color: var(--email-link);
     text-decoration: none;
     margin: 0 0.12em;
   }
@@ -284,14 +284,14 @@ export function emailDocumentCss(globals: Globals): string {
   }
 
   /* CTA button */
-  .cta-button-cell { background-color: #1d6bb8; }
+  .cta-button-cell { background-color: var(--email-btn); }
   a.cta-button-link {
     display: inline-block;
     padding: 18px 48px;
     font-family: var(--email-font);
     font-size: 13px;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--email-btn-text);
     text-decoration: none;
     text-transform: uppercase;
   }
@@ -308,14 +308,14 @@ export function emailDocumentCss(globals: Globals): string {
   /* Pull quote */
   .pull-quote-bar {
     width: 3px;
-    background-color: var(--email-secondary);
+    background-color: var(--email-link);
   }
   .pull-quote-body-cell { padding: 16px 0 16px 22px; }
   .pull-quote {
     font-family: var(--email-font);
     font-size: 22px;
     line-height: 34px;
-    color: #c8dff0;
+    color: var(--email-head);
     margin: 0;
     font-style: italic;
   }
@@ -325,7 +325,7 @@ export function emailDocumentCss(globals: Globals): string {
     font-family: var(--email-font);
     font-size: 22px;
     line-height: 34px;
-    color: #c8dff0;
+    color: var(--email-head);
     font-style: italic;
     text-align: center;
     margin: 0 0 18px 0;
@@ -340,7 +340,7 @@ export function emailDocumentCss(globals: Globals): string {
     font-size: 15px;
     line-height: 22px;
     font-weight: 700;
-    color: var(--email-primary);
+    color: var(--email-head);
   }
   .testimonial-role {
     margin: 0;
@@ -368,7 +368,7 @@ export function emailDocumentCss(globals: Globals): string {
     font-size: 17px;
     line-height: 24px;
     font-weight: 700;
-    color: var(--email-primary);
+    color: var(--email-head);
   }
   .contact-role { margin-bottom: 6px; }
   .contact-line {
@@ -376,9 +376,9 @@ export function emailDocumentCss(globals: Globals): string {
     font-family: var(--email-font);
     font-size: 15px;
     line-height: 23px;
-    color: var(--email-standard);
+    color: var(--email-body);
   }
-  a.contact-link { color: var(--email-secondary); text-decoration: underline; }
+  a.contact-link { color: var(--email-link); text-decoration: underline; }
   .contact-button { margin-top: 12px; }
   a.contact-button-link { padding: 12px 24px; }
 
@@ -390,7 +390,7 @@ export function emailDocumentCss(globals: Globals): string {
     font-family: Arial, sans-serif;
     font-size: 13px;
     line-height: 32px;
-    color: #ffffff;
+    color: var(--email-btn-text);
     text-decoration: none;
     padding-left: 2px;
   }
@@ -400,7 +400,7 @@ export function emailDocumentCss(globals: Globals): string {
     line-height: 24px;
     color: var(--email-dim);
   }
-  a.video-title-link { color: var(--email-secondary); font-weight: 700; text-decoration: underline; }
+  a.video-title-link { color: var(--email-link); font-weight: 700; text-decoration: underline; }
 
   /* Teasers */
   .teaser-col-next { padding-top: 24px; }
@@ -411,17 +411,17 @@ export function emailDocumentCss(globals: Globals): string {
     font-size: 17px;
     line-height: 23px;
     font-weight: 700;
-    color: var(--email-primary);
+    color: var(--email-head);
   }
   .teaser-text {
     margin: 0 0 8px 0;
     font-family: var(--email-font);
     font-size: 14px;
     line-height: 21px;
-    color: var(--email-standard);
+    color: var(--email-body);
   }
   .teaser-link { margin: 0; font-family: var(--email-font); font-size: 14px; line-height: 21px; }
-  a.teaser-link-anchor { color: var(--email-secondary); font-weight: 700; text-decoration: underline; }
+  a.teaser-link-anchor { color: var(--email-link); font-weight: 700; text-decoration: underline; }
 
   /* Event: calendar sheet + details */
   .event-sheet { border: 1px solid rgba(127, 127, 127, 0.35); border-radius: 6px; border-collapse: separate; }
@@ -432,7 +432,7 @@ export function emailDocumentCss(globals: Globals): string {
     line-height: 16px;
     font-weight: 700;
     letter-spacing: 1px;
-    color: var(--email-content-bg);
+    color: var(--email-content);
     border-radius: 5px 5px 0 0;
   }
   .event-day {
@@ -441,7 +441,7 @@ export function emailDocumentCss(globals: Globals): string {
     font-size: 32px;
     line-height: 36px;
     font-weight: 700;
-    color: var(--email-primary);
+    color: var(--email-head);
   }
   .event-weekday {
     padding: 0 4px 8px 4px;
@@ -456,7 +456,7 @@ export function emailDocumentCss(globals: Globals): string {
     font-size: 18px;
     line-height: 25px;
     font-weight: 700;
-    color: var(--email-primary);
+    color: var(--email-head);
   }
   .event-meta {
     margin: 0 0 12px 0;
@@ -473,24 +473,24 @@ export function emailDocumentCss(globals: Globals): string {
     font-size: 14px;
     line-height: 20px;
     font-weight: 700;
-    color: var(--email-secondary);
+    color: var(--email-link);
     text-decoration: none;
-    border: 1px solid var(--email-secondary);
+    border: 1px solid var(--email-link);
     border-radius: 4px;
   }
 
   /* Stat box */
-  .stat-box-inner { padding: 28px 32px; background-color: var(--email-chapter-bg); }
+  .stat-box-inner { padding: 28px 32px; background-color: var(--email-surface); }
   .stat-col-num { vertical-align: top; width: 50%; }
   .stat-col-geo {
     vertical-align: top;
     padding-left: 24px;
-    border-left: 1px solid #0e1e34;
+    border-left: 1px solid var(--email-line);
   }
   .stat-number {
     font-family: var(--email-font);
     font-size: 42px;
-    color: var(--email-secondary);
+    color: var(--email-link);
     margin: 0 0 4px 0;
     font-weight: 400;
     line-height: 1;
@@ -498,7 +498,7 @@ export function emailDocumentCss(globals: Globals): string {
   .stat-label {
     font-family: var(--email-font);
     font-size: 13px;
-    color: #3e84c6;
+    color: var(--email-dim);
     margin: 0;
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -506,16 +506,16 @@ export function emailDocumentCss(globals: Globals): string {
   .stat-geo {
     font-family: var(--email-font);
     font-size: 13px;
-    color: var(--email-standard);
+    color: var(--email-body);
     margin: 0 0 6px 0;
     line-height: 22px;
   }
 
   /* Benefits list */
-  .benefits-list-block { padding: 20px 48px; background-color: var(--email-content-bg); }
+  .benefits-list-block { padding: 20px 48px; background-color: var(--email-content); }
   .benefit-row-cell {
     padding: 14px 0;
-    border-bottom: 1px solid #0a1828;
+    border-bottom: 1px solid var(--email-line);
   }
   .benefit-icon-cell {
     width: 25px;
@@ -523,7 +523,7 @@ export function emailDocumentCss(globals: Globals): string {
     padding-top: 3px;
   }
   .benefit-icon {
-    color: #4db8ff;
+    color: var(--email-link);
     font-size: 14px;
     font-family: var(--email-sans);
     line-height: 1;
@@ -532,15 +532,15 @@ export function emailDocumentCss(globals: Globals): string {
   .benefit-text {
     font-family: var(--email-font);
     font-size: 16px;
-    color: #b9f2ff;
+    color: var(--email-head);
     line-height: 1.35;
   }
 
   /* Price box */
-  .price-box-outer { padding: 20px 48px; background-color: var(--email-content-bg); }
+  .price-box-outer { padding: 20px 48px; background-color: var(--email-content); }
   .price-box-inner {
-    background-color: var(--email-price-bg);
-    border: 1px solid #111d33;
+    background-color: var(--email-surface);
+    border: 1px solid var(--email-line);
     border-top: 3px solid var(--email-accent);
     padding: 24px 28px;
   }
@@ -548,7 +548,7 @@ export function emailDocumentCss(globals: Globals): string {
     font-family: var(--email-sans);
     font-size: 16px;
     font-weight: 700;
-    color: var(--email-price-bg);
+    color: var(--email-surface);
     background-color: var(--email-accent);
     display: inline;
     padding: 3px 10px;
@@ -558,7 +558,7 @@ export function emailDocumentCss(globals: Globals): string {
   .price-strike {
     font-family: var(--email-sans);
     font-size: 15px;
-    color: #02fdfb;
+    color: var(--email-dim);
     margin: 0 0 4px 0;
   }
   /* Only the old amount is struck; "Statt" and the period stay readable. */
@@ -567,7 +567,7 @@ export function emailDocumentCss(globals: Globals): string {
     font-family: var(--email-sans);
     font-size: 38px;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--email-head);
     margin: 0 0 6px 0;
     line-height: 1.1;
   }
@@ -585,24 +585,24 @@ export function emailDocumentCss(globals: Globals): string {
   .price-details {
     font-family: var(--email-font);
     font-size: 14px;
-    color: #72bde9;
+    color: var(--email-body);
     margin: 0 0 10px 0;
     line-height: 22px;
   }
   .price-fine {
     font-family: var(--email-font);
     font-size: 13px;
-    color: #2c4d66;
+    color: var(--email-dim);
     margin: 0;
     line-height: 20px;
     font-style: italic;
   }
 
   /* CTA link list */
-  .cta-links-block { padding: 20px 48px; background-color: var(--email-content-bg); }
+  .cta-links-block { padding: 20px 48px; background-color: var(--email-content); }
   .cta-link-row-cell {
     padding: 14px 0;
-    border-bottom: 1px solid #0a1828;
+    border-bottom: 1px solid var(--email-line);
   }
   .cta-link-row-cell--first {
     padding: 0 0 14px 0;
@@ -619,59 +619,62 @@ export function emailDocumentCss(globals: Globals): string {
     font-family: var(--email-font);
     font-size: 14px;
     line-height: 24px;
-    color: #3a6080;
+    color: var(--email-dim);
     margin: 0;
   }
   .cta-link-icon {
-    color: var(--email-secondary);
+    color: var(--email-link);
     margin-right: 8px;
   }
-  .cta-link-label { color: #5a8aaa; }
+  .cta-link-label { color: var(--email-body); }
   a.cta-link-anchor {
-    color: var(--email-secondary);
+    color: var(--email-link);
     text-decoration: underline;
   }
 
-  .text-standard { color: var(--email-standard); }
-  .text-primary { color: var(--email-primary); }
-  .text-secondary { color: var(--email-secondary); }
+  .text-body { color: var(--email-body); }
+  .text-head { color: var(--email-head); }
+  .text-link { color: var(--email-link); }
   .text-accent, .text-chapter-label { color: var(--email-accent); }
   .text-dim { color: var(--email-dim); }
-  .text-stat { color: var(--email-secondary); }
-  .text-price-main { color: #ffffff; }
-  .text-price-strike { color: #02fdfb; }
+  .text-stat { color: var(--email-link); }
+  .text-price-main { color: var(--email-head); }
+  .text-price-strike { color: var(--email-dim); }
   .text-price-sub { color: var(--email-dim); }
-  .text-price-detail { color: #72bde9; }
-  .text-price-fine { color: #2c4d66; }
-  .text-cta-body { color: #3a6080; }
-  .text-benefit { color: #b9f2ff; }
-  .text-benefit-icon { color: #4db8ff; }
-  .text-geo { color: var(--email-standard); }
+  .text-price-detail { color: var(--email-body); }
+  .text-price-fine { color: var(--email-dim); }
+  .text-cta-body { color: var(--email-dim); }
+  .text-benefit { color: var(--email-head); }
+  .text-benefit-icon { color: var(--email-link); }
+  .text-geo { color: var(--email-body); }
+
+  ${blockColorCss(globals, blocks)}
 
   @media (prefers-color-scheme: dark) {
-    body, .email-bg, .footer-bg { background-color: var(--email-page-bg) !important; }
+    body, .email-bg, .footer-bg { background-color: var(--email-page) !important; }
     .header-bg, .content-bg,
     .block-pad-hero, .block-pad-md, .block-pad-sm,
     .benefits-list-block, .price-box-outer, .cta-links-block {
-      background-color: var(--email-content-bg) !important;
+      background-color: var(--email-content) !important;
     }
     .chapter-bg, .stat-box-bg, .block-pad-chapter, .stat-box-inner {
-      background-color: var(--email-chapter-bg) !important;
+      background-color: var(--email-surface) !important;
     }
-    .price-box-bg, .price-box-inner { background-color: var(--email-price-bg) !important; }
-    .text-standard, .paragraph-body, .stat-geo, .contact-line, .teaser-text { color: var(--email-standard) !important; }
-    .text-primary, .hero-headline, .testimonial-name, .contact-name, .teaser-title, .event-title, .event-day { color: var(--email-primary) !important; }
-    .text-secondary, .text-stat, .stat-number, .cta-link-icon, a.cta-link-anchor, a.contact-link, a.video-title-link, a.teaser-link-anchor, a.event-cal-link {
-      color: var(--email-secondary) !important;
+    .price-box-bg, .price-box-inner { background-color: var(--email-surface) !important; }
+    .text-body, .paragraph-body, .stat-geo, .contact-line, .teaser-text { color: var(--email-body) !important; }
+    .text-head, .hero-headline, .testimonial-name, .contact-name, .teaser-title, .event-title, .event-day { color: var(--email-head) !important; }
+    .text-link, .text-stat, .stat-number, .cta-link-icon, a.cta-link-anchor, a.contact-link, a.video-title-link, a.teaser-link-anchor, a.event-cal-link {
+      color: var(--email-link) !important;
     }
     .text-accent, .divider-ornament-glyph, .text-chapter-label, .hero-label, .chapter-title, .brand-stars, .footer-stars-glyph {
       color: var(--email-accent) !important;
     }
     .text-dim, .footer-notice, .footer-company, .testimonial-role, .contact-intro, .contact-role, .video-title-cell, .event-meta, .event-weekday { color: var(--email-dim) !important; }
-    .text-price-main, .price-main { color: #ffffff !important; }
-    .text-cta-body, .cta-link-body { color: #3a6080 !important; }
-    .benefit-icon, .text-benefit-icon { color: #4db8ff !important; }
-    .benefit-text, .text-benefit { color: #b9f2ff !important; }
+    .text-price-main, .price-main { color: var(--email-head) !important; }
+    .text-cta-body, .cta-link-body { color: var(--email-dim) !important; }
+    .benefit-icon, .text-benefit-icon { color: var(--email-link) !important; }
+    .benefit-text, .text-benefit { color: var(--email-head) !important; }
+    ${blockColorCss(globals, blocks, true)}
   }
   @media screen and (max-width: 600px) {
     .email-container { width: 100% !important; max-width: 100% !important; }
@@ -699,8 +702,8 @@ export function emailDocumentCss(globals: Globals): string {
 }
 
 /** @deprecated use emailDocumentCss — kept name for call-site clarity during transition */
-export function darkModeCss(globals: Globals): string {
-  return emailDocumentCss(globals);
+export function darkModeCss(globals: Globals, blocks: readonly Block[] = []): string {
+  return emailDocumentCss(globals, blocks);
 }
 
 /**
@@ -708,13 +711,14 @@ export function darkModeCss(globals: Globals): string {
  * Scoped under `.rt-editor.rt-clone` so app chrome colors stay untouched.
  */
 export function paragraphEditorSurfaceCss(globals: Globals): string {
-  const contentBg = escapeAttr(globals.contentBgColor);
-  const secondary = escapeAttr(globals.secondaryColor);
-  const accent = escapeAttr(globals.accentColor);
-  const primary = escapeAttr(globals.primaryColor);
-  const standard = escapeAttr(globals.standardColor);
+  const pal = renderPalette(globals);
+  const contentBg = escapeAttr(pal.content);
+  const link = escapeAttr(pal.link);
+  const accent = escapeAttr(pal.accent);
+  const head = escapeAttr(pal.head);
+  const body = escapeAttr(pal.body);
   const font = fontStack(globals);
-  const dim = '#4a6a88';
+  const dim = escapeAttr(pal.dim);
   const w = EMAIL_CONTENT_WIDTH_PX;
 
   /* Preview selected-block chrome (shell PREVIEW_EDITOR_CHROME). */
@@ -723,16 +727,16 @@ export function paragraphEditorSurfaceCss(globals: Globals): string {
 
   return `
 .rt-editor.rt-clone {
-  --email-content-bg: ${contentBg};
-  --email-secondary: ${secondary};
+  --email-content: ${contentBg};
+  --email-link: ${link};
   --email-accent: ${accent};
-  --email-primary: ${primary};
-  --email-standard: ${standard};
+  --email-head: ${head};
+  --email-body: ${body};
   --email-dim: ${dim};
   --email-font: ${font};
   box-sizing: border-box;
-  background-color: var(--email-content-bg) !important;
-  color: var(--email-standard) !important;
+  background-color: var(--email-content) !important;
+  color: var(--email-body) !important;
   font-family: var(--email-font) !important;
   padding: 24px 48px;
   /* Same solid turquoise frame as a selected block in the email preview. */
@@ -751,7 +755,7 @@ export function paragraphEditorSurfaceCss(globals: Globals): string {
   font-family: var(--email-font);
   font-size: 17px;
   line-height: 30px;
-  color: var(--email-standard);
+  color: var(--email-body);
   margin: 0 0 16px 0;
 }
 .rt-editor.rt-clone .paragraph-body:last-child { margin-bottom: 0; }
@@ -760,7 +764,7 @@ export function paragraphEditorSurfaceCss(globals: Globals): string {
 .rt-editor.rt-clone .rt-size-s { font-size: 14px; line-height: 22px; }
 .rt-editor.rt-clone .rt-size-xs { font-size: 12px; line-height: 18px; }
 .rt-editor.rt-clone a.rt-link {
-  color: var(--email-secondary);
+  color: var(--email-link);
   text-decoration: none;
   margin: 0 0.12em;
   cursor: pointer;
@@ -768,7 +772,7 @@ export function paragraphEditorSurfaceCss(globals: Globals): string {
 .rt-editor.rt-clone a.rt-link:hover,
 .rt-editor.rt-clone a.rt-link:focus-visible {
   text-decoration: underline;
-  outline: 1px dotted var(--email-secondary);
+  outline: 1px dotted var(--email-link);
   outline-offset: 1px;
 }
 .rt-editor.rt-clone .paragraph-body strong { font-weight: 700; }
@@ -781,15 +785,15 @@ export function paragraphEditorSurfaceCss(globals: Globals): string {
   font-size: 16px;
   line-height: 1.35;
 }
-.rt-editor.rt-clone .text-standard { color: var(--email-standard); }
-.rt-editor.rt-clone .text-primary { color: var(--email-primary); }
-.rt-editor.rt-clone .text-secondary { color: var(--email-secondary); }
+.rt-editor.rt-clone .text-body { color: var(--email-body); }
+.rt-editor.rt-clone .text-head { color: var(--email-head); }
+.rt-editor.rt-clone .text-link { color: var(--email-link); }
 .rt-editor.rt-clone .text-accent { color: var(--email-accent); }
 .rt-editor.rt-clone .text-dim { color: var(--email-dim); }
 
 /* Info inspect: one marker per kind (legend in the editor UI); no extra DOM inside contenteditable. */
 .rt-editor.rt-clone.rt-info .paragraph-body[data-rt-info] {
-  outline: 1px dashed color-mix(in srgb, var(--email-secondary) 55%, transparent);
+  outline: 1px dashed color-mix(in srgb, var(--email-link) 55%, transparent);
   outline-offset: 4px;
   position: relative;
 }
@@ -799,28 +803,28 @@ export function paragraphEditorSurfaceCss(globals: Globals): string {
   margin-top: 0.4rem;
   padding: 2px 8px;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--email-secondary) 45%, transparent);
-  background: color-mix(in srgb, var(--email-secondary) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--email-link) 45%, transparent);
+  background: color-mix(in srgb, var(--email-link) 12%, transparent);
   font-family: Helvetica, Arial, sans-serif;
   font-size: 11px;
   font-style: normal;
   font-weight: 600;
   letter-spacing: 0.02em;
   line-height: 1.4;
-  color: var(--email-primary);
+  color: var(--email-head);
   pointer-events: none;
   user-select: none;
 }
 /* Size: tinted background. */
 .rt-editor.rt-clone.rt-info [data-rt-size],
 .rt-editor.rt-clone.rt-info [class*="rt-size-"] {
-  background: color-mix(in srgb, var(--email-secondary) 18%, transparent);
+  background: color-mix(in srgb, var(--email-link) 18%, transparent);
   border-radius: 2px;
 }
 /* Inline color (data attribute from toolbar, or class from seed/paint): dotted underline. */
 .rt-editor.rt-clone.rt-info span[data-rt-color],
-.rt-editor.rt-clone.rt-info span.text-primary,
-.rt-editor.rt-clone.rt-info span.text-secondary,
+.rt-editor.rt-clone.rt-info span.text-head,
+.rt-editor.rt-clone.rt-info span.text-link,
 .rt-editor.rt-clone.rt-info span.text-accent,
 .rt-editor.rt-clone.rt-info span.text-dim {
   text-decoration: underline dotted 2px;

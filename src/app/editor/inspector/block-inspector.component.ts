@@ -57,11 +57,11 @@ type RowKind = 'cta' | 'benefit' | 'teaser';
   host: {
     // Email look for the styled fields (font + theme colors from Campaign settings).
     '[style.--em-font]': 'emailFont()',
-    '[style.--em-accent]': 'session.globals().accentColor',
-    '[style.--em-primary]': 'session.globals().primaryColor',
-    '[style.--em-secondary]': 'session.globals().secondaryColor',
-    '[style.--em-standard]': 'session.globals().standardColor',
-    '[style.--em-content-bg]': 'session.globals().contentBgColor',
+    '[style.--em-accent]': 'session.palette().accent',
+    '[style.--em-head]': 'session.palette().head',
+    '[style.--em-link]': 'session.palette().link',
+    '[style.--em-body]': 'session.palette().body',
+    '[style.--em-content]': 'session.palette().content',
   },
   templateUrl: './block-inspector.component.html',
   styleUrl: './block-inspector.component.scss',

@@ -1,6 +1,7 @@
 export * from './types';
 export * from './richtext';
 export * from './brand/defaults';
+export * from './colors';
 export * from './brand/social';
 export * from './seed';
 export * from './render';

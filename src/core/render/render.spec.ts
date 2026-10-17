@@ -1,5 +1,6 @@
 import { emptySocialLinks } from '../brand/social';
 import { defaultGlobals } from '../brand/defaults';
+import { activeColors, defaultColors } from '../colors';
 import { seedNewsletter } from '../seed';
 import { createBlock, type Newsletter } from '../types';
 import { renderExport, renderPreview } from './index';
@@ -10,11 +11,10 @@ function acmeNewsletter(): Newsletter {
   base.globals = {
     ...defaultGlobals(),
     preheader: 'Acme preheader text',
-    pageBgColor: '#112233',
-    contentBgColor: '#445566',
-    secondaryColor: '#ff00aa',
-    standardColor: '#abcdef',
-    primaryColor: '#fedcba',
+    colors: {
+      ...defaultColors(),
+      dark: { general: { page: '#112233', content: '#445566', link: '#ff00aa', body: '#abcdef', head: '#fedcba' }, blocks: {} },
+    },
     campaignSubject: 'Acme subject',
     brand: {
       stars: { symbol: '*', count: 3 },
@@ -97,7 +97,7 @@ describe('renderExport', () => {
     expect(html).toContain('name="supported-color-schemes" content="light dark"');
     expect(html).toContain('prefers-color-scheme: dark');
     expect(html).toContain('class="email-bg"');
-    expect(html).toContain('--email-page-bg');
+    expect(html).toContain('--email-page');
     expect(html).toContain('bgcolor=');
   });
 
@@ -135,32 +135,32 @@ describe('renderExport', () => {
 
   it('paints the divider with the chosen background token', () => {
     const n = seedNewsletter();
-    n.globals.pageBgColor = '#010203';
+    n.globals.colors.dark.general.page = '#010203';
     n.blocks = [{ id: 'd', type: 'divider', style: 'spacer-only', background: 'page' }];
     const { full } = renderExport(n);
     const td = full.match(/<td[^>]*divider-spacer[^>]*>/)?.[0] ?? '';
     expect(td).toContain('bgcolor="#010203"');
     expect(td).toContain('email-bg');
-    expect(td).not.toContain(n.globals.contentBgColor);
+    expect(td).not.toContain(activeColors(n.globals.colors).content);
   });
 
-  it('mixes the glow steps from Secondary and the background', () => {
+  it('mixes the glow steps from the link color and the background', () => {
     const n = seedNewsletter();
-    n.globals.secondaryColor = '#ffffff';
-    n.globals.contentBgColor = '#000000';
+    n.globals.colors.dark.general.link = '#ffffff';
+    n.globals.colors.dark.general.content = '#000000';
     n.blocks = [{ id: 'd', type: 'divider', style: 'glow', background: 'content' }];
     const { full } = renderExport(n);
     const steps = [...full.matchAll(/class="divider-glow-step"[^>]*bgcolor="(#[0-9a-f]{6})"/g)].map((m) => m[1]);
     expect(steps).toEqual(['#0f0f0f', '#292929', '#5c5c5c', '#ffffff', '#5c5c5c', '#292929', '#0f0f0f']);
   });
 
-  it('draws the ornament diamond in the Accent color', () => {
+  it('draws the ornament diamond in the accent color', () => {
     const n = seedNewsletter();
     n.blocks = [{ id: 'd', type: 'divider', style: 'ornament', background: 'content' }];
     const { full } = renderExport(n);
     const glyph = full.match(/<td[^>]*divider-ornament-glyph[^>]*>[^<]*<\/td>/)?.[0] ?? '';
     expect(glyph).toMatch(/&#9670;|◆/);
-    expect(glyph.toLowerCase()).toContain(n.globals.accentColor.toLowerCase());
+    expect(glyph.toLowerCase()).toContain(activeColors(n.globals.colors).accent.toLowerCase());
   });
 
   it('renders an image with Outlook width, alt text, link and caption', () => {
@@ -228,11 +228,11 @@ describe('renderExport', () => {
     const n = seedNewsletter();
     const b = createBlock('greeting');
     if (b.type !== 'greeting') throw new Error('type');
-    Object.assign(b, { text: 'Werte Geschäftspartner', useName: true, nameLead: 'Guten Tag', size: 'l', color: 'primary' });
+    Object.assign(b, { text: 'Werte Geschäftspartner', useName: true, nameLead: 'Guten Tag', size: 'l', color: 'head' });
     n.blocks = [b];
     n.globals.personalization.samples['name'] = 'Maria Muster';
     expect(renderPreview(n)).toContain('Guten Tag Maria Muster<');
-    expect(renderPreview(n)).toMatch(/class="paragraph-body greeting-line rt-size-l text-primary"/);
+    expect(renderPreview(n)).toMatch(/class="paragraph-body greeting-line rt-size-l text-head"/);
     const { body } = renderExport(n);
     expect(body).toContain('Guten Tag {{ $n }}{{- else -}}Werte Geschäftspartner{{- end -}}');
     // Mailbox names like "Info" (Listmonk's stand-in for a missing name) count as unknown.

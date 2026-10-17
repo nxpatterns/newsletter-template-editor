@@ -52,6 +52,8 @@ import { emptyRichDoc, isRichColorToken, RICH_SIZE_TOKENS, type RichSizeToken } 
 import { migrateNewsletterV1ToV2 } from './migrate-v2';
 import { migrateNewsletterV2ToV3 } from './migrate-v3';
 import { migrateNewsletterV3ToV4 } from './migrate-v4';
+import { hasLegacyColors, migrateNewsletterV4ToV5 } from './migrate-v5';
+import { normalizeColors } from '../colors/model';
 import { defaultBrand, FALLBACK_BRAND_PART_COLOR } from '../brand/defaults';
 import { normalizeSocialLinks } from '../brand/social';
 
@@ -453,7 +455,7 @@ function normalizeGreetingBlock(raw: Record<string, unknown>, id: string): Greet
     useName: raw['useName'] === true,
     nameLead: str('nameLead', BLOCK_DEFAULT_TEXTS_EN.greetingNameLead),
     size: (RICH_SIZE_TOKENS as readonly unknown[]).includes(raw['size']) ? (raw['size'] as RichSizeToken) : 'm',
-    color: isRichColorToken(raw['color']) ? raw['color'] : 'standard',
+    color: isRichColorToken(raw['color']) ? raw['color'] : 'body',
   };
 }
 
@@ -587,7 +589,9 @@ export function normalizeNewsletter(input: Newsletter): Newsletter {
   const fromVersion = typeof input.schemaVersion === 'number' ? input.schemaVersion : 1;
   const v2 = fromVersion < 2 ? migrateNewsletterV1ToV2(input) : input;
   const v3 = fromVersion < 3 ? migrateNewsletterV2ToV3(v2) : v2;
-  const n = fromVersion < 4 ? migrateNewsletterV3ToV4(v3) : v3;
+  const v4 = fromVersion < 4 ? migrateNewsletterV3ToV4(v3) : v3;
+  // Seeds and imports may carry the old fields under a current version number.
+  const n = fromVersion < 5 || hasLegacyColors(v4.globals) ? migrateNewsletterV4ToV5(v4) : v4;
   const legal = n.globals?.legal as Newsletter['globals']['legal'] & {
     companyLine?: string;
   };
@@ -618,6 +622,10 @@ export function normalizeNewsletter(input: Newsletter): Newsletter {
       ? {
           ...n.globals,
           brand: normalizeBrand(n.globals.brand),
+          colors: normalizeColors(
+            n.globals.colors,
+            Array.isArray(n.blocks) ? n.blocks.map((b) => b?.id).filter((id): id is string => typeof id === 'string') : [],
+          ),
           assetBaseUrl: typeof n.globals.assetBaseUrl === 'string' ? n.globals.assetBaseUrl : '',
           hiddenFrameParts: normalizeHiddenFrameParts(n.globals.hiddenFrameParts),
         }

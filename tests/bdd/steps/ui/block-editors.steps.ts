@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, type Page } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
+import { STANDARD_SETS } from '../../../../src/core/colors/model';
 
 const { Given, When, Then } = createBdd();
 
@@ -167,7 +168,7 @@ When('I pick the divider background {string}', async ({ page }, bg: string) => {
 Then('the preview divider {string} should use the page background color', async ({ page }, id: string) => {
   const seed = JSON.parse(readFileSync('src/core/seed-data/cloudlib-campaign.v1.json', 'utf8'));
   const td = page.frameLocator('[data-testid="preview-frame"]').locator(`tr[data-block-id="${id}"] > td`);
-  await expect(td).toHaveAttribute('bgcolor', seed.globals.pageBgColor);
+  await expect(td).toHaveAttribute('bgcolor', seed.globals.colors.dark.general.page ?? STANDARD_SETS.dark.page);
 });
 
 When('I click {int}px above the divider {string} in the preview', async ({ page }, dy: number, id: string) => {

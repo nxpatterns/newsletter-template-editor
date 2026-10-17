@@ -1,6 +1,7 @@
 import type { SocialLinks } from './brand/social';
 /** Newsletter document model — JSON is source of truth; HTML is generated. */
 
+import type { ColorsConfig } from './colors/model';
 import { emptyRichDoc, type RichColorToken, type RichDoc, type RichSizeToken } from './richtext/model';
 
 export type {
@@ -113,12 +114,8 @@ export interface Globals {
   preheader: string;
   fontFamily: FontFamilyPreset;
   customFont?: string;
-  secondaryColor: string;
-  accentColor: string;
-  standardColor: string;
-  primaryColor: string;
-  pageBgColor: string;
-  contentBgColor: string;
+  /** Dark and light color set of the template (general and per-block colors). */
+  colors: ColorsConfig;
   campaignSubject?: string;
   logo: LogoConfig;
   brand: BrandConfig;
@@ -465,8 +462,9 @@ export interface Newsletter {
  * v2: color tokens standard/primary/secondary/accent/dim, sizes xs–xl (persist/migrate-v2.ts).
  * v3: divider style secondary-double → two-tone, divider background token (persist/migrate-v3.ts).
  * v4: brand starsText/nameHtml → structured stars and name parts (persist/migrate-v4.ts).
+ * v5: the six campaign colors → `colors` with a dark and a light set (persist/migrate-v5.ts).
  */
-export const CURRENT_SCHEMA_VERSION = 4;
+export const CURRENT_SCHEMA_VERSION = 5;
 
 let idCounter = 0;
 
@@ -648,7 +646,7 @@ export function createBlock(type: Block['type'], texts: BlockDefaultTexts = BLOC
         valign: 'top',
       };
     case 'greeting':
-      return { id, type, text: t.greetingText, useName: false, nameLead: t.greetingNameLead, size: 'm', color: 'standard' };
+      return { id, type, text: t.greetingText, useName: false, nameLead: t.greetingNameLead, size: 'm', color: 'body' };
     case 'contact':
       return {
         id,

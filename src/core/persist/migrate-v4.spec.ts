@@ -1,7 +1,7 @@
 import { FALLBACK_BRAND_PART_COLOR } from '../brand/defaults';
 import { seedNewsletter } from '../seed';
 import { renderExport } from '../render';
-import type { Newsletter } from '../types';
+import { CURRENT_SCHEMA_VERSION, type Newsletter } from '../types';
 import { parseLegacyBrandName, parseLegacyStars } from './migrate-v4';
 import { normalizeNewsletter } from './normalize-newsletter';
 
@@ -44,7 +44,7 @@ describe('schema v4 brand migration', () => {
 
   it('migrates a v3 template on load', () => {
     const n = normalizeNewsletter(v3With({ starsText: '✦ ✦', nameHtml: LEGACY_NAME }));
-    expect(n.schemaVersion).toBe(4);
+    expect(n.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
     expect(n.globals.brand.stars).toEqual({ symbol: '✦', count: 2 });
     expect(n.globals.brand.name.parts.map((p) => p.text).join('')).toBe('CloudLib.EU');
     expect(n.globals.brand).not.toHaveProperty('nameHtml');

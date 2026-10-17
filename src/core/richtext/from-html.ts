@@ -20,13 +20,13 @@ function parseColor(raw: string | null): RichColorToken | undefined {
   const hex = c.startsWith('#') ? c : rgbToHex(c);
   if (!hex) return undefined;
   const map: Record<string, RichColorToken> = {
-    '#7a9ab8': 'standard',
-    '#d8eeff': 'primary',
-    '#d4d4d4': 'primary',
-    '#ebf1fa': 'primary',
-    '#7ecfff': 'secondary',
-    '#32bbff': 'secondary',
-    '#4db8ff': 'secondary',
+    '#7a9ab8': 'body',
+    '#d8eeff': 'head',
+    '#d4d4d4': 'head',
+    '#ebf1fa': 'head',
+    '#7ecfff': 'link',
+    '#32bbff': 'link',
+    '#4db8ff': 'link',
     '#f5c518': 'accent',
     '#4a6a88': 'dim',
   };
@@ -38,10 +38,10 @@ function parseColor(raw: string | null): RichColorToken | undefined {
   const g = (n >> 8) & 255;
   const b = n & 255;
   const max = Math.max(r, g, b);
-  if (max > 200 && b > r) return 'primary';
-  if (b > 180 && g > 150) return 'secondary';
+  if (max > 200 && b > r) return 'head';
+  if (b > 180 && g > 150) return 'link';
   if (r > 200 && g > 150 && b < 80) return 'accent';
-  return 'standard';
+  return 'body';
 }
 
 function rgbToHex(css: string): string | null {
@@ -82,10 +82,13 @@ function marksFromEl(el: HTMLElement, base: RichMarks = {}): RichMarks {
   for (const size of ['m', 'l', 'xl', 's', 'xs'] as const) {
     if (cls.includes(`rt-size-${size}`) || cls.includes(`text-size-${size}`)) m.size = size;
   }
-  for (const color of ['standard', 'primary', 'secondary', 'accent', 'dim'] as const) {
-    if (cls.includes(`text-${color}`) && color !== 'standard') m.color = color;
+  for (const color of ['body', 'head', 'link', 'accent', 'dim'] as const) {
+    if (cls.includes(`text-${color}`) && color !== 'body') m.color = color;
     if (cls.includes(`rt-color-${color}`)) m.color = color;
   }
+  // Class names of older exports (before the colors were renamed).
+  if (cls.includes('text-primary')) m.color = 'head';
+  if (cls.includes('text-secondary')) m.color = 'link';
 
   const style = el.getAttribute('style') || '';
   const colorMatch = style.match(/(?:^|;)\s*color\s*:\s*([^;]+)/i);
@@ -169,7 +172,7 @@ function marksFromOpenTag(tag: string, attrStr: string, base: RichMarks): RichMa
   for (const size of ['l', 'xl', 's', 'xs'] as const) {
     if (cls.includes(`rt-size-${size}`)) m.size = size;
   }
-  for (const color of ['primary', 'secondary', 'accent', 'dim'] as const) {
+  for (const color of ['head', 'link', 'accent', 'dim'] as const) {
     if (cls.includes(`text-${color}`) || cls.includes(`rt-color-${color}`)) m.color = color;
   }
   return m;

@@ -124,7 +124,7 @@
                 <span
                   class="ed-swatch"
                   aria-hidden="true"
-                  [style.background]="bg === 'page' ? session.globals().pageBgColor : session.globals().contentBgColor"
+                  [style.background]="bg === 'page' ? session.palette().page : session.palette().content"
                 ></span>
                 <span [textContent]="i18n.t('divider.background.' + bg)"></span>
               </button>
