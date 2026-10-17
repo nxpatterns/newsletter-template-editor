@@ -13,11 +13,7 @@
     </div>
   </div>
 
-  <div class="ed-group group-card group-card--blue" data-testid="campaign-group-inbox">
-    <p class="ed-group-title">
-      <span class="ed-group-n" aria-hidden="true">1</span>
-      <span [textContent]="i18n.t('campaign.groupInbox')"></span>
-    </p>
+  <app-group-accordion tab="campaign" groupId="inbox" hue="blue" icon="✉" [index]="1" [title]="i18n.t('campaign.groupInbox')" data-testid="campaign-group-inbox">
     <div class="ed-field">
       <div class="count-row">
         <label class="ed-label" for="g-subject" [textContent]="i18n.t('campaign.subject')"></label>
@@ -50,14 +46,10 @@
       <span class="count-bar" aria-hidden="true"><i [class.is-over]="g.preheader.length > preheaderMax" [style.width.%]="g.preheader.length / preheaderMax * 100"></i></span>
       <p class="ed-hint" data-testid="g-preheader-help" [textContent]="i18n.t('campaign.preheaderHelp')"></p>
     </div>
-  </div>
+  </app-group-accordion>
 
-  <div class="ed-group group-card group-card--green" data-testid="campaign-group-font">
-    <p class="ed-group-title">
-      <span class="ed-group-n" aria-hidden="true">2</span>
-      <span id="g-font-label" [textContent]="i18n.t('campaign.font')"></span>
-    </p>
-    <div class="font-tiles" role="radiogroup" aria-labelledby="g-font-label" data-testid="g-font">
+  <app-group-accordion tab="campaign" groupId="font" hue="green" icon="ƒ" [index]="2" [title]="i18n.t('campaign.font')" data-testid="campaign-group-font">
+    <div class="font-tiles" role="radiogroup" [attr.aria-label]="i18n.t('campaign.font')" data-testid="g-font">
       @for (opt of fonts; track opt.value) {
         <button
           type="button"
@@ -99,13 +91,9 @@
           (blur)="onFieldBlur()" />
       </div>
     }
-  </div>
+  </app-group-accordion>
 
-  <div class="ed-group group-card group-card--gold" data-testid="campaign-group-export-prefix">
-    <p class="ed-group-title">
-      <span class="ed-group-n" aria-hidden="true">3</span>
-      <span [textContent]="i18n.t('campaign.groupExportPrefix')"></span>
-    </p>
+  <app-group-accordion tab="campaign" groupId="export-prefix" hue="gold" icon="⤓" [index]="3" [title]="i18n.t('campaign.groupExportPrefix')" data-testid="campaign-group-export-prefix">
     <div class="ed-field">
       <label class="ed-label" for="g-export-prefix" [textContent]="i18n.t('campaign.exportPrefix')"></label>
       <input
@@ -119,5 +107,5 @@
         <span aria-hidden="true">→ </span>{{ prefix }}-template.html, {{ prefix }}-body.html
       </p>
     </div>
-  </div>
+  </app-group-accordion>
 </section>

@@ -32,6 +32,7 @@ Feature: Editor side panel
   Scenario: Campaign tab explains the inbox preview line
     Given I open the editor with the German demo
     When I open the campaign tab
+    And I open the group 'campaign-group-inbox'
     Then I should see the preheader help text
 
   Scenario: Side panel width can grow up to half the viewport

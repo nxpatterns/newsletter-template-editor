@@ -20,7 +20,9 @@
     @for (n of networks; track n.id) {
       @let empty = !(l.social[n.id] ?? '').trim();
       <label class="social-row" [class.is-empty]="empty" [attr.for]="'g-social-' + n.id">
-        <span class="social-ico" aria-hidden="true" [style.mask-image]="'url(' + iconDir + '/' + n.id + '.svg)'"></span>
+        <span class="social-tile" aria-hidden="true" [attr.data-testid]="'social-tile-' + n.id" [style.background]="brandTiles[n.id].tile">
+          <span class="social-ico" [style.background-color]="brandTiles[n.id].icon" [style.mask-image]="'url(' + iconDir + '/' + n.id + '.svg)'"></span>
+        </span>
         <span class="social-name" [textContent]="n.label"></span>
       </label>
       <input

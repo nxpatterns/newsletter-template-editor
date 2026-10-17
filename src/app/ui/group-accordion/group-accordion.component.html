@@ -1,0 +1,32 @@
+<div class="ed-group-title group-acc-head">
+  <button
+    type="button"
+    class="group-acc-trigger"
+    data-testid="group-toggle"
+    [attr.aria-expanded]="open()"
+    [attr.aria-controls]="uid + '-panel'"
+    (click)="toggle()"
+  >
+    <span class="group-acc-chevron" aria-hidden="true"></span>
+    <span class="group-icon" aria-hidden="true" [textContent]="icon()"></span>
+    @if (index(); as n) {
+      <span class="ed-group-n" aria-hidden="true" [textContent]="n"></span>
+    }
+    <span class="group-acc-title" [id]="uid + '-title'" [textContent]="title()"></span>
+  </button>
+  <span class="group-acc-extra">
+    <ng-content select="[groupHead]" />
+  </span>
+</div>
+<div
+  class="group-acc-panel"
+  role="region"
+  data-testid="group-panel"
+  [id]="uid + '-panel'"
+  [attr.aria-labelledby]="uid + '-title'"
+  [attr.inert]="open() ? null : ''"
+>
+  <div class="group-acc-inner">
+    <ng-content />
+  </div>
+</div>

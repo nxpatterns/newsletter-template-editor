@@ -4,6 +4,7 @@ import { LocaleService } from '../../i18n/locale.service';
 import { NewsletterSession } from '../newsletter-session.service';
 import { FramePartSwitchComponent } from './frame-part-switch.component';
 import { ClearableInputDirective } from '../../ui/clearable-input.directive';
+import { SOCIAL_BRAND_TILES } from './social-brand-colors';
 
 @Component({
   selector: 'app-social-fields',
@@ -18,6 +19,8 @@ export class SocialFieldsComponent {
   protected readonly shown = (part: FramePart) => isFramePartShown(this.session.globals(), part);
   protected readonly networks = SOCIAL_NETWORKS;
   protected readonly iconDir = SOCIAL_ICON_DIR;
+  /** Editor-only brand colors for the list; the strip and the export stay in Primary. */
+  protected readonly brandTiles = SOCIAL_BRAND_TILES;
   /** Networks with a link, in footer order: what the strip shows. */
   /** Footer background as the preview draws it (block color over general color). */
   protected readonly footerBg = computed(() => {

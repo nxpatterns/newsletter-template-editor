@@ -7,6 +7,7 @@ Feature: Star colors in the Brand tab
     And I change the general color 'accent' to '#abcdef'
     Then the colors tab should offer no star color
     When I open the Brand tab
+    And I open the group 'brand-stars'
     Then the 'top' stars should use the standard 'dark' star color
     And the 'bottom' stars should use the standard 'dark' star color
     When I set the 'top' star color to '#ff3366'
@@ -20,6 +21,7 @@ Feature: Star colors in the Brand tab
   Scenario: An unreadable star color is reported for its own frame and can be fixed or reset
     Given I open the editor with the German demo
     When I open the Brand tab
+    And I open the group 'brand-stars'
     And I set the 'bottom' star color to '#0c1628'
     Then the 'bottom' star color should warn about its background
     And the 'top' star color should show no warning

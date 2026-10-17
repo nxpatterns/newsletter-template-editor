@@ -25,6 +25,8 @@
   --group-hue-green: #84a98c;
   --group-hue-gold: #c9a96e;
   --group-hue-mauve: #b08aa6;
+  --group-hue-clay: #c4917a;
+  --group-hue-lavender: #9d96c6;
   --ds-z-footer: 40;
   --ds-z-panel-overlay: 45;
   --ds-z-snackbar: 50;
@@ -151,7 +153,7 @@ body {
   background: color-mix(in srgb, var(--ds-accent) 22%, transparent);
 }
 
-/* Muted group card (Colors > General colors, Campaign): one quiet hue per group, never an a-to-b gradient (that marks a block type). */
+/* Muted group card (Campaign, Brand, Legal, Colors): one quiet hue per group, never an a-to-b gradient (that marks a block type). */
 .group-card {
   --card-hue: var(--group-hue-blue);
   border: 1px solid color-mix(in srgb, var(--card-hue) 45%, var(--ds-border));
@@ -175,6 +177,132 @@ body {
 
 .group-card .ed-group-n {
   background: color-mix(in srgb, var(--card-hue) 22%, transparent);
+}
+
+.group-card--clay { --card-hue: var(--group-hue-clay); }
+.group-card--lavender { --card-hue: var(--group-hue-lavender); }
+
+.group-card.is-open {
+  border-color: color-mix(in srgb, var(--card-hue) 70%, var(--ds-border));
+  border-block-start-color: var(--card-hue);
+}
+
+/* Icon tile of a group head: one flat hue (an a-to-b gradient tile marks a block type). */
+.group-icon {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ds-bg-page);
+  background: var(--card-hue);
+}
+
+/* Collapsible group card (app-group-accordion): the head toggles, the panel slides. */
+.group-acc {
+  display: block;
+  padding: 0;
+}
+
+/* Switches wrap below the title when the panel is narrow; the title never gets cut. */
+.group-acc-head {
+  flex-wrap: wrap;
+  row-gap: 0;
+  margin: 0;
+}
+
+.group-acc-trigger {
+  display: flex;
+  flex: 1 0 auto;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  border-radius: calc(var(--ds-radius) * 1.5);
+  padding: 0.6rem 0.4rem 0.6rem 0.75rem;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  text-align: start;
+}
+
+/* Head controls (part switches) stay together and wrap as one. */
+.group-acc-extra {
+  display: inline-flex;
+  align-items: center;
+  margin-inline-start: auto;
+  padding: 0.3rem 0.6rem 0.3rem 0;
+}
+
+.group-acc-extra:empty {
+  display: none;
+}
+
+.group-acc-trigger:hover {
+  background: color-mix(in srgb, var(--card-hue) 10%, transparent);
+}
+
+.group-acc-trigger:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: -2px;
+}
+
+.group-acc-chevron {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-inline-end: 0.2rem;
+  border-inline-end: 2px solid currentColor;
+  border-block-end: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.22s ease;
+}
+
+.group-acc.is-open .group-acc-chevron {
+  transform: rotate(45deg);
+}
+
+.group-acc-title {
+  white-space: nowrap;
+}
+
+.group-acc-panel {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition:
+    max-height 0.32s ease,
+    opacity 0.22s ease;
+}
+
+.group-acc.is-open > .group-acc-panel {
+  max-height: 200rem;
+  opacity: 1;
+}
+
+.group-acc-inner {
+  padding: 0.15rem 0.8rem 0.25rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .group-acc-chevron,
+  .group-acc-panel {
+    transition: none;
+  }
+
+  .group-acc.is-open > .group-acc-panel {
+    max-height: none;
+  }
 }
 
 .ed-group-off {

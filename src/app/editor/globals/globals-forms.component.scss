@@ -29,6 +29,21 @@
   mask-size: contain;
 }
 
+/* Brand-colored icon on its own tile (Social list only). */
+.social-tile {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 12%);
+}
+
+.social-row.is-empty .social-tile {
+  opacity: 0.55;
+}
+
 .social-count {
   font-size: 0.68rem;
   font-weight: 600;

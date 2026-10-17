@@ -214,7 +214,7 @@
     <span [textContent]="i18n.t('colors.legend.reset')"></span>
   </div>
 
-  <div class="colors-acc colors-acc--section" [class.is-open]="isOpen('general')" data-testid="colors-section-general">
+  <div class="colors-acc colors-acc--section group-card group-card--clay" [class.is-open]="isOpen('general')" data-testid="colors-section-general">
     <h2 class="colors-acc-h">
       <button
         type="button"
@@ -225,6 +225,7 @@
         (click)="toggle('general')"
       >
         <span class="colors-acc-chevron" aria-hidden="true"></span>
+        <span class="group-icon" aria-hidden="true">◐</span>
         <span class="colors-acc-title" [textContent]="i18n.t('colors.general.title')"></span>
         <span class="colors-acc-meta" [textContent]="i18n.t('colors.general.meta')"></span>
       </button>
@@ -313,7 +314,7 @@
     </div>
   </div>
 
-  <div class="colors-acc colors-acc--section" [class.is-open]="isOpen('blocks')" data-testid="colors-section-blocks">
+  <div class="colors-acc colors-acc--section group-card group-card--lavender" [class.is-open]="isOpen('blocks')" data-testid="colors-section-blocks">
     <h2 class="colors-acc-h">
       <button
         type="button"
@@ -324,6 +325,7 @@
         (click)="toggle('blocks')"
       >
         <span class="colors-acc-chevron" aria-hidden="true"></span>
+        <span class="group-icon" aria-hidden="true">❖</span>
         <span class="colors-acc-title" [textContent]="i18n.t('colors.blocks.title')"></span>
         @if (secs.blocks.length > 0) {
           <span class="colors-acc-count" aria-hidden="true" [textContent]="secs.blocks.length"></span>

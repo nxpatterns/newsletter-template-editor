@@ -3,13 +3,9 @@
 @let stars = g.brand.stars;
 
 <section data-testid="brand-fields">
-  <div class="ed-group" data-testid="brand-stars" [class.is-hidden-part]="!shown('starsTop') && !shown('starsBottom')">
-    <p class="ed-group-title">
-      <span class="ed-group-n" aria-hidden="true">1</span>
-      <span [textContent]="i18n.t('brand.stars')"></span>
-      <app-frame-part-switch part="starsTop" textKey="frame.top" />
-      <app-frame-part-switch part="starsBottom" textKey="frame.bottom" />
-    </p>
+  <app-group-accordion tab="brand" groupId="stars" hue="gold" icon="★" [index]="1" [title]="i18n.t('brand.stars')" data-testid="brand-stars" [class.is-hidden-part]="!shown('starsTop') && !shown('starsBottom')">
+    <app-frame-part-switch groupHead part="starsTop" textKey="frame.top" />
+    <app-frame-part-switch groupHead part="starsBottom" textKey="frame.bottom" />
     <div class="ed-field">
       <span class="ed-label" id="g-stars-symbol" [textContent]="i18n.t('brand.starsSymbol')"></span>
       <div class="brand-symbols" role="radiogroup" aria-labelledby="g-stars-symbol">
@@ -78,14 +74,10 @@
       }
       <p class="ed-hint" [textContent]="i18n.t('brand.starsColorHint', { mode: colorModeLabel() })"></p>
     </div>
-  </div>
+  </app-group-accordion>
 
-  <div class="ed-group" data-testid="brand-name" [class.is-hidden-part]="!shown('brandName')">
-    <p class="ed-group-title">
-      <span class="ed-group-n" aria-hidden="true">2</span>
-      <span [textContent]="i18n.t('brand.name')"></span>
-      <app-frame-part-switch part="brandName" />
-    </p>
+  <app-group-accordion tab="brand" groupId="name" hue="mauve" icon="✦" [index]="2" [title]="i18n.t('brand.name')" data-testid="brand-name" [class.is-hidden-part]="!shown('brandName')">
+    <app-frame-part-switch groupHead part="brandName" />
     <div class="brand-parts">
       @for (part of name.parts; track $index; let i = $index) {
         <div class="brand-part">
@@ -155,14 +147,10 @@
         </div>
       </div>
     </div>
-  </div>
+  </app-group-accordion>
 
-  <div class="ed-group" data-testid="logo-block" [class.is-hidden-part]="!shown('logo')">
-    <p class="ed-group-title">
-      <span class="ed-group-n" aria-hidden="true">3</span>
-      <span [textContent]="i18n.t('brand.logoSection')"></span>
-      <app-frame-part-switch part="logo" />
-    </p>
+  <app-group-accordion tab="brand" groupId="logo" hue="blue" icon="◎" [index]="3" [title]="i18n.t('brand.logoSection')" data-testid="logo-block" [class.is-hidden-part]="!shown('logo')">
+    <app-frame-part-switch groupHead part="logo" />
     <app-image-picker
       class="ed-field"
       idPrefix="g-logo"
@@ -225,18 +213,14 @@
       />
       <p class="ed-hint" [textContent]="i18n.t('brand.logoHeightHint')"></p>
     </div>
-  </div>
+  </app-group-accordion>
 
-  <div class="ed-group" data-testid="brand-view-in-browser" [class.is-hidden-part]="!shown('viewInBrowserTop')">
-    <p class="ed-group-title">
-      <span class="ed-group-n" aria-hidden="true">4</span>
-      <span [textContent]="i18n.t('legal.viewInBrowserGroup')"></span>
-      <app-frame-part-switch part="viewInBrowserTop" />
-    </p>
+  <app-group-accordion tab="brand" groupId="view-in-browser" hue="green" icon="⧉" [index]="4" [title]="i18n.t('legal.viewInBrowserGroup')" data-testid="brand-view-in-browser" [class.is-hidden-part]="!shown('viewInBrowserTop')">
+    <app-frame-part-switch groupHead part="viewInBrowserTop" />
     <div class="ed-field">
       <label class="ed-label" for="g-view-top" [textContent]="i18n.t('legal.viewInBrowser')"></label>
       <input id="g-view-top" class="ed-input" data-testid="g-view-top" [value]="g.legal.viewInBrowserLabel" (input)="onViewInBrowserLabel($event)" (blur)="onFieldBlur()" />
       <p class="ed-hint" [textContent]="i18n.t('brand.viewInBrowserHint')"></p>
     </div>
-  </div>
+  </app-group-accordion>
 </section>

@@ -31,6 +31,7 @@ import { SnackbarService } from '../../ui/snackbar/snackbar.service';
 import { NewsletterSession } from '../newsletter-session.service';
 import { FramePartSwitchComponent } from './frame-part-switch.component';
 import { ClearableInputDirective } from '../../ui/clearable-input.directive';
+import { GroupAccordionComponent } from '../../ui/group-accordion/group-accordion.component';
 
 const STARS_FRAMES: readonly { frame: 'header' | 'footer'; part: FramePart }[] = [
   { frame: 'header', part: 'starsTop' },
@@ -48,7 +49,7 @@ interface StarsColorVm {
 
 @Component({
   selector: 'app-brand-fields',
-  imports: [ClearableInputDirective, ImagePickerComponent, FramePartSwitchComponent],
+  imports: [ClearableInputDirective, GroupAccordionComponent, ImagePickerComponent, FramePartSwitchComponent],
   templateUrl: './brand-fields.component.html',
   styleUrl: './brand-fields.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

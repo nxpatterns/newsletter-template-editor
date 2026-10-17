@@ -26,6 +26,7 @@ Feature: Image block and logo picker
   Scenario: The logo can be switched from an embedded SVG to a hosted link
     Given I open the editor with the German demo
     When I open the Brand tab
+    And I open the group 'logo-block'
     Then the logo should be flagged as SVG and embedded
     When I paste the logo link 'https://cdn.example.test/logo.png'
     Then the image status should read 'Online image · 40 × 30'

@@ -23,8 +23,11 @@
     }
   </p>
 
-  <div class="ed-group" data-testid="legal-sender">
-    <p class="ed-group-title" [textContent]="i18n.t('legal.groupSender')"></p>
+  <div class="ed-group group-card group-card--blue" data-testid="legal-sender">
+    <p class="ed-group-title">
+      <span class="group-icon" aria-hidden="true">⌂</span>
+      <span [textContent]="i18n.t('legal.groupSender')"></span>
+    </p>
 
     <div class="ed-field" data-testid="legal-notice" [class.is-hidden-part]="!shown('notice')">
       <div class="legal-row-head">
@@ -70,8 +73,11 @@
     </div>
   </div>
 
-  <div class="ed-group" data-testid="legal-links">
-    <p class="ed-group-title" [textContent]="i18n.t('legal.groupLinks')"></p>
+  <div class="ed-group group-card group-card--green" data-testid="legal-links">
+    <p class="ed-group-title">
+      <span class="group-icon" aria-hidden="true">§</span>
+      <span [textContent]="i18n.t('legal.groupLinks')"></span>
+    </p>
     <div class="legal-links">
       <span></span>
       <span class="legal-col" [textContent]="i18n.t('legal.colText')"></span>

@@ -4,6 +4,7 @@ import { LocaleService } from '../../i18n/locale.service';
 import { PersistHeightDirective } from '../../ui/persist-height.directive';
 import { NewsletterSession } from '../newsletter-session.service';
 import { ClearableInputDirective } from '../../ui/clearable-input.directive';
+import { GroupAccordionComponent } from '../../ui/group-accordion/group-accordion.component';
 
 /** Font tiles: short name plus the stack the "Aa" sample is drawn in. */
 const FONT_OPTIONS: { value: FontFamilyPreset; label: string; short: string; stack: string }[] = [
@@ -21,7 +22,7 @@ export const PREHEADER_MAX = 90;
 
 @Component({
   selector: 'app-campaign-fields',
-  imports: [ClearableInputDirective, PersistHeightDirective],
+  imports: [ClearableInputDirective, GroupAccordionComponent, PersistHeightDirective],
   templateUrl: './campaign-fields.component.html',
   styleUrls: ['./globals-forms.component.scss', './campaign-fields.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

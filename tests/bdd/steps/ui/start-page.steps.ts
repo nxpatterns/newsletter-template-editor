@@ -1,5 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
+import { openGroup } from './group-accordions.steps';
 
 const { Given, When, Then } = createBdd();
 
@@ -176,6 +177,7 @@ Then('the preview should show the placeholder logo', async ({ page }) => {
 
 Then('the Brand tab should call the logo {string}', async ({ page }, text: string) => {
   await page.getByTestId('panel-tab-brand').click();
+  await openGroup(page, 'logo-block');
   await expect(page.getByTestId('logo-block').getByTestId('image-status')).toHaveText(text);
   await expect(page.getByTestId('g-logo-placeholder')).toBeVisible();
 });
