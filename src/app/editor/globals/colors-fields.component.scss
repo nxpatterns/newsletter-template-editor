@@ -438,6 +438,12 @@
   background: color-mix(in srgb, var(--ds-accent) 8%, transparent);
 }
 
+.colors-blocks-warn {
+  flex-wrap: nowrap;
+  margin: 0.5rem 0 0;
+  font-size: 0.72rem;
+}
+
 .colors-link-btn {
   border: 0;
   padding: 0;

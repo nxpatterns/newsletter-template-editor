@@ -288,6 +288,8 @@ export const DE: MessageCatalog = {
   'colors.blocks.title': 'Farben genutzter Bausteine',
   'colors.blocks.hint': 'Nur Bausteine, die in diesem Newsletter vorkommen. Klick öffnet den Baustein und zeigt ihn in der Vorschau.',
   'colors.blocks.empty': 'Noch keine Bausteine. Unter „Alle Bausteine“ hinzufügen.',
+  'colors.blocks.warn':
+    'Farbänderungen innerhalb eines Bausteins werden allgemein nicht empfohlen, können aber in Einzelfällen notwendig sein. Besser bearbeiten Sie den Baustein im Tab „Alle Bausteine“, sodass eine Änderung dort für alle Bausteine der gleichen Bausteinart gilt. Einzelne Änderungen an einzelnen Bausteinen können schnell chaotisch werden.',
   'colors.own.count': '{n} eigene',
   'colors.slot.follows': 'wie „{role}“',
   'colors.slot.own': '● eigene Farbe {hex}',

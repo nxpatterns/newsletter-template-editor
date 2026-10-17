@@ -341,6 +341,10 @@
     <div class="colors-acc-panel" id="colors-panel-blocks" role="region" [attr.inert]="isOpen('blocks') ? null : ''">
       <div class="colors-acc-panel-inner colors-acc-panel-inner--pad">
         <p class="colors-hint" [textContent]="i18n.t('colors.blocks.hint')"></p>
+        <p class="slot-warn colors-blocks-warn" role="note" data-testid="colors-blocks-warn">
+          <span aria-hidden="true">!</span>
+          <span [textContent]="i18n.t('colors.blocks.warn')"></span>
+        </p>
         @if (secs.blocks.length === 0) {
           <p class="colors-empty" [textContent]="i18n.t('colors.blocks.empty')"></p>
         } @else {

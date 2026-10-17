@@ -286,6 +286,8 @@ export const EN: MessageCatalog = {
   'colors.blocks.title': 'Colors of used blocks',
   'colors.blocks.hint': 'Only blocks that appear in this newsletter. A click opens the block and shows it in the preview.',
   'colors.blocks.empty': 'No blocks yet. Add some under “All blocks”.',
+  'colors.blocks.warn':
+    'Changing colors inside a single block is generally not recommended, but can be necessary in individual cases. Better edit the block in the “All blocks” tab, so a change there applies to all blocks of the same type. Individual changes to individual blocks can quickly become chaotic.',
   'colors.own.count': '{n} own',
   'colors.slot.follows': 'like “{role}”',
   'colors.slot.own': '● own color {hex}',

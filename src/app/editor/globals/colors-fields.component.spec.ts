@@ -141,6 +141,13 @@ describe('ColorsFieldsComponent', () => {
       fixture.detectChanges();
     };
 
+    it('shows a warning note inside the used-blocks section', () => {
+      const warn = q('colors-section-blocks')?.querySelector('[data-testid="colors-blocks-warn"]');
+      expect(warn).toBeTruthy();
+      expect(warn!.getAttribute('role')).toBe('note');
+      expect(warn!.textContent!.trim().length).toBeGreaterThan(0);
+    });
+
     it('lists exactly the placed blocks, in the order of the newsletter', () => {
       expect(sectionIds()).toEqual(session.blocks().map((b) => b.id));
     });
