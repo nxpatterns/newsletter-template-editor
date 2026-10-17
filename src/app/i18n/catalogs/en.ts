@@ -215,6 +215,7 @@ export const EN: MessageCatalog = {
   'file.exportButton': 'Export HTML',
   'file.statusUnsaved': 'Not saved',
   'file.statusSaved': 'Saved',
+  'file.statusDiscarded': 'Changes discarded',
   'file.sectionProject': 'Backup as file',
   'file.rename': 'Rename…',
   'file.renameTitle': 'Rename template',

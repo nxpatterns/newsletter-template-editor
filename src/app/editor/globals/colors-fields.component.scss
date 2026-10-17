@@ -50,21 +50,38 @@
 }
 
 .colors-acc--nested {
-  background: color-mix(in srgb, var(--ds-bg-panel) 40%, var(--ds-bg-page));
+  /* Same look as the "Current" tab: the hue of the block type (--pl-a / --pl-b / --pl-ink) marks the block everywhere. */
+  border-color: color-mix(in srgb, var(--pl-a) 35%, var(--ds-border));
+  background: linear-gradient(100deg, color-mix(in srgb, var(--pl-a) 14%, var(--ds-bg-panel)), var(--ds-bg-panel) 70%);
 }
 
-.colors-empty {
-  margin: 0.25rem 0 0;
-  color: var(--ds-text-muted);
-  font-size: 0.78rem;
+.colors-acc--nested.is-open {
+  border-color: var(--pl-a);
+  background: linear-gradient(100deg, color-mix(in srgb, var(--pl-a) 14%, var(--ds-bg-panel)), var(--ds-bg-panel) 70%);
 }
+
+.colors-acc--nested .colors-acc-icon {
+  display: grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 0.3rem;
+  font-size: 0.72rem;
+  color: var(--pl-ink);
+  background: linear-gradient(135deg, var(--pl-a), var(--pl-b));
+  opacity: 1;
+}
+
+.colors-acc--nested .colors-acc-title {
+  color: var(--pl-a);
+}
+
 
 .colors-acc {
   border: 1px solid var(--ds-border);
   border-radius: var(--ds-radius);
   background: color-mix(in srgb, var(--ds-bg-page) 55%, var(--ds-bg-panel));
-  /* Do not clip open body — height is driven by max-height on the panel. */
-  overflow: visible;
+    overflow: visible;
 }
 
 .colors-acc.is-open {
@@ -139,14 +156,6 @@
   background: var(--ds-accent);
 }
 
-.colors-acc-icon {
-  flex: 0 0 auto;
-  width: 1.1rem;
-  text-align: center;
-  font-size: 0.85rem;
-  line-height: 1;
-  opacity: 0.9;
-}
 
 .colors-acc-title {
   flex: 1 1 auto;
@@ -169,11 +178,6 @@
   text-transform: uppercase;
 }
 
-/*
- * Height animation: max-height (not grid 0fr/1fr).
- * 1fr under height:auto parents often resolves too small and clips multi-line hints
- * mid-glyph — see docs/sessions/errors/used-color-blocks-error.png.
- */
 .colors-acc-panel {
   display: block;
   overflow: hidden;
@@ -185,8 +189,7 @@
 }
 
 .colors-acc.is-open > .colors-acc-panel {
-  /* Large enough for long block lists + slot rows; still animates from 0. */
-  max-height: 200rem;
+    max-height: 200rem;
   opacity: 1;
 }
 
@@ -412,9 +415,6 @@
   cursor: pointer;
 }
 
-.slot-reset:hover {
-  color: var(--ds-accent);
-}
 
 .slot-warn,
 .slot-note {
@@ -509,10 +509,6 @@
   cursor: pointer;
 }
 
-.colors-ghost-btn:disabled {
-  opacity: 0.45;
-  cursor: default;
-}
 
 .colors-primary-btn {
   color: var(--ds-bg-page);
@@ -520,154 +516,26 @@
   background: var(--ds-accent);
 }
 
-.colors-dialog-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  background: rgb(0 0 0 / 0.5);
+.colors-acc-icon {
+  flex: 0 0 auto;
+  width: 1.1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  line-height: 1;
+  opacity: 0.9;
 }
 
-.colors-dialog {
-  position: fixed;
-  z-index: 61;
-  inset-block-start: 50%;
-  inset-inline-start: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  width: min(30rem, calc(100vw - 2rem));
-  max-height: calc(100vh - 2rem);
-  overflow: auto;
-  padding: 1rem 1.1rem;
-  border: 1px solid var(--ds-border);
-  border-radius: calc(var(--ds-radius) * 2);
-  color: var(--ds-text);
-  background: var(--ds-bg-panel);
-  font-size: 0.8rem;
-}
-
-.colors-dialog p {
-  margin: 0;
-}
-
-.colors-dialog-title {
-  margin: 0;
-  font-size: 1rem;
-}
-
-.colors-dialog-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.colors-dialog-list li {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.3rem 0.5rem;
-  border-radius: var(--ds-radius);
-  background: color-mix(in srgb, var(--ds-bg-page) 70%, var(--ds-bg-panel));
-}
-
-.colors-dialog-hex {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.colors-dialog-hex i {
-  width: 0.9rem;
-  height: 0.9rem;
-  border: 1px solid var(--ds-border);
-  border-radius: 50%;
-}
-
-.colors-dialog-q {
-  font-weight: 700;
-}
-
-.colors-dialog-opt {
-  display: flex;
-  gap: 0.55rem;
-  align-items: flex-start;
-  padding: 0.5rem 0.6rem;
-  border: 1px solid var(--ds-border);
-  border-radius: var(--ds-radius);
-  cursor: pointer;
-}
-
-.colors-dialog-opt.is-on {
-  border-color: var(--ds-accent);
-  background: color-mix(in srgb, var(--ds-accent) 10%, transparent);
-}
-
-.colors-dialog-opt span {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.colors-dialog-opt small {
+.colors-empty {
+  margin: 0.25rem 0 0;
   color: var(--ds-text-muted);
-  font-size: 0.72rem;
+  font-size: 0.78rem;
 }
 
-.colors-dialog-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
+.slot-reset:hover {
+  color: var(--ds-accent);
 }
 
-/* Groups are cards; the cards flow in one CSS grid, the colors inside stay one per row. */
-.general-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-  gap: 0.6rem;
-  align-items: start;
-}
-
-.general-card {
-  min-width: 0;
-  padding: 0.2rem 0.6rem 0.5rem;
-  border: 1px solid var(--ds-border);
-  border-radius: calc(var(--ds-radius) * 1.5);
-  background: color-mix(in srgb, var(--ds-bg-page) 70%, var(--ds-bg-panel));
-}
-
-.general-group {
-  margin: 0.45rem 0 0.3rem;
-  padding-block-end: 0.25rem;
-  border-block-end: 1px solid var(--ds-border);
-  color: var(--ds-text);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.general-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.55rem;
-}
-
-.general-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  min-width: 0;
-}
-
-.general-cell.is-own .general-swatch {
-  outline: 2px solid var(--ds-accent);
-  outline-offset: 1px;
-}
-
-.general-cards + .colors-frame-list {
-  margin-block-start: 0.6rem;
+.colors-ghost-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
 }

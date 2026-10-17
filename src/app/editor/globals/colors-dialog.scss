@@ -1,0 +1,167 @@
+/* Question dialog after changing a general color (split off to keep each stylesheet within its size budget). */
+.colors-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgb(0 0 0 / 0.5);
+}
+
+.colors-dialog {
+  position: fixed;
+  z-index: 61;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: min(30rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--ds-border);
+  border-radius: calc(var(--ds-radius) * 2);
+  color: var(--ds-text);
+  background: var(--ds-bg-panel);
+  font-size: 0.8rem;
+}
+
+
+.colors-dialog-title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.colors-dialog-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.colors-dialog-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: var(--ds-radius);
+  background: color-mix(in srgb, var(--ds-bg-page) 70%, var(--ds-bg-panel));
+}
+
+.colors-dialog-hex {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.colors-dialog-hex i {
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 1px solid var(--ds-border);
+  border-radius: 50%;
+}
+
+
+.colors-dialog-opt {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius);
+  cursor: pointer;
+}
+
+.colors-dialog-opt.is-on {
+  border-color: var(--ds-accent);
+  background: color-mix(in srgb, var(--ds-accent) 10%, transparent);
+}
+
+
+
+.colors-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.general-cards {
+  /* Columns, not a grid: no row can leave a gap. */
+    columns: 15rem;
+  column-gap: 0.6rem;
+}
+
+.general-card {
+  --card-hue: #7a9bbd;
+  break-inside: avoid;
+  margin-block-end: 0.6rem;
+  min-width: 0;
+  padding: 0.2rem 0.6rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--card-hue) 45%, var(--ds-border));
+  border-block-start: 3px solid var(--card-hue);
+  border-radius: calc(var(--ds-radius) * 1.5);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--card-hue) 14%, var(--ds-bg-page)),
+    color-mix(in srgb, var(--card-hue) 5%, var(--ds-bg-page))
+  );
+}
+
+.general-card[data-group='page'] { --card-hue: #7a9bbd; }
+.general-card[data-group='body'] { --card-hue: #84a98c; }
+.general-card[data-group='link'] { --card-hue: #c9a96e; }
+.general-card[data-group='line'] { --card-hue: #b08aa6; }
+
+.general-group {
+  margin: 0.45rem 0 0.3rem;
+  padding-block-end: 0.25rem;
+  border-block-end: 1px solid color-mix(in srgb, var(--card-hue) 35%, var(--ds-border));
+  color: var(--card-hue);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.general-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.general-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.general-cell.is-own .general-swatch {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 1px;
+}
+
+.general-cards + .colors-frame-list {
+  margin-block-start: 0.6rem;
+}
+
+.colors-dialog p {
+  margin: 0;
+}
+
+.colors-dialog-q {
+  font-weight: 700;
+}
+
+.colors-dialog-opt span {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.colors-dialog-opt small {
+  color: var(--ds-text-muted);
+  font-size: 0.72rem;
+}

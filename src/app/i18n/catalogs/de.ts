@@ -216,6 +216,7 @@ export const DE: MessageCatalog = {
   'file.exportButton': 'HTML exportieren',
   'file.statusUnsaved': 'Nicht gespeichert',
   'file.statusSaved': 'Gespeichert',
+  'file.statusDiscarded': 'Änderungen verworfen',
   'file.sectionProject': 'Sicherung als Datei',
   'file.rename': 'Umbenennen…',
   'file.renameTitle': 'Vorlage umbenennen',

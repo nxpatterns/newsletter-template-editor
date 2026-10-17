@@ -67,7 +67,11 @@
           </div>
         }
         <ng-template #saveState>
-          @if (session.dirty()) {
+          @if (session.discardedNotice()) {
+            <span class="save-state save-state--saved" data-testid="save-state-discarded" role="status">
+              <span [textContent]="i18n.t('file.statusDiscarded')"></span>
+            </span>
+          } @else if (session.dirty()) {
             <span class="save-state save-state--dirty" data-testid="save-state" role="status">
               <span class="save-state-dot" aria-hidden="true"></span>
               <span [textContent]="i18n.t('file.statusUnsaved')"></span>

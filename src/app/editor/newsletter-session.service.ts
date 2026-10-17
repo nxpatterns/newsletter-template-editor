@@ -66,6 +66,12 @@ export class NewsletterSession {
   private editBaselineBlock: Block | null = null;
   /** Undo-stack depth when the modal opened — cancel trims entries pushed during edit. */
   private editUndoDepth = 0;
+  /** Dirty flag when the edit modal opened; Cancel restores it. */
+  private editBaselineDirty = false;
+  private readonly discardedNoticeSignal = signal(false);
+  private discardedNoticeTimer: ReturnType<typeof setTimeout> | null = null;
+  /** True for a few seconds after Cancel threw away real edits. */
+  readonly discardedNotice = this.discardedNoticeSignal.asReadonly();
   /**
    * Paragraph WYSIWYG draft while the modal is open.
    * Does not mutate the newsletter/preview until Save.
@@ -353,6 +359,7 @@ export class NewsletterSession {
     const block = this.newsletterSignal().blocks.find((b) => b.id === id) ?? null;
     this.editBaselineBlock = block ? structuredClone(block) : null;
     this.editUndoDepth = this.undoStack.length;
+    this.editBaselineDirty = this.dirtySignal();
     this.paragraphEditDraft = null;
     this.editModalMinWidthSignal.set(null);
     this.editingBlockIdSignal.set(id);
@@ -390,6 +397,7 @@ export class NewsletterSession {
       const changed =
         !current || JSON.stringify(current) !== JSON.stringify(baseline);
       if (changed) {
+        this.showDiscardedNotice();
         // Restore without pushing history (cancel is not an undo step).
         this.newsletterSignal.update((n) => ({
           ...n,
@@ -403,9 +411,23 @@ export class NewsletterSession {
     }
     this.redoStack = [];
     this.syncHistoryFlags();
+    // Cancel leaves the document exactly as before opening, incl. the saved/unsaved state.
+    if (this.editBaselineBlock && this.dirtySignal() !== this.editBaselineDirty) {
+      this.dirtySignal.set(this.editBaselineDirty);
+      this.scheduleRecovery();
+    }
     this.editBaselineBlock = null;
     this.editUndoDepth = 0;
     this.editingBlockIdSignal.set(null);
+  }
+
+  private showDiscardedNotice(): void {
+    this.discardedNoticeSignal.set(true);
+    if (this.discardedNoticeTimer) clearTimeout(this.discardedNoticeTimer);
+    this.discardedNoticeTimer = setTimeout(() => {
+      this.discardedNoticeSignal.set(false);
+      this.discardedNoticeTimer = null;
+    }, 4000);
   }
 
   /** Commit live edits (and paragraph draft) then close the modal. */

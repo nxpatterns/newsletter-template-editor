@@ -168,6 +168,17 @@ describe('NewsletterSession', () => {
     expect(session.canUndo()).toBe(false);
   });
 
+  it('cancelBlockEditor restores the dirty flag from before opening', () => {
+    const hero = session.blocks().find((b) => b.type === 'hero')!;
+    const before = session.dirty();
+    session.openBlockEditor(hero.id);
+    session.updateBlock(hero.id, { label: 'TEMP' }, 'coalesce');
+    expect(session.dirty()).toBe(true);
+    session.cancelBlockEditor();
+    expect(session.dirty()).toBe(before);
+    expect(session.discardedNotice()).toBe(true);
+  });
+
   it('paragraph draft does not mutate newsletter until save', () => {
     const para = session.blocks().find((b) => b.type === 'paragraph');
     expect(para).toBeTruthy();

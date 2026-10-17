@@ -31,7 +31,7 @@ import {
   type SlotRef,
 } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
-import { blockTypeIcon } from '../blocks/block-catalog';
+import { blockTypeHue, blockTypeIcon, type BlockTypeHue } from '../blocks/block-catalog';
 import { NewsletterSession } from '../newsletter-session.service';
 
 /** UI-only open accordion ids (localStorage). Never part of project export. */
@@ -68,8 +68,12 @@ interface SlotRowVm {
   issue: ContrastIssue | null;
 }
 
+/** Header and footer are no block type: a neutral stone hue that no block uses. */
+const FRAME_HUE: BlockTypeHue = { a: '#a8a29e', b: '#57534e', ink: '#ffffff' };
+
 interface SectionVm {
   id: string;
+  hue: BlockTypeHue;
   target: ColorTarget;
   label: string;
   icon: string;
@@ -99,7 +103,7 @@ interface PendingChange {
   selector: 'app-colors-fields',
   imports: [NgTemplateOutlet],
   templateUrl: './colors-fields.component.html',
-  styleUrl: './colors-fields.component.scss',
+  styleUrls: ['./colors-fields.component.scss', './colors-dialog.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ColorsFieldsComponent {
@@ -140,7 +144,7 @@ export class ColorsFieldsComponent {
   protected readonly sections = computed((): { frame: SectionVm[]; blocks: SectionVm[] } => {
     const colors = this.session.globals().colors;
     const m = colors.mode;
-    const build = (target: ColorTarget, label: string, icon: string, index: number | null): SectionVm => {
+    const build = (target: ColorTarget, label: string, icon: string, index: number | null, hue: BlockTypeHue): SectionVm => {
       const rows = colorSlotsOf(target.type).map((def): SlotRowVm => {
         const r = resolveSlot(colors, m, target, def.key);
         const o = slotOverride(colors, m, target.id, def.key);
@@ -160,6 +164,7 @@ export class ColorsFieldsComponent {
       });
       return {
         id: `block-${target.id}`,
+        hue,
         target,
         label,
         icon,
@@ -171,11 +176,11 @@ export class ColorsFieldsComponent {
     };
     return {
       frame: FRAME_TARGETS.map((t) =>
-        build(t, this.i18n.t(`colors.frame.${t.id}`), t.id === 'header' ? '⌂' : '⌄', null),
+        build(t, this.i18n.t(`colors.frame.${t.id}`), t.id === 'header' ? '⌂' : '⌄', null, FRAME_HUE),
       ),
       blocks: this.session
         .blocks()
-        .map((b: Block, i) => build({ id: b.id, type: b.type }, this.i18n.t(`block.${b.type}`), blockTypeIcon(b.type), i + 1)),
+        .map((b: Block, i) => build({ id: b.id, type: b.type }, this.i18n.t(`block.${b.type}`), blockTypeIcon(b.type), i + 1, blockTypeHue(b.type))),
     };
   });
 
