@@ -93,26 +93,18 @@
   column-gap: 0.6rem;
 }
 
+/* Tint, border and top edge come from the shared .group-card (styles.scss). */
 .general-card {
-  --card-hue: #7a9bbd;
   break-inside: avoid;
   margin-block-end: 0.6rem;
   min-width: 0;
   padding: 0.2rem 0.6rem 0.55rem;
-  border: 1px solid color-mix(in srgb, var(--card-hue) 45%, var(--ds-border));
-  border-block-start: 3px solid var(--card-hue);
-  border-radius: calc(var(--ds-radius) * 1.5);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--card-hue) 14%, var(--ds-bg-page)),
-    color-mix(in srgb, var(--card-hue) 5%, var(--ds-bg-page))
-  );
 }
 
-.general-card[data-group='page'] { --card-hue: #7a9bbd; }
-.general-card[data-group='body'] { --card-hue: #84a98c; }
-.general-card[data-group='link'] { --card-hue: #c9a96e; }
-.general-card[data-group='line'] { --card-hue: #b08aa6; }
+.general-card[data-group='page'] { --card-hue: var(--group-hue-blue); }
+.general-card[data-group='body'] { --card-hue: var(--group-hue-green); }
+.general-card[data-group='link'] { --card-hue: var(--group-hue-gold); }
+.general-card[data-group='line'] { --card-hue: var(--group-hue-mauve); }
 
 .general-group {
   margin: 0.45rem 0 0.3rem;

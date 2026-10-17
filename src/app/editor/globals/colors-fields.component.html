@@ -233,7 +233,7 @@
       <div class="colors-acc-panel-inner colors-acc-panel-inner--pad">
         <div class="general-cards">
         @for (group of groups; track group.titleKey) {
-          <section class="general-card" [attr.data-group]="group.roles[0]">
+          <section class="general-card group-card" [attr.data-group]="group.roles[0]">
           <h4 class="general-group" [textContent]="i18n.t(group.titleKey)"></h4>
           <div class="general-grid">
             @for (role of group.roles; track role) {

@@ -20,6 +20,11 @@
   --ds-safe-top: env(safe-area-inset-top, 0px);
   --ds-safe-bottom: env(safe-area-inset-bottom, 0px);
   --ds-radius: 0.25rem;
+  /* Muted group-card hues (.group-card); kept apart from the vivid block-type gradients. */
+  --group-hue-blue: #7a9bbd;
+  --group-hue-green: #84a98c;
+  --group-hue-gold: #c9a96e;
+  --group-hue-mauve: #b08aa6;
   --ds-z-footer: 40;
   --ds-z-panel-overlay: 45;
   --ds-z-snackbar: 50;
@@ -144,6 +149,32 @@ body {
   border-radius: 999px;
   font-size: 0.65rem;
   background: color-mix(in srgb, var(--ds-accent) 22%, transparent);
+}
+
+/* Muted group card (Colors > General colors, Campaign): one quiet hue per group, never an a-to-b gradient (that marks a block type). */
+.group-card {
+  --card-hue: var(--group-hue-blue);
+  border: 1px solid color-mix(in srgb, var(--card-hue) 45%, var(--ds-border));
+  border-block-start: 3px solid var(--card-hue);
+  border-radius: calc(var(--ds-radius) * 1.5);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--card-hue) 14%, var(--ds-bg-page)),
+    color-mix(in srgb, var(--card-hue) 5%, var(--ds-bg-page))
+  );
+}
+
+.group-card--blue { --card-hue: var(--group-hue-blue); }
+.group-card--green { --card-hue: var(--group-hue-green); }
+.group-card--gold { --card-hue: var(--group-hue-gold); }
+.group-card--mauve { --card-hue: var(--group-hue-mauve); }
+
+.group-card .ed-group-title {
+  color: var(--card-hue);
+}
+
+.group-card .ed-group-n {
+  background: color-mix(in srgb, var(--card-hue) 22%, transparent);
 }
 
 .ed-group-off {

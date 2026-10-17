@@ -173,7 +173,7 @@ export const EN: MessageCatalog = {
   'campaign.inboxSubjectEmpty': "(subject comes from Listmonk)",
   'campaign.inboxPreEmpty': "(no preview line)",
   'campaign.groupInbox': "Inbox",
-  'campaign.groupExport': "Export",
+  'campaign.groupExportPrefix': "Export Prefix",
   'campaign.fontCustomTile': "Custom",
   'campaign.font': 'Font family',
   'campaign.customFont': 'Custom font stack',

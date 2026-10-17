@@ -174,7 +174,7 @@ export const DE: MessageCatalog = {
   'campaign.inboxSubjectEmpty': "(Betreff kommt aus Listmonk)",
   'campaign.inboxPreEmpty': "(keine Vorschauzeile)",
   'campaign.groupInbox': "Posteingang",
-  'campaign.groupExport': "Export",
+  'campaign.groupExportPrefix': "Export-Präfix",
   'campaign.fontCustomTile': "Eigene",
   'campaign.font': 'Schriftart',
   'campaign.customFont': 'Eigener Font-Stack',
