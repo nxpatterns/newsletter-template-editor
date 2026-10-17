@@ -1,4 +1,5 @@
 import type { Block, Globals } from '../types';
+import { effectiveSlotColors, type ColorTarget } from '../colors/edit';
 import { blockColorCss, renderPalette } from './colors';
 import { EMAIL_CONTENT_WIDTH_PX, escapeAttr, fontStack } from './utils';
 
@@ -713,11 +714,16 @@ export function darkModeCss(globals: Globals, blocks: readonly Block[] = []): st
 /**
  * Paragraph lite editor surface: same type/color/link truth as email body copy.
  * Scoped under `.rt-editor.rt-clone` so app chrome colors stay untouched.
+ * With `target`, background, base text and links use the block's effective colors (as in the
+ * preview); inline color marks stay general colors there too.
  */
-export function paragraphEditorSurfaceCss(globals: Globals): string {
+export function paragraphEditorSurfaceCss(globals: Globals, target?: ColorTarget): string {
   const pal = renderPalette(globals);
-  const contentBg = escapeAttr(pal.content);
-  const link = escapeAttr(pal.link);
+  const own = target ? effectiveSlotColors(globals.colors, target) : {};
+  const contentBg = escapeAttr(own['background'] ?? pal.content);
+  const text = escapeAttr(own['text'] ?? pal.body);
+  const link = escapeAttr(own['link'] ?? pal.link);
+  const markLink = escapeAttr(pal.link);
   const accent = escapeAttr(pal.accent);
   const head = escapeAttr(pal.head);
   const body = escapeAttr(pal.body);
@@ -736,11 +742,13 @@ export function paragraphEditorSurfaceCss(globals: Globals): string {
   --email-accent: ${accent};
   --email-head: ${head};
   --email-body: ${body};
+  --email-text: ${text};
+  --email-mark-link: ${markLink};
   --email-dim: ${dim};
   --email-font: ${font};
   box-sizing: border-box;
   background-color: var(--email-content) !important;
-  color: var(--email-body) !important;
+  color: var(--email-text) !important;
   font-family: var(--email-font) !important;
   padding: 24px 48px;
   /* Same solid turquoise frame as a selected block in the email preview. */
@@ -759,7 +767,7 @@ export function paragraphEditorSurfaceCss(globals: Globals): string {
   font-family: var(--email-font);
   font-size: 17px;
   line-height: 30px;
-  color: var(--email-body);
+  color: var(--email-text);
   margin: 0 0 16px 0;
 }
 .rt-editor.rt-clone .paragraph-body:last-child { margin-bottom: 0; }
@@ -791,7 +799,7 @@ export function paragraphEditorSurfaceCss(globals: Globals): string {
 }
 .rt-editor.rt-clone .text-body { color: var(--email-body); }
 .rt-editor.rt-clone .text-head { color: var(--email-head); }
-.rt-editor.rt-clone .text-link { color: var(--email-link); }
+.rt-editor.rt-clone .text-link { color: var(--email-mark-link); }
 .rt-editor.rt-clone .text-accent { color: var(--email-accent); }
 .rt-editor.rt-clone .text-dim { color: var(--email-dim); }
 

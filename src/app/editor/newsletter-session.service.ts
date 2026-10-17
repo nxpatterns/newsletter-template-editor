@@ -14,7 +14,7 @@ import {
   type RichDoc,
   type SeedLanguage,
 } from '../../core';
-import { activeColors, type ColorsConfig } from '../../core/colors';
+import { activeColors, effectiveSlotColors, type ColorsConfig } from '../../core/colors';
 import { clearParagraphStash } from './paragraph-draft-stash';
 import { buildProjectEnvelope, parseProjectFile, type LibraryEntry } from '../../core/persist/idb-docs';
 import type { TemplateSummary } from '../../core/persist/template-repository';
@@ -131,6 +131,13 @@ export class NewsletterSession {
   readonly globals = computed(() => this.newsletterSignal().globals);
   /** Colors of the set that is currently edited, previewed and exported. */
   readonly palette = computed(() => activeColors(this.globals().colors));
+  /** Block shown in the inspector: the one being edited, else the selected one. */
+  readonly inspectedBlock = computed((): Block | null => this.editingBlock() ?? this.selectedBlock());
+  /** Effective colors of the inspected block (slot key → hex), exactly as the preview draws them. */
+  readonly inspectedBlockColors = computed((): Record<string, string> => {
+    const b = this.inspectedBlock();
+    return b ? effectiveSlotColors(this.globals().colors, { id: b.id, type: b.type }) : {};
+  });
 
   /**
    * Load the working draft once per app run. Resolves true when a document is open

@@ -291,7 +291,8 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
       this.cloneStyleEl.setAttribute('data-rt-paragraph-clone', '1');
       document.head.appendChild(this.cloneStyleEl);
     }
-    this.cloneStyleEl.textContent = paragraphEditorSurfaceCss(this.session.globals());
+    const b = this.session.inspectedBlock();
+    this.cloneStyleEl.textContent = paragraphEditorSurfaceCss(this.session.globals(), b ? { id: b.id, type: b.type } : undefined);
   }
 
   /** Force pending debounce into docChange (called by session Save). */

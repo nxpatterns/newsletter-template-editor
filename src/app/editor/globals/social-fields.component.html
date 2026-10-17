@@ -8,7 +8,7 @@
     <app-frame-part-switch part="social" />
   </p>
   <p class="social-strip-cap" [textContent]="i18n.t('social.stripCaption')"></p>
-  <div class="social-strip" data-testid="social-strip" [style.color]="session.palette().head" [style.background]="session.palette().page">
+  <div class="social-strip" data-testid="social-strip" [style.color]="session.palette().head" [style.background]="footerBg()">
     @for (n of filled; track n.id) {
       <span class="social-ico" [attr.title]="n.label" [attr.data-testid]="'social-strip-' + n.id" [style.mask-image]="'url(' + iconDir + '/' + n.id + '.svg)'"></span>
     } @empty {

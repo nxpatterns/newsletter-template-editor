@@ -278,10 +278,14 @@
   }
 }
 
-/* Fields drawn in the email's own font, size and color (vars set on the host from Campaign settings). */
+/*
+ * Fields drawn in the email's own font, size and color. Colors come from `--slot-<key>` on the
+ * host: the block's effective colors in the active set, exactly as the preview draws them
+ * (level 3 over 2 over 1). The `--em-*` general colors are only a fallback. No fixed hex here.
+ */
 .em-field {
   font-family: var(--em-font);
-  background: var(--em-content);
+  background: var(--slot-background, var(--em-content));
   border-color: color-mix(in srgb, var(--ds-accent) 25%, var(--ds-border));
 }
 
@@ -289,7 +293,10 @@
 .em-chapter {
   font-size: 13px;
   letter-spacing: 2px;
-  color: var(--em-accent);
+}
+
+.em-hero-label {
+  color: var(--slot-label, var(--em-accent));
 }
 
 .em-hero-headline {
@@ -297,57 +304,65 @@
   font-size: 22px;
   line-height: 1.3;
   font-style: italic;
-  color: var(--em-head);
+  color: var(--slot-headline, var(--em-head));
 }
 
 .em-chapter {
   min-height: 0;
-  background: #060e1a;
+  color: var(--slot-title, var(--em-accent));
 }
 
+.em-greeting {
+  color: var(--slot-text, var(--em-body));
+}
+
+/* Pull quote: slot `text`; testimonial: slot `quote` (each block only has its own key). */
 .em-quote-wrap .em-quote {
   min-height: 0;
   border: 0;
-  background: transparent;
+  background: var(--slot-background, var(--em-content));
   padding: 0.5rem 0.8rem;
   font-size: 19px;
   line-height: 1.5;
   font-style: italic;
-  color: #c8dff0;
+  color: var(--slot-quote, var(--slot-text, var(--em-head)));
 }
 
 .em-button {
   align-self: flex-start;
   width: min(22rem, 100%);
   padding: 0.9rem 1.6rem;
-  border-color: #1d6bb8;
-  background: #1d6bb8;
-  color: #fff;
+  border-color: var(--slot-button);
+  background: var(--slot-button);
+  color: var(--slot-buttonText);
   font-size: 12px;
   font-weight: 700;
   text-align: center;
   text-transform: uppercase;
 }
 
+.em-stat-number,
+.em-stat-label,
+.em-stat-geo {
+  background: var(--slot-box);
+}
+
 .em-stat-number {
   padding: 0.2rem 0.5rem;
   font-size: 34px;
   line-height: 1.2;
-  color: var(--em-link);
-  background: #060e1a;
+  color: var(--slot-number, var(--em-link));
 }
 
 .em-stat-label {
   font-size: 13px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: #3e84c6;
-  background: #060e1a;
+  color: var(--slot-label);
 }
 
 .em-stat-geo {
   font-size: 13px;
   line-height: 22px;
-  color: var(--em-body);
-  background: #060e1a;
+  color: var(--slot-text, var(--em-body));
 }

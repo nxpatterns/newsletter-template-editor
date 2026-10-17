@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { filledSocialNetworks, normalizeLinkTarget, SOCIAL_ICON_DIR, SOCIAL_NETWORKS, type SocialNetworkId, isFramePartShown, type FramePart } from '../../../core';
+import { filledSocialNetworks, normalizeLinkTarget, resolveSlot, SOCIAL_ICON_DIR, SOCIAL_NETWORKS, type SocialNetworkId, isFramePartShown, type FramePart } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
 import { NewsletterSession } from '../newsletter-session.service';
 import { FramePartSwitchComponent } from './frame-part-switch.component';
@@ -19,6 +19,11 @@ export class SocialFieldsComponent {
   protected readonly networks = SOCIAL_NETWORKS;
   protected readonly iconDir = SOCIAL_ICON_DIR;
   /** Networks with a link, in footer order: what the strip shows. */
+  /** Footer background as the preview draws it (block color over general color). */
+  protected readonly footerBg = computed(() => {
+    const c = this.session.globals().colors;
+    return resolveSlot(c, c.mode, { id: 'footer', type: 'footer' }, 'background').hex;
+  });
   protected readonly filledNetworks = computed(() => filledSocialNetworks(this.session.globals().legal.social));
   protected readonly placeholders: Record<SocialNetworkId, string> = {
     linkedin: 'linkedin.com/company/…',

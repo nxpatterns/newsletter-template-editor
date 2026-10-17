@@ -357,7 +357,7 @@
           <label class="ed-label" for="insp-greeting-text" [textContent]="i18n.t('field.greetingText')"></label>
           <input
             id="insp-greeting-text"
-            class="ed-input em-field"
+            class="ed-input em-field em-greeting"
             data-testid="insp-greeting-text"
             [value]="block.text"
             (input)="onText(block.id, 'text', $event)"
@@ -420,7 +420,7 @@
               <label class="ed-label" for="insp-greeting-lead" [textContent]="i18n.t('field.greetingNameLead')"></label>
               <input
                 id="insp-greeting-lead"
-                class="ed-input em-field"
+                class="ed-input em-field em-greeting"
                 data-testid="insp-greeting-lead"
                 [value]="block.nameLead"
                 (input)="onText(block.id, 'nameLead', $event)"

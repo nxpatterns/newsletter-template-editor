@@ -62,6 +62,8 @@ type RowKind = 'cta' | 'benefit' | 'teaser';
     '[style.--em-link]': 'session.palette().link',
     '[style.--em-body]': 'session.palette().body',
     '[style.--em-content]': 'session.palette().content',
+    // Effective colors of this block (as in the preview) as `--slot-<key>`; the fields use these first.
+    '[style]': 'slotVars()',
   },
   templateUrl: './block-inspector.component.html',
   styleUrl: './block-inspector.component.scss',
@@ -87,6 +89,9 @@ export class BlockInspectorComponent {
   protected readonly imageBusy = signal(false);
   private readonly snackbar = inject(SnackbarService);
   protected readonly emailFont = computed(() => fontStack(this.session.globals()));
+  protected readonly slotVars = computed(() =>
+    Object.fromEntries(Object.entries(this.session.inspectedBlockColors()).map(([key, hex]) => [`--slot-${key}`, hex])),
+  );
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
 

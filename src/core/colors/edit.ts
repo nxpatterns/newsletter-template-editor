@@ -47,6 +47,20 @@ export function resolveSlot(colors: ColorsConfig, mode: ColorMode, target: Color
   return { hex: general[role], source: 'general', role };
 }
 
+/**
+ * Every color of a block as the preview draws it (level 3 over 2 over 1): slot key → hex.
+ * Shared by the renderer and the editor so both show the same colors.
+ */
+export function effectiveSlotColors(
+  colors: ColorsConfig,
+  target: ColorTarget,
+  mode: ColorMode = colors.mode,
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const def of colorSlotsOf(target.type)) out[def.key] = resolveSlot(colors, mode, target, def.key).hex;
+  return out;
+}
+
 export function blockOverrideKeys(colors: ColorsConfig, mode: ColorMode, id: string): string[] {
   return Object.keys(colors[mode].blocks[id] ?? {});
 }
