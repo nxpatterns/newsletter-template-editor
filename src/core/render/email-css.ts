@@ -90,7 +90,7 @@ export function emailDocumentCss(globals: Globals, blocks: readonly Block[] = []
   }
   .view-in-browser {
     font-family: var(--email-font);
-    font-size: 10px;
+    font-size: 12px;
     color: var(--email-dim);
     letter-spacing: 2px;
     text-transform: uppercase;
@@ -104,7 +104,7 @@ export function emailDocumentCss(globals: Globals, blocks: readonly Block[] = []
     line-height: 20px;
     color: var(--email-dim);
     margin: 0;
-    letter-spacing: 2px;
+    letter-spacing: normal;
   }
   .footer-rule-cell {
     height: 1px;
@@ -145,6 +145,7 @@ export function emailDocumentCss(globals: Globals, blocks: readonly Block[] = []
   .footer-links {
     font-family: var(--email-font);
     font-size: 12px;
+    color: var(--email-dim);
     margin: 8px 0 0 0;
     text-align: center;
   }
@@ -674,7 +675,7 @@ export function emailDocumentCss(globals: Globals, blocks: readonly Block[] = []
     }
     .brand-stars { color: var(--email-stars-top) !important; }
     .footer-stars-glyph { color: var(--email-stars-bottom) !important; }
-    .text-dim, .footer-notice, .footer-company, .testimonial-role, .contact-intro, .contact-role, .video-title-cell, .event-meta, .event-weekday { color: var(--email-dim) !important; }
+    .text-dim, .footer-notice, .footer-company, .footer-links, .testimonial-role, .contact-intro, .contact-role, .video-title-cell, .event-meta, .event-weekday { color: var(--email-dim) !important; }
     .text-price-main, .price-main { color: var(--email-head) !important; }
     .text-cta-body, .cta-link-body { color: var(--email-dim) !important; }
     .benefit-icon, .text-benefit-icon { color: var(--email-link) !important; }

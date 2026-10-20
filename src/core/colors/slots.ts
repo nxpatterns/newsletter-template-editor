@@ -42,7 +42,7 @@ export const BLOCK_COLOR_SLOTS: Readonly<Record<string, readonly ColorSlotDef[]>
   ],
   footer: [
     { key: 'background', role: 'page', kind: 'fill', css: [bg('.footer-bg')] },
-    { key: 'text', role: 'dim', kind: 'text', css: [fg('.footer-notice'), fg('.footer-company'), fg('.footer-social'), fg('a.email-footer-link')] },
+    { key: 'text', role: 'dim', kind: 'text', css: [fg('.footer-notice'), fg('.footer-company'), fg('.footer-social'), fg('.footer-links'), fg('a.email-footer-link')] },
     { key: 'line', role: 'line', kind: 'line', css: [bg('.footer-rule-cell'), fg('.footer-stars-line')] },
   ],
   divider: [

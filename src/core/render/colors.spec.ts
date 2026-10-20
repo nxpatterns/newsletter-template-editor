@@ -73,3 +73,36 @@ describe('rendering the color sets', () => {
   });
 });
 
+
+describe('footer readability in the export', () => {
+  const styleOf = (html: string, cls: string) =>
+    html.match(new RegExp(`class="${cls}[^"]*"[^>]*style="([^"]*)"`))?.[1] ?? '';
+
+  it('colors the footer link separators with the footer text color in both sets', () => {
+    for (const mode of ['dark', 'light'] as const) {
+      const n = seedNewsletter();
+      n.globals.colors = setColorMode(n.globals.colors, mode);
+      const { full } = renderExport(n);
+      expect(styleOf(full, 'footer-links').toLowerCase()).toContain(STANDARD_SETS[mode].dim);
+    }
+  });
+
+  it('the separators follow a footer text color set in the footer', () => {
+    const n = seedNewsletter();
+    n.globals.colors = setBlockColor(n.globals.colors, 'footer', 'text', { hex: '#abcdef' });
+    const { full } = renderExport(n);
+    expect(styleOf(full, 'footer-links')).toContain('#abcdef');
+    const media = full.match(/@media \(prefers-color-scheme: dark\)[\s\S]*?\n  }\n/)?.[0] ?? '';
+    expect(media).toMatch(/\.footer-links[^{]*\{[^}]*!important/);
+  });
+
+  it('renders the view-in-browser link at 12px or more', () => {
+    const size = Number(styleOf(renderExport(seedNewsletter()).full, 'view-in-browser').match(/font-size:\s*(\d+)px/)?.[1]);
+    expect(size).toBeGreaterThanOrEqual(12);
+  });
+
+  it('sets the legal notice with normal letter spacing', () => {
+    const style = styleOf(renderExport(seedNewsletter()).full, 'footer-notice');
+    expect(style).toMatch(/letter-spacing:\s*normal/);
+  });
+});
