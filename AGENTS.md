@@ -71,9 +71,9 @@ Language: see **Absolute rule — English only** above.
 
 Long analysis, trade-offs, and agreed decisions from agent/human work sessions are written to disk so they can be followed without scrolling chat history.
 
-- **Directory:** `docs/sessions/`
+- **Directory:** `docs/sessions/cache`
 - **Filename pattern:** `YYYY-MM-DD--HH-MM--Short-Title.md`
   - Date and time (local machine time)
   - `HH-MM` is the approximate start of the session write (24h).
   - `File Example:` like `2026-09-30--09-03--Stack-Analysis-Session.md`
-- **When to create a file:** when the user asks to “write it into the session file” or similar, put the substance in `docs/sessions/…` and keep the chat reply brief with the path.
+- **When to create a file:** when the user asks to “write it into the session file” or similar, put the substance in `docs/sessions/cache…` and keep the chat reply brief with the path.
