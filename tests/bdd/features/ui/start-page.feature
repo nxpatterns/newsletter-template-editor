@@ -158,6 +158,18 @@ Feature: Start page
     When I reopen the app
     Then the start tiles should be in the order 'start-blank,start-demo-de,start-demo-en'
 
+  Scenario: Deleting two demo tiles keeps the first undo reachable
+    Given I open the start page
+    When I delete the start tile 'start-demo-de'
+    And I delete the start tile 'start-demo-en'
+    Then the message pager should show 2 of 2
+    When I page to the older message
+    Then the message pager should show 1 of 2
+    When I undo in the message
+    Then the start tiles should be in the order 'start-blank,start-demo-de'
+    And the message should offer to undo
+    And the message pager should be hidden
+
   Scenario: A deleted demo stays deleted and leaves the start page menu
     Given I open the start page
     When I delete the start tile 'start-demo-en'

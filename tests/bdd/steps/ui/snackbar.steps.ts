@@ -60,3 +60,16 @@ Then('I should see the application version in the footer', async ({ page }) => {
   await expect(version).toBeVisible();
   await expect(version).toHaveText(/^v\d+\.\d+\.\d+$/);
 });
+
+Then('the message pager should show {int} of {int}', async ({ page }, position: number, total: number) => {
+  await expect(page.getByTestId('app-snackbar-position')).toHaveText(`${position} / ${total}`);
+});
+
+Then('the message pager should be hidden', async ({ page }) => {
+  await expect(page.getByTestId('app-snackbar')).toBeVisible();
+  await expect(page.getByTestId('app-snackbar-nav')).toHaveCount(0);
+});
+
+When('I page to the older message', async ({ page }) => {
+  await page.getByTestId('app-snackbar-older').click();
+});

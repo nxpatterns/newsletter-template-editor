@@ -200,9 +200,16 @@ Then('the message should say {string}', async ({ page }, text: string) => {
   await expect(page.getByTestId('app-snackbar').locator('.snackbar__text')).toContainText(text);
 });
 
+/** Clicks a control of the shown message and waits until that message is gone (older kept ones may follow). */
+async function closeShownMessage(page: Page, control: string): Promise<void> {
+  const text = page.getByTestId('app-snackbar').locator('.snackbar__text');
+  const shown = (await text.textContent()) ?? '';
+  await page.getByTestId(control).click();
+  await expect(text.filter({ hasText: shown })).toHaveCount(0);
+}
+
 When('I undo in the message', async ({ page }) => {
-  await page.getByTestId('app-snackbar-action').click();
-  await expect(page.getByTestId('app-snackbar')).toHaveCount(0);
+  await closeShownMessage(page, 'app-snackbar-action');
 });
 
 When('I delete the start tile {string}', async ({ page }, id: string) => {
@@ -244,8 +251,7 @@ Then('the recent newsletter {string} should not be pinned', async ({ page }, nam
 });
 
 When('I close the message', async ({ page }) => {
-  await page.getByTestId('app-snackbar-dismiss').click();
-  await expect(page.getByTestId('app-snackbar')).toHaveCount(0);
+  await closeShownMessage(page, 'app-snackbar-dismiss');
 });
 
 Then('only the demo tiles should have a delete button', async ({ page }) => {

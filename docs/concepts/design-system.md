@@ -26,7 +26,6 @@ For anything the user can close (snackbar, modal, drawer, future stacked toasts,
 | --- | --- | --- |
 | `--ds-bg-page` | `#060b14` | App page background |
 | `--ds-bg-panel` | `#0c1628` | Panels, chrome bars |
-| `--ds-bg-snackbar` | `#123a5c` | Snackbar solid surface (one step off panel; high contrast vs page) |
 | `--ds-border` | `#1a3050` | Subtle borders |
 | `--ds-accent` | `#7ecfff` | Focus, links, accents |
 | `--ds-text` | `#e8f4ff` | Primary text |
@@ -38,7 +37,6 @@ For anything the user can close (snackbar, modal, drawer, future stacked toasts,
 | `--ds-panel-width` | `21rem` | Side panel width when docked |
 | `--ds-work-min-height` | `37.5rem` | Assumed min useful work-area height (~600px) for panel tab sizing |
 | `--ds-side-by-side-min` | `60rem` | Min viewport width for preview ‖ panel docked |
-| `--ds-snackbar-gap` | `0.75rem` | Gap between snackbar bottom and footer top |
 | `--ds-safe-top` | `env(safe-area-inset-top, 0px)` | Notch |
 | `--ds-safe-bottom` | `env(safe-area-inset-bottom, 0px)` | Home indicator |
 | `--ds-radius` | `0.25rem` | Controls, snackbar, chrome (email iframe unchanged) |
@@ -186,17 +184,18 @@ Short, professional feedback after user actions (Save, export, errors). Must be 
 - **Vertical:** bottom of the **visual viewport**, **above** the version footer:
 
 ```text
-bottom = var(--ds-footer-height) + var(--ds-snackbar-gap) + var(--ds-safe-bottom)
+bottom = var(--ds-footer-height) + var(--ds-safe-bottom)
 ```
 
-- Single slot, replace-in-place (v0).
+- Docked directly on the footer: no gap, so no slit of page background shows between bar and footer.
+- One message on screen; up to ten are kept (`SNACKBAR_MAX_KEPT`) and can be paged with ‹ / ›.
 
 ### Anatomy
 
-- Surface: **solid** `--ds-bg-snackbar` (no gradient). Text `--ds-text`.
-- Message centered (`text-align: center`, readable max-width); may wrap to multiple lines.
-- **Dismiss ×:** absolutely pinned **top-end** of the bar (see Stable dismiss controls). Not in the text flow.
-- **Progress strip** along the bottom edge: depletes left→right over the auto-dismiss duration so users see that the bar will leave on its own. Tone tints the progress only (success/error), not the whole bar.
+- Surface: dialog-head gradient `--ds-modal-head-bg`. Text `--ds-modal-head-color`.
+- Row, left to right: tone chip (icon + label), message (start-aligned, may wrap), optional action (e.g. Undo), pager `‹ 2 / 3 ›` when more than one is kept, dismiss ×.
+- Tone uses status colors only (`--ds-accent` info, `--ds-success`, `--ds-danger`), never block-type tints.
+- **Timer line** along the top edge, glowing in the tone color: depletes left→right over the auto-dismiss duration. Each kept message has its own line, so paging back shows its real remaining time.
 - Role: `status` for info/success (polite); `alert` for error (assertive).
 
 ### States
@@ -205,9 +204,9 @@ bottom = var(--ds-footer-height) + var(--ds-snackbar-gap) + var(--ds-safe-bottom
 | --- | --- |
 | hidden | not rendered |
 | enter | fade + slight rise (~150–200ms), reduced-motion → instant opacity |
-| visible | auto-dismiss timer default **3s** (later UI-configurable); timer **and** progress animation pause on hover/focus and resume with remaining time |
-| leave | remove when timer ends or dismiss |
-| replaced | new message replaces current without stacking (v0) |
+| visible | auto-dismiss timer default **3s** (later UI-configurable); timers of all kept messages **and** the progress animation pause on hover/focus and resume with remaining time |
+| leave | remove when timer ends or dismiss; the next kept message takes its place |
+| new message | shown at once; older ones stay reachable by paging (max ten kept, oldest dropped) |
 
 ### Motion
 
@@ -223,7 +222,7 @@ bottom = var(--ds-footer-height) + var(--ds-snackbar-gap) + var(--ds-safe-bottom
 ### Mobile / safe area
 
 - Always account for `safe-area-inset-bottom`.
-- Must remain fully visible above virtual keyboard when possible; if visualViewport shrinks, bottom offset still uses footer + gap + safe area (no covering by home indicator).
+- Must remain fully visible above virtual keyboard when possible; if visualViewport shrinks, bottom offset still uses footer + safe area (no covering by home indicator).
 - Touch target for dismiss ≥ 44×44 CSS px.
 
 ### Anti-patterns (image-to-colors lessons)
@@ -236,7 +235,7 @@ bottom = var(--ds-footer-height) + var(--ds-snackbar-gap) + var(--ds-safe-bottom
 ### Tests (required)
 
 - BDD: action (e.g. Save) → snackbar visible with expected text; snackbar is fixed / not causing scroll jump (document scrollY unchanged).
-- Unit (optional): service queues replace semantics + default durations.
+- Unit: kept-message limit, paging, per-message timers, pause/resume, default durations.
 
 ### Implementation map
 

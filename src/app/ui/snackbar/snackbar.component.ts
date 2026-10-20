@@ -1,6 +1,6 @@
 import { Component, HostListener, inject } from '@angular/core';
 import { LocaleService } from '../../i18n/locale.service';
-import { SnackbarService } from './snackbar.service';
+import { SnackbarService, SnackbarTone } from './snackbar.service';
 
 @Component({
   selector: 'app-snackbar',
@@ -13,6 +13,18 @@ export class SnackbarComponent {
 
   protected get dismissLabel(): string {
     return this.i18n.t('snackbar.dismiss');
+  }
+
+  protected get olderLabel(): string {
+    return this.i18n.t('snackbar.older');
+  }
+
+  protected get newerLabel(): string {
+    return this.i18n.t('snackbar.newer');
+  }
+
+  protected toneLabel(tone: SnackbarTone): string {
+    return this.i18n.t(`snackbar.tone.${tone}`);
   }
 
   protected dismiss(): void {

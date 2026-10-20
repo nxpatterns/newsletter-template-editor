@@ -13,31 +13,82 @@
     (focusin)="snackbar.pauseTimer()"
     (focusout)="snackbar.resumeTimer()"
   >
-    <button
-      type="button"
-      class="snackbar__dismiss"
-      data-testid="app-snackbar-dismiss"
-      [attr.aria-label]="dismissLabel"
-      (click)="dismiss()"
-    >
-      ×
-    </button>
-    <div class="snackbar__inner">
-      <p class="snackbar__text">
-        {{ msg.text }}
-        @if (msg.action; as action) {
-          <button type="button" class="snackbar__action" data-testid="app-snackbar-action" (click)="snackbar.runAction()">{{ action.label }}</button>
+    <!-- One timer line per kept message so paging back shows its real remaining time. -->
+    <div class="snackbar__timers" aria-hidden="true">
+      @for (m of snackbar.messages(); track m.id) {
+        @if (m.durationMs > 0) {
+          <div
+            class="snackbar__progress"
+            [attr.data-tone]="m.tone"
+            [class.is-shown]="m.id === msg.id"
+            [attr.data-testid]="m.id === msg.id ? 'app-snackbar-progress' : null"
+            [style.animation-duration.ms]="m.durationMs"
+          ></div>
         }
-      </p>
+      }
     </div>
-    @if (msg.durationMs > 0) {
-      <div
-        class="snackbar__progress"
-        aria-hidden="true"
-        data-testid="app-snackbar-progress"
-        [class.is-paused]="snackbar.timerPaused()"
-        [style.animation-duration.ms]="msg.durationMs"
-      ></div>
-    }
+    <div class="snackbar__inner">
+      <span class="snackbar__chip" data-testid="app-snackbar-tone">
+        <svg class="snackbar__icon" viewBox="0 0 24 24" aria-hidden="true">
+          @switch (msg.tone) {
+            @case ('success') {
+              <circle cx="12" cy="12" r="9" />
+              <path d="m8 12.5 2.6 2.6L16 9.7" />
+            }
+            @case ('error') {
+              <path d="M12 3 2.5 20h19z" />
+              <path d="M12 10v4.5M12 17.2v.1" />
+            }
+            @default {
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 11v5.5M12 7.8v.1" />
+            }
+          }
+        </svg>
+        <span class="snackbar__chip-label">{{ toneLabel(msg.tone) }}</span>
+      </span>
+      <p class="snackbar__text">{{ msg.text }}</p>
+      @if (msg.action; as action) {
+        <button type="button" class="snackbar__action" data-testid="app-snackbar-action" (click)="snackbar.runAction()">
+          {{ action.label }}
+        </button>
+      }
+      @if (snackbar.messages().length > 1) {
+        <span class="snackbar__nav" data-testid="app-snackbar-nav">
+          <button
+            type="button"
+            class="snackbar__nav-btn"
+            data-testid="app-snackbar-older"
+            [attr.aria-label]="olderLabel"
+            [disabled]="snackbar.position() === 1"
+            (click)="snackbar.showOlder()"
+          >
+            ‹
+          </button>
+          <span class="snackbar__position" data-testid="app-snackbar-position">
+            {{ snackbar.position() }} / {{ snackbar.messages().length }}
+          </span>
+          <button
+            type="button"
+            class="snackbar__nav-btn"
+            data-testid="app-snackbar-newer"
+            [attr.aria-label]="newerLabel"
+            [disabled]="snackbar.position() === snackbar.messages().length"
+            (click)="snackbar.showNewer()"
+          >
+            ›
+          </button>
+        </span>
+      }
+      <button
+        type="button"
+        class="snackbar__dismiss"
+        data-testid="app-snackbar-dismiss"
+        [attr.aria-label]="dismissLabel"
+        (click)="dismiss()"
+      >
+        ×
+      </button>
+    </div>
   </div>
 }

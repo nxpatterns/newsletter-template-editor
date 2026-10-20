@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
 
 export type SnackbarTone = 'info' | 'success' | 'error';
 
@@ -19,35 +19,65 @@ export interface SnackbarAction {
 /** Default auto-dismiss. UI-configurable later. */
 export const SNACKBAR_DEFAULT_DURATION_MS = 3000;
 
+/** Older messages stay reachable by paging back; never more than this many are kept. */
+export const SNACKBAR_MAX_KEPT = 10;
+
 const DEFAULT_DURATION: Record<SnackbarTone, number> = {
   info: SNACKBAR_DEFAULT_DURATION_MS,
   success: SNACKBAR_DEFAULT_DURATION_MS,
   error: SNACKBAR_DEFAULT_DURATION_MS,
 };
 
+/** Auto-dismiss countdown of one kept message. */
+interface Countdown {
+  handle: ReturnType<typeof setTimeout> | null;
+  remainingMs: number;
+  startedAt: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class SnackbarService {
   private seq = 0;
-  private hideTimer: ReturnType<typeof setTimeout> | null = null;
-  private remainingMs = 0;
-  private startedAt = 0;
   private paused = false;
+  private readonly countdowns = new Map<number, Countdown>();
+  private readonly items = signal<SnackbarMessage[]>([]);
+  /** Message paged to with older/newer; null = follow the newest. */
+  private readonly selectedId = signal<number | null>(null);
 
-  /** Single-slot current message (null = hidden). */
-  readonly message = signal<SnackbarMessage | null>(null);
+  /** Kept messages, oldest first (at most SNACKBAR_MAX_KEPT). Only one is on screen. */
+  readonly messages = this.items.asReadonly();
+
+  /** Message on screen (null = hidden): the one paged to, else the newest. */
+  readonly message = computed(() => {
+    const list = this.items();
+    const id = this.selectedId();
+    return list.find((m) => m.id === id) ?? list.at(-1) ?? null;
+  });
+
+  /** 1-based position of the shown message within `messages` (0 = hidden). */
+  readonly position = computed(() => {
+    const current = this.message();
+    return current ? this.items().indexOf(current) + 1 : 0;
+  });
 
   /** true while hover/focus pauses the countdown (drives progress animation). */
   readonly timerPaused = signal(false);
 
   show(text: string, tone: SnackbarTone = 'info', durationMs = DEFAULT_DURATION[tone], action?: SnackbarAction): void {
-    this.clearTimer();
-    this.paused = false;
-    this.timerPaused.set(false);
     const id = ++this.seq;
     const ms = durationMs > 0 ? durationMs : 0;
-    this.remainingMs = ms;
-    this.message.set({ id, text, tone, durationMs: ms, ...(action ? { action } : {}) });
-    if (ms > 0) this.armTimer(id, ms);
+    const next = [...this.items(), { id, text, tone, durationMs: ms, ...(action ? { action } : {}) }];
+    for (const dropped of next.splice(0, Math.max(0, next.length - SNACKBAR_MAX_KEPT))) {
+      this.clearCountdown(dropped.id);
+    }
+    this.items.set(next);
+    this.selectedId.set(null);
+    if (ms > 0) {
+      const countdown: Countdown = { handle: null, remainingMs: ms, startedAt: 0 };
+      this.countdowns.set(id, countdown);
+      // While hovered, a new message waits too; it starts with the others on resume.
+      if (!this.paused) this.arm(id, countdown);
+    }
   }
 
   success(text: string, durationMs?: number): void {
@@ -62,7 +92,7 @@ export class SnackbarService {
     this.show(text, 'info', durationMs ?? DEFAULT_DURATION.info);
   }
 
-  /** Runs the current message's action, then closes it. */
+  /** Runs the shown message's action, then closes it. */
   runAction(): void {
     const current = this.message();
     if (!current?.action) return;
@@ -70,56 +100,70 @@ export class SnackbarService {
     current.action.run();
   }
 
+  /** Closes the message with `id`, or the shown one; an older kept message then takes its place. */
   dismiss(id?: number): void {
-    const current = this.message();
-    if (!current) return;
-    if (id !== undefined && current.id !== id) return;
-    this.clearTimer();
-    this.paused = false;
-    this.timerPaused.set(false);
-    this.remainingMs = 0;
-    this.message.set(null);
+    const target = id ?? this.message()?.id;
+    if (target === undefined || !this.items().some((m) => m.id === target)) return;
+    this.clearCountdown(target);
+    this.items.update((list) => list.filter((m) => m.id !== target));
+    if (this.selectedId() === target) this.selectedId.set(null);
+    if (this.items().length === 0) {
+      this.paused = false;
+      this.timerPaused.set(false);
+    }
   }
 
-  /** Pause auto-dismiss while hovered/focused; keeps remaining time. */
+  /** Pages to the next older kept message. */
+  showOlder(): void {
+    this.step(-1);
+  }
+
+  /** Pages to the next newer kept message. */
+  showNewer(): void {
+    this.step(1);
+  }
+
+  /** Pause auto-dismiss of all kept messages while hovered/focused; keeps remaining time. */
   pauseTimer(): void {
-    if (this.paused) return;
-    const current = this.message();
-    if (!current || current.durationMs <= 0) return;
-    if (this.startedAt > 0) {
-      const elapsed = Date.now() - this.startedAt;
-      this.remainingMs = Math.max(0, this.remainingMs - elapsed);
+    if (this.paused || this.countdowns.size === 0) return;
+    const now = Date.now();
+    for (const countdown of this.countdowns.values()) {
+      if (countdown.handle !== null) {
+        clearTimeout(countdown.handle);
+        countdown.handle = null;
+        countdown.remainingMs = Math.max(0, countdown.remainingMs - (now - countdown.startedAt));
+      }
     }
-    this.clearTimer();
     this.paused = true;
     this.timerPaused.set(true);
   }
 
-  /** Resume auto-dismiss with the leftover duration. */
+  /** Resume auto-dismiss with each message's leftover duration. */
   resumeTimer(): void {
     if (!this.paused) return;
     this.paused = false;
     this.timerPaused.set(false);
-    const current = this.message();
-    if (!current || this.remainingMs <= 0) {
-      if (current) this.dismiss(current.id);
-      return;
+    for (const [id, countdown] of [...this.countdowns]) {
+      if (countdown.remainingMs <= 0) this.dismiss(id);
+      else this.arm(id, countdown);
     }
-    this.armTimer(current.id, this.remainingMs);
   }
 
-  private armTimer(id: number, ms: number): void {
-    this.clearTimer();
-    this.startedAt = Date.now();
-    this.remainingMs = ms;
-    this.hideTimer = setTimeout(() => this.dismiss(id), ms);
+  private step(delta: number): void {
+    const list = this.items();
+    const target = list[this.position() - 1 + delta];
+    if (!target) return;
+    this.selectedId.set(target === list.at(-1) ? null : target.id);
   }
 
-  private clearTimer(): void {
-    if (this.hideTimer !== null) {
-      clearTimeout(this.hideTimer);
-      this.hideTimer = null;
-    }
-    this.startedAt = 0;
+  private arm(id: number, countdown: Countdown): void {
+    countdown.startedAt = Date.now();
+    countdown.handle = setTimeout(() => this.dismiss(id), countdown.remainingMs);
+  }
+
+  private clearCountdown(id: number): void {
+    const countdown = this.countdowns.get(id);
+    if (countdown?.handle != null) clearTimeout(countdown.handle);
+    this.countdowns.delete(id);
   }
 }

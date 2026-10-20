@@ -2,111 +2,198 @@
   display: contents;
 }
 
+/* Docking bar: full width, sits directly on the footer (no gap), dialog-head gradient. */
 .snackbar {
-  /* Dismiss hit target — keep in sync with .snackbar__dismiss top/right. */
-  --snackbar-dismiss-size: 2.5rem;
-  --snackbar-dismiss-inset: 0.45rem;
+  --snackbar-tone: var(--ds-accent);
+  --snackbar-control-size: 2.5rem;
 
   position: fixed;
   z-index: var(--ds-z-snackbar);
   left: 0;
   right: 0;
-  bottom: calc(var(--ds-footer-height) + var(--ds-snackbar-gap) + var(--ds-safe-bottom));
-  display: flex;
-  flex-direction: column;
+  bottom: calc(var(--ds-footer-height) + var(--ds-safe-bottom));
   box-sizing: border-box;
   width: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
   border: 0;
-  border-block-start: 1px solid color-mix(in srgb, #fff 14%, var(--ds-border));
-  border-radius: 0;
-  color: var(--ds-text);
-  /* Solid single surface — no gradient. Slightly distinct from panel for contrast. */
-  background: var(--ds-bg-snackbar);
-  box-shadow: 0 -10px 28px rgb(0 0 0 / 40%);
+  border-block-start: 1px solid color-mix(in srgb, #fff 16%, transparent);
+  color: var(--ds-modal-head-color);
+  background: var(--ds-modal-head-bg);
+  box-shadow: 0 -14px 30px -10px rgb(0 0 0 / 60%);
   animation: snackbar-in 180ms ease-out;
 }
 
+.snackbar--success {
+  --snackbar-tone: var(--ds-success);
+}
+
+.snackbar--error {
+  --snackbar-tone: var(--ds-danger);
+}
+
 .snackbar__inner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   box-sizing: border-box;
   width: 100%;
-  /* Reserve a stable right gutter so multi-line text never sits under the fixed ×. */
-  padding:
-    0.85rem
-    calc(var(--snackbar-dismiss-inset) + var(--snackbar-dismiss-size) + 0.65rem)
-    0.85rem
-    calc(var(--snackbar-dismiss-inset) + var(--snackbar-dismiss-size) + 0.65rem);
+  padding: 0.5rem 0.6rem 0.5rem 1rem;
+}
+
+/* Type at a glance: status colors only, never block-type tints. */
+.snackbar__chip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid color-mix(in srgb, var(--snackbar-tone) 40%, transparent);
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem 0.15rem 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--snackbar-tone);
+  background: color-mix(in srgb, var(--snackbar-tone) 14%, rgb(0 0 0 / 25%));
+}
+
+.snackbar__icon {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .snackbar__text {
-  margin: 0 auto;
-  max-width: min(40rem, 100%);
-  font-size: clamp(0.95rem, 0.9rem + 0.25vw, 1.05rem);
-  font-weight: 700;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: clamp(0.9rem, 0.86rem + 0.2vw, 1rem);
+  font-weight: 600;
   line-height: 1.35;
-  letter-spacing: -0.01em;
-  text-align: center;
   overflow-wrap: anywhere;
 }
 
-/*
-  Stable dismiss corner (UX lock):
-  Always top-right of THIS snackbar bar — independent of text length / wrap.
-  Full-width bars + fixed inset ⇒ stacked toasts share the same click X for rapid dismiss.
-*/
-.snackbar__dismiss {
-  position: absolute;
-  top: var(--snackbar-dismiss-inset);
-  inset-inline-end: var(--snackbar-dismiss-inset);
-  z-index: 2;
+.snackbar__action {
+  flex: none;
+  min-height: 2.25rem;
+  border: 1px solid color-mix(in srgb, #fff 35%, transparent);
+  border-radius: var(--ds-radius);
+  padding: 0.3rem 0.8rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  background: color-mix(in srgb, #fff 12%, transparent);
+  cursor: pointer;
+}
+
+.snackbar__action:hover {
+  background: color-mix(in srgb, #fff 22%, transparent);
+}
+
+.snackbar__nav {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, #fff 75%, transparent);
+}
+
+.snackbar__nav-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--snackbar-dismiss-size);
-  height: var(--snackbar-dismiss-size);
-  min-width: var(--snackbar-dismiss-size);
-  min-height: var(--snackbar-dismiss-size);
-  border: 1px solid color-mix(in srgb, #fff 32%, transparent);
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: var(--ds-radius);
+  padding: 0;
+  font-size: 1.15rem;
+  line-height: 1;
+  color: #fff;
+  background: color-mix(in srgb, #fff 8%, transparent);
+  cursor: pointer;
+}
+
+.snackbar__nav-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, #fff 18%, transparent);
+}
+
+.snackbar__nav-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.snackbar__dismiss {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--snackbar-control-size);
+  height: var(--snackbar-control-size);
+  border: 1px solid var(--ds-modal-close-border);
   border-radius: var(--ds-radius);
   padding: 0;
   font-size: 1.35rem;
   line-height: 1;
   color: #fff;
-  background: color-mix(in srgb, #000 22%, transparent);
+  background: var(--ds-modal-close-bg);
   cursor: pointer;
 }
 
 .snackbar__dismiss:hover {
-  background: color-mix(in srgb, #000 38%, transparent);
+  background: var(--ds-modal-close-bg-hover);
 }
 
+.snackbar__action:focus-visible,
+.snackbar__nav-btn:focus-visible,
 .snackbar__dismiss:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 2px;
 }
 
+/* Glowing timer line along the top edge; one per kept message, only the shown one visible. */
+.snackbar__timers {
+  position: absolute;
+  inset-inline: 0;
+  top: -1px;
+  height: 2px;
+  pointer-events: none;
+}
+
 .snackbar__progress {
-  display: block;
-  width: 100%;
-  height: 0.28rem;
+  --progress-tone: var(--ds-accent);
+
+  position: absolute;
+  inset: 0;
+  opacity: 0;
   transform-origin: left center;
-  background: color-mix(in srgb, #fff 78%, var(--ds-accent));
+  background: var(--progress-tone);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--progress-tone) 80%, transparent);
   animation-name: snackbar-progress;
   animation-timing-function: linear;
   animation-fill-mode: forwards;
 }
 
-.snackbar--success .snackbar__progress {
-  background: color-mix(in srgb, var(--ds-success) 75%, #fff);
+.snackbar__progress[data-tone='success'] {
+  --progress-tone: var(--ds-success);
 }
 
-.snackbar--error .snackbar__progress {
-  background: color-mix(in srgb, var(--ds-danger) 80%, #fff);
+.snackbar__progress[data-tone='error'] {
+  --progress-tone: var(--ds-danger);
 }
 
-.snackbar__progress.is-paused,
+.snackbar__progress.is-shown {
+  opacity: 1;
+}
+
 .snackbar--paused .snackbar__progress {
   animation-play-state: paused;
 }
@@ -131,6 +218,31 @@
   }
 }
 
+@media (max-width: 40rem) {
+  .snackbar__inner {
+    gap: 0.5rem;
+    padding-inline-start: 0.75rem;
+  }
+
+  /* Icon keeps the type visible; the word would squeeze the message. */
+  .snackbar__chip {
+    padding: 0.3rem;
+  }
+
+  .snackbar__chip-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .snackbar__position {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .snackbar {
     animation: none;
@@ -139,24 +251,5 @@
   .snackbar__progress {
     animation: none;
     transform: scaleX(1);
-    opacity: 0.85;
-  }
-}
-
-.snackbar__action {
-  margin-inline-start: 0.75rem;
-  padding: 0.2rem 0.6rem;
-  border: 1px solid currentColor;
-  border-radius: var(--ds-radius);
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  font-weight: 700;
-  text-decoration: underline;
-  cursor: pointer;
-
-  &:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 2px;
   }
 }

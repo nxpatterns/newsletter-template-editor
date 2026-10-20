@@ -2,8 +2,6 @@
 :root {
   --ds-bg-page: #060b14;
   --ds-bg-panel: #0c1628;
-  /* Solid toast surface — one step lighter/cooler than panel for contrast, no gradients. */
-  --ds-bg-snackbar: #123a5c;
   --ds-border: #1a3050;
   --ds-accent: #7ecfff;
   --ds-text: #e8f4ff;
@@ -16,7 +14,6 @@
   --ds-panel-width: 21rem;
   --ds-work-min-height: 37.5rem;
   --ds-side-by-side-min: 60rem;
-  --ds-snackbar-gap: 0.75rem;
   --ds-safe-top: env(safe-area-inset-top, 0px);
   --ds-safe-bottom: env(safe-area-inset-bottom, 0px);
   --ds-radius: 0.25rem;
