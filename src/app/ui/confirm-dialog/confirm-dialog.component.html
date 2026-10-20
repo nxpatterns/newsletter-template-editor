@@ -8,16 +8,37 @@
     <div class="confirm-backdrop" (click)="onBackdrop()"></div>
     <div
       class="confirm-dialog"
-      role="dialog"
+      [class.confirm-dialog--warning]="p.mode === 'confirm' && !!p.warning"
+      [attr.role]="p.mode === 'confirm' && p.warning ? 'alertdialog' : 'dialog'"
       aria-modal="true"
       aria-labelledby="confirm-title"
     >
       <header class="confirm-head">
-        <h2 id="confirm-title" class="confirm-title" [textContent]="p.title"></h2>
+        <h2 id="confirm-title" class="confirm-title">
+          @if (p.mode === 'confirm' && p.warning) {
+            <span class="confirm-warning-icon" aria-hidden="true">⚠</span>
+          }
+          <span [textContent]="p.title"></span>
+        </h2>
       </header>
       <div class="confirm-body">
         @if (p.body) {
           <p class="confirm-text" [textContent]="p.body"></p>
+        }
+        @if (p.mode === 'confirm' && p.note) {
+          <p class="confirm-note" data-testid="confirm-note" [textContent]="p.note"></p>
+        }
+        @if (p.mode === 'confirm' && p.acknowledge) {
+          <label class="confirm-ack">
+            <input
+              type="checkbox"
+              class="confirm-ack-box"
+              data-testid="confirm-acknowledge"
+              [checked]="acknowledged()"
+              (change)="onAcknowledge($event)"
+            />
+            <span [textContent]="p.acknowledge"></span>
+          </label>
         }
         @if (p.mode === 'prompt') {
           <label class="confirm-input-label" for="confirm-prompt-input" [textContent]="p.inputLabel"></label>
@@ -55,6 +76,7 @@
           type="button"
           class="confirm-btn"
           data-testid="confirm-ok"
+          [disabled]="needsAcknowledge()"
           [class.confirm-btn--primary]="p.mode !== 'confirm' || !p.danger"
           [class.confirm-btn--danger]="p.mode === 'confirm' && !!p.danger"
           [textContent]="p.confirmLabel"

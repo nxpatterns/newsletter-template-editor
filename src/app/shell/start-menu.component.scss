@@ -1,0 +1,11 @@
+@use './dropdown-menu';
+
+:host {
+  display: contents;
+}
+
+/* After the language switch in the header bar, like the editor menu. */
+.file-menu {
+  position: relative;
+  order: 1;
+}

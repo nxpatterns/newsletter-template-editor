@@ -58,6 +58,9 @@
       <div class="file-menu-section-label" [textContent]="i18n.t('file.sectionProject')"></div>
       <button type="button" class="file-menu-item" role="menuitem" data-testid="file-download-project" (click)="downloadProject()" [textContent]="i18n.t('file.downloadProject')"></button>
       <button type="button" class="file-menu-item" role="menuitem" data-testid="file-open-project" (click)="openProjectPicker()" [textContent]="i18n.t('file.openProject')"></button>
+
+      <div class="file-menu-sep"></div>
+      <button type="button" class="file-menu-item file-menu-item--danger" role="menuitem" data-testid="menu-factory-reset" (click)="factoryReset()" [textContent]="i18n.t('reset.menuItem')"></button>
     </div>
   }
 

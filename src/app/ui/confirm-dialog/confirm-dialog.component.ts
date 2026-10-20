@@ -26,6 +26,7 @@ export class ConfirmDialogComponent {
 
   protected readonly openVisual = signal(false);
   protected readonly promptValue = signal('');
+  protected readonly acknowledged = signal(false);
   private closing = false;
 
   constructor() {
@@ -34,6 +35,7 @@ export class ConfirmDialogComponent {
       if (p) {
         this.closing = false;
         this.promptValue.set(p.mode === 'prompt' ? p.initialValue : '');
+        this.acknowledged.set(false);
         requestAnimationFrame(() => this.openVisual.set(true));
         queueMicrotask(() => {
           if (p.mode === 'prompt') this.inputEl()?.nativeElement.focus();
@@ -54,6 +56,7 @@ export class ConfirmDialogComponent {
   }
 
   protected onConfirm(): void {
+    if (this.needsAcknowledge()) return;
     this.beginClose(true);
   }
 
@@ -63,6 +66,16 @@ export class ConfirmDialogComponent {
 
   protected onPromptInput(event: Event): void {
     this.promptValue.set((event.target as HTMLInputElement).value);
+  }
+
+  protected onAcknowledge(event: Event): void {
+    this.acknowledged.set((event.target as HTMLInputElement).checked);
+  }
+
+  /** Confirm stays disabled until the required checkbox is ticked. */
+  protected needsAcknowledge(): boolean {
+    const p = this.confirm.pending();
+    return !!p && p.mode === 'confirm' && !!p.acknowledge && !this.acknowledged();
   }
 
   protected onAlt(): void {

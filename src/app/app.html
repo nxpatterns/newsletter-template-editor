@@ -126,6 +126,8 @@
             </button>
           </div>
           <app-file-menu />
+        } @else if (onStart()) {
+          <app-start-menu />
         }
 
         <div class="locale-switch" role="group" [attr.aria-label]="i18n.t('action.locale')">

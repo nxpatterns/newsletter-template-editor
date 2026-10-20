@@ -127,6 +127,15 @@ export async function deleteRecovery(): Promise<void> {
   await txDone(tx);
 }
 
+/** Factory reset: every saved template and the draft, in one transaction. */
+export async function clearAllDocs(): Promise<void> {
+  const db = await openDb();
+  const tx = db.transaction([STORE_LIBRARY, STORE_RECOVERY], 'readwrite');
+  tx.objectStore(STORE_LIBRARY).clear();
+  tx.objectStore(STORE_RECOVERY).clear();
+  await txDone(tx);
+}
+
 /** Migrate legacy localStorage draft into IDB recovery once. */
 export async function migrateLegacyLocalStorageIfNeeded(): Promise<RecoveryDoc | null> {
   const existing = await loadRecovery();

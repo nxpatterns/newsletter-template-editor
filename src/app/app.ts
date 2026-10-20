@@ -14,6 +14,7 @@ import {
   type LegalModalKind,
 } from './ui/legal-modal/legal-modal.component';
 import { FileMenuComponent } from './shell/file-menu.component';
+import { StartMenuComponent } from './shell/start-menu.component';
 import { UnsavedGuardService } from './shell/unsaved-guard.service';
 import { SnackbarComponent } from './ui/snackbar/snackbar.component';
 
@@ -29,6 +30,7 @@ import { SnackbarComponent } from './ui/snackbar/snackbar.component';
     BlockEditModalComponent,
     ConfirmDialogComponent,
     FileMenuComponent,
+    StartMenuComponent,
   ],
   selector: 'app-root',
   styleUrl: './app.scss',

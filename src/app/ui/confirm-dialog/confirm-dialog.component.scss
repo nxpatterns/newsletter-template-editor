@@ -118,6 +118,61 @@
   outline-offset: 1px;
 }
 
+/* Irreversible actions: tinted head with ⚠ and a highlighted hint. Text stays --ds-text (light on dark). */
+.confirm-dialog--warning {
+  border-color: color-mix(in srgb, var(--ds-danger) 55%, transparent);
+}
+
+.confirm-dialog--warning .confirm-head {
+  border-block-start: 3px solid var(--ds-danger);
+  color: var(--ds-text);
+  background: color-mix(in srgb, var(--ds-danger) 20%, var(--ds-bg-panel));
+}
+
+.confirm-dialog--warning .confirm-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.confirm-warning-icon {
+  color: var(--ds-danger);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.confirm-note {
+  margin: 0 0 0.75rem;
+  border-inline-start: 3px solid var(--ds-danger);
+  border-radius: var(--ds-radius);
+  padding: 0.6rem 0.75rem;
+  color: var(--ds-text);
+  background: color-mix(in srgb, var(--ds-danger) 12%, transparent);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.confirm-ack {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin-block-start: 0.85rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ds-text);
+  cursor: pointer;
+}
+
+.confirm-ack-box {
+  flex: none;
+  inline-size: 1.05rem;
+  block-size: 1.05rem;
+  margin: 0.1rem 0 0;
+  accent-color: var(--ds-danger);
+  cursor: pointer;
+}
+
 .confirm-foot {
   display: flex;
   flex-wrap: wrap;
@@ -160,6 +215,11 @@
 .confirm-btn--alt {
   color: color-mix(in srgb, var(--ds-danger) 70%, var(--ds-text));
   border-color: color-mix(in srgb, var(--ds-danger) 45%, transparent);
+}
+
+.confirm-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .confirm-btn:focus-visible {

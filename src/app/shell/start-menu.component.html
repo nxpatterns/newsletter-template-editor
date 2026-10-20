@@ -1,0 +1,48 @@
+<div class="file-menu" #root data-testid="start-menu">
+  <button
+    type="button"
+    class="file-menu-trigger"
+    data-testid="start-menu-trigger"
+    [attr.aria-expanded]="open()"
+    [attr.aria-label]="i18n.t('file.menu')"
+    [attr.title]="i18n.t('file.menu')"
+    (click)="toggleMenu($event)"
+  >
+    <svg class="file-menu-icon" viewBox="0 -960 960 960" aria-hidden="true" focusable="false">
+      <path d="M480-160q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm0-240q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm0-240q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Z" />
+    </svg>
+  </button>
+
+  @if (open()) {
+    <div class="file-menu-panel" role="menu" data-testid="start-menu-panel">
+      <div class="file-menu-section-label" [textContent]="i18n.t('start.newSection')"></div>
+      <button type="button" class="file-menu-item" role="menuitem" data-testid="start-menu-blank" (click)="startNew('blank')" [textContent]="i18n.t('start.blank')"></button>
+      <button type="button" class="file-menu-item" role="menuitem" data-testid="start-menu-demo-de" (click)="startNew('demo', 'de')" [textContent]="i18n.t('start.demoDe')"></button>
+      <button type="button" class="file-menu-item" role="menuitem" data-testid="start-menu-demo-en" (click)="startNew('demo', 'en')" [textContent]="i18n.t('start.demoEn')"></button>
+
+      <div class="file-menu-sep"></div>
+      <div class="file-menu-section-label" [textContent]="i18n.t('startMenu.sectionSaved')"></div>
+      <button
+        type="button"
+        class="file-menu-item"
+        role="menuitem"
+        data-testid="start-menu-open-saved"
+        [disabled]="!hasSaved()"
+        [attr.title]="hasSaved() ? null : i18n.t('startMenu.noSaved')"
+        (click)="openLibrary()"
+        [textContent]="i18n.t('file.openLibrary')"
+      ></button>
+
+      <div class="file-menu-sep"></div>
+      <button type="button" class="file-menu-item file-menu-item--danger" role="menuitem" data-testid="menu-factory-reset" (click)="factoryReset()" [textContent]="i18n.t('reset.menuItem')"></button>
+    </div>
+  }
+</div>
+
+<app-library-picker
+  [open]="libraryOpen()"
+  [rows]="libraryRows()"
+  (closed)="libraryOpen.set(false)"
+  (picked)="pickLibrary($event)"
+  (deleted)="removeLibrary($event)"
+/>

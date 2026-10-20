@@ -1,4 +1,5 @@
 import {
+  clearAllDocs,
   deleteLibraryEntry,
   deleteRecovery,
   getLibraryEntry,
@@ -38,6 +39,8 @@ export interface TemplateRepository {
   loadDraft(): Promise<RecoveryDoc | null>;
   saveDraft(doc: DraftDoc): Promise<void>;
   clearDraft(): Promise<void>;
+  /** Remove every saved template and the draft. */
+  clearAll(): Promise<void>;
   newId(): string;
 }
 
@@ -58,6 +61,7 @@ export const indexedDbTemplateRepository: TemplateRepository = {
   loadDraft: migrateLegacyLocalStorageIfNeeded,
   saveDraft: saveRecovery,
   clearDraft: deleteRecovery,
+  clearAll: clearAllDocs,
   newId: newLibraryId,
 };
 

@@ -13,6 +13,7 @@ import { NewsletterSession } from '../editor/newsletter-session.service';
 import { LocaleService } from '../i18n/locale.service';
 import { ConfirmDialogService } from '../ui/confirm-dialog/confirm-dialog.service';
 import { SnackbarService } from '../ui/snackbar/snackbar.service';
+import { FactoryResetService } from './factory-reset.service';
 import { ExportHtmlDialogComponent, type HtmlExportKind } from './export-html-dialog.component';
 import { activeColors } from '../../core/colors';
 import { LibraryPickerComponent } from './library-picker.component';
@@ -36,6 +37,7 @@ export class FileMenuComponent {
   private readonly snackbar = inject(SnackbarService);
   private readonly unsaved = inject(UnsavedGuardService);
   private readonly socialIcons = inject(SocialIconsService);
+  private readonly reset = inject(FactoryResetService);
 
   private readonly root = viewChild<ElementRef<HTMLElement>>('root');
   private readonly projectInput = viewChild<ElementRef<HTMLInputElement>>('projectInput');
@@ -123,6 +125,11 @@ export class FileMenuComponent {
     if (!ok) return;
     await this.session.deleteLibrary(id);
     this.libraryRows.set(await this.session.listLibraryEntries());
+  }
+
+  protected async factoryReset(): Promise<void> {
+    this.closeMenu();
+    await this.reset.run();
   }
 
   protected showExport(): void {

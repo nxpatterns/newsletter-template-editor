@@ -6,6 +6,12 @@ export interface ConfirmDialogRequest {
   confirmLabel: string;
   cancelLabel: string;
   danger?: boolean;
+  /** When set, a checkbox with this text must be ticked before confirming (irreversible actions). */
+  acknowledge?: string;
+  /** Warning look (tinted head, ⚠) for actions that delete data for good. */
+  warning?: boolean;
+  /** Highlighted hint under the text, e.g. "export your files first". */
+  note?: string;
 }
 
 export interface PromptDialogRequest {

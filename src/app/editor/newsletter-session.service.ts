@@ -296,6 +296,20 @@ export class NewsletterSession {
     };
   }
 
+  /** Factory reset: delete every saved template and the draft; no document stays open. */
+  async resetAll(): Promise<void> {
+    this.endCoalesce();
+    if (this.recoveryTimer) {
+      clearTimeout(this.recoveryTimer);
+      this.recoveryTimer = null;
+    }
+    await this.repo.clearAll();
+    this.libraryIdSignal.set(null);
+    this.dirtySignal.set(false);
+    this.hasDocumentSignal.set(false);
+    this.clearHistory();
+  }
+
   /** Name of a newsletter that has none: "New newsletter" in the app language. */
   private unnamedDisplayName(): string {
     return this.i18n.t('doc.unnamedName');
