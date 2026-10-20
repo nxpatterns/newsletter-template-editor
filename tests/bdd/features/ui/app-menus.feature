@@ -57,3 +57,9 @@ Feature: Header menus and reset to defaults
     And there should be no draft to continue
     And the browser should keep no app state except the language
     And the app language should be 'de'
+
+  Scenario: A long template name wraps in the editor menu head instead of being cut
+    Given I open the editor with the German demo
+    When I rename the newsletter to a name with 255 characters
+    And I open the editor menu
+    Then the template name in the menu head should be shown in full on several lines

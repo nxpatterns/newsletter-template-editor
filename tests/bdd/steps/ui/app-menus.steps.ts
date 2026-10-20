@@ -89,3 +89,24 @@ Then('the browser should keep no app state except the language', async ({ page }
 Then('the app language should be {string}', async ({ page }, lang: string) => {
   await expect(page.getByTestId(`locale-${lang}`)).toHaveAttribute('aria-pressed', 'true');
 });
+
+const LONG_NAME = 'Herbstaktion-2026-'.repeat(15).slice(0, 255);
+
+When('I rename the newsletter to a name with 255 characters', async ({ page }) => {
+  await page.getByTestId('file-menu-trigger').click();
+  await page.getByTestId('file-rename').click();
+  await page.getByTestId('confirm-prompt-input').fill(LONG_NAME);
+  await page.getByTestId('confirm-ok').click();
+  await expect(page.getByTestId('confirm-dialog')).toBeHidden();
+});
+
+Then('the template name in the menu head should be shown in full on several lines', async ({ page }) => {
+  const name = page.getByTestId('file-menu-doc-name');
+  await expect(name).toHaveText(LONG_NAME);
+  const box = await name.evaluate((el) => ({
+    clipped: el.scrollWidth > el.clientWidth,
+    lines: Math.round(el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight)),
+  }));
+  expect(box.clipped).toBe(false);
+  expect(box.lines).toBeGreaterThan(1);
+});
