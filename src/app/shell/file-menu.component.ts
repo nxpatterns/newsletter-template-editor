@@ -17,11 +17,12 @@ import { FactoryResetService } from './factory-reset.service';
 import { ExportHtmlDialogComponent, type HtmlExportKind } from './export-html-dialog.component';
 import { activeColors } from '../../core/colors';
 import { LibraryPickerComponent } from './library-picker.component';
+import { MenuIconComponent } from './menu-icon.component';
 import { UnsavedGuardService } from './unsaved-guard.service';
 
 @Component({
   selector: 'app-file-menu',
-  imports: [LibraryPickerComponent, ExportHtmlDialogComponent],
+  imports: [LibraryPickerComponent, ExportHtmlDialogComponent, MenuIconComponent],
   templateUrl: './file-menu.component.html',
   styleUrl: './file-menu.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

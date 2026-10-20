@@ -15,26 +15,59 @@
 
   @if (open()) {
     <div class="file-menu-panel" role="menu" data-testid="start-menu-panel">
-      <div class="file-menu-section-label" [textContent]="i18n.t('start.newSection')"></div>
-      <button type="button" class="file-menu-item" role="menuitem" data-testid="start-menu-blank" (click)="startNew('blank')" [textContent]="i18n.t('start.blank')"></button>
-      <button type="button" class="file-menu-item" role="menuitem" data-testid="start-menu-demo-de" (click)="startNew('demo', 'de')" [textContent]="i18n.t('start.demoDe')"></button>
-      <button type="button" class="file-menu-item" role="menuitem" data-testid="start-menu-demo-en" (click)="startNew('demo', 'en')" [textContent]="i18n.t('start.demoEn')"></button>
+      <div class="file-menu-head">
+        <span class="file-menu-eyebrow" [textContent]="i18n.t('startMenu.eyebrow')"></span>
+        <b class="file-menu-head-title" [textContent]="i18n.t('startMenu.headTitle')"></b>
+      </div>
+      <div class="file-menu-body">
+        <div class="file-menu-section-label" [textContent]="i18n.t('start.newSection')"></div>
+        <button type="button" class="file-menu-item" role="menuitem" data-testid="start-menu-blank" (click)="startNew('blank')">
+          <span class="file-menu-tile"><app-menu-icon name="blank" /></span>
+          <span class="file-menu-text">
+            <span [textContent]="i18n.t('start.blank')"></span>
+            <span class="file-menu-hint" [textContent]="i18n.t('start.blankHint')"></span>
+          </span>
+        </button>
+        <button type="button" class="file-menu-item" role="menuitem" data-testid="start-menu-demo-de" (click)="startNew('demo', 'de')">
+          <span class="file-menu-tile"><app-flag code="de" /></span>
+          <span class="file-menu-text">
+            <span [textContent]="i18n.t('start.demoDe')"></span>
+            <span class="file-menu-hint" [textContent]="i18n.t('start.demoDeCountries')"></span>
+          </span>
+        </button>
+        <button type="button" class="file-menu-item" role="menuitem" data-testid="start-menu-demo-en" (click)="startNew('demo', 'en')">
+          <span class="file-menu-tile"><app-flag code="uk" /></span>
+          <span class="file-menu-text">
+            <span [textContent]="i18n.t('start.demoEn')"></span>
+            <span class="file-menu-hint" [textContent]="i18n.t('start.demoEnCountries')"></span>
+          </span>
+        </button>
 
-      <div class="file-menu-sep"></div>
-      <div class="file-menu-section-label" [textContent]="i18n.t('startMenu.sectionSaved')"></div>
-      <button
-        type="button"
-        class="file-menu-item"
-        role="menuitem"
-        data-testid="start-menu-open-saved"
-        [disabled]="!hasSaved()"
-        [attr.title]="hasSaved() ? null : i18n.t('startMenu.noSaved')"
-        (click)="openLibrary()"
-        [textContent]="i18n.t('file.openLibrary')"
-      ></button>
+        <div class="file-menu-section-label" [textContent]="i18n.t('startMenu.sectionSaved')"></div>
+        <button
+          type="button"
+          class="file-menu-item"
+          role="menuitem"
+          data-testid="start-menu-open-saved"
+          [disabled]="!hasSaved()"
+          (click)="openLibrary()"
+        >
+          <span class="file-menu-tile"><app-menu-icon name="folder" /></span>
+          <span class="file-menu-text">
+            <span [textContent]="i18n.t('file.openLibrary')"></span>
+            @if (!hasSaved()) {
+              <span class="file-menu-hint" [textContent]="i18n.t('startMenu.noSaved')"></span>
+            }
+          </span>
+        </button>
 
-      <div class="file-menu-sep"></div>
-      <button type="button" class="file-menu-item file-menu-item--danger" role="menuitem" data-testid="menu-factory-reset" (click)="factoryReset()" [textContent]="i18n.t('reset.menuItem')"></button>
+        <div class="file-menu-danger">
+          <button type="button" class="file-menu-item file-menu-item--danger" role="menuitem" data-testid="menu-factory-reset" (click)="factoryReset()">
+            <span class="file-menu-tile"><app-menu-icon name="reset" /></span>
+            <span [textContent]="i18n.t('reset.menuItem')"></span>
+          </button>
+        </div>
+      </div>
     </div>
   }
 </div>

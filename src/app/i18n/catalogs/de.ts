@@ -621,6 +621,8 @@ export const DE: MessageCatalog = {
   'start.notFound': 'Diesen Newsletter gibt es nicht mehr.',
   'startMenu.sectionSaved': 'Gespeicherte Vorlagen',
   'startMenu.noSaved': 'Noch keine gespeicherten Vorlagen',
+  'startMenu.eyebrow': 'Startseite',
+  'startMenu.headTitle': 'Womit möchten Sie anfangen?',
   'reset.menuItem': 'Alles auf Standard zurücksetzen…',
   'reset.title': 'Alles auf Standard zurücksetzen?',
   'reset.bodyMany': 'Alle {count} gespeicherten Vorlagen und der ungespeicherte Entwurf werden endgültig gelöscht, dazu alle gemerkten Ansichten wie offene Bereiche und Panelbreite. Die gewählte Sprache bleibt.',

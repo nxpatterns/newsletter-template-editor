@@ -6,12 +6,14 @@ import { LocaleService } from '../i18n/locale.service';
 import { StartActionsService } from '../pages/start/start-actions.service';
 import { ConfirmDialogService } from '../ui/confirm-dialog/confirm-dialog.service';
 import { FactoryResetService } from './factory-reset.service';
+import { FlagComponent } from '../ui/flag/flag.component';
 import { LibraryPickerComponent } from './library-picker.component';
+import { MenuIconComponent } from './menu-icon.component';
 
 /** Header "⋮" menu on the start page: the start choices, saved templates and the reset. */
 @Component({
   selector: 'app-start-menu',
-  imports: [LibraryPickerComponent],
+  imports: [LibraryPickerComponent, MenuIconComponent, FlagComponent],
   templateUrl: './start-menu.component.html',
   styleUrl: './start-menu.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

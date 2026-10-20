@@ -43,24 +43,52 @@
 
   @if (open()) {
     <div class="file-menu-panel" role="menu" data-testid="file-menu-panel">
-      <div class="file-menu-section-label" [textContent]="i18n.t('file.sectionCurrent')"></div>
-      <button type="button" class="file-menu-item" role="menuitem" data-testid="file-rename" (click)="rename()" [textContent]="i18n.t('file.rename')"></button>
-      <button type="button" class="file-menu-item" role="menuitem" data-testid="file-save-as" (click)="saveAs()">
-        <span [textContent]="i18n.t('file.saveAs')"></span>
-        <kbd class="file-menu-kbd" [textContent]="'⇧' + saveShortcut"></kbd>
-      </button>
+      <div class="file-menu-head">
+        <span class="file-menu-eyebrow" [textContent]="i18n.t('file.sectionCurrent')"></span>
+        <b class="file-menu-head-title file-menu-head-title--file" data-testid="file-menu-doc-name" [textContent]="session.displayName()"></b>
+        @if (session.dirty()) {
+          <span class="file-menu-state file-menu-state--dirty" [textContent]="i18n.t('file.statusUnsaved')"></span>
+        } @else if (session.libraryId()) {
+          <span class="file-menu-state file-menu-state--saved">
+            <span aria-hidden="true">✓</span>
+            <span [textContent]="i18n.t('file.statusSaved')"></span>
+          </span>
+        }
+      </div>
+      <div class="file-menu-body">
+        <button type="button" class="file-menu-item" role="menuitem" data-testid="file-rename" (click)="rename()">
+          <span class="file-menu-tile"><app-menu-icon name="rename" /></span>
+          <span [textContent]="i18n.t('file.rename')"></span>
+        </button>
+        <button type="button" class="file-menu-item" role="menuitem" data-testid="file-save-as" (click)="saveAs()">
+          <span class="file-menu-tile"><app-menu-icon name="saveAs" /></span>
+          <span [textContent]="i18n.t('file.saveAs')"></span>
+          <kbd class="file-menu-kbd" [textContent]="'⇧' + saveShortcut"></kbd>
+        </button>
 
-      <div class="file-menu-sep"></div>
-      <div class="file-menu-section-label" [textContent]="i18n.t('file.sectionOther')"></div>
-      <button type="button" class="file-menu-item" role="menuitem" data-testid="file-open-library" (click)="openLibrary()" [textContent]="i18n.t('file.openLibrary')"></button>
+        <div class="file-menu-section-label" [textContent]="i18n.t('file.sectionOther')"></div>
+        <button type="button" class="file-menu-item" role="menuitem" data-testid="file-open-library" (click)="openLibrary()">
+          <span class="file-menu-tile"><app-menu-icon name="folder" /></span>
+          <span [textContent]="i18n.t('file.openLibrary')"></span>
+        </button>
 
-      <div class="file-menu-sep"></div>
-      <div class="file-menu-section-label" [textContent]="i18n.t('file.sectionProject')"></div>
-      <button type="button" class="file-menu-item" role="menuitem" data-testid="file-download-project" (click)="downloadProject()" [textContent]="i18n.t('file.downloadProject')"></button>
-      <button type="button" class="file-menu-item" role="menuitem" data-testid="file-open-project" (click)="openProjectPicker()" [textContent]="i18n.t('file.openProject')"></button>
+        <div class="file-menu-section-label" [textContent]="i18n.t('file.sectionProject')"></div>
+        <button type="button" class="file-menu-item" role="menuitem" data-testid="file-download-project" (click)="downloadProject()">
+          <span class="file-menu-tile"><app-menu-icon name="download" /></span>
+          <span [textContent]="i18n.t('file.downloadProject')"></span>
+        </button>
+        <button type="button" class="file-menu-item" role="menuitem" data-testid="file-open-project" (click)="openProjectPicker()">
+          <span class="file-menu-tile"><app-menu-icon name="upload" /></span>
+          <span [textContent]="i18n.t('file.openProject')"></span>
+        </button>
 
-      <div class="file-menu-sep"></div>
-      <button type="button" class="file-menu-item file-menu-item--danger" role="menuitem" data-testid="menu-factory-reset" (click)="factoryReset()" [textContent]="i18n.t('reset.menuItem')"></button>
+        <div class="file-menu-danger">
+          <button type="button" class="file-menu-item file-menu-item--danger" role="menuitem" data-testid="menu-factory-reset" (click)="factoryReset()">
+            <span class="file-menu-tile"><app-menu-icon name="reset" /></span>
+            <span [textContent]="i18n.t('reset.menuItem')"></span>
+          </button>
+        </div>
+      </div>
     </div>
   }
 

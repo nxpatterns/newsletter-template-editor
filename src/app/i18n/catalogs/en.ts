@@ -619,6 +619,8 @@ export const EN: MessageCatalog = {
   'start.notFound': 'This newsletter no longer exists.',
   'startMenu.sectionSaved': 'Saved templates',
   'startMenu.noSaved': 'No saved templates yet',
+  'startMenu.eyebrow': 'Start page',
+  'startMenu.headTitle': 'How would you like to start?',
   'reset.menuItem': 'Reset everything to defaults…',
   'reset.title': 'Reset everything to defaults?',
   'reset.bodyMany': 'All {count} saved templates and the unsaved draft will be deleted for good, along with every remembered view such as open sections and panel width. The chosen language stays.',
