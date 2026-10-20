@@ -425,7 +425,59 @@
   display: inline-flex;
 }
 
-/* Touch screens have no hover: always show it. */
+/* Pin: same chip size as the ×, in the accent color; filled while pinned. In the list it sits left of the ×. */
+.start-pin {
+  position: absolute;
+  top: -0.6rem;
+  inset-inline-end: -0.6rem;
+  z-index: 1;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.9rem;
+  block-size: 1.9rem;
+  padding: 0;
+  border: 1px solid var(--ds-accent);
+  border-radius: var(--ds-radius);
+  background: var(--ds-bg-panel);
+  color: var(--ds-accent);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+
+  &.is-pinned {
+    background: var(--ds-accent);
+    color: var(--ds-bg-page);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
+}
+
+.start-pin-icon {
+  inline-size: 1.05rem;
+  block-size: 1.05rem;
+  fill: currentColor;
+}
+
+.start-recent-item .start-pin {
+  inset-inline-end: 1.6rem;
+
+  &.is-pinned {
+    display: inline-flex;
+  }
+}
+
+.start-recent-item:hover .start-pin,
+.start-recent-item:focus-within .start-pin,
+.start-tile-item:hover .start-pin,
+.start-tile-item:focus-within .start-pin {
+  display: inline-flex;
+}
+
+/* Touch screens have no hover: always show them. */
 @media (hover: none) {
-  .start-recent-delete { display: inline-flex; }
+  .start-recent-delete,
+  .start-pin { display: inline-flex; }
 }

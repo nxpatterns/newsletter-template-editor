@@ -35,6 +35,12 @@ export class StartPage {
     const o = this.overview();
     return !!o && (!!o.draft || o.saved.length > 0);
   });
+  /** Pinned saved templates as tiles after the demos, in the order they were pinned. */
+  protected readonly pinned = computed(() =>
+    (this.overview()?.saved ?? [])
+      .filter((row) => row.pinnedAt)
+      .sort((a, b) => (a.pinnedAt ?? '').localeCompare(b.pinnedAt ?? '')),
+  );
   /** Inline "really discard?" on the not-saved card. */
   protected readonly confirmDiscard = signal(false);
 
@@ -78,6 +84,13 @@ export class StartPage {
         label: this.i18n.t('start.undo'),
         run: () => void undo().then(() => this.actions.refresh()),
       });
+    });
+  }
+
+  protected togglePin(id: string, pinned: boolean): Promise<void> {
+    return this.actions.exclusive(async () => {
+      await this.session.setPinned(id, pinned);
+      await this.actions.refresh();
     });
   }
 

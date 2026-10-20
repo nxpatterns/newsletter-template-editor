@@ -30,6 +30,11 @@
     <app-flag [code]="flag" />
   </span>
 </ng-template>
+<ng-template #iconPin>
+  <svg class="start-pin-icon" viewBox="0 -960 960 960" aria-hidden="true" focusable="false">
+    <path d="M640-760v280l68 68q6 6 9 13.5t3 15.5v23q0 17-11.5 28.5T680-320H520v234q0 17-11.5 28.5T480-46q-17 0-28.5-11.5T440-86v-234H280q-17 0-28.5-11.5T240-360v-23q0-8 3-15.5t9-13.5l68-68v-280q-17 0-28.5-11.5T280-800q0-17 11.5-28.5T320-840h320q17 0 28.5 11.5T680-800q0 17-11.5 28.5T640-760Z" />
+  </svg>
+</ng-template>
 <ng-template #iconStack>
   <svg class="start-icon" viewBox="0 0 56 56" aria-hidden="true" focusable="false">
     <rect x="17" y="6" width="28" height="36" rx="3" class="ic-back" />
@@ -130,6 +135,31 @@
             >×</button>
           </div>
         }
+        @for (row of pinned(); track row.id) {
+          <div class="start-tile-item">
+            <button type="button" class="start-tile start-pinned" data-testid="start-pinned" (click)="openSaved(row.id)">
+              <ng-container [ngTemplateOutlet]="iconDoc" />
+              <b class="start-name" [textContent]="row.displayName"></b>
+              @if (row.subject) {
+                <span class="start-subject" [textContent]="row.subject"></span>
+              }
+              <span class="start-lang-foot">
+                <span [textContent]="formatDate(row.updatedAt)"></span>
+              </span>
+            </button>
+            <button
+              type="button"
+              class="start-pin is-pinned"
+              data-testid="start-pinned-unpin"
+              aria-pressed="true"
+              [attr.aria-label]="i18n.t('start.unpin') + ': ' + row.displayName"
+              [title]="i18n.t('start.unpin')"
+              (click)="togglePin(row.id, false)"
+            >
+              <ng-container [ngTemplateOutlet]="iconPin" />
+            </button>
+          </div>
+        }
       </div>
     </div>
 
@@ -155,6 +185,18 @@
                 [title]="i18n.t('start.deleteTemplate')"
                 (click)="deleteSaved(row.id, row.displayName)"
               >×</button>
+              <button
+                type="button"
+                class="start-pin"
+                [class.is-pinned]="!!row.pinnedAt"
+                data-testid="start-recent-pin"
+                [attr.aria-pressed]="!!row.pinnedAt"
+                [attr.aria-label]="i18n.t(row.pinnedAt ? 'start.unpin' : 'start.pin') + ': ' + row.displayName"
+                [title]="i18n.t(row.pinnedAt ? 'start.unpin' : 'start.pin')"
+                (click)="togglePin(row.id, !row.pinnedAt)"
+              >
+                <ng-container [ngTemplateOutlet]="iconPin" />
+              </button>
             </li>
           }
         </ul>

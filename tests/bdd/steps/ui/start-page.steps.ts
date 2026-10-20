@@ -217,6 +217,32 @@ Then('the message should offer to undo', async ({ page }) => {
   await expect(page.getByTestId('app-snackbar-action')).toBeVisible();
 });
 
+When('I pin the recent newsletter {string}', async ({ page }, name: string) => {
+  const item = page.locator('.start-recent-item').filter({ hasText: name });
+  await item.hover();
+  const pin = item.getByTestId('start-recent-pin');
+  await expect(pin).toHaveAttribute('aria-pressed', 'false');
+  await pin.click();
+  await expect(pin).toHaveAttribute('aria-pressed', 'true');
+});
+
+When('I unpin the start tile {string}', async ({ page }, name: string) => {
+  const item = page.locator('.start-tile-item').filter({ has: page.getByTestId('start-pinned').filter({ hasText: name }) });
+  await item.hover();
+  await item.getByTestId('start-pinned-unpin').click();
+});
+
+Then('the recent newsletter {string} should be shown as pinned', async ({ page }, name: string) => {
+  const pin = page.locator('.start-recent-item').filter({ hasText: name }).getByTestId('start-recent-pin');
+  await expect(pin).toBeVisible();
+  await expect(pin).toHaveAttribute('aria-pressed', 'true');
+});
+
+Then('the recent newsletter {string} should not be pinned', async ({ page }, name: string) => {
+  const pin = page.locator('.start-recent-item').filter({ hasText: name }).getByTestId('start-recent-pin');
+  await expect(pin).toHaveAttribute('aria-pressed', 'false');
+});
+
 When('I close the message', async ({ page }) => {
   await page.getByTestId('app-snackbar-dismiss').click();
   await expect(page.getByTestId('app-snackbar')).toHaveCount(0);

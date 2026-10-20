@@ -676,6 +676,8 @@ export const EN: MessageCatalog = {
   'start.deleteTemplate': "Delete template",
   'start.deleted': "“{name}” deleted",
   'start.undo': "Undo",
+  'start.pin': "Pin to the top",
+  'start.unpin': "Unpin",
   'file.exportAssetBase': "Image address",
   'file.exportAssetBasePlaceholder': "https://lists.example.com/uploads",
   'file.exportAssetHint': "You get a ZIP file. Upload the images from its “social” folder to this address (e.g. Listmonk media), then use the HTML.",

@@ -24,6 +24,8 @@ export interface TemplateSummary {
   blockCount: number;
   /** Campaign subject line, so issues with the same header can be told apart. */
   subject: string;
+  /** When it was pinned to the start page tiles, else null. */
+  pinnedAt: string | null;
 }
 
 export type DraftDoc = Omit<RecoveryDoc, 'key' | 'schemaVersion' | 'savedAt'>;
@@ -59,6 +61,7 @@ export const indexedDbTemplateRepository: TemplateRepository = {
       updatedAt: e.updatedAt,
       blockCount: e.newsletter?.blocks?.length ?? 0,
       subject: e.newsletter?.globals?.campaignSubject?.trim() ?? '',
+      pinnedAt: e.pinnedAt ?? null,
     }));
   },
   get: getLibraryEntry,

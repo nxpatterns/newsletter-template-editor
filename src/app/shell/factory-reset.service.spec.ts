@@ -31,7 +31,7 @@ function memoryRepo(): TemplateRepository & {
     } as RecoveryDoc | null,
     hidden: [] as SeedLanguage[],
     list: async () =>
-      [...entries.values()].map((e) => ({ id: e.id, displayName: e.displayName, updatedAt: e.updatedAt, blockCount: 0, subject: '' })),
+      [...entries.values()].map((e) => ({ id: e.id, displayName: e.displayName, updatedAt: e.updatedAt, blockCount: 0, subject: '', pinnedAt: e.pinnedAt ?? null })),
     get: async (id: string) => entries.get(id) ?? null,
     put: async (e: LibraryEntry) => void entries.set(e.id, e),
     remove: async (id: string) => void entries.delete(id),
@@ -133,6 +133,19 @@ describe('FactoryResetService', () => {
     await answer(true);
     expect(await done).toBe(true);
     expect((await session.recentOverview()).hiddenDemos).toEqual([]);
+  });
+
+  it('pinning keeps "last changed", saving again keeps the pin, unpinning removes it', async () => {
+    const session = TestBed.inject(NewsletterSession);
+    await session.setPinned('a', true);
+    const pinnedAt = repo.entries.get('a')?.pinnedAt;
+    expect(pinnedAt).toBeTruthy();
+    expect(repo.entries.get('a')?.updatedAt).toBe('2026-10-20T10:00:00Z');
+    expect(await session.openLibraryEntry('a')).toBe(true);
+    await session.saveToLibrary();
+    expect(repo.entries.get('a')?.pinnedAt).toBe(pinnedAt);
+    await session.setPinned('a', false);
+    expect(repo.entries.get('a')?.pinnedAt).toBeUndefined();
   });
 
   it('clearAppStorage only touches this app and keeps the language', () => {

@@ -215,11 +215,14 @@ export class NewsletterSession {
     if (opts?.asNew || !id) {
       id = this.repo.newId();
     }
+    // Overwriting keeps the pin; a new copy starts unpinned.
+    const pinnedAt = (await this.repo.get(id).catch(() => null))?.pinnedAt;
     const entry: LibraryEntry = {
       id,
       displayName: name,
       updatedAt: new Date().toISOString(),
       newsletter: cloneNewsletter(this.newsletterSignal()),
+      ...(pinnedAt ? { pinnedAt } : {}),
     };
     await this.repo.put(entry);
     this.displayNameSignal.set(name);
@@ -297,6 +300,16 @@ export class NewsletterSession {
         await this.persistRecovery();
       }
     };
+  }
+
+  /** Pin a saved template to the start page tiles, or unpin it; its "last changed" stays. */
+  async setPinned(id: string, pinned: boolean): Promise<void> {
+    const entry = await this.repo.get(id);
+    if (!entry) return;
+    const next: LibraryEntry = { ...entry };
+    if (pinned) next.pinnedAt = new Date().toISOString();
+    else delete next.pinnedAt;
+    await this.repo.put(next);
   }
 
   /** Start page "delete" on a demo tile: hides that demo and returns how to undo it. */

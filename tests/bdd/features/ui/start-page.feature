@@ -166,3 +166,30 @@ Feature: Start page
     Then the start tiles should be in the order 'start-blank,start-demo-de'
     When I open the start page menu
     Then the start page menu entries should be 'start-menu-blank,start-menu-demo-de,start-menu-open-saved,menu-factory-reset'
+
+  Scenario: A pinned template is a tile after the demos and opens from there
+    Given I open the editor with the German demo
+    When I save the template
+    And I go back to the start page
+    And I pin the recent newsletter 'CloudLib-EU-Example-Newsletter-Template'
+    Then the start tiles should be in the order 'start-blank,start-demo-de,start-demo-en,start-pinned'
+    And the recent newsletter 'CloudLib-EU-Example-Newsletter-Template' should be shown as pinned
+    When I reopen the app
+    Then the start tiles should be in the order 'start-blank,start-demo-de,start-demo-en,start-pinned'
+    When I click the start tile 'start-pinned'
+    Then the editor should show the document 'CloudLib-EU-Example-Newsletter-Template'
+
+  Scenario: Pinned tiles move up when the demos are deleted, unpinning keeps the template
+    Given I open the editor with the German demo
+    When I save the template
+    And I go back to the start page
+    And I pin the recent newsletter 'CloudLib-EU-Example-Newsletter-Template'
+    And I delete the start tile 'start-demo-de'
+    And I close the message
+    And I delete the start tile 'start-demo-en'
+    And I close the message
+    Then the start tiles should be in the order 'start-blank,start-pinned'
+    When I unpin the start tile 'CloudLib-EU-Example-Newsletter-Template'
+    Then the start tiles should be in the order 'start-blank'
+    And the recent list should contain 'CloudLib-EU-Example-Newsletter-Template'
+    And the recent newsletter 'CloudLib-EU-Example-Newsletter-Template' should not be pinned

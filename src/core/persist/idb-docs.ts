@@ -13,6 +13,8 @@ export interface LibraryEntry {
   displayName: string;
   updatedAt: string;
   newsletter: Newsletter;
+  /** When it was pinned to the start page tiles; absent when not pinned. */
+  pinnedAt?: string;
 }
 
 export interface RecoveryDoc {

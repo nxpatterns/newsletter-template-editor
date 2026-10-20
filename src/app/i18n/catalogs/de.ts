@@ -678,6 +678,8 @@ export const DE: MessageCatalog = {
   'start.deleteTemplate': "Vorlage löschen",
   'start.deleted': "„{name}“ gelöscht",
   'start.undo': "Rückgängig",
+  'start.pin': "Oben anpinnen",
+  'start.unpin': "Nicht mehr anpinnen",
   'file.exportAssetBase': "Ablageadresse für Bilder",
   'file.exportAssetBasePlaceholder': "https://listen.example.com/uploads",
   'file.exportAssetHint': "Sie erhalten eine ZIP-Datei. Laden Sie die Bilder aus deren Ordner „social“ unter dieser Adresse hoch (z. B. Listmonk-Medien) und verwenden Sie dann das HTML.",
