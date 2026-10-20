@@ -109,6 +109,11 @@ export class FileMenuComponent {
   }
 
   protected async pickLibrary(id: string): Promise<void> {
+    // Already open: keep it as it is, unsaved changes included.
+    if (this.unsaved.isOpen(id)) {
+      this.libraryOpen.set(false);
+      return;
+    }
     if (!(await this.unsaved.allowLeave('open', { id, name: this.libraryRows().find((r) => r.id === id)?.displayName }))) return;
     const ok = await this.session.openLibraryEntry(id);
     this.libraryOpen.set(false);

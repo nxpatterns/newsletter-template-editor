@@ -35,18 +35,6 @@ Feature: Unsaved changes dialog
     When I reopen the app
     Then the recent list should contain 'Gamma'
 
-  Scenario: Reopening the same template asks first and Discard brings back the saved version
-    Given I open the editor with the German demo
-    When I rename the newsletter to 'Alpha'
-    And I save the template
-    And I rename the newsletter to 'Delta'
-    And I reopen the app
-    And I click the recent newsletter 'Alpha'
-    Then I should be asked about unsaved changes
-    And the unsaved changes question should name only 'Delta'
-    When I answer the unsaved changes question with 'confirm-alt'
-    Then the editor should show the document 'Alpha'
-
   Scenario: Opening from the library in the editor names both templates
     Given I open the editor with the German demo
     When I rename the newsletter to 'Alpha'

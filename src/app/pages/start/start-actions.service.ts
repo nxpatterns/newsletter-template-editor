@@ -51,9 +51,17 @@ export class StartActionsService {
     }
   }
 
-  /** Replace the open document only after the unsaved-changes question. */
+  /**
+   * Replace the open document only after the unsaved-changes question. The template that is open
+   * already (e.g. after typing the start page address mid-edit) just continues, changes included.
+   */
   private async run(next: LeaveTarget, open: () => Promise<boolean>, target?: LeaveTargetInfo): Promise<void> {
     await this.exclusive(async () => {
+      await this.session.hydrateFromStorage();
+      if (this.unsaved.isOpen(target?.id)) {
+        await this.router.navigate(['/edit', this.session.routeId()]);
+        return;
+      }
       const nudge = () => this.draftNudge.update((n) => n + 1);
       if (!(await this.unsaved.allowLeave(next, target, nudge))) return;
       if (await open()) await this.router.navigate(['/edit', this.session.routeId()]);

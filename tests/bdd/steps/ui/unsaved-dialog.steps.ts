@@ -110,3 +110,27 @@ Then('the not saved card should only glow', async ({ page }) => {
 When('the not saved card has stopped', async ({ page }) => {
   await expect(card(page)).not.toHaveClass(/start-continue--nudge/);
 });
+
+/** The question blocks navigation, so reaching the editor with the dialog closed means none was asked. */
+Then('the editor should continue {string} without asking', async ({ page }, name: string) => {
+  await expect(page).toHaveURL(/\/edit\/(?!draft)/);
+  await expect(page.getByTestId('doc-name')).toContainText(name);
+  await expect(page.getByTestId('confirm-dialog')).toBeHidden();
+});
+
+When('I click the pinned tile {string}', async ({ page }, name: string) => {
+  await page.getByTestId('start-pinned').filter({ hasText: name }).click();
+});
+
+When('I pick {string} from the start page library', async ({ page }, name: string) => {
+  await page.getByTestId('start-menu-trigger').click();
+  await page.getByTestId('start-menu-open-saved').click();
+  await page
+    .getByTestId('library-pick')
+    .filter({ has: page.locator('.lib-name', { hasText: new RegExp(`^${name}$`) }) })
+    .click();
+});
+
+Then('the library should be closed', async ({ page }) => {
+  await expect(page.getByTestId('library-picker')).toBeHidden();
+});

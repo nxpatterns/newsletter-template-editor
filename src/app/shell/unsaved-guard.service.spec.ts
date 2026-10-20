@@ -54,9 +54,25 @@ describe('UnsavedGuardService', () => {
     expect(confirm.pending()).toBeNull();
   });
 
+  it('opening the template that holds the changes asks nothing and keeps them', async () => {
+    const onCancel = vi.fn();
+    await expect(guard.allowLeave('open', { id: 'xy', name: 'Newsletter XY' }, onCancel)).resolves.toBe(true);
+    expect(confirm.pending()).toBeNull();
+    expect(session.discardChanges).not.toHaveBeenCalled();
+    expect(session.saveToLibrary).not.toHaveBeenCalled();
+    expect(onCancel).not.toHaveBeenCalled();
+    expect(guard.isOpen('xy')).toBe(true);
+    expect(guard.isOpen('abc')).toBe(false);
+    expect(guard.isOpen(undefined)).toBe(false);
+  });
+
+  it('a never saved draft is never "the same template"', () => {
+    session.libraryId.set(null);
+    expect(guard.isOpen('xy')).toBe(false);
+  });
+
   const CASES: { label: string; next?: LeaveTarget; target?: LeaveTargetInfo; targetChip?: string }[] = [
     { label: 'open another saved template', next: 'open', target: { id: 'abc', name: 'Newsletter ABC' }, targetChip: 'Newsletter ABC' },
-    { label: 'reopen the same template', next: 'open', target: { id: 'xy', name: 'Newsletter XY' } },
     { label: 'open a file', next: 'open', target: { name: 'issue-42.json' }, targetChip: 'issue-42.json' },
     { label: 'start a new template', next: 'new' },
     { label: 'go to the start page', next: 'home' },
@@ -120,8 +136,8 @@ describe('UnsavedGuardService', () => {
 
   it('the question text differs per case', async () => {
     const bodies = new Set<string>();
-    for (const c of CASES.slice(0, 5)) bodies.add((await ask(c.next, c.target, 'cancel')).req.body);
-    expect(bodies.size).toBe(5);
+    for (const c of CASES.slice(0, 4)) bodies.add((await ask(c.next, c.target, 'cancel')).req.body);
+    expect(bodies.size).toBe(4);
   });
 
   describe('never saved before', () => {

@@ -12,20 +12,8 @@ export interface LeaveTargetInfo {
   name?: string;
 }
 
-type LeaveKind = LeaveTarget | 'reopen';
-
-const WANT = {
-  open: 'file.dirtyWantOpen',
-  reopen: 'file.dirtyWantReopen',
-  new: 'file.dirtyWantNew',
-  home: 'file.dirtyWantHome',
-} as const;
-const THEN = {
-  open: 'file.dirtyThenOpen',
-  reopen: 'file.dirtyThenReopen',
-  new: 'file.dirtyThenNew',
-  home: 'file.dirtyThenHome',
-} as const;
+const WANT = { open: 'file.dirtyWantOpen', new: 'file.dirtyWantNew', home: 'file.dirtyWantHome' } as const;
+const THEN = { open: 'file.dirtyThenOpen', new: 'file.dirtyThenNew', home: 'file.dirtyThenHome' } as const;
 
 /** Before the open newsletter is replaced or left: Save / Discard / Cancel when it has unsaved changes. */
 @Injectable({ providedIn: 'root' })
@@ -41,6 +29,7 @@ export class UnsavedGuardService {
    * True when it is fine to continue (nothing unsaved, saved, or discarded).
    * `next` and `target` let the question name both templates and what each button leads to.
    * `onCancel` runs only for the Cancel answer (not for a cancelled name prompt).
+   * Opening the template that holds the changes asks nothing: nothing is lost, the caller keeps it open.
    */
   async allowLeave(
     next: LeaveTarget = 'home',
@@ -48,12 +37,11 @@ export class UnsavedGuardService {
     onCancel?: () => void,
   ): Promise<boolean> {
     if (!this.session.dirty()) return true;
-    const kind: LeaveKind =
-      next === 'open' && !!target.id && target.id === this.session.libraryId() ? 'reopen' : next;
+    if (this.isOpen(target.id)) return true;
     const name = this.session.displayName();
     const fill = (text: string) => text.replaceAll('{name}', name).replaceAll('{target}', target.name ?? '');
-    const then = fill(this.i18n.t(THEN[kind]));
-    const ask = this.i18n.t('file.dirtyAsk').replace('{want}', this.i18n.t(WANT[kind]));
+    const then = fill(this.i18n.t(THEN[next]));
+    const ask = this.i18n.t('file.dirtyAsk').replace('{want}', this.i18n.t(WANT[next]));
     const bodyParts = ask
       .split(/(\{name\}|\{target\})/)
       .filter((text) => text)
@@ -83,6 +71,11 @@ export class UnsavedGuardService {
       return true;
     }
     return this.save();
+  }
+
+  /** True when `id` is the saved template that is open right now (with or without changes). */
+  isOpen(id: string | undefined): boolean {
+    return !!id && id === this.session.libraryId();
   }
 
   /** Save into the bound library entry without asking, or ask for a name the first time. */

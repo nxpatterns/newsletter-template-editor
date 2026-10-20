@@ -18,6 +18,7 @@ describe('StartActionsService unsaved-changes nudge', () => {
     saveToLibrary: ReturnType<typeof vi.fn>;
     openLibraryEntry: ReturnType<typeof vi.fn>;
     startNew: ReturnType<typeof vi.fn>;
+    hydrateFromStorage: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
@@ -26,11 +27,12 @@ describe('StartActionsService unsaved-changes nudge', () => {
       dirty: signal(true),
       libraryId: signal<string | null>('xy'),
       displayName: () => 'Newsletter XY',
-      routeId: () => 'abc',
+      routeId: () => session.libraryId() ?? 'draft',
       discardChanges: vi.fn(async () => undefined),
       saveToLibrary: vi.fn(async () => true),
       openLibraryEntry: vi.fn(async () => true),
       startNew: vi.fn(async () => undefined),
+      hydrateFromStorage: vi.fn(async () => true),
     };
     TestBed.configureTestingModule({
       providers: [
@@ -104,6 +106,22 @@ describe('StartActionsService unsaved-changes nudge', () => {
     expect(confirm.pending()).toBeNull();
     expect(actions.draftNudge()).toBe(0);
     expect(navigate).toHaveBeenCalled();
+  });
+
+  describe('the template that holds the unsaved changes', () => {
+    for (const dirty of [true, false]) {
+      it(`continues it without a question (${dirty ? 'with' : 'without'} changes)`, async () => {
+        session.dirty.set(dirty);
+        await actions.openSaved('xy');
+        expect(confirm.pending()).toBeNull();
+        expect(session.hydrateFromStorage).toHaveBeenCalled();
+        expect(session.openLibraryEntry).not.toHaveBeenCalled();
+        expect(session.discardChanges).not.toHaveBeenCalled();
+        expect(session.saveToLibrary).not.toHaveBeenCalled();
+        expect(navigate).toHaveBeenCalledWith(['/edit', 'xy']);
+        expect(actions.draftNudge()).toBe(0);
+      });
+    }
   });
 
   it('every Cancel counts, so the card shakes again', async () => {
