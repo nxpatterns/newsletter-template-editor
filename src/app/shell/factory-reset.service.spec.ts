@@ -1,14 +1,19 @@
 import { TestBed } from '@angular/core/testing';
 import type { LibraryEntry, RecoveryDoc } from '../../core/persist/idb-docs';
 import type { TemplateRepository } from '../../core/persist/template-repository';
-import { seedNewsletter } from '../../core';
+import { seedNewsletter, type SeedLanguage } from '../../core';
+import { NewsletterSession } from '../editor/newsletter-session.service';
 import { TEMPLATE_REPOSITORY } from '../editor/template-repository.token';
 import { LOCALE_STORAGE_KEY } from '../i18n/types';
 import { ConfirmDialogService } from '../ui/confirm-dialog/confirm-dialog.service';
 import { APP_RELOAD, APP_STORAGE_PREFIX, clearAppStorage, FactoryResetService } from './factory-reset.service';
 
 /** In-memory repository: two saved templates and a draft. */
-function memoryRepo(): TemplateRepository & { entries: Map<string, LibraryEntry>; draft: RecoveryDoc | null } {
+function memoryRepo(): TemplateRepository & {
+  entries: Map<string, LibraryEntry>;
+  draft: RecoveryDoc | null;
+  hidden: SeedLanguage[];
+} {
   const newsletter = seedNewsletter('en');
   const entries = new Map<string, LibraryEntry>(
     ['a', 'b'].map((id) => [id, { id, displayName: id, updatedAt: '2026-10-20T10:00:00Z', newsletter }]),
@@ -24,6 +29,7 @@ function memoryRepo(): TemplateRepository & { entries: Map<string, LibraryEntry>
       savedAt: '2026-10-20T10:00:00Z',
       schemaVersion: 1,
     } as RecoveryDoc | null,
+    hidden: [] as SeedLanguage[],
     list: async () =>
       [...entries.values()].map((e) => ({ id: e.id, displayName: e.displayName, updatedAt: e.updatedAt, blockCount: 0, subject: '' })),
     get: async (id: string) => entries.get(id) ?? null,
@@ -32,9 +38,12 @@ function memoryRepo(): TemplateRepository & { entries: Map<string, LibraryEntry>
     loadDraft: async () => repo.draft,
     saveDraft: async () => undefined,
     clearDraft: async () => void (repo.draft = null),
+    hiddenDemos: async () => [...repo.hidden],
+    setHiddenDemos: async (langs: SeedLanguage[]) => void (repo.hidden = [...langs]),
     clearAll: async () => {
       entries.clear();
       repo.draft = null;
+      repo.hidden = [];
     },
     newId: () => 'new',
   };
@@ -105,6 +114,25 @@ describe('FactoryResetService', () => {
     expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe('de');
     expect(localStorage.getItem('other-app')).toBe('x');
     expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('a deleted demo leaves the start page, undo brings it back', async () => {
+    const session = TestBed.inject(NewsletterSession);
+    const undo = await session.hideDemoWithUndo('de');
+    expect((await session.recentOverview()).hiddenDemos).toEqual(['de']);
+    await undo();
+    expect((await session.recentOverview()).hiddenDemos).toEqual([]);
+  });
+
+  it('confirming the reset brings deleted demos back', async () => {
+    const session = TestBed.inject(NewsletterSession);
+    await session.hideDemoWithUndo('de');
+    await session.hideDemoWithUndo('en');
+    expect((await session.recentOverview()).hiddenDemos).toEqual(['de', 'en']);
+    const done = reset.run();
+    await answer(true);
+    expect(await done).toBe(true);
+    expect((await session.recentOverview()).hiddenDemos).toEqual([]);
   });
 
   it('clearAppStorage only touches this app and keeps the language', () => {

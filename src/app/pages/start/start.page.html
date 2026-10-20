@@ -80,32 +80,56 @@
           <b [textContent]="i18n.t('start.blank')"></b>
           <span [textContent]="i18n.t('start.blankHint')"></span>
         </button>
-        <button type="button" class="start-tile start-lang start-lang--de" data-testid="start-demo-de" (click)="startNew('demo', 'de')">
-          <ng-container [ngTemplateOutlet]="iconLang" [ngTemplateOutletContext]="{ $implicit: 'de' }" />
-          <b [textContent]="i18n.t('start.demoDe')"></b>
-          <span [textContent]="i18n.t('start.demoDeHint')"></span>
-          <span class="start-lang-foot">
-            <span class="start-lang-flags">
-              @for (code of demoDeFlags; track code) {
-                <app-flag [code]="code" />
-              }
-            </span>
-            <span [textContent]="i18n.t('start.demoDeCountries')"></span>
-          </span>
-        </button>
-        <button type="button" class="start-tile start-lang start-lang--en" data-testid="start-demo-en" (click)="startNew('demo', 'en')">
-          <ng-container [ngTemplateOutlet]="iconLang" [ngTemplateOutletContext]="{ $implicit: 'uk' }" />
-          <b [textContent]="i18n.t('start.demoEn')"></b>
-          <span [textContent]="i18n.t('start.demoEnHint')"></span>
-          <span class="start-lang-foot">
-            <span class="start-lang-flags">
-              @for (code of demoEnFlags; track code) {
-                <app-flag [code]="code" />
-              }
-            </span>
-            <span [textContent]="i18n.t('start.demoEnCountries')"></span>
-          </span>
-        </button>
+        @if (!o.hiddenDemos.includes('de')) {
+          <div class="start-tile-item">
+            <button type="button" class="start-tile start-lang start-lang--de" data-testid="start-demo-de" (click)="startNew('demo', 'de')">
+              <ng-container [ngTemplateOutlet]="iconLang" [ngTemplateOutletContext]="{ $implicit: 'de' }" />
+              <b [textContent]="i18n.t('start.demoDe')"></b>
+              <span [textContent]="i18n.t('start.demoDeHint')"></span>
+              <span class="start-lang-foot">
+                <span class="start-lang-flags">
+                  @for (code of demoDeFlags; track code) {
+                    <app-flag [code]="code" />
+                  }
+                </span>
+                <span [textContent]="i18n.t('start.demoDeCountries')"></span>
+              </span>
+            </button>
+            <button
+              type="button"
+              class="start-recent-delete"
+              data-testid="start-demo-delete"
+              [attr.aria-label]="i18n.t('start.deleteTemplate') + ': ' + i18n.t('start.demoDe')"
+              [title]="i18n.t('start.deleteTemplate')"
+              (click)="deleteDemo('de')"
+            >×</button>
+          </div>
+        }
+        @if (!o.hiddenDemos.includes('en')) {
+          <div class="start-tile-item">
+            <button type="button" class="start-tile start-lang start-lang--en" data-testid="start-demo-en" (click)="startNew('demo', 'en')">
+              <ng-container [ngTemplateOutlet]="iconLang" [ngTemplateOutletContext]="{ $implicit: 'uk' }" />
+              <b [textContent]="i18n.t('start.demoEn')"></b>
+              <span [textContent]="i18n.t('start.demoEnHint')"></span>
+              <span class="start-lang-foot">
+                <span class="start-lang-flags">
+                  @for (code of demoEnFlags; track code) {
+                    <app-flag [code]="code" />
+                  }
+                </span>
+                <span [textContent]="i18n.t('start.demoEnCountries')"></span>
+              </span>
+            </button>
+            <button
+              type="button"
+              class="start-recent-delete"
+              data-testid="start-demo-delete"
+              [attr.aria-label]="i18n.t('start.deleteTemplate') + ': ' + i18n.t('start.demoEn')"
+              [title]="i18n.t('start.deleteTemplate')"
+              (click)="deleteDemo('en')"
+            >×</button>
+          </div>
+        }
       </div>
     </div>
 

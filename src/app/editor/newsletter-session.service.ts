@@ -25,6 +25,8 @@ import { SnackbarService } from '../ui/snackbar/snackbar.service';
 export interface RecentOverview {
   draft: { displayName: string; savedAt: string; dirty: boolean; libraryId: string | null } | null;
   saved: TemplateSummary[];
+  /** Demos removed from the start page; the factory reset brings them back. */
+  hiddenDemos: SeedLanguage[];
 }
 
 /** Editor URL segment for a document that is not saved in the library yet. */
@@ -175,9 +177,10 @@ export class NewsletterSession {
       this.recoveryTimer = null;
       await this.persistRecovery();
     }
-    const [recovery, entries] = await Promise.all([
+    const [recovery, entries, hiddenDemos] = await Promise.all([
       this.repo.loadDraft().catch(() => null),
       this.repo.list().catch(() => [] as TemplateSummary[]),
+      this.repo.hiddenDemos().catch(() => [] as SeedLanguage[]),
     ]);
     // Only real edits that are not saved: an untouched blank/demo copy or a saved, unchanged
     // newsletter is not "work" (dirty is false until the first change after create/open).
@@ -189,7 +192,7 @@ export class NewsletterSession {
           libraryId: recovery.libraryId,
         }
       : null;
-    return { draft, saved: entries };
+    return { draft, saved: entries, hiddenDemos };
   }
 
   /** Start page: open a fresh copy (blank or demo); never touches the demo originals. */
@@ -296,7 +299,17 @@ export class NewsletterSession {
     };
   }
 
-  /** Factory reset: delete every saved template and the draft; no document stays open. */
+  /** Start page "delete" on a demo tile: hides that demo and returns how to undo it. */
+  async hideDemoWithUndo(lang: SeedLanguage): Promise<() => Promise<void>> {
+    const hidden = await this.repo.hiddenDemos().catch(() => [] as SeedLanguage[]);
+    if (!hidden.includes(lang)) await this.repo.setHiddenDemos([...hidden, lang]);
+    return async () => {
+      const now = await this.repo.hiddenDemos().catch(() => [] as SeedLanguage[]);
+      await this.repo.setHiddenDemos(now.filter((l) => l !== lang));
+    };
+  }
+
+  /** Factory reset: delete every saved template and the draft and bring the demos back; no document stays open. */
   async resetAll(): Promise<void> {
     this.endCoalesce();
     if (this.recoveryTimer) {

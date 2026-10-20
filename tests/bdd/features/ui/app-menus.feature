@@ -63,3 +63,16 @@ Feature: Header menus and reset to defaults
     When I rename the newsletter to a name with 255 characters
     And I open the editor menu
     Then the template name in the menu head should be shown in full on several lines
+
+  Scenario: The reset brings deleted demos back
+    Given I open the start page
+    When I delete the start tile 'start-demo-de'
+    And I close the message
+    And I delete the start tile 'start-demo-en'
+    And I close the message
+    Then the start tiles should be in the order 'start-blank'
+    When I open the start page menu
+    And I choose the menu entry 'menu-factory-reset'
+    And I confirm the reset
+    Then the start page should be visible
+    And the start tiles should be in the order 'start-blank,start-demo-de,start-demo-en'

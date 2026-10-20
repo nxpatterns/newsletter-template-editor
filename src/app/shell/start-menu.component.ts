@@ -36,6 +36,9 @@ export class StartMenuComponent {
   protected readonly libraryRows = signal<TemplateSummary[]>([]);
   /** Greyed out "Open…" while there is nothing saved. */
   protected readonly hasSaved = computed(() => (this.actions.overview()?.saved.length ?? 0) > 0);
+  /** Demos still on the start page; a deleted demo leaves this menu too. */
+  protected readonly showDemoDe = computed(() => !this.actions.overview()?.hiddenDemos.includes('de'));
+  protected readonly showDemoEn = computed(() => !this.actions.overview()?.hiddenDemos.includes('en'));
 
   protected toggleMenu(event: Event): void {
     event.stopPropagation();

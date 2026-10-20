@@ -377,9 +377,19 @@
   }
 }
 
-/* Saved template: × at the top-right corner, same chip as a block's delete button in the preview. */
-.start-recent-item {
+/* Saved template and demo tile: × at the top-right corner, same chip as a block's delete button in the preview. */
+.start-recent-item,
+.start-tile-item {
   position: relative;
+}
+
+/* The demo tile fills its grid cell; the × sits outside the tile so the tile's clipping does not cut it. */
+.start-tile-item {
+  display: flex;
+
+  > .start-tile {
+    flex: 1;
+  }
 }
 
 .start-recent-delete {
@@ -409,7 +419,9 @@
 }
 
 .start-recent-item:hover .start-recent-delete,
-.start-recent-item:focus-within .start-recent-delete {
+.start-recent-item:focus-within .start-recent-delete,
+.start-tile-item:hover .start-recent-delete,
+.start-tile-item:focus-within .start-recent-delete {
   display: inline-flex;
 }
 

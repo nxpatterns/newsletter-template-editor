@@ -8,7 +8,7 @@ import { FlagComponent, type FlagCode } from '../../ui/flag/flag.component';
 import { SnackbarService } from '../../ui/snackbar/snackbar.service';
 import { StartActionsService } from './start-actions.service';
 
-/** How long "Undo" stays available after deleting a saved template. */
+/** How long "Undo" stays available after deleting a saved template or a demo. */
 const UNDO_MS = 8000;
 
 /** First screen: start blank or from a demo, continue the draft, or reopen a saved template. */
@@ -74,6 +74,19 @@ export class StartPage {
       const undo = await this.session.deleteLibraryWithUndo(id);
       await this.actions.refresh();
       if (!undo) return;
+      this.snackbar.show(this.i18n.t('start.deleted', { name }), 'info', UNDO_MS, {
+        label: this.i18n.t('start.undo'),
+        run: () => void undo().then(() => this.actions.refresh()),
+      });
+    });
+  }
+
+  /** Demo tile ×: hidden right away with "Undo", like a saved template; the reset brings it back. */
+  protected deleteDemo(lang: SeedLanguage): Promise<void> {
+    return this.actions.exclusive(async () => {
+      const undo = await this.session.hideDemoWithUndo(lang);
+      await this.actions.refresh();
+      const name = this.i18n.t(lang === 'de' ? 'start.demoDe' : 'start.demoEn');
       this.snackbar.show(this.i18n.t('start.deleted', { name }), 'info', UNDO_MS, {
         label: this.i18n.t('start.undo'),
         run: () => void undo().then(() => this.actions.refresh()),

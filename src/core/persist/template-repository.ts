@@ -1,13 +1,16 @@
+import type { SeedLanguage } from '../seed';
 import {
   clearAllDocs,
   deleteLibraryEntry,
   deleteRecovery,
   getLibraryEntry,
   listLibrary,
+  loadHiddenDemos,
   loadRecovery,
   migrateLegacyLocalStorageIfNeeded,
   newLibraryId,
   putLibraryEntry,
+  saveHiddenDemos,
   saveRecovery,
   type LibraryEntry,
   type RecoveryDoc,
@@ -39,7 +42,10 @@ export interface TemplateRepository {
   loadDraft(): Promise<RecoveryDoc | null>;
   saveDraft(doc: DraftDoc): Promise<void>;
   clearDraft(): Promise<void>;
-  /** Remove every saved template and the draft. */
+  /** Demos the user removed from the start page. */
+  hiddenDemos(): Promise<SeedLanguage[]>;
+  setHiddenDemos(langs: SeedLanguage[]): Promise<void>;
+  /** Remove every saved template and the draft, and bring the demos back. */
   clearAll(): Promise<void>;
   newId(): string;
 }
@@ -61,6 +67,8 @@ export const indexedDbTemplateRepository: TemplateRepository = {
   loadDraft: migrateLegacyLocalStorageIfNeeded,
   saveDraft: saveRecovery,
   clearDraft: deleteRecovery,
+  hiddenDemos: async () => (await loadHiddenDemos()).filter((l): l is SeedLanguage => l === 'de' || l === 'en'),
+  setHiddenDemos: saveHiddenDemos,
   clearAll: clearAllDocs,
   newId: newLibraryId,
 };

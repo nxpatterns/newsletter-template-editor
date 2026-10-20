@@ -127,7 +127,30 @@ export async function deleteRecovery(): Promise<void> {
   await txDone(tx);
 }
 
-/** Factory reset: every saved template and the draft, in one transaction. */
+/** Row next to the draft that lists the demos removed from the start page (no schema change). */
+const HIDDEN_DEMOS_KEY = 'hiddenDemos';
+
+export async function loadHiddenDemos(): Promise<string[]> {
+  const db = await openDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_RECOVERY, 'readonly');
+    const req = tx.objectStore(STORE_RECOVERY).get(HIDDEN_DEMOS_KEY);
+    req.onsuccess = () => {
+      const langs = (req.result as { langs?: unknown } | undefined)?.langs;
+      resolve(Array.isArray(langs) ? langs.filter((l): l is string => typeof l === 'string') : []);
+    };
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function saveHiddenDemos(langs: string[]): Promise<void> {
+  const db = await openDb();
+  const tx = db.transaction(STORE_RECOVERY, 'readwrite');
+  tx.objectStore(STORE_RECOVERY).put({ key: HIDDEN_DEMOS_KEY, langs });
+  await txDone(tx);
+}
+
+/** Factory reset: every saved template, the draft and the hidden demos, in one transaction. */
 export async function clearAllDocs(): Promise<void> {
   const db = await openDb();
   const tx = db.transaction([STORE_LIBRARY, STORE_RECOVERY], 'readwrite');

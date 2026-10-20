@@ -28,20 +28,24 @@
             <span class="file-menu-hint" [textContent]="i18n.t('start.blankHint')"></span>
           </span>
         </button>
-        <button type="button" class="file-menu-item" role="menuitem" data-testid="start-menu-demo-de" (click)="startNew('demo', 'de')">
-          <span class="file-menu-tile"><app-flag code="de" /></span>
-          <span class="file-menu-text">
-            <span [textContent]="i18n.t('start.demoDe')"></span>
-            <span class="file-menu-hint" [textContent]="i18n.t('start.demoDeCountries')"></span>
-          </span>
-        </button>
-        <button type="button" class="file-menu-item" role="menuitem" data-testid="start-menu-demo-en" (click)="startNew('demo', 'en')">
-          <span class="file-menu-tile"><app-flag code="uk" /></span>
-          <span class="file-menu-text">
-            <span [textContent]="i18n.t('start.demoEn')"></span>
-            <span class="file-menu-hint" [textContent]="i18n.t('start.demoEnCountries')"></span>
-          </span>
-        </button>
+        @if (showDemoDe()) {
+          <button type="button" class="file-menu-item" role="menuitem" data-testid="start-menu-demo-de" (click)="startNew('demo', 'de')">
+            <span class="file-menu-tile"><app-flag code="de" /></span>
+            <span class="file-menu-text">
+              <span [textContent]="i18n.t('start.demoDe')"></span>
+              <span class="file-menu-hint" [textContent]="i18n.t('start.demoDeCountries')"></span>
+            </span>
+          </button>
+        }
+        @if (showDemoEn()) {
+          <button type="button" class="file-menu-item" role="menuitem" data-testid="start-menu-demo-en" (click)="startNew('demo', 'en')">
+            <span class="file-menu-tile"><app-flag code="uk" /></span>
+            <span class="file-menu-text">
+              <span [textContent]="i18n.t('start.demoEn')"></span>
+              <span class="file-menu-hint" [textContent]="i18n.t('start.demoEnCountries')"></span>
+            </span>
+          </button>
+        }
 
         <div class="file-menu-section-label" [textContent]="i18n.t('startMenu.sectionSaved')"></div>
         <button

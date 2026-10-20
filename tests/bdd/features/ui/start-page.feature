@@ -146,4 +146,23 @@ Feature: Start page
     And I reopen the app
     Then the recent list should be empty
     And the draft to continue should be 'CloudLib-EU-Example-Newsletter-Template'
-    And the start tiles should have no delete button
+    And only the demo tiles should have a delete button
+
+  Scenario: Deleting a demo tile with the corner ×, then undoing it
+    Given I open the start page
+    When I delete the start tile 'start-demo-de'
+    Then the start tiles should be in the order 'start-blank,start-demo-en'
+    And the message should offer to undo
+    When I undo in the message
+    Then the start tiles should be in the order 'start-blank,start-demo-de,start-demo-en'
+    When I reopen the app
+    Then the start tiles should be in the order 'start-blank,start-demo-de,start-demo-en'
+
+  Scenario: A deleted demo stays deleted and leaves the start page menu
+    Given I open the start page
+    When I delete the start tile 'start-demo-en'
+    And I close the message
+    And I reopen the app
+    Then the start tiles should be in the order 'start-blank,start-demo-de'
+    When I open the start page menu
+    Then the start page menu entries should be 'start-menu-blank,start-menu-demo-de,start-menu-open-saved,menu-factory-reset'

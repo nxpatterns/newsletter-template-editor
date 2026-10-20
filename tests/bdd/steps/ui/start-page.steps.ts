@@ -18,6 +18,7 @@ Then('the start page should be visible', async ({ page }) => {
 });
 
 Then('the start tiles should be in the order {string}', async ({ page }, order: string) => {
+  await expect(page.locator('.start-tile')).toHaveCount(order.split(',').length);
   const ids = await page.locator('.start-tile').evaluateAll((els) => els.map((e) => e.getAttribute('data-testid')));
   expect(ids).toEqual(order.split(','));
 });
@@ -204,13 +205,27 @@ When('I undo in the message', async ({ page }) => {
   await expect(page.getByTestId('app-snackbar')).toHaveCount(0);
 });
 
+When('I delete the start tile {string}', async ({ page }, id: string) => {
+  const item = page.locator('.start-tile-item').filter({ has: page.getByTestId(id) });
+  await item.hover();
+  const del = item.getByTestId('start-demo-delete');
+  await expect(del).toBeVisible();
+  await del.click();
+});
+
+Then('the message should offer to undo', async ({ page }) => {
+  await expect(page.getByTestId('app-snackbar-action')).toBeVisible();
+});
+
 When('I close the message', async ({ page }) => {
   await page.getByTestId('app-snackbar-dismiss').click();
   await expect(page.getByTestId('app-snackbar')).toHaveCount(0);
 });
 
-Then('the start tiles should have no delete button', async ({ page }) => {
-  await expect(page.locator('.start-tile [data-testid="start-recent-delete"], .start-tile .start-recent-delete')).toHaveCount(0);
+Then('only the demo tiles should have a delete button', async ({ page }) => {
+  await expect(page.locator('.start-tile .start-recent-delete')).toHaveCount(0);
+  await expect(page.locator('.start-tiles > .start-recent-delete')).toHaveCount(0);
+  await expect(page.locator('.start-tile-item').getByTestId('start-demo-delete')).toHaveCount(2);
   await expect(page.getByTestId('start-continue').getByTestId('start-recent-delete')).toHaveCount(0);
 });
 
