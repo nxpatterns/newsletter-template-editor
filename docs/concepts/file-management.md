@@ -234,7 +234,7 @@ Naming:
 
 ### PDF
 
-**Not in the menu** until an explicit unlock (lab + concept patch). Session work under `docs/sessions/pdf-export/`. No Puppeteer in this product. No dead placeholder menu item.
+**Not in the menu** until an explicit unlock (lab + concept patch). Session work under `docs/sessions/analysen/pdf-export`. No Puppeteer in this product. No dead placeholder menu item.
 
 ## Dirty navigation guards
 
