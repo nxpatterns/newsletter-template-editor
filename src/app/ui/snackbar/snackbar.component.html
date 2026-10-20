@@ -8,10 +8,10 @@
     [attr.role]="msg.tone === 'error' ? 'alert' : 'status'"
     [attr.aria-live]="msg.tone === 'error' ? 'assertive' : 'polite'"
     data-testid="app-snackbar"
-    (mouseenter)="snackbar.pauseTimer()"
-    (mouseleave)="snackbar.resumeTimer()"
-    (focusin)="snackbar.pauseTimer()"
-    (focusout)="snackbar.resumeTimer()"
+    (mouseenter)="onPointer(true)"
+    (mouseleave)="onPointer(false)"
+    (focusin)="onFocusIn()"
+    (focusout)="onFocusOut($event)"
   >
     <!-- One timer line per kept message so paging back shows its real remaining time. -->
     <div class="snackbar__timers" aria-hidden="true">

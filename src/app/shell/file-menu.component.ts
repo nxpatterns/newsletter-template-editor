@@ -109,7 +109,7 @@ export class FileMenuComponent {
   }
 
   protected async pickLibrary(id: string): Promise<void> {
-    if (!(await this.unsaved.allowLeave())) return;
+    if (!(await this.unsaved.allowLeave('open', { id, name: this.libraryRows().find((r) => r.id === id)?.displayName }))) return;
     const ok = await this.session.openLibraryEntry(id);
     this.libraryOpen.set(false);
     if (!ok) this.snackbar.error(this.i18n.t('file.openFailed'));
@@ -199,7 +199,7 @@ export class FileMenuComponent {
     input.value = '';
     this.closeMenu();
     if (!file) return;
-    if (!(await this.unsaved.allowLeave())) return;
+    if (!(await this.unsaved.allowLeave('open', { name: file.name }))) return;
     try {
       const text = await file.text();
       if (!this.session.loadProjectJsonText(text)) {

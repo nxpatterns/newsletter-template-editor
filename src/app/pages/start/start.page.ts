@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { Router } from '@angular/router';
 import type { SeedLanguage } from '../../../core';
@@ -43,10 +43,26 @@ export class StartPage {
   );
   /** Inline "really discard?" on the not-saved card. */
   protected readonly confirmDiscard = signal(false);
+  /** Not-saved card shakes after Cancel in the unsaved-changes question: "this is the one". */
+  protected readonly nudging = signal(false);
 
   constructor() {
     this.overview.set(null);
     void this.actions.refresh();
+    // Only Cancels from now on, not ones from an earlier visit (the counter lives in a root service).
+    let seen = this.actions.draftNudge();
+    effect(() => {
+      const count = this.actions.draftNudge();
+      if (count === seen) return;
+      seen = count;
+      // Off for one frame so a second Cancel restarts the animation.
+      this.nudging.set(false);
+      requestAnimationFrame(() => this.nudging.set(true));
+    });
+  }
+
+  protected onNudgeEnd(event: AnimationEvent): void {
+    if (event.target === event.currentTarget) this.nudging.set(false);
   }
 
   protected startNew(kind: 'blank' | 'demo', lang?: SeedLanguage): Promise<void> {

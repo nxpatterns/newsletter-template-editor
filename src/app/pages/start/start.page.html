@@ -53,7 +53,12 @@
     </header>
 
     @if (o.draft; as d) {
-      <div class="start-continue" data-testid="start-continue">
+      <div
+        class="start-continue"
+        data-testid="start-continue"
+        [class.start-continue--nudge]="nudging()"
+        (animationend)="onNudgeEnd($event)"
+      >
         <ng-container [ngTemplateOutlet]="iconStack" />
         <span class="start-continue-text">
           <span class="start-kicker" [textContent]="i18n.t('start.notSaved')"></span>

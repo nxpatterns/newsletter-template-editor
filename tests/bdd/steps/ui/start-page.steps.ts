@@ -56,6 +56,15 @@ When('I open the recent newsletter {string}', async ({ page }, name: string) => 
   await expect(page.getByTestId('doc-name')).toContainText(name);
 });
 
+/** Only the click: an unsaved-changes question may come before the editor opens. */
+When('I click the recent newsletter {string}', async ({ page }, name: string) => {
+  await page.getByTestId('start-recent').filter({ hasText: name }).click();
+});
+
+Then('the not saved card should shake', async ({ page }) => {
+  await expect(page.getByTestId('start-continue')).toHaveClass(/start-continue--nudge/);
+});
+
 When('I go back to the start page', async ({ page }) => {
   await page.getByTestId('action-home').click();
 });
@@ -72,9 +81,21 @@ When('I rename the newsletter to {string}', async ({ page }, name: string) => {
 Then('I should be asked about unsaved changes', async ({ page }) => {
   const dialog = page.getByTestId('confirm-dialog');
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByTestId('confirm-ok')).toHaveText('Save');
-  await expect(dialog.getByTestId('confirm-alt')).toHaveText('Discard');
-  await expect(dialog.getByTestId('confirm-cancel')).toHaveText('Cancel');
+  await expect(dialog.getByTestId('confirm-ok')).toBeVisible();
+  await expect(dialog.getByTestId('confirm-alt')).toBeVisible();
+  await expect(dialog.getByTestId('confirm-cancel')).toBeVisible();
+  await expect(dialog.locator('.confirm-dialog')).toHaveAttribute('data-tone', 'warning');
+  // Explanations live in the list above the buttons, never inside them.
+  await expect(dialog.getByTestId('confirm-outcomes').getByRole('listitem')).toHaveCount(3);
+  for (const id of ['confirm-ok', 'confirm-alt', 'confirm-cancel']) {
+    await expect(dialog.getByTestId(id).locator('*')).toHaveCount(0);
+  }
+});
+
+Then('the unsaved changes question should name {string} and {string}', async ({ page }, changed: string, next: string) => {
+  const body = page.getByTestId('confirm-dialog').locator('.confirm-text');
+  await expect(body).toContainText(changed);
+  await expect(body).toContainText(next);
 });
 
 When('I answer the unsaved changes question with {string}', async ({ page }, button: string) => {

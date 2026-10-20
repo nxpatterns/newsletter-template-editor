@@ -33,6 +33,8 @@
 }
 
 .confirm-dialog {
+  --confirm-tone: var(--ds-accent);
+
   position: relative;
   z-index: 1;
   display: flex;
@@ -40,7 +42,7 @@
   width: min(28rem, calc(100vw - 1.5rem));
   overflow: hidden;
   border: 1px solid color-mix(in srgb, #fff 8%, transparent);
-  border-radius: var(--ds-radius);
+  border-radius: calc(var(--ds-radius) * 2);
   background: var(--ds-glass-surface);
   color: var(--ds-text);
   box-shadow: var(--ds-modal-shadow);
@@ -69,15 +71,76 @@
   }
 }
 
+.confirm-dialog[data-tone='warning'] {
+  --confirm-tone: var(--ds-warning);
+}
+
+.confirm-dialog[data-tone='danger'] {
+  --confirm-tone: var(--ds-danger);
+  border-color: color-mix(in srgb, var(--ds-danger) 45%, transparent);
+}
+
+/* Top edge highlight, like the glass menus. */
+.confirm-dialog::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 1;
+  block-size: 1px;
+  background: var(--ds-glass-top-edge);
+  pointer-events: none;
+}
+
+/* Gradient head with the kind of dialog at a glance: icon tile + label in the tone color. */
 .confirm-head {
-  padding: 0.9rem 1.2rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.1rem;
+  border-block-end: 1px solid color-mix(in srgb, var(--confirm-tone) 35%, transparent);
   color: var(--ds-modal-head-color);
   background: var(--ds-modal-head-bg);
 }
 
+.confirm-tone-tile {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border: 1px solid color-mix(in srgb, var(--confirm-tone) 45%, transparent);
+  border-radius: calc(var(--ds-radius) * 2);
+  color: var(--confirm-tone);
+  background: color-mix(in srgb, var(--confirm-tone) 16%, rgb(0 0 0 / 30%));
+  box-shadow: 0 0 22px -6px color-mix(in srgb, var(--confirm-tone) 70%, transparent);
+}
+
+.confirm-tone-icon {
+  inline-size: 1.35rem;
+  block-size: 1.35rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.confirm-head-text {
+  min-inline-size: 0;
+}
+
+.confirm-eyebrow {
+  display: block;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--confirm-tone);
+}
+
 .confirm-title {
-  margin: 0;
-  font-size: 1.1rem;
+  margin: 0.05rem 0 0;
+  font-size: 1.05rem;
   font-weight: 800;
   line-height: 1.25;
 }
@@ -91,6 +154,69 @@
   color: var(--ds-text);
   font-size: 0.9375rem;
   line-height: 1.45;
+}
+
+/* Template names inside the text; the one with unsaved changes gets the warning dot. */
+.confirm-name {
+  border: 1px solid color-mix(in srgb, var(--ds-accent) 22%, transparent);
+  border-radius: var(--ds-radius);
+  padding: 0.05rem 0.35rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  background: color-mix(in srgb, var(--ds-accent) 10%, transparent);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.confirm-name--dirty {
+  border-color: color-mix(in srgb, var(--ds-warning) 35%, transparent);
+  background: color-mix(in srgb, var(--ds-warning) 10%, transparent);
+}
+
+.confirm-name--dirty::before {
+  content: '';
+  display: inline-block;
+  inline-size: 0.4rem;
+  block-size: 0.4rem;
+  margin-inline-end: 0.3rem;
+  border-radius: 50%;
+  vertical-align: 0.08rem;
+  background: var(--ds-warning);
+}
+
+/* What each button leads to: beside the buttons, never inside them. */
+.confirm-outcomes {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.55rem 0.75rem;
+  margin: 0 0 0.25rem;
+  border: 1px solid var(--ds-border);
+  border-radius: calc(var(--ds-radius) * 2);
+  padding: 0.75rem 0.85rem;
+  list-style: none;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--ds-text-muted);
+  background: color-mix(in srgb, var(--ds-bg-page) 45%, transparent);
+}
+
+.confirm-outcome {
+  display: contents;
+}
+
+.confirm-outcome-label {
+  font-weight: 700;
+  color: var(--ds-text);
+}
+
+.confirm-outcome--alt .confirm-outcome-label {
+  color: color-mix(in srgb, var(--ds-danger) 70%, var(--ds-text));
+}
+
+.confirm-outcome--ok .confirm-outcome-label {
+  color: var(--ds-accent);
 }
 
 .confirm-input-label {
@@ -116,29 +242,6 @@
 .confirm-input:focus-visible {
   outline: 2px solid var(--ds-accent);
   outline-offset: 1px;
-}
-
-/* Irreversible actions: tinted head with ⚠ and a highlighted hint. Text stays --ds-text (light on dark). */
-.confirm-dialog--warning {
-  border-color: color-mix(in srgb, var(--ds-danger) 55%, transparent);
-}
-
-.confirm-dialog--warning .confirm-head {
-  border-block-start: 3px solid var(--ds-danger);
-  color: var(--ds-text);
-  background: color-mix(in srgb, var(--ds-danger) 20%, var(--ds-bg-panel));
-}
-
-.confirm-dialog--warning .confirm-title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.confirm-warning-icon {
-  color: var(--ds-danger);
-  font-size: 1.25rem;
-  line-height: 1;
 }
 
 .confirm-note {
@@ -180,6 +283,7 @@
   gap: 0.5rem;
   padding: 0.75rem 1.2rem 1rem;
   border-block-start: 1px solid color-mix(in srgb, var(--ds-border) 70%, transparent);
+  background: rgb(0 0 0 / 18%);
 }
 
 .confirm-btn {
@@ -215,6 +319,7 @@
 .confirm-btn--alt {
   color: color-mix(in srgb, var(--ds-danger) 70%, var(--ds-text));
   border-color: color-mix(in srgb, var(--ds-danger) 45%, transparent);
+  background: color-mix(in srgb, var(--ds-danger) 8%, transparent);
 }
 
 .confirm-btn:disabled {

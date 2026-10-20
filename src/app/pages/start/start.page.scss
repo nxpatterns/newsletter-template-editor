@@ -184,6 +184,41 @@
   background: color-mix(in srgb, #ffb547 5%, var(--ds-bg-panel));
 }
 
+/* After Cancel in the unsaved-changes question: a small sideways shake and an amber glow, twice. */
+.start-continue--nudge {
+  animation:
+    start-nudge-shake 0.42s ease-in-out 2,
+    start-nudge-glow 0.42s ease-in-out 2;
+}
+
+/* Sideways only: on a wide card any rotation swings the far corners too much. */
+@keyframes start-nudge-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes start-nudge-glow {
+  50% {
+    box-shadow:
+      0 0 0 3px color-mix(in srgb, #ffb547 55%, transparent),
+      0 0 22px color-mix(in srgb, #ffb547 45%, transparent);
+  }
+}
+
 .start-continue-actions {
   display: inline-flex;
   flex-wrap: wrap;
@@ -368,6 +403,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* Reduced motion: only the glow. */
+  .start-continue--nudge {
+    animation: start-nudge-glow 0.42s ease-in-out 2;
+  }
+
   .start-tile {
     transition: none;
 

@@ -8,22 +8,63 @@
     <div class="confirm-backdrop" (click)="onBackdrop()"></div>
     <div
       class="confirm-dialog"
-      [class.confirm-dialog--warning]="p.mode === 'confirm' && !!p.warning"
+      [attr.data-tone]="tone()"
       [attr.role]="p.mode === 'confirm' && p.warning ? 'alertdialog' : 'dialog'"
       aria-modal="true"
       aria-labelledby="confirm-title"
     >
       <header class="confirm-head">
-        <h2 id="confirm-title" class="confirm-title">
-          @if (p.mode === 'confirm' && p.warning) {
-            <span class="confirm-warning-icon" aria-hidden="true">⚠</span>
-          }
-          <span [textContent]="p.title"></span>
-        </h2>
+        <span class="confirm-tone-tile" aria-hidden="true">
+          <svg class="confirm-tone-icon" viewBox="0 0 24 24">
+            @switch (tone()) {
+              @case ('warning') {
+                <path d="M12 3 2.5 20h19z" />
+                <path d="M12 10v4.5M12 17.2v.1" />
+              }
+              @case ('danger') {
+                <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
+              }
+              @default {
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 11v5.5M12 7.8v.1" />
+              }
+            }
+          </svg>
+        </span>
+        <div class="confirm-head-text">
+          <span class="confirm-eyebrow" data-testid="confirm-tone" [textContent]="toneLabel()"></span>
+          <h2 id="confirm-title" class="confirm-title" [textContent]="p.title"></h2>
+        </div>
       </header>
       <div class="confirm-body">
-        @if (p.body) {
+        @if (p.mode === 'choice' && p.bodyParts) {
+          <p class="confirm-text">
+            @for (part of p.bodyParts; track $index) {
+              @if (part.chip) {
+                <span class="confirm-name" [class.confirm-name--dirty]="part.chip === 'dirty'" [textContent]="part.text"></span>
+              } @else {
+                <span [textContent]="part.text"></span>
+              }
+            }
+          </p>
+        } @else if (p.body) {
           <p class="confirm-text" [textContent]="p.body"></p>
+        }
+        @if (p.mode === 'choice' && p.altHint && p.confirmHint && p.cancelHint) {
+          <ul class="confirm-outcomes" data-testid="confirm-outcomes">
+            <li class="confirm-outcome confirm-outcome--alt">
+              <span class="confirm-outcome-label" [textContent]="p.altLabel"></span>
+              <span [textContent]="p.altHint"></span>
+            </li>
+            <li class="confirm-outcome confirm-outcome--ok">
+              <span class="confirm-outcome-label" [textContent]="p.confirmLabel"></span>
+              <span [textContent]="p.confirmHint"></span>
+            </li>
+            <li class="confirm-outcome">
+              <span class="confirm-outcome-label" [textContent]="p.cancelLabel"></span>
+              <span [textContent]="p.cancelHint"></span>
+            </li>
+          </ul>
         }
         @if (p.mode === 'confirm' && p.note) {
           <p class="confirm-note" data-testid="confirm-note" [textContent]="p.note"></p>

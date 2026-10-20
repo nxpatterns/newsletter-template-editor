@@ -1,5 +1,14 @@
 import { Injectable, signal } from '@angular/core';
 
+/** Kind of dialog, shown as icon tile and label in the head. */
+export type DialogTone = 'info' | 'warning' | 'danger';
+
+/** Piece of a body text; `chip` shows a template name as a chip, `dirty` marks the one with unsaved changes. */
+export interface DialogTextPart {
+  text: string;
+  chip?: 'name' | 'dirty';
+}
+
 export interface ConfirmDialogRequest {
   title: string;
   body: string;
@@ -8,8 +17,10 @@ export interface ConfirmDialogRequest {
   danger?: boolean;
   /** When set, a checkbox with this text must be ticked before confirming (irreversible actions). */
   acknowledge?: string;
-  /** Warning look (tinted head, ⚠) for actions that delete data for good. */
+  /** Alert dialog for actions that delete data for good (danger tone, highlighted note). */
   warning?: boolean;
+  /** Head icon; default danger for `danger` / `warning`, else info. */
+  tone?: DialogTone;
   /** Highlighted hint under the text, e.g. "export your files first". */
   note?: string;
 }
@@ -21,15 +32,24 @@ export interface PromptDialogRequest {
   initialValue: string;
   confirmLabel: string;
   cancelLabel: string;
+  tone?: DialogTone;
 }
 
 /** Three-way question, e.g. unsaved changes: Save / Discard / Cancel. */
 export interface ChoiceDialogRequest {
   title: string;
   body: string;
+  /** Rich version of `body` with name chips; `body` stays the plain text. */
+  bodyParts?: DialogTextPart[];
   confirmLabel: string;
   altLabel: string;
   cancelLabel: string;
+  /** Head icon; default warning. */
+  tone?: DialogTone;
+  /** What each button leads to, listed above the buttons (never inside them). */
+  confirmHint?: string;
+  altHint?: string;
+  cancelHint?: string;
 }
 
 export type ChoiceResult = 'confirm' | 'alt' | 'cancel';

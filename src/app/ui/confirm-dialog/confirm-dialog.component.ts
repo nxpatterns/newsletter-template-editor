@@ -1,13 +1,15 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   ElementRef,
   inject,
   signal,
   viewChild,
 } from '@angular/core';
-import { ConfirmDialogService } from './confirm-dialog.service';
+import { LocaleService } from '../../i18n/locale.service';
+import { ConfirmDialogService, type DialogTone } from './confirm-dialog.service';
 
 @Component({
   selector: 'app-confirm-dialog',
@@ -20,6 +22,7 @@ import { ConfirmDialogService } from './confirm-dialog.service';
 })
 export class ConfirmDialogComponent {
   protected readonly confirm = inject(ConfirmDialogService);
+  private readonly i18n = inject(LocaleService);
 
   private readonly cancelBtn = viewChild<ElementRef<HTMLButtonElement>>('cancelBtn');
   private readonly inputEl = viewChild<ElementRef<HTMLInputElement>>('promptInput');
@@ -28,6 +31,17 @@ export class ConfirmDialogComponent {
   protected readonly promptValue = signal('');
   protected readonly acknowledged = signal(false);
   private closing = false;
+
+  /** Head icon and label: explicit tone, else choice = warning, destructive confirm = danger, rest = info. */
+  protected readonly tone = computed<DialogTone>(() => {
+    const p = this.confirm.pending();
+    if (!p) return 'info';
+    if (p.tone) return p.tone;
+    if (p.mode === 'choice') return 'warning';
+    return p.mode === 'confirm' && (p.danger || p.warning) ? 'danger' : 'info';
+  });
+
+  protected readonly toneLabel = computed(() => this.i18n.t(`dialog.tone.${this.tone()}`));
 
   constructor() {
     effect(() => {

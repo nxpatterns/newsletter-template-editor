@@ -105,6 +105,42 @@ Feature: Start page
     Then the recent list should contain 'Autumn offer'
     And there should be no draft to continue
 
+  Scenario: Opening another template with unsaved changes asks to save, discard or cancel
+    Given I open the editor with the German demo
+    When I rename the newsletter to 'Alpha'
+    And I go back to the start page
+    And I answer the unsaved changes question with 'confirm-ok'
+    And I confirm the name prompt
+    And I click the start tile 'start-demo-en'
+    And I rename the newsletter to 'Beta'
+    And I go back to the start page
+    And I answer the unsaved changes question with 'confirm-ok'
+    And I confirm the name prompt
+    And I open the recent newsletter 'Alpha'
+    And I rename the newsletter to 'Gamma'
+    And I reopen the app
+    And I click the recent newsletter 'Beta'
+    Then I should be asked about unsaved changes
+    And the unsaved changes question should name 'Gamma' and 'Beta'
+    When I answer the unsaved changes question with 'confirm-cancel'
+    Then the start page should be visible
+    And the draft to continue should be 'Gamma'
+    And the not saved card should shake
+    When I click the recent newsletter 'Beta'
+    And I answer the unsaved changes question with 'confirm-alt'
+    Then the editor should show the document 'Beta'
+    When I reopen the app
+    Then the recent list should contain 'Alpha'
+    And there should be no draft to continue
+    When I open the recent newsletter 'Beta'
+    And I rename the newsletter to 'Delta'
+    And I reopen the app
+    And I click the recent newsletter 'Alpha'
+    And I answer the unsaved changes question with 'confirm-ok'
+    Then the editor should show the document 'Alpha'
+    When I reopen the app
+    Then the recent list should contain 'Delta'
+
   Scenario: Reloading the editor reopens the same newsletter
     Given I open the editor with the German demo
     When I rename the newsletter to 'Reload check'
@@ -169,6 +205,18 @@ Feature: Start page
     Then the start tiles should be in the order 'start-blank,start-demo-de'
     And the message should offer to undo
     And the message pager should be hidden
+
+  Scenario: Paging messages under the pointer keeps the timer paused
+    Given I open the start page
+    When I delete the start tile 'start-demo-de'
+    And I delete the start tile 'start-demo-en'
+    And I page to the older message
+    Then the message pager should show 1 of 2
+    And the message timer should be paused
+    When I page to the newer message
+    Then the message timer should be paused
+    When I move the pointer off the message
+    Then the message timer should be running
 
   Scenario: A deleted demo stays deleted and leaves the start page menu
     Given I open the start page

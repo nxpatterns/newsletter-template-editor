@@ -73,3 +73,19 @@ Then('the message pager should be hidden', async ({ page }) => {
 When('I page to the older message', async ({ page }) => {
   await page.getByTestId('app-snackbar-older').click();
 });
+
+When('I page to the newer message', async ({ page }) => {
+  await page.getByTestId('app-snackbar-newer').click();
+});
+
+When('I move the pointer off the message', async ({ page }) => {
+  await page.mouse.move(1, 1);
+});
+
+Then('the message timer should be paused', async ({ page }) => {
+  await expect(page.getByTestId('app-snackbar')).toContainClass('snackbar--paused');
+});
+
+Then('the message timer should be running', async ({ page }) => {
+  await expect(page.getByTestId('app-snackbar')).not.toContainClass('snackbar--paused');
+});

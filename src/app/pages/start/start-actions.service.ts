@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import type { SeedLanguage } from '../../../core';
 import { NewsletterSession, type RecentOverview } from '../../editor/newsletter-session.service';
 import { LocaleService } from '../../i18n/locale.service';
-import { UnsavedGuardService } from '../../shell/unsaved-guard.service';
+import { type LeaveTarget, type LeaveTargetInfo, UnsavedGuardService } from '../../shell/unsaved-guard.service';
 import { SnackbarService } from '../../ui/snackbar/snackbar.service';
 
 /** What the start page offers, shared by its tiles and the header menu on the start page. */
@@ -17,6 +17,8 @@ export class StartActionsService {
 
   /** Draft in progress and saved templates; null until loaded. */
   readonly overview = signal<RecentOverview | null>(null);
+  /** Counts Cancel answers to the unsaved-changes question; the start page then shakes the not-saved card. */
+  readonly draftNudge = signal(0);
   private busy = false;
 
   async refresh(): Promise<void> {
@@ -24,18 +26,18 @@ export class StartActionsService {
   }
 
   async startNew(kind: 'blank' | 'demo', lang?: SeedLanguage): Promise<void> {
-    await this.run(async () => {
+    await this.run('new', async () => {
       await this.session.startNew(kind, lang ?? this.i18n.locale());
       return true;
     });
   }
 
   async openSaved(id: string): Promise<void> {
-    await this.run(async () => {
+    await this.run('open', async () => {
       const ok = await this.session.openLibraryEntry(id).catch(() => false);
       if (!ok) this.snackbar.error(this.i18n.t('start.notFound'));
       return ok;
-    });
+    }, { id, name: this.overview()?.saved.find((s) => s.id === id)?.displayName });
   }
 
   /** One start page action at a time (double clicks, tile and menu together). */
@@ -50,9 +52,10 @@ export class StartActionsService {
   }
 
   /** Replace the open document only after the unsaved-changes question. */
-  private async run(open: () => Promise<boolean>): Promise<void> {
+  private async run(next: LeaveTarget, open: () => Promise<boolean>, target?: LeaveTargetInfo): Promise<void> {
     await this.exclusive(async () => {
-      if (!(await this.unsaved.allowLeave())) return;
+      const nudge = () => this.draftNudge.update((n) => n + 1);
+      if (!(await this.unsaved.allowLeave(next, target, nudge))) return;
       if (await open()) await this.router.navigate(['/edit', this.session.routeId()]);
     });
   }
