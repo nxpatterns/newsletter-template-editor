@@ -1,36 +1,50 @@
 # Current blocks tree
 
-Tree view for the "Aktuelle Bausteine" tab, next to today's list. Mockups: `docs/mockups/current-blocks-tree/tree-variants.html` (variants A, B, C in one file).
+A read-only overview tree for the "Aktuelle Bausteine" tab, next to today's list.
 
-## Goals
+- Round 1 (superseded): `docs/mockups/current-blocks-tree/r1-tree-variants.html`, a tree with all list functions.
+- Round 2 (current): `docs/mockups/current-blocks-tree/r2-overview-variants.html`, variants A, B, C.
 
-- Tree is the default view; a two-option switch (Baum, Liste) sits at the top of the tab and is remembered per user.
-- The tree does everything the list does today: select (synced with the preview), reorder by drag, move up and down, edit, delete with undo, block-type tint, position number, empty state hint.
-- It scales to long newsletters (40+ blocks) and uses a wider sidebar when there is one.
+## Decisions
+
+| # | Topic | Decision |
+| --- | --- | --- |
+| 1 | Default view | List. A two-option switch (Liste, Baum) sits at the top of the tab. |
+| 2 | Purpose of the tree | Overview only, read-only. All editing stays in the list (blocks) and in the dedicated tabs (header, footer, colors). |
+| 3 | Look | Must not look like the list: drawn branches like a mind map. |
+| 4 | Header and footer | Shown in the tree, collapsed by default; when opened, their parts appear in mail order. |
+| 5 | Where to edit | Every header and footer part tells the user where it is edited (tab and group); a jump opens that place. |
 
 ## Levels
 
-| Level | Today | With the parts model (decisions 40 to 47) |
-| --- | --- | --- |
-| 1 | Groups: Header, Content, Footer | unchanged |
-| 2 | Blocks in Content; frame parts in Header and Footer (switch on or off, required parts warn) | unchanged; own blocks appear like built-in blocks |
-| 3 | Fields of a built-in block, named by role (Headline, Text, Image, Button) | Content parts with roles, same rows; built-in fields already are content parts with roles (decision 41) |
+Newsletter > Header, Content, Footer > parts or blocks. Chapter blocks group the blocks that follow them. Header and footer parts in mail order:
 
-- The newsletter itself is not a row; it would only add indentation.
-- The sidebar shows **content parts, flat, by role**, never the design tree (sections, columns, boxes). The layout tree belongs to the block editor. This caps the sidebar at three levels even for nested own blocks: an embedded own block shows as one part row with a link to open it.
-- A list part shows as one row with its count ("List, 4 items"), not one row per item.
-- Frame parts are not block types, so they get a neutral steel glyph, never a block tint.
+| Group | Part | Edited in |
+| --- | --- | --- |
+| Header | Stars | Brand, 1 Stars (switch "top") |
+| Header | Brand name | Brand, 2 Brand name |
+| Header | Logo | Brand, 3 Logo |
+| Header | View in browser | Brand, 4 View in browser |
+| Footer | Notice | Legal, Sender |
+| Footer | Social icons | Social Media |
+| Footer | Stars | Brand, 1 Stars (switch "bottom") |
+| Footer | Company line | Legal, Sender |
+| Footer > Links | Privacy, Imprint, Unsubscribe, View in browser | Legal, Links (unsubscribe and view-in-browser targets come from Listmonk) |
+
+Hidden parts show dimmed with "aus"; a hidden required part (imprint, unsubscribe) shows a warning. With the parts model, a block node may later expand into its content parts by role; the tree stays read-only.
 
 ## Variants
 
-- **A Outline**: explorer-style tree. Collapsing, indentation guides with the selected branch highlighted, actions on hover or selection only, the position number turns into the grip on hover, density switch, sticky group headers, notices bubble up into collapsed parents, full keyboard control.
-- **B Chapters**: like A, plus every chapter block becomes a collapsible section (the mail stays a flat order; dragging a chapter takes its blocks along; deleting a chapter keeps its blocks). Hoisting (focus on one chapter with breadcrumbs), search that keeps ancestors of matches, counters on collapsed nodes, a minimap rail with one tick per block in its type color.
-- **C Wide**: at 34rem and more, two columns: blocks left, the selected block's parts right as a mind-map branch. Header and footer parts as chips in wrapping rows instead of long lists. Narrow sidebars get the normal tree with parts.
+- **A Mind map**: root left, branches to the right as curves. Tricks: branches taper toward the tips, branch color = block type, collapsed branches show a count bubble, chapters after the first start collapsed above 20 blocks, fit to width (zoom down to 70 %). Each header and footer part carries a signpost tag (tab icon, tab, group number); a click opens an info card with a jump to the tab.
+- **B Org chart**: root on top, Header, Content and Footer as columns. Tricks: leaves stack under their parent instead of spreading sideways, elbow lines, each column names the tabs it is edited in, a status line at the bottom names the exact place on hover or tap.
+- **C Two lenses**: indented tree with drawn elbows, two columns when wide. A switch changes the lens: "Aufbau" shows the mail, "Wo bearbeiten" shows the same parts sorted by tab and group. A click opens the path to the editing place right under the node.
+
+Below 30rem all three fall back to the indented tree with drawn elbows.
 
 ## Open questions
 
-1. Which variant? Recommendation: B as the base (chapters are the natural outline of a long mail), with C's two columns only when the sidebar is wide.
-2. Show header and footer in the tree? Recommendation: yes, collapsed by default; editing still happens in the Brand, Legal and Social tabs, the pencil jumps there.
-3. Show fields (level 3) today, before the parts model ships? Recommendation: yes, collapsed by default; the pencil opens the block dialog at that field.
-4. Keep the up and down buttons? Recommendation: only on the selected row, plus Alt+arrow keys; drag stays the main way.
-5. Notices from block checks (for example missing image description): show them in the tree now? Recommendation: yes, as soon as the check exists; the tree only shows what the checks return.
+1. Which variant? Recommendation: A, plus the "Wo bearbeiten" lens from C as a second view.
+2. May the tree jump to the editing place (tab switch, target group glows)? It changes nothing, so the tree stays read-only. Recommendation: yes.
+3. Clicking a block in the tree: only highlight it in the preview, or also offer "In der Liste öffnen"? Recommendation: both; the click highlights, the info card offers the jump.
+4. Remember the last chosen view (list or tree) per user? Recommendation: yes, the first start is always the list.
+5. Show the inbox branch (subject, preview text, edited in Kampagne) as a fourth branch? Recommendation: not now.
