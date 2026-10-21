@@ -14,6 +14,10 @@ A read-only overview tree for the "Aktuelle Bausteine" tab, next to today's list
 | 3 | Look | Must not look like the list: drawn branches like a mind map. |
 | 4 | Header and footer | Shown in the tree, collapsed by default; when opened, their parts appear in mail order. |
 | 5 | Where to edit | Every header and footer part tells the user where it is edited (tab and group); a jump opens that place. |
+| 6 | Variant | B, org chart. Built in `placed-tree.component`; below 34rem the columns stack. |
+| 7 | Jump | The status line names the place; "Open" switches the tab, opens the group and lets it glow. Blocks go to the list with the block selected. |
+| 8 | Remembered view | Per browser (`placed-view.v1`); first start is the list. |
+| 9 | Inbox branch | Not shown for now. |
 
 ## Levels
 
@@ -40,11 +44,3 @@ Hidden parts show dimmed with "aus"; a hidden required part (imprint, unsubscrib
 - **C Two lenses**: indented tree with drawn elbows, two columns when wide. A switch changes the lens: "Aufbau" shows the mail, "Wo bearbeiten" shows the same parts sorted by tab and group. A click opens the path to the editing place right under the node.
 
 Below 30rem all three fall back to the indented tree with drawn elbows.
-
-## Open questions
-
-1. Which variant? Recommendation: A, plus the "Wo bearbeiten" lens from C as a second view.
-2. May the tree jump to the editing place (tab switch, target group glows)? It changes nothing, so the tree stays read-only. Recommendation: yes.
-3. Clicking a block in the tree: only highlight it in the preview, or also offer "In der Liste öffnen"? Recommendation: both; the click highlights, the info card offers the jump.
-4. Remember the last chosen view (list or tree) per user? Recommendation: yes, the first start is always the list.
-5. Show the inbox branch (subject, preview text, edited in Kampagne) as a fourth branch? Recommendation: not now.
