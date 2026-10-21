@@ -75,3 +75,13 @@ Then('block {int} in the list should be selected', async ({ page }, n: number) =
     /\bis-selected\b/,
   );
 });
+
+When('I collapse the tree group {string}', async ({ page }, group: string) => {
+  const head = page.getByTestId(`tree-group-${group}`);
+  if ((await head.getAttribute('aria-expanded')) !== 'false') await head.click();
+  await expect(head).toHaveAttribute('aria-expanded', 'false');
+});
+
+Then('the tree group {string} should be expanded', async ({ page }, group: string) => {
+  await expect(page.getByTestId(`tree-group-${group}`)).toHaveAttribute('aria-expanded', 'true');
+});

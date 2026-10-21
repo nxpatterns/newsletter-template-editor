@@ -1,4 +1,4 @@
-import { NgTemplateOutlet } from '@angular/common';
+import { isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   afterRenderEffect,
@@ -10,6 +10,7 @@ import {
   ElementRef,
   inject,
   output,
+  PLATFORM_ID,
   signal,
   viewChild,
 } from '@angular/core';
@@ -30,6 +31,12 @@ import {
   type OverviewNode,
   type RouteStep,
 } from './overview-tree';
+
+/** UI-only open/closed branches (localStorage), shared by every template; never exported. */
+export const TREE_COLLAPSED_KEY = 'newsletter-template-editor.tree-collapsed.v1';
+const DEFAULT_COLLAPSED = ['head', 'foot'];
+/** Chapter ids pile up across templates; keep the newest ones only. */
+const MAX_STORED = 200;
 
 /** Below this canvas width the columns stack and every branch is drawn as an elbow. */
 const STACK_REM = 34;
@@ -86,7 +93,8 @@ export class PlacedTreeComponent {
     buildOverview(this.session.blocks(), this.session.globals()),
   );
   /** Header and footer start closed; content, chapters and links start open. */
-  private readonly collapsed = signal<ReadonlySet<string>>(new Set(['head', 'foot']));
+  private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly collapsed = signal<ReadonlySet<string>>(this.readCollapsed());
   /** Node the pointer or focus is on; the status line describes it. */
   protected readonly pointed = signal<string | null>(null);
 
@@ -117,9 +125,17 @@ export class PlacedTreeComponent {
       destroyRef.onDestroy(() => ro.disconnect());
     });
 
+    effect(() => this.writeCollapsed(this.collapsed()));
+
     // A block picked in the preview opens its branch, so the highlight is never hidden.
+    // The selection a template opens with must not undo the stored branch state.
+    let initial = true;
     effect(() => {
       const id = this.session.selectedBlockId();
+      if (initial) {
+        initial = false;
+        return;
+      }
       if (!id) return;
       const chapter = this.chapterOf(id);
       this.collapsed.update((set) => {
@@ -203,6 +219,28 @@ export class PlacedTreeComponent {
 
   protected hue(type: Block['type']): BlockTypeHue {
     return blockTypeHue(type);
+  }
+
+  private readCollapsed(): ReadonlySet<string> {
+    if (!this.browser) return new Set(DEFAULT_COLLAPSED);
+    try {
+      const raw = localStorage.getItem(TREE_COLLAPSED_KEY);
+      if (raw === null) return new Set(DEFAULT_COLLAPSED);
+      const parsed = JSON.parse(raw) as unknown;
+      if (!Array.isArray(parsed)) return new Set(DEFAULT_COLLAPSED);
+      return new Set(parsed.filter((x): x is string => typeof x === 'string' && x.length < 120));
+    } catch {
+      return new Set(DEFAULT_COLLAPSED);
+    }
+  }
+
+  private writeCollapsed(set: ReadonlySet<string>): void {
+    if (!this.browser) return;
+    try {
+      localStorage.setItem(TREE_COLLAPSED_KEY, JSON.stringify([...set].slice(-MAX_STORED)));
+    } catch {
+      // quota / private mode
+    }
   }
 
   private route(steps: readonly RouteStep[]): string {

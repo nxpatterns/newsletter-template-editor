@@ -38,3 +38,12 @@ Feature: Current blocks as a read-only tree
     And I open the place from the tree status
     Then the current blocks view should be 'list'
     And block 2 in the list should be selected
+
+  Scenario: Opened and closed branches stay that way after a reload
+    Given I open the editor with the German demo
+    When I switch the current blocks view to 'tree'
+    And I expand the tree group 'head'
+    And I collapse the tree group 'body'
+    And I reload the page
+    Then the tree group 'head' should be expanded
+    And the tree group 'body' should be collapsed
