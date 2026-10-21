@@ -18,6 +18,9 @@ A read-only overview tree for the "Aktuelle Bausteine" tab, next to today's list
 | 7 | Jump | The status line names the place; "Open" switches the tab, opens the group and lets it glow. Blocks go to the list with the block selected. |
 | 8 | Remembered view | Per browser (`placed-view.v1`); first start is the list. |
 | 9 | Inbox branch | Not shown for now. |
+| 10 | Branch state | Open and closed branches are remembered per browser (`tree-collapsed.v1`). |
+| 11 | Status line | Changes only when a branch is picked (click, tap, keyboard), never on hover. |
+| 12 | Arrival | Light edge A on the status line plus button fill 1 (mockups r3, r4); reduced motion fades only. |
 
 ## Levels
 
