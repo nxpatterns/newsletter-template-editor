@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup R1 Block-Editor</title>
+<style>
+:root {
+  --ds-bg-page: #060b14; --ds-bg-panel: #0c1628; --ds-border: #1a3050; --ds-accent: #7ecfff;
+  --ds-text: #e8f4ff; --ds-text-muted: #7a9ab8; --ds-success: #3dd68c; --ds-warning: #f5b84a; --ds-danger: #ff6b7a;
+  --ds-radius: .25rem;
+  --glass: color-mix(in srgb, var(--ds-bg-panel) 78%, transparent);
+  --glass-edge: linear-gradient(90deg, transparent, rgba(255,255,255,.35) 50%, transparent);
+  --head-bg: linear-gradient(180deg, rgba(255,255,255,.12), transparent 42%), linear-gradient(120deg, #0a1830 0%, #123a5c 48%, #0c5a78 100%);
+  --sel: #20d4c8; --ins: #f5c518;
+  --free-a: #a3b8cc; --free-b: #52677d;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ds-text); background: var(--ds-bg-page); display: grid; grid-template-rows: auto auto auto 1fr auto; overflow: hidden; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--ds-accent); outline-offset: 2px; }
+
+/* mockup controls (not part of the design) */
+.mk { display: flex; flex-wrap: wrap; gap: .4rem 1.2rem; align-items: center; padding: .45rem .9rem; background: #2a1d05; border-bottom: 1px dashed #8a6a20; color: #f3d9a0; font-size: 12px; }
+.mk b { font-weight: 600; margin-inline-end: .3rem; }
+.mk .seg { display: inline-flex; border: 1px solid #8a6a20; border-radius: 999px; overflow: hidden; }
+.mk .seg button { background: none; border: 0; padding: .2rem .6rem; color: #f3d9a0; }
+.mk .seg button[aria-pressed="true"] { background: #8a6a20; color: #fff; }
+.mk .note { flex: 1 1 18rem; color: #d8b870; }
+
+.addr { display: flex; align-items: center; gap: .5rem; padding: .35rem .9rem; background: #1b1f27; border-bottom: 1px solid #2a2f3a; font: 12px ui-monospace, Menlo, monospace; color: #b8c2d0; overflow: hidden; white-space: nowrap; }
+.addr .bar { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; padding: .2rem .7rem; border-radius: 999px; background: #0f1218; }
+.addr .bar b { color: #fff; font-weight: 500; }
+.addr .tag { font: 11px system-ui; color: #8a93a3; }
+/* app header */
+.hdr { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; min-height: 3.5rem; padding: .45rem .9rem; background: var(--ds-bg-panel); border-bottom: 1px solid var(--ds-border); }
+.back { display: inline-flex; align-items: center; gap: .35rem; color: var(--ds-accent); text-decoration: none; padding: .3rem .5rem; border-radius: var(--ds-radius); }
+.back:hover { background: rgba(126,207,255,.1); }
+.titlebox { display: flex; align-items: center; gap: .5rem; min-width: 0; flex: 1 1 16rem; }
+.name { min-width: 0; flex: 0 1 18rem; background: transparent; border: 1px solid transparent; border-radius: var(--ds-radius); padding: .25rem .4rem; font-weight: 600; font-size: 15px; }
+.name:hover, .name:focus { border-color: var(--ds-border); background: rgba(255,255,255,.03); }
+.kind { display: inline-flex; align-items: center; gap: .3rem; padding: .15rem .55rem; border-radius: 999px; font-size: 12px; white-space: nowrap; border: 1px solid; }
+.kind--free { border-color: color-mix(in srgb, var(--free-a) 55%, var(--ds-border)); background: linear-gradient(160deg, color-mix(in srgb, var(--free-a) 22%, var(--ds-bg-panel)), var(--ds-bg-panel)); }
+.kind--clone { border-color: color-mix(in srgb, #fde047 55%, var(--ds-border)); background: linear-gradient(160deg, color-mix(in srgb, #fde047 22%, var(--ds-bg-panel)), var(--ds-bg-panel)); }
+.own { font-size: 10px; letter-spacing: .04em; text-transform: uppercase; padding: 0 .35rem; border-radius: 3px; background: rgba(255,255,255,.14); }
+.state { display: inline-flex; align-items: center; gap: .35rem; font-size: 12px; color: var(--ds-text-muted); white-space: nowrap; }
+.state .dot { width: .5rem; height: .5rem; border-radius: 50%; background: var(--ds-warning); }
+.state--ok { color: var(--ds-success); }
+.tools { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
+.ibtn { display: inline-grid; place-items: center; width: 2.1rem; height: 2.1rem; border-radius: var(--ds-radius); border: 1px solid var(--ds-border); background: rgba(255,255,255,.03); }
+.btn { display: inline-flex; align-items: center; gap: .4rem; height: 2.1rem; padding: 0 .8rem; border-radius: var(--ds-radius); border: 1px solid var(--ds-border); background: rgba(255,255,255,.03); white-space: nowrap; }
+.btn--primary { background: linear-gradient(180deg, #2a86d8, #1d6bb8); border-color: #3b8fe0; color: #fff; }
+.btn--outline { border-color: var(--ds-accent); color: var(--ds-accent); }
+.btn[disabled] { opacity: .45; cursor: default; }
+kbd { font: 11px ui-monospace, monospace; padding: 0 .3rem; border-radius: 3px; background: rgba(255,255,255,.15); }
+.lang { display: inline-flex; align-items: center; gap: .3rem; height: 2.1rem; padding: 0 .6rem; border-radius: var(--ds-radius); border: 1px solid var(--ds-border); background: none; }
+
+/* work area */
+.work { min-height: 0; display: grid; overflow: hidden; }
+.work--A { grid-template-columns: 13.5rem minmax(0,1fr) 21rem; }
+.work--B { grid-template-columns: minmax(0,1fr) 22rem; }
+.work--C { grid-template-columns: minmax(0,1fr) 21rem; grid-template-rows: minmax(0,1fr) auto; }
+.pane { min-height: 0; overflow: auto; background: var(--ds-bg-panel); border-inline-start: 1px solid var(--ds-border); }
+.pane--left { border-inline-start: 0; border-inline-end: 1px solid var(--ds-border); }
+.pane-head { position: sticky; top: 0; z-index: 2; padding: .6rem .8rem; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ds-text-muted); background: var(--ds-bg-panel); border-bottom: 1px solid var(--ds-border); }
+.pane-body { padding: .7rem .8rem 1rem; display: grid; gap: .8rem; }
+
+/* tabs like the editor side panel */
+.tabs { position: sticky; top: 0; z-index: 2; display: flex; gap: 2px; padding: .5rem .6rem 0; background: var(--ds-bg-panel); border-bottom: 1px solid var(--ds-border); }
+.tab { flex: 1; padding: .45rem .3rem; border: 1px solid var(--ds-border); border-bottom: 0; border-radius: .4rem .4rem 0 0; background: rgba(255,255,255,.02); color: var(--ds-text-muted); font-size: 13px; position: relative; top: 1px; }
+.tab[aria-selected="true"] { background: var(--ds-bg-panel); color: var(--ds-text); border-color: var(--ds-border); }
+.tab .badge { display: inline-grid; place-items: center; min-width: 1.2rem; height: 1.2rem; margin-inline-start: .25rem; border-radius: 999px; font-size: 11px; background: var(--ds-warning); color: #1a1100; }
+
+/* stage */
+.stage { min-height: 0; overflow: auto; position: relative; }
+.stage-bar { position: sticky; top: 0; z-index: 3; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; padding: .5rem .9rem; background: color-mix(in srgb, var(--ds-bg-page) 85%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--ds-border); }
+.seg2 { display: inline-flex; border: 1px solid var(--ds-border); border-radius: 999px; overflow: hidden; }
+.seg2 button { border: 0; background: none; padding: .25rem .75rem; color: var(--ds-text-muted); }
+.seg2 button[aria-pressed="true"] { background: rgba(126,207,255,.16); color: var(--ds-text); }
+.hint { color: var(--ds-text-muted); font-size: 12px; }
+.canvas { padding: 1.5rem 1rem 3rem; display: grid; justify-items: center; }
+.mail { width: 100%; max-width: 600px; background: var(--m-page); padding: 1.2rem 0; border-radius: .25rem; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+.mail-frame { margin: 0 auto; width: 100%; max-width: 600px; }
+.mail-ctx { color: var(--m-dim); font: 12px/1.4 Georgia, serif; text-align: center; padding: .5rem; opacity: .7; }
+
+/* composed block inside the mail */
+.blk { position: relative; background: var(--m-content); color: var(--m-body); font: 16px/1.6 Georgia, "Times New Roman", serif; outline: 2px solid var(--sel); outline-offset: 0; }
+.blk-tag { cursor: pointer; position: absolute; top: -1.45rem; left: 0; font: 600 11px system-ui, sans-serif; color: #04221f; background: var(--sel); padding: .1rem .45rem; border-radius: 3px 3px 0 0; }
+.part { position: relative; border: 1px dashed transparent; }
+.show-parts .part { border-color: rgba(127,160,190,.35); }
+.part:hover { border-color: rgba(32,212,200,.6); }
+.part.is-sel { border: 2px solid var(--sel); }
+.part-label { display: none; position: absolute; top: 0; right: 0; transform: translateY(-100%); font: 600 10px system-ui, sans-serif; background: var(--sel); color: #04221f; padding: .05rem .35rem; border-radius: 3px 3px 0 0; z-index: 1; }
+.part.is-sel > .part-label, .show-parts .part:hover > .part-label { display: block; }
+.row { display: flex; gap: 20px; padding: 24px 28px; }
+.row > .part { flex: 1 1 0; min-width: 0; }
+.row > .part:first-child { flex-grow: var(--w1); }
+.row--swap { flex-direction: row-reverse; }
+.row--mid { align-items: center; }
+.row--mid .col { height: auto; }
+.p-text { text-align: var(--ta, left); }
+.col { height: 100%; display: grid; gap: 12px; align-content: start; }
+.p-img { aspect-ratio: 4 / 3; border-radius: var(--rad, 4px); background: linear-gradient(135deg, #38618a, #1c3550); display: grid; place-items: center; color: #cfe3f7; font: 12px system-ui; }
+.p-text h3 { margin: 0 0 .25rem; color: var(--m-head); font: italic 600 22px/1.25 Georgia, serif; }
+.p-text p { margin: 0; }
+.p-text .low { color: var(--m-low); }
+.p-btn { justify-self: start; display: inline-block; padding: 10px 20px; border-radius: 4px; background: var(--m-btn); color: var(--m-btnText); font: 600 15px system-ui, sans-serif; }
+.p-space { height: 16px; background: repeating-linear-gradient(45deg, transparent 0 6px, rgba(127,160,190,.12) 6px 12px); }
+.flag { position: absolute; top: -.65rem; left: -.65rem; box-shadow: 0 0 0 2px var(--m-content); display: inline-grid; place-items: center; width: 1.25rem; height: 1.25rem; border-radius: 50%; background: var(--ds-warning); color: #1a1100; font: 700 12px system-ui; z-index: 2; }
+.ins { position: relative; height: 0; }
+.ins::before { content: ""; position: absolute; left: 28px; right: 28px; top: -2px; height: 4px; border-radius: 2px; background: var(--ins); box-shadow: 0 0 10px rgba(245,197,24,.6); }
+.ins span { position: absolute; left: 50%; top: -.75rem; transform: translateX(-50%); font: 600 11px system-ui; background: var(--ins); color: #2a1d00; padding: .1rem .55rem; border-radius: 999px; white-space: nowrap; }
+.plus { display: flex; justify-content: center; height: 0; position: relative; z-index: 2; }
+.plus > button { position: absolute; top: -.8rem; width: 1.6rem; height: 1.6rem; border-radius: 50%; border: 1px solid var(--sel); background: #0b2a2a; color: var(--sel); font-weight: 700; line-height: 1; }
+.empty { display: grid; justify-items: center; gap: .6rem; text-align: center; padding: 2.6rem 1.5rem; margin: 0 28px; border: 2px dashed rgba(127,160,190,.45); border-radius: 6px; color: var(--m-body); font: 15px/1.5 system-ui, sans-serif; }
+.empty b { color: var(--m-head); font-size: 16px; }
+.starter { display: flex; flex-wrap: wrap; gap: .4rem; justify-content: center; }
+.starter button { border: 1px solid rgba(127,160,190,.5); background: transparent; color: var(--m-head); padding: .3rem .7rem; border-radius: 999px; font-size: 13px; }
+.lock { position: absolute; bottom: 6px; right: 6px; font: 600 11px system-ui; padding: .1rem .45rem; border-radius: 3px; background: rgba(0,0,0,.45); color: #fff; }
+
+/* clone: price box */
+.price { text-align: center; padding: 28px; display: grid; gap: 6px; justify-items: center; }
+.price .chip { font: 600 12px system-ui; letter-spacing: .05em; text-transform: uppercase; background: var(--m-accent); color: var(--m-content); padding: .15rem .6rem; border-radius: 999px; }
+.price .amount { color: var(--m-head); font: 700 44px/1 Georgia, serif; }
+.price .amount small { font: 400 16px system-ui; color: var(--m-body); }
+.price .strike { color: var(--m-dim); text-decoration: line-through; font: 14px system-ui; }
+.price .fine { color: var(--m-dim); font: 12px system-ui; }
+
+/* palette */
+.parts { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; }
+.work--A .parts { grid-template-columns: 1fr; }
+.ptile { display: flex; align-items: center; gap: .5rem; min-height: 2.6rem; padding: .45rem .55rem; border-radius: .5rem; text-align: start; border: 1px solid color-mix(in srgb, var(--free-a) 40%, var(--ds-border)); background: linear-gradient(160deg, color-mix(in srgb, var(--free-a) 16%, var(--ds-bg-panel)), var(--ds-bg-panel) 75%); cursor: grab; }
+.ptile .ic { display: inline-grid; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: .35rem; background: rgba(255,255,255,.08); font-size: 13px; }
+.ptile small { display: block; color: var(--ds-text-muted); font-size: 11px; }
+.ptile.is-own { border-color: color-mix(in srgb, #34d399 45%, var(--ds-border)); background: linear-gradient(160deg, color-mix(in srgb, #34d399 14%, var(--ds-bg-panel)), var(--ds-bg-panel) 75%); }
+.ptile[aria-disabled="true"] { opacity: .4; cursor: not-allowed; }
+.sub { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ds-text-muted); margin: .2rem 0 -.3rem; }
+.kbd-help { font-size: 12px; color: var(--ds-text-muted); border: 1px solid var(--ds-border); border-radius: .4rem; padding: .5rem .6rem; background: rgba(255,255,255,.02); }
+.kbd-help kbd { margin-inline: .1rem; }
+.notice { display: flex; gap: .5rem; padding: .6rem .7rem; border-radius: .45rem; border: 1px solid; font-size: 13px; }
+.notice--info { border-color: color-mix(in srgb, var(--ds-accent) 45%, var(--ds-border)); background: rgba(126,207,255,.07); }
+.notice--lock { border-color: color-mix(in srgb, #fde047 40%, var(--ds-border)); background: rgba(253,224,71,.06); }
+
+/* fields */
+.fgroup { border: 1px solid var(--ds-border); border-radius: .5rem; overflow: hidden; }
+.fgroup > h4 { margin: 0; padding: .45rem .65rem; font-size: 13px; background: rgba(255,255,255,.03); border-bottom: 1px solid var(--ds-border); display: flex; justify-content: space-between; align-items: center; }
+.fgroup .in { padding: .6rem .65rem; display: grid; gap: .6rem; }
+.field { display: grid; gap: .2rem; }
+.field label { font-size: 12px; color: var(--ds-text-muted); }
+.field .help { font-size: 11px; color: var(--ds-text-muted); opacity: .85; }
+.inp { position: relative; }
+.inp input, .inp select, textarea { width: 100%; padding: .4rem 1.8rem .4rem .5rem; border-radius: var(--ds-radius); border: 1px solid var(--ds-border); background: #081120; }
+textarea { padding-inline-end: .5rem; resize: vertical; min-height: 3.6rem; }
+.inp .x { position: absolute; right: .3rem; top: 50%; transform: translateY(-50%); border: 0; background: none; color: var(--ds-text-muted); }
+.inp--locked input { opacity: .55; }
+.radios { display: flex; gap: .3rem; flex-wrap: wrap; }
+.radios button { padding: .25rem .6rem; border-radius: 999px; border: 1px solid var(--ds-border); background: none; font-size: 12px; color: var(--ds-text-muted); }
+.radios button[aria-pressed="true"] { border-color: var(--ds-accent); color: var(--ds-text); background: rgba(126,207,255,.1); }
+.crow { display: grid; grid-template-columns: 1.4rem 1fr auto; gap: .5rem; align-items: center; font-size: 13px; }
+.sw { width: 1.4rem; height: 1.4rem; border-radius: .3rem; border: 1px solid rgba(255,255,255,.25); }
+.crow small { display: block; color: var(--ds-text-muted); font-size: 11px; }
+.crow .fixed { font-size: 11px; padding: .05rem .4rem; border-radius: 3px; border: 1px solid var(--ds-warning); color: var(--ds-warning); white-space: nowrap; }
+.crow .link { font-size: 11px; color: var(--ds-accent); white-space: nowrap; }
+.crow .bad { color: var(--ds-warning); font-size: 11px; }
+
+/* checks */
+.checks { display: grid; gap: .45rem; }
+.chk { display: grid; grid-template-columns: 1.3rem 1fr; gap: .45rem; padding: .5rem .55rem; border-radius: .45rem; border: 1px solid var(--ds-border); background: rgba(255,255,255,.02); font-size: 13px; }
+.chk .i { display: inline-grid; place-items: center; width: 1.3rem; height: 1.3rem; border-radius: 50%; font: 700 11px system-ui; }
+.chk--ok .i { background: rgba(61,214,140,.18); color: var(--ds-success); }
+.chk--warn { border-color: color-mix(in srgb, var(--ds-warning) 45%, var(--ds-border)); }
+.chk--warn .i { background: var(--ds-warning); color: #1a1100; }
+.chk small { display: block; color: var(--ds-text-muted); font-size: 12px; margin-top: .1rem; }
+.chk a { color: var(--ds-accent); font-size: 12px; }
+.chk-summary { display: flex; gap: .6rem; flex-wrap: wrap; font-size: 12px; color: var(--ds-text-muted); }
+.chk-summary span b { color: var(--ds-text); }
+
+/* variant C bottom bar */
+.bottom { grid-column: 1 / -1; border-top: 1px solid var(--ds-border); background: var(--ds-bg-panel); }
+.bottom summary { list-style: none; cursor: pointer; padding: .55rem .9rem; display: flex; gap: .8rem; align-items: center; }
+.bottom summary::-webkit-details-marker { display: none; }
+.bottom .checks { grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); padding: 0 .9rem .8rem; }
+.popover { color: var(--ds-text); font: 14px/1.4 system-ui, sans-serif; background-color: var(--ds-bg-panel); position: absolute; z-index: 5; left: 50%; transform: translateX(-50%); margin-top: .9rem; width: 18rem; border-radius: .6rem; overflow: hidden; background: var(--glass); backdrop-filter: blur(18px) saturate(140%); border: 1px solid var(--ds-border); box-shadow: 0 22px 48px -12px rgba(0,0,0,.65); }
+.popover::before { content: ""; display: block; height: 1px; background: var(--glass-edge); }
+.popover h5 { margin: 0; padding: .55rem .7rem; font-size: 13px; background: var(--head-bg); }
+.popover .parts { padding: .6rem; }
+
+/* dialog */
+.backdrop { position: fixed; inset: 0; z-index: 60; display: none; place-items: center; background: radial-gradient(circle at 50% 42%, rgba(126,207,255,.28), transparent 42%), rgba(4,8,16,.62); }
+.backdrop.open { display: grid; }
+.dlg { width: min(30rem, calc(100vw - 2rem)); border-radius: .6rem; overflow: hidden; background: var(--glass); backdrop-filter: blur(18px) saturate(140%); border: 1px solid var(--ds-border); box-shadow: 0 22px 48px -12px rgba(0,0,0,.65); }
+.dlg-head { display: flex; align-items: center; gap: .6rem; padding: .8rem 1rem; background: var(--head-bg); color: #fff; }
+.dlg-head .hi { display: inline-grid; place-items: center; width: 1.8rem; height: 1.8rem; border-radius: .4rem; background: rgba(245,184,74,.25); color: var(--ds-warning); font-weight: 700; }
+.dlg-head h2 { margin: 0; font-size: 16px; flex: 1; }
+.dlg-x { width: 1.9rem; height: 1.9rem; border-radius: .35rem; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.14); color: #fff; }
+.dlg-body { padding: 1rem; display: grid; gap: .8rem; }
+.conseq { border: 1px solid var(--ds-border); border-radius: .45rem; padding: .6rem .7rem; background: rgba(255,255,255,.03); font-size: 13px; display: grid; gap: .3rem; }
+.dlg-foot { display: flex; justify-content: flex-end; gap: .5rem; flex-wrap: wrap; padding: 0 1rem 1rem; }
+
+footer.ftr { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 2.75rem; padding: 0 .9rem; font-size: 11px; letter-spacing: .08em; color: var(--ds-text-muted); background: var(--ds-bg-panel); border-top: 1px solid var(--ds-border); }
+footer.ftr .links { display: flex; gap: 1rem; }
+footer.ftr .ver { justify-self: end; letter-spacing: 0; }
+
+@media (max-width: 64rem) {
+  .work--A { grid-template-columns: minmax(0,1fr) 20rem; }
+  .work--A .pane--left { display: none; }
+}
+@media (max-width: 48rem) {
+  .work--A, .work--B, .work--C { grid-template-columns: 1fr; }
+  .work .pane:not(.pane--left) { display: none; }
+  .row { flex-direction: column; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ins::before { animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: .55; } }
+}
+</style>
+</head>
+<body>
+
+<div class="mk" role="region" aria-label="Mockup-Steuerung">
+  <span><b>Variante</b><span class="seg" data-k="v"><button data-v="A">A Drei Spalten</button><button data-v="B">B Wie der Editor</button><button data-v="C">C Einfügen im Baustein</button></span></span>
+  <span><b>Art</b><span class="seg" data-k="mode"><button data-v="free">Freier Baustein</button><button data-v="clone">Kopie</button></span></span>
+  <span><b>Zustand</b><span class="seg" data-k="st"><button data-v="empty">Leer</button><button data-v="work">In Arbeit</button><button data-v="warn">Mit Warnung</button><button data-v="saved">Gespeichert</button></span></span>
+  <span class="note" id="mknote"></span>
+</div>
+
+<div class="addr" aria-label="Adresszeile des Browsers (Beispiel)"><span class="tag">Adresszeile</span><span class="bar" id="url"></span></div>
+<header class="hdr">
+  <a class="back" href="#" id="back">← Zurück zu „Frühjahrsangebot 2027“</a>
+  <div class="titlebox">
+    <input class="name" id="name" aria-label="Name des Bausteins" value="">
+    <span id="kind"></span>
+    <span class="state" id="state"></span>
+  </div>
+  <div class="tools">
+    <button class="ibtn" aria-label="Rückgängig" title="Rückgängig">↶</button>
+    <button class="ibtn" aria-label="Wiederholen" title="Wiederholen">↷</button>
+    <button class="btn btn--outline" id="saveDraft">Entwurf speichern <kbd>⌘S</kbd></button>
+    <button class="btn btn--primary" id="publish">Als eigenen Baustein speichern</button>
+    <button class="ibtn" aria-label="Weitere Aktionen" title="Weitere Aktionen">⋮</button>
+    <button class="lang" aria-label="Sprache wechseln">🌐 DE</button>
+  </div>
+</header>
+
+<main class="work" id="work"></main>
+
+<footer class="ftr"><span></span><span class="links"><span>STARTSEITE</span><span>IMPRESSUM</span><span>DATENSCHUTZ</span><span>ÜBER</span></span><span class="ver">v0.4.7</span></footer>
+
+<div class="backdrop" id="leave" role="dialog" aria-modal="true" aria-labelledby="leaveT">
+  <div class="dlg">
+    <div class="dlg-head"><span class="hi">!</span><h2 id="leaveT">Änderungen am Baustein speichern?</h2><button class="dlg-x" aria-label="Schließen" data-close>×</button></div>
+    <div class="dlg-body">
+      <p style="margin:0">Sie gehen zurück zu „Frühjahrsangebot 2027“.</p>
+      <div class="conseq">
+        <span><b>Entwurf speichern:</b> „<span class="nm"></span>“ bleibt als Entwurf erhalten. Sie finden ihn unter „Eigene Bausteine“.</span>
+        <span><b>Verwerfen:</b> Die Änderungen seit dem letzten Speichern gehen verloren.</span>
+        <span>Die Vorlage „Frühjahrsangebot 2027“ ändert sich in beiden Fällen nicht.</span>
+      </div>
+    </div>
+    <div class="dlg-foot"><button class="btn" data-close>Abbrechen</button><button class="btn" data-close>Verwerfen</button><button class="btn btn--primary" data-close>Entwurf speichern</button></div>
+  </div>
+</div>
+
+<script>
+const S = { v: 'B', mode: 'free', st: 'work', prev: 'dark', tab: 'parts', sel: 'btn' };
+try { Object.assign(S, JSON.parse(localStorage.getItem('mk-r1') || '{}')); } catch {}
+
+const SETS = {
+  dark: { page: '#08101e', content: '#0c1628', body: '#7a9ab8', head: '#d8eeff', dim: '#6b88a6', link: '#7ecfff', accent: '#f5c518', btn: '#1d6bb8', btnText: '#ffffff' },
+  light: { page: '#e9eff6', content: '#ffffff', body: '#3b4f63', head: '#0c1d33', dim: '#56697c', link: '#1565b0', accent: '#8a6200', btn: '#1d6bb8', btnText: '#ffffff' },
+};
+const FIXED_TEXT = '#3b4f63'; // fixed own color set by the designer; fine in Light, too dark in Dark
+
+const DEF = { bv: 'fill', ba: 'left', split: '.67', swap: '', mob: 'img', va: 'top', rad: '4', gap: '16', align: 'left' };
+const NOTES = {
+  A: 'Teile links, Baustein in der Mitte, Eigenschaften und Prüfung rechts. Alles gleichzeitig sichtbar, braucht breite Bildschirme.',
+  B: 'Gleicher Aufbau wie der Editor: Vorschau links, rechte Seitenleiste mit Tabs. Empfohlen: bekanntes Muster, passt auf Tablets.',
+  C: 'Teile über „+“ direkt zwischen den Teilen einfügen. Eigenschaften rechts, Prüfung als Leiste unten. Wenig Ziehen nötig.',
+};
+
+function seg() {
+  document.querySelectorAll('.mk .seg').forEach((g) => g.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(S[g.dataset.k] === b.dataset.v))));
+  document.getElementById('mknote').textContent = NOTES[S.v];
+}
+
+const isClone = () => S.mode === 'clone';
+const warn = () => S.st === 'warn';
+
+function header() {
+  const name = isClone() ? 'Preisbox Frühjahr' : S.st === 'empty' ? 'Neuer Baustein' : 'Bild mit Angebot';
+  const n = document.getElementById('name'); n.value = name;
+  document.querySelectorAll('.nm').forEach((e) => (e.textContent = name));
+  document.getElementById('kind').innerHTML = isClone()
+    ? '<span class="kind kind--clone">Kopie von „Preisbox“ <span class="own">eigen</span></span>'
+    : '<span class="kind kind--free">Freier Baustein <span class="own">eigen</span></span>';
+  const id = isClone() ? '0192f3a4-7c1e-7b2a-9d4e-5a1c2b3d4e5f' : '0192f3b9-2a80-7d11-8c3e-1f6a7b8c9d0e';
+  document.getElementById('url').innerHTML = `nxpatterns.github.io/newsletter-template-editor<b>/blocks/${id}</b>?from=0192e7b1-…`;
+  const st = document.getElementById('state');
+  if (S.st === 'saved') { st.className = 'state state--ok'; st.innerHTML = '✓ Gespeichert · Version 3'; }
+  else if (S.st === 'empty') { st.className = 'state'; st.innerHTML = 'Neu, noch leer'; }
+  else { st.className = 'state'; st.innerHTML = '<span class="dot"></span>Nicht gespeichert'; }
+  document.getElementById('saveDraft').disabled = S.st === 'saved' || S.st === 'empty';
+  document.getElementById('publish').disabled = S.st === 'empty';
+  document.getElementById('publish').textContent = S.st === 'saved' ? 'Neue Version speichern' : 'Als eigenen Baustein speichern';
+}
+
+function mailVars() {
+  const c = SETS[S.prev];
+  const low = S.prev === 'dark' && warn() ? FIXED_TEXT : (warn() ? FIXED_TEXT : c.body);
+  return `--m-page:${c.page};--m-content:${c.content};--m-body:${c.body};--m-head:${c.head};--m-dim:${c.dim};--m-accent:${c.accent};--m-btn:${c.btn};--m-btnText:${c.btnText};--m-low:${low}`;
+}
+
+function part(id, label, inner, extra = '') {
+  return `<div class="part ${S.sel === id ? 'is-sel' : ''} ${extra}" data-part="${id}" tabindex="0" role="button" aria-label="${label}"><span class="part-label">${label}</span>${inner}</div>`;
+}
+
+function freeBlock() {
+  if (S.st === 'empty') {
+    return `<div class="empty">
+      <b>Ihr Baustein ist noch leer.</b>
+      <span>Ziehen Sie ein Teil hierher oder wählen Sie es aus und drücken Sie Enter.</span>
+      <span style="font-size:13px;opacity:.8">Schnellstart:</span>
+      <div class="starter"><button>Zeile mit 2 Spalten</button><button>Bild über Text</button><button>Nur Text mit Button</button></div>
+    </div>`;
+  }
+  const f = warn() ? '<span class="flag" title="Prüfung: Hinweis">!</span>' : '';
+  const plus = S.v === 'C' ? `<div class="plus"><button aria-label="Teil einfügen" id="plusBtn">+</button>${S.pop ? popover() : ''}</div>` : '';
+  const ins = (S.v !== 'C' && S.st === 'work') ? '<div class="ins"><span>Hier einfügen: Abstand</span></div>' : '';
+  const c1 = part('col1', 'Spalte', `<div class="col">${part('img', 'Bild', `<div class="p-img" style="--rad:${(S.rad ?? '4')}px">${warn() ? '' : 'Bild: Hotelterrasse'}</div>${f}`)}</div>`);
+  return `${part('row', 'Zeile', `<div class="row ${S.swap ? 'row--swap' : ''} ${S.va === 'mid' ? 'row--mid' : ''}" style="--w1:${S.split || .67}">
+      ${c1}
+      ${part('col2', 'Spalte', `<div class="col">
+        ${part('txt', 'Text', `<div class="p-text" style="--ta:${S.align || 'left'}"><h3>Frühjahr am See</h3><p class="low">Drei Nächte mit Frühstück und Seeblick, buchbar bis 30. April.</p></div>${f}`)}
+        ${ins}
+        ${part('btn', 'Button', `<span class="p-btn">${warn() ? 'Hier klicken' : 'Angebot ansehen'}</span>${f}`)}
+      </div>`)}
+    </div>`)}${plus}
+    ${part('space', 'Abstand', `<div class="p-space" style="height:${S.gap || 16}px"></div>`)}`;
+}
+
+function cloneBlock() {
+  const f = warn() ? '<span class="flag">!</span>' : '';
+  return `${part('price', 'Preisbox', `<div class="price">
+      <span class="lock">🔒 Aufbau gesperrt</span>
+      <span class="chip">${S.st === 'empty' ? 'Sonderangebot' : 'Frühbucher'}</span>
+      <span class="strike">statt 199 €</span>
+      <span class="amount">149 € <small>pro Person</small></span>
+      <span style="color:var(--m-body);font:15px system-ui">${S.st === 'empty' ? 'Kein Abo, jederzeit kündbar' : '3 Nächte mit Frühstück'}</span>
+      <span class="fine">${warn() ? '' : 'Begrenztes Kontingent'}</span>${f}
+    </div>`)}`;
+}
+
+function stage() {
+  const bar = `<div class="stage-bar">
+    <span class="seg2" role="group" aria-label="Vorschau-Farben"><button data-prev="dark" aria-pressed="${S.prev === 'dark'}">Dunkel</button><button data-prev="light" aria-pressed="${S.prev === 'light'}">Hell</button></span>
+    <span class="hint">Vorschau mit den Farben von „Frühjahrsangebot 2027“</span>
+    <label class="hint"><input type="checkbox" id="showParts" ${S.parts ? 'checked' : ''}> Teile zeigen</label>
+  </div>`;
+  return `<section class="stage" aria-label="Baustein">${bar}
+    <div class="canvas ${S.parts ? 'show-parts' : ''}"><div class="mail" style="${mailVars()}">
+      <div class="mail-ctx">… Baustein davor …</div>
+      <div class="blk"><span class="blk-tag" data-part="block" role="button" tabindex="0" title="Design des Bausteins">${isClone() ? 'Preisbox Frühjahr' : 'Bild mit Angebot'}</span>${isClone() ? cloneBlock() : freeBlock()}</div>
+      <div class="mail-ctx">… Baustein danach …</div>
+    </div></div></section>`;
+}
+
+const PARTS = [['▭', 'Zeile', 'nimmt Spalten auf'], ['▥', 'Spalte', 'in einer Zeile'], ['T', 'Text', 'mit Textwerkzeugen'], ['▣', 'Bild', 'Bildadresse oder Datei'], ['⬭', 'Button', 'Linktext und Linkziel'], ['↕', 'Abstand', 'Luft dazwischen']];
+function palette() {
+  const dis = isClone() ? 'aria-disabled="true"' : '';
+  const tiles = PARTS.map(([i, t, s]) => `<button class="ptile" ${dis} draggable="${!isClone()}"><span class="ic">${i}</span><span>${t}<small>${s}</small></span></button>`).join('');
+  const own = `<button class="ptile is-own" ${dis}><span class="ic">◆</span><span>Kontakt kompakt<small>eigener Baustein · V2</small></span></button>`;
+  const lock = isClone() ? '<div class="notice notice--lock">🔒 <span>Bei einer Kopie bleibt der Aufbau wie beim Original. Sie ändern Starttexte, Layout und Farben. Für einen anderen Aufbau erstellen Sie einen freien Baustein.</span></div>' : '';
+  return `${lock}<div class="parts">${tiles}</div><div class="sub">Eigene Bausteine</div><div class="parts">${own}</div>
+    <div class="kbd-help"><b>Ohne Maus:</b> Teil mit <kbd>Tab</kbd> wählen, <kbd>Enter</kbd> fügt es nach dem markierten Teil ein. Markiertes Teil mit <kbd>Alt</kbd>+<kbd>↑</kbd> <kbd>↓</kbd> verschieben, <kbd>Entf</kbd> entfernt es.</div>`;
+}
+
+function inp(label, val, help = '', locked = false) {
+  return `<div class="field"><label>${label}</label><div class="inp ${locked ? 'inp--locked' : ''}"><input value="${val}" ${locked ? 'disabled' : ''}>${locked ? '' : '<button class="x" aria-label="Leeren">×</button>'}</div>${help ? `<span class="help">${help}</span>` : ''}</div>`;
+}
+function colorRow(sw, name, sub, right) { return `<div class="crow"><span class="sw" style="background:${sw}"></span><span>${name}<small>${sub}</small></span>${right}</div>`; }
+
+function props() {
+  const c = SETS[S.prev];
+  if (S.st === 'empty' && !isClone()) return '<div class="notice notice--info">ℹ <span>Wählen Sie ein Teil im Baustein aus. Hier erscheinen dann seine Felder und Farben.</span></div>';
+  if (isClone()) {
+    return `<div class="fgroup"><h4>Starttexte <span class="hint">neue Preisboxen beginnen damit</span></h4><div class="in">
+        ${inp('Hinweis oben', 'Frühbucher')}${inp('Betrag', '149')}${inp('Zeitraum', 'pro Person')}${inp('Kleingedruckt', warn() ? '' : 'Begrenztes Kontingent', '', false)}
+      </div></div>
+      <div class="fgroup"><h4>Layout</h4><div class="in">
+        <div class="field"><label>Alter Preis</label><div class="radios"><button aria-pressed="true">Zeigen</button><button>Ausblenden</button></div></div>
+        <div class="field"><label>Währung</label><div class="radios"><button aria-pressed="true">€</button><button>$</button><button>CHF</button><button>Andere</button></div></div>
+      </div></div>
+      <div class="fgroup"><h4>Farben</h4><div class="in">
+        ${colorRow(c.accent, 'Hinweis oben', 'wie „Akzent“', '<span class="link">Ändern</span>')}
+        ${colorRow(c.head, 'Betrag', 'wie „Überschriften“', '<span class="link">Ändern</span>')}
+        ${colorRow(warn() ? '#9aa7b4' : c.dim, 'Kleingedruckt', warn() ? '● eigene Farbe #9aa7b4' : 'wie „Gedämpfter Text“', warn() ? '<span class="fixed">fest</span>' : '<span class="link">Ändern</span>')}
+      </div></div>`;
+  }
+  const sel = S.sel;
+  const radio = (k, v, t) => `<button data-set="${k}" data-val="${v}" aria-pressed="${String((S[k] ?? DEF[k]) == v)}">${t}</button>`;
+  const grp = (t, hint, inner, cls = '') => `<div class="fgroup ${cls}"><h4>${t}${hint ? ` <span class="hint">${hint}</span>` : ''}</h4><div class="in">${inner}</div></div>`;
+  const sel1 = (label, opts, help) => `<div class="field"><label>${label}</label><div class="inp"><select>${opts.map((o) => `<option>${o}</option>`).join('')}</select></div>${help ? `<span class="help">${help}</span>` : ''}</div>`;
+  const FONTS = ['Georgia (Serif)', 'Arial (Sans)', 'Helvetica (Sans)', 'Verdana (Sans)', 'Trebuchet MS (Sans)', 'Palatino (Serif)', 'Eigene Schrift …'];
+  const SIZES = ['xs · 12 px', 's · 14 px', 'm · 17 px', 'l · 20 px', 'xl · 26 px', '2xl · 32 px', '3xl · 40 px', '4xl · 48 px'];
+  const fontField = (who, base) => sel1('Schrift', [`Wie ${who} (${base})`, ...FONTS], `Leer lassen heißt: erben von ${who}. Gmail und Outlook zeigen nur Systemschriften.`);
+  const colorsDesign = (rows) => `<div class="field"><label>Farben <span class="hint">folgen der Vorlage, außer „fest“</span></label><div style="display:grid;gap:.45rem">${rows}</div></div>`;
+  if (sel === 'block') {
+    return grp('Design des Bausteins', 'gilt für alle Teile, die nichts eigenes haben', `
+        ${fontField('Vorlage', 'Georgia')}
+        ${sel1('Grundgröße', ['Wie Vorlage (m · 17 px)', ...SIZES])}
+        ${colorsDesign(colorRow(c.content, 'Hintergrund', 'wie „Inhaltsfläche“', '<span class="link">Ändern</span>'))}
+        <div class="field"><label>Designs</label><div class="radios"><button aria-pressed="true">Standard (aktiv)</button><button disabled>Vorschläge (später)</button></div><span class="help">Ein Baustein kann mehrere Designs über denselben Inhalt haben.</span></div>`)
+      + `<div class="notice notice--info">ℹ <span>Erbt von der Vorlage „Frühjahrsangebot 2027“. Teile erben vom Baustein.</span></div>`;
+  }
+  if (sel === 'btn') {
+    return grp('Inhalt', '', `
+        ${inp('Linktext', warn() ? 'Hier klicken' : 'Angebot ansehen', 'Worte, die Leser anklicken.')}
+        ${inp('Linkziel', 'https://cloudlib.eu/angebot', 'Wohin der Klick führt. https:// wird ergänzt.')}`)
+      + grp('Design', '', `
+        <div class="field"><label>Art</label><div class="radios">${radio('bv', 'fill', 'Gefüllt')}${radio('bv', 'line', 'Umrandet')}${radio('bv', 'text', 'Textlink')}</div></div>
+        <div class="field"><label>Ausrichtung</label><div class="radios">${radio('ba', 'left', 'Links')}${radio('ba', 'center', 'Mitte')}${radio('ba', 'full', 'Ganze Breite')}</div></div>
+        ${fontField('Baustein', 'Georgia')}
+        ${colorsDesign(colorRow(c.btn, 'Button-Fläche', 'wie „Button“', '<span class="link">Ändern</span>') + colorRow(c.btnText, 'Button-Text', 'wie „Button-Text“', '<span class="link">Ändern</span>'))}`);
+  }
+  if (sel === 'row' || sel === 'col1' || sel === 'col2') {
+    return grp('Design der Zeile', 'eine Zeile hat keinen eigenen Inhalt', `
+        <div class="field"><label>Aufteilung</label><div class="radios">${radio('split', '.5', '1/3 : 2/3')}${radio('split', '.67', '2/5 : 3/5')}${radio('split', '1', '1/2 : 1/2')}${radio('split', '2', '2/3 : 1/3')}</div></div>
+        <div class="field"><label>Reihenfolge</label><div class="radios">${radio('swap', '', 'Bild links, Text rechts')}${radio('swap', '1', 'Text links, Bild rechts')}</div><span class="help">Gleiche Wirkung: eine Spalte auf die andere Seite ziehen, oder <kbd>Alt</kbd>+<kbd>←</kbd> <kbd>→</kbd>.</span></div>
+        <div class="field"><label>Auf dem Handy untereinander</label><div class="radios">${radio('mob', 'img', 'Bild zuerst')}${radio('mob', 'txt', 'Text zuerst')}</div><span class="help">Unter 600 px Breite stehen die Spalten untereinander.</span></div>
+        <div class="field"><label>Senkrecht</label><div class="radios">${radio('va', 'top', 'Oben')}${radio('va', 'mid', 'Mitte')}</div></div>
+        ${colorsDesign(colorRow(c.content, 'Hintergrund', 'wie „Inhaltsfläche“', '<span class="link">Ändern</span>'))}`);
+  }
+  if (sel === 'img') {
+    return grp('Inhalt', '', `
+        ${inp('Bildadresse', 'https://cloudlib.eu/img/terrasse.jpg', 'Wo das Bild liegt. Empfohlen statt Datei: eingebettete Bilder zeigt Gmail nicht.')}
+        ${inp('Bildbeschreibung', warn() ? '' : 'Hotelterrasse mit Blick auf den See', 'Pflicht. Text, wenn Bilder blockiert sind.')}
+        ${inp('Linkziel', '', 'Optional: wohin ein Klick auf das Bild führt.')}`)
+      + grp('Design', '', `<div class="field"><label>Ecken</label><div class="radios">${radio('rad', '0', 'Eckig')}${radio('rad', '4', 'Leicht rund')}${radio('rad', '12', 'Rund')}</div></div>`);
+  }
+  if (sel === 'space') {
+    return grp('Design', 'ein Abstand hat keinen Inhalt', `<div class="field"><label>Höhe</label><div class="radios">${radio('gap', '8', 'Klein')}${radio('gap', '16', 'Mittel')}${radio('gap', '32', 'Groß')}</div></div>`);
+  }
+  return grp('Inhalt', 'Rolle: Überschrift und Fließtext', `
+      <div class="field"><label>Text</label><textarea>Frühjahr am See\nDrei Nächte mit Frühstück und Seeblick, buchbar bis 30. April.</textarea><span class="help">Mit den Textwerkzeugen: Fett, Kursiv, Durchgestrichen, Hoch- und Tiefgestellt, Monospace, Größe, Farbe, Link.</span></div>`)
+    + grp('Design', '', `
+      ${fontField('Baustein', 'Georgia')}
+      ${sel1('Grundgröße', ['Wie Baustein (m · 17 px)', ...SIZES])}
+      <div class="field"><label>Ausrichtung</label><div class="radios">${radio('align', 'left', 'Links')}${radio('align', 'center', 'Mitte')}${radio('align', 'right', 'Rechts')}</div></div>
+      ${colorsDesign(colorRow(c.head, 'Überschrift', 'wie „Überschriften“', '<span class="link">Ändern</span>')
+        + colorRow(warn() ? FIXED_TEXT : c.body, 'Fließtext', warn() ? `● eigene Farbe ${FIXED_TEXT}` : 'wie „Fließtext“', warn() ? '<span class="fixed">fest</span>' : '<span class="link">Ändern</span>')
+        + (warn() && S.prev === 'dark' ? '<span class="bad">⚠ Im Dunkel-Satz zu wenig Kontrast (2,1 : 1, nötig 4,5 : 1).</span>' : ''))}`);
+}
+
+function checks() {
+  const ok = (t, s = '') => `<div class="chk chk--ok"><span class="i">✓</span><span>${t}${s ? `<small>${s}</small>` : ''}</span></div>`;
+  const w = (t, s, a) => `<div class="chk chk--warn"><span class="i">!</span><span>${t}<small>${s}</small>${a ? `<a href="#">${a}</a>` : ''}</span></div>`;
+  if (S.st === 'empty') return `<div class="checks">${ok('Noch nichts zu prüfen.')}</div>`;
+  const summary = `<div class="chk-summary"><span>Geprüft in <b>Hell</b> und <b>Dunkel</b></span><span>Warnungen blockieren das Speichern nicht.</span></div>`;
+  if (!warn()) return `${summary}<div class="checks">${ok('Kontrast in Hell und Dunkel', 'Alle Texte gut lesbar.')}${ok('Bildbeschreibungen vorhanden')}${ok('Linktexte sagen, wohin es geht')}${ok('Schriftgrößen ausreichend')}</div>`;
+  if (isClone()) return `${summary}<div class="checks">${w('Kleingedruckt ist leer', 'Neue Preisboxen beginnen ohne Kleingedrucktes. Das ist erlaubt.', 'Zum Feld')}${w('Kleingedruckt: Schrift sehr klein', '12 px. Empfohlen sind mindestens 13 px.', '')}${ok('Kontrast in Hell und Dunkel')}</div>`;
+  return `${summary}<div class="checks">
+    ${w('Fließtext im Dunkel-Satz schwer lesbar', 'Feste Farbe #3b4f63 auf #0c1628: 2,1 : 1, nötig 4,5 : 1. Im Hell-Satz in Ordnung.', 'Lesbar machen')}
+    ${w('Bild ohne Bildbeschreibung', 'Ohne Beschreibung sehen Leser bei blockierten Bildern nichts.', 'Beschreibung eingeben')}
+    ${w('Linktext „Hier klicken“ sagt nichts', 'Besser: was Leser nach dem Klick erwartet, zum Beispiel „Angebot ansehen“.', 'Zum Button')}
+    ${ok('Schriftgrößen ausreichend')}
+  </div>`;
+}
+
+function popover() {
+  return `<div class="popover" role="dialog" aria-label="Teil einfügen"><h5>Teil hier einfügen</h5><div class="parts">${PARTS.map(([i, t]) => `<button class="ptile"><span class="ic">${i}</span><span>${t}</span></button>`).join('')}</div></div>`;
+}
+
+function render() {
+  seg(); header();
+  const w = document.getElementById('work');
+  w.className = `work work--${S.v}`;
+  const nWarn = warn() ? (isClone() ? 2 : 3) : 0;
+  if (S.v === 'A') {
+    w.innerHTML = `<aside class="pane pane--left"><div class="pane-head">Teile</div><div class="pane-body">${palette()}</div></aside>
+      ${stage()}
+      <aside class="pane"><div class="pane-head">Eigenschaften</div><div class="pane-body">${props()}</div>
+        <div class="pane-head">Prüfung ${nWarn ? `· ${nWarn} Hinweise` : ''}</div><div class="pane-body">${checks()}</div></aside>`;
+  } else if (S.v === 'B') {
+    const tab = (id, t) => `<button class="tab" role="tab" data-tab="${id}" aria-selected="${S.tab === id}">${t}${id === 'check' && nWarn ? `<span class="badge">${nWarn}</span>` : ''}</button>`;
+    const body = S.tab === 'parts' ? palette() : S.tab === 'props' ? props() : checks();
+    w.innerHTML = `${stage()}<aside class="pane"><div class="tabs" role="tablist">${tab('parts', 'Teile')}${tab('props', 'Eigenschaften')}${tab('check', 'Prüfung')}</div><div class="pane-body">${body}</div></aside>`;
+  } else {
+    w.innerHTML = `${stage()}<aside class="pane"><div class="pane-head">Eigenschaften</div><div class="pane-body">${isClone() ? palette().split('<div class="parts">')[0] : ''}${props()}</div></aside>
+      <details class="bottom" ${S.open ? 'open' : ''}><summary><b>Prüfung</b><span class="hint">${nWarn ? `${nWarn} Hinweise · Hell und Dunkel` : 'Alles in Ordnung · Hell und Dunkel'}</span><span class="hint" style="margin-inline-start:auto">${S.open ? 'Einklappen ▾' : 'Aufklappen ▴'}</span></summary>${checks()}</details>`;
+  }
+  try { localStorage.setItem('mk-r1', JSON.stringify(S)); } catch {}
+}
+
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('button, [data-part], a#back, summary');
+  if (!t) return;
+  const g = t.closest('.mk .seg');
+  if (g) { S[g.dataset.k] = t.dataset.v; if (g.dataset.k === 'mode') S.sel = S.mode === 'clone' ? 'price' : 'btn'; S.pop = false; render(); return; }
+  if (t.dataset.set) { S[t.dataset.set] = t.dataset.val; render(); return; }
+  if (t.dataset.prev) { S.prev = t.dataset.prev; render(); return; }
+  if (t.dataset.tab) { S.tab = t.dataset.tab; render(); return; }
+  if (t.id === 'plusBtn') { S.pop = !S.pop; render(); return; }
+  if (t.matches('summary')) { e.preventDefault(); S.open = !S.open; render(); return; }
+  if (t.dataset.part) { S.sel = t.dataset.part; if (S.v === 'B') S.tab = 'props'; render(); return; }
+  if (t.id === 'back') { e.preventDefault(); if (S.st === 'work' || S.st === 'warn') document.getElementById('leave').classList.add('open'); return; }
+  if (t.hasAttribute('data-close')) document.getElementById('leave').classList.remove('open');
+});
+document.addEventListener('change', (e) => { if (e.target.id === 'showParts') { S.parts = e.target.checked; render(); } });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { document.getElementById('leave').classList.remove('open'); if (S.pop) { S.pop = false; render(); } } });
+render();
+</script>
+</body>
+</html>

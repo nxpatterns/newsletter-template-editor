@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup R1 Einstiege</title>
+<style>
+:root {
+  --ds-bg-page: #060b14; --ds-bg-panel: #0c1628; --ds-border: #1a3050; --ds-accent: #7ecfff;
+  --ds-text: #e8f4ff; --ds-text-muted: #7a9ab8; --ds-success: #3dd68c; --ds-warning: #f5b84a;
+  --head-bg: linear-gradient(180deg, rgba(255,255,255,.12), transparent 42%), linear-gradient(120deg, #0a1830 0%, #123a5c 48%, #0c5a78 100%);
+  --hot: #f5c518;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body { font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ds-text); background: var(--ds-bg-page); }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--ds-accent); outline-offset: 2px; }
+.mk { padding: .5rem 1rem; background: #2a1d05; border-bottom: 1px dashed #8a6a20; color: #f3d9a0; font-size: 12px; }
+.layout { display: grid; grid-template-columns: 19rem minmax(0, 1fr); min-height: calc(100vh - 2.2rem); }
+nav { border-right: 1px solid var(--ds-border); background: var(--ds-bg-panel); padding: .8rem; display: grid; gap: .45rem; align-content: start; }
+nav h1 { font-size: 15px; margin: .2rem 0 .4rem; }
+nav p { margin: 0 0 .5rem; color: var(--ds-text-muted); font-size: 12px; }
+.step { display: grid; grid-template-columns: 1.6rem 1fr; gap: .5rem; text-align: start; padding: .55rem .6rem; border-radius: .5rem; border: 1px solid var(--ds-border); background: rgba(255,255,255,.02); }
+.step[aria-current="true"] { border-color: var(--hot); background: rgba(245,197,24,.08); }
+.step .n { display: inline-grid; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--hot); color: #2a1d00; font-weight: 700; }
+.step small { display: block; color: var(--ds-text-muted); font-size: 12px; }
+.step .new { display: inline-block; margin-inline-start: .3rem; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; padding: 0 .35rem; border-radius: 3px; background: #1f6f4a; color: #d8ffe9; }
+main { padding: 1rem 1.2rem 2rem; display: grid; gap: 1rem; align-content: start; }
+.where { color: var(--ds-text-muted); font-size: 13px; }
+.where b { color: var(--ds-text); }
+
+/* fake app screen */
+.screen { border: 1px solid var(--ds-border); border-radius: .6rem; overflow: hidden; background: var(--ds-bg-page); }
+.hdr { display: flex; align-items: center; gap: .7rem; padding: .55rem .8rem; background: var(--ds-bg-panel); border-bottom: 1px solid var(--ds-border); font-size: 13px; }
+.hdr .sp { flex: 1; }
+.chip { padding: .15rem .5rem; border: 1px solid var(--ds-border); border-radius: .25rem; color: var(--ds-text-muted); }
+.btnp { padding: .2rem .7rem; border-radius: .25rem; background: #1d6bb8; color: #fff; }
+.body { display: grid; grid-template-columns: minmax(0,1fr) 21rem; min-height: 25rem; }
+.preview { display: grid; place-items: start center; padding: 1rem; }
+.mail { width: min(100%, 26rem); background: #08101e; border-radius: .25rem; padding: .8rem; display: grid; gap: .5rem; }
+.mrow { height: 2.4rem; border-radius: 3px; background: #0c1628; border: 1px solid #1e3a5c; color: #6b88a6; font-size: 11px; display: grid; place-items: center; }
+.panel { background: var(--ds-bg-panel); border-left: 1px solid var(--ds-border); padding: .6rem; display: grid; gap: .5rem; align-content: start; }
+.tabs { display: flex; gap: 2px; flex-wrap: wrap; }
+.tab { padding: .3rem .5rem; border: 1px solid var(--ds-border); border-bottom: 0; border-radius: .35rem .35rem 0 0; font-size: 12px; color: var(--ds-text-muted); }
+.tab.on { color: var(--ds-text); background: rgba(126,207,255,.08); }
+.seg { display: inline-flex; border: 1px solid var(--ds-border); border-radius: 999px; overflow: hidden; font-size: 12px; }
+.seg span { padding: .2rem .7rem; color: var(--ds-text-muted); }
+.seg span.on { background: rgba(126,207,255,.16); color: var(--ds-text); }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; }
+.tile { position: relative; min-height: 4.4rem; padding: .5rem; border-radius: .5rem; border: 1px solid color-mix(in srgb, var(--a) 40%, var(--ds-border)); background: linear-gradient(160deg, color-mix(in srgb, var(--a) 18%, var(--ds-bg-panel)), var(--ds-bg-panel) 75%); font-size: 13px; }
+.tile small { display: block; color: var(--ds-text-muted); font-size: 11px; }
+.tile .adj { position: absolute; right: .35rem; bottom: .35rem; font-size: 11px; padding: .1rem .45rem; border-radius: 999px; border: 1px solid rgba(255,255,255,.3); background: rgba(0,0,0,.25); }
+.tile .own { font-size: 9px; text-transform: uppercase; padding: 0 .3rem; border-radius: 3px; background: rgba(255,255,255,.14); }
+.tile--new { --a: #a3b8cc; border-style: dashed; display: grid; place-items: center; text-align: center; }
+.prow { display: grid; grid-template-columns: .6rem 1fr auto; gap: .5rem; align-items: center; padding: .45rem .5rem; border-radius: .4rem; border: 1px solid var(--ds-border); font-size: 13px; }
+.prow .bar { width: .35rem; height: 1.6rem; border-radius: 2px; background: var(--a); }
+.prow .icons { display: flex; gap: .25rem; color: var(--ds-text-muted); }
+.prow .icons span { display: inline-grid; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: .25rem; border: 1px solid var(--ds-border); }
+.menu { justify-self: end; width: 15rem; border-radius: .5rem; overflow: hidden; border: 1px solid var(--ds-border); background: color-mix(in srgb, var(--ds-bg-panel) 88%, transparent); box-shadow: 0 18px 40px -12px rgba(0,0,0,.7); font-size: 13px; }
+.menu div { padding: .45rem .7rem; border-top: 1px solid var(--ds-border); }
+.menu div:first-child { border-top: 0; }
+.warnbox { padding: .55rem .6rem; border-radius: .45rem; border: 1px solid color-mix(in srgb, var(--ds-warning) 45%, var(--ds-border)); background: rgba(245,184,74,.07); font-size: 12px; }
+.warnbox a { color: var(--ds-accent); }
+.start { padding: 1.2rem; display: grid; gap: .8rem; }
+.start h2 { margin: 0; font-size: 18px; }
+.start .sec { color: var(--ds-text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.start .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: .6rem; }
+.stile { position: relative; padding: .8rem; min-height: 5rem; border-radius: .6rem; border: 1px solid var(--ds-border); background: rgba(255,255,255,.03); }
+.stile small { display: block; color: var(--ds-text-muted); font-size: 12px; }
+.dropdown { margin: .6rem .8rem 1rem auto; width: 18rem; border-radius: .6rem; overflow: hidden; border: 1px solid var(--ds-border); background: var(--ds-bg-panel); box-shadow: 0 22px 48px -12px rgba(0,0,0,.65); font-size: 13px; }
+.dropdown .h { padding: .6rem .8rem; background: var(--head-bg); }
+.dropdown .h small { display: block; opacity: .75; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+.dropdown .it { position: relative; padding: .5rem .8rem; border-top: 1px solid var(--ds-border); }
+.dropdown .lbl { padding: .45rem .8rem .2rem; color: var(--ds-text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+
+/* highlight */
+.hot { position: relative; outline: 3px solid var(--hot); outline-offset: 2px; border-radius: .4rem; box-shadow: 0 0 0 6px rgba(245,197,24,.18); }
+.hot::after { content: attr(data-n); position: absolute; top: -.8rem; left: -.8rem; display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--hot); color: #2a1d00; font: 700 12px system-ui; z-index: 2; }
+@media (prefers-reduced-motion: no-preference) { .hot { animation: glow 1.8s ease-in-out infinite; } @keyframes glow { 50% { box-shadow: 0 0 0 10px rgba(245,197,24,.06); } } }
+
+.result { display: grid; grid-template-columns: auto 1fr; gap: .25rem .9rem; padding: .8rem 1rem; border-radius: .6rem; border: 1px solid color-mix(in srgb, var(--ds-success) 40%, var(--ds-border)); background: rgba(61,214,140,.06); font-size: 13px; }
+.result b { color: var(--ds-text-muted); font-weight: 500; }
+.result code { font: 12px ui-monospace, Menlo, monospace; color: #cfe8ff; }
+.flow { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; font-size: 13px; }
+.flow span { padding: .2rem .55rem; border-radius: 999px; border: 1px solid var(--ds-border); background: rgba(255,255,255,.03); }
+.flow i { color: var(--hot); font-style: normal; }
+@media (max-width: 60rem) { .layout { grid-template-columns: 1fr; } .body { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="mk">Mockup R1 Einstiege · Wo klickt man, um in den Block-Editor zu kommen? Links einen Einstieg wählen; die gelbe Markierung zeigt die Klickstelle.</div>
+<div class="layout">
+  <nav aria-label="Einstiege">
+    <h1>Einstiege in den Block-Editor</h1>
+    <p>1 bis 4 im Editor (Vorlage offen), 5 und 6 ohne Vorlage.</p>
+    <div id="steps"></div>
+  </nav>
+  <main id="main"></main>
+</div>
+<script>
+const E = [
+  { id: 1, title: 'Tab „Alle“ › Eigene › „Neuer Baustein“', sub: 'Freier Baustein, mit Vorlage', isNew: true },
+  { id: 2, title: 'Tab „Alle“ › Kachel › „Anpassen“', sub: 'Kopie eines eingebauten Bausteins' },
+  { id: 3, title: 'Tab „Aktuelle Bausteine“ › ⋯ › „Als eigenen Baustein speichern“', sub: 'Platzierter Baustein wird eigener' },
+  { id: 4, title: 'Tab „Farben“ › Warnhinweis › Link', sub: 'Statt Einzelfarben die Bausteinart anpassen' },
+  { id: 5, title: 'Startseite › „Neu anfangen“ › „Neuer Baustein“', sub: 'Freier Baustein, ohne Vorlage' },
+  { id: 6, title: 'Startmenü ☰ › „Neuer Baustein“', sub: 'Gleich wie 5, von überall außerhalb des Editors' },
+];
+let cur = 1;
+try { cur = Number(localStorage.getItem('mk-entry')) || 1; } catch {}
+
+const hdrEditor = '<div class="hdr">⌂ <b>Newsletter-Editor</b> <span>· Frühjahrsangebot 2027</span><span class="sp"></span><span class="chip">↶ ↷</span><span class="btnp">Speichern</span><span class="chip">HTML exportieren</span><span class="chip">☰</span><span class="chip">🌐 DE</span></div>';
+const mail = '<div class="preview"><div class="mail"><div class="mrow">Kopf</div><div class="mrow">Hero</div><div class="mrow">Absatz</div><div class="mrow">Preisbox</div><div class="mrow">Fuß</div></div></div>';
+const tabs = (on) => `<div class="tabs">${['Aktuell', 'Alle', 'Kampagne', 'Marke', 'Farben', 'Legal', 'Social'].map((t) => `<span class="tab ${t === on ? 'on' : ''}">${t}</span>`).join('')}</div>`;
+const tile = (name, a, extra = '') => `<div class="tile" style="--a:${a}">${name}${extra}</div>`;
+const editor = (panel) => `<div class="screen">${hdrEditor}<div class="body">${mail}<div class="panel">${panel}</div></div></div>`;
+
+const SCREENS = {
+  1: () => editor(`${tabs('Alle')}<span class="seg"><span>Mitgeliefert</span><span class="on">Eigene</span></span>
+      <div class="grid">
+        <div class="tile tile--new hot" data-n="1">＋ Neuer Baustein<small>frei aus Teilen bauen</small></div>
+        ${tile('Kontakt kompakt <span class="own">eigen</span>', '#a78bfa', '<small>Version 2</small><span class="adj">Bearbeiten</span>')}
+        ${tile('Preisbox Frühjahr <span class="own">eigen</span>', '#fde047', '<small>Kopie von Preisbox</small><span class="adj">Bearbeiten</span>')}
+      </div>`),
+  2: () => editor(`${tabs('Alle')}<span class="seg"><span class="on">Mitgeliefert</span><span>Eigene</span></span>
+      <div class="grid">
+        ${tile('Hero', '#fb923c')}${tile('Absatz', '#60a5fa')}
+        <div class="tile" style="--a:#fde047">Preisbox<small>Angebot mit Preis</small><span class="adj hot" data-n="2">Anpassen</span></div>
+        ${tile('Button', '#22d3ee')}${tile('Bild', '#f87171')}${tile('Termin', '#fdba74')}
+      </div>`),
+  3: () => editor(`${tabs('Aktuell')}
+      <div class="prow" style="--a:#fb923c"><span class="bar"></span>Hero<span class="icons"><span>✎</span><span>⋯</span></span></div>
+      <div class="prow" style="--a:#60a5fa"><span class="bar"></span>Absatz<span class="icons"><span>✎</span><span>⋯</span></span></div>
+      <div class="prow" style="--a:#fde047"><span class="bar"></span>Preisbox<span class="icons"><span>✎</span><span class="hot" data-n="3">⋯</span></span></div>
+      <div class="menu"><div>Nach oben</div><div>Nach unten</div><div class="hot" data-n="3">Als eigenen Baustein speichern</div><div>Entfernen</div></div>`),
+  4: () => editor(`${tabs('Farben')}
+      <div class="prow" style="--a:#fde047"><span class="bar"></span>Preisbox · 3 eigene Farben<span class="icons"><span>▾</span></span></div>
+      <div class="warnbox">Farbänderungen in einzelnen Bausteinen werden schnell unübersichtlich. <a class="hot" data-n="4" href="#">Stattdessen eigene Preisbox anlegen</a><br><small style="color:var(--ds-text-muted)">Heutiger Text verspricht „gilt für alle Bausteine dieser Art“; das ändert sich mit Entscheidung 33.</small></div>`),
+  5: () => `<div class="screen"><div class="hdr">⌂ <b>Newsletter-Editor</b><span class="sp"></span><span class="chip">☰</span><span class="chip">🌐 DE</span></div>
+      <div class="start"><h2>Willkommen zurück</h2><span class="sec">Neu anfangen</span>
+        <div class="tiles">
+          <div class="stile">Leerer Newsletter<small>Ohne Vorlage starten</small></div>
+          <div class="stile">Beispielvorlage Deutsch<small>DE · AT · CH</small></div>
+          <div class="stile">Beispielvorlage Englisch<small>UK · US · CA …</small></div>
+          <div class="stile hot" data-n="5">◆ Neuer Baustein<small>eigenen Baustein aus Teilen bauen</small></div>
+        </div>
+        <span class="sec">Zuletzt verwendet</span>
+        <div class="tiles"><div class="stile">Frühjahrsangebot 2027<small>Zuletzt geändert heute</small></div></div>
+      </div></div>`,
+  6: () => `<div class="screen"><div class="hdr">⌂ <b>Newsletter-Editor</b><span class="sp"></span><span class="chip hot" data-n="6">☰</span><span class="chip">🌐 DE</span></div>
+      <div class="dropdown"><div class="h"><small>Startseite</small>Wie möchten Sie beginnen?</div>
+        <div class="lbl">Neu anfangen</div>
+        <div class="it">Leerer Newsletter</div><div class="it">Beispielvorlage Deutsch</div><div class="it">Beispielvorlage Englisch</div>
+        <div class="it hot" data-n="6">◆ Neuer Baustein</div>
+        <div class="lbl">Gespeicherte Vorlagen</div><div class="it">Öffnen …</div>
+        <div class="it" style="color:#ff6b7a">Alles auf Standard zurücksetzen …</div></div></div>`,
+};
+
+const RESULT = {
+  1: ['Freier Baustein, leer', '/blocks/&lt;neue ID&gt;?from=&lt;ID der Vorlage&gt;', 'Link „Zurück zu Frühjahrsangebot 2027“, Vorschau in deren Farben', 'Das ist der Weg zum Mockup R1 „Bild mit Angebot“.'],
+  2: ['Kopie von „Preisbox“, Aufbau gesperrt (Entscheidung 31)', '/blocks/&lt;neue ID&gt;?from=&lt;ID der Vorlage&gt;', 'wie 1', 'Das Original bleibt unverändert.'],
+  3: ['Kopie mit den Farben dieses Bausteins (Entscheidung 34)', '/blocks/&lt;neue ID&gt;?from=&lt;ID der Vorlage&gt;', 'wie 1', 'Auf Wunsch ersetzt die Kopie danach den platzierten Baustein.'],
+  4: ['Kopie der Bausteinart, Angebot „alle Preisboxen dieser Vorlage ersetzen“ (Entscheidung 33)', '/blocks/&lt;neue ID&gt;?from=&lt;ID der Vorlage&gt;', 'wie 1', ''],
+  5: ['Freier Baustein, leer', '/blocks/&lt;neue ID&gt;', 'Link „Zurück zur Startseite“, Vorschau in neutralen Farben', ''],
+  6: ['Freier Baustein, leer', '/blocks/&lt;neue ID&gt;', 'wie 5', ''],
+};
+
+function render() {
+  document.getElementById('steps').innerHTML = E.map((e) => `<button class="step" data-id="${e.id}" aria-current="${e.id === cur}"><span class="n">${e.id}</span><span>${e.title}${e.isNew ? '<span class="new">neu</span>' : ''}<small>${e.sub}</small></span></button>`).join('');
+  const [kind, url, back, note] = RESULT[cur];
+  const e = E.find((x) => x.id === cur);
+  document.getElementById('main').innerHTML = `
+    <div class="where">Klickweg: <b>${e.title}</b></div>
+    ${SCREENS[cur]()}
+    <div class="flow"><span>Klick auf die markierte Stelle</span><i>→</i><span>Block-Editor öffnet sich</span><i>→</i><span>Speichern landet in „Alle › Eigene“</span></div>
+    <div class="result"><b>Öffnet</b><span>${kind}</span><b>Adresse</b><code>${url}</code><b>Zurück</b><span>${back}</span>${note ? `<b>Hinweis</b><span>${note}</span>` : ''}</div>
+    ${cur === 1 ? '<div class="where">Neu gegenüber dem Konzept: Bisher gab es im Editor keinen Weg zu einem <b>freien</b> Baustein, nur zu Kopien. Vorschlag: Kachel „Neuer Baustein“ am Anfang der Liste „Eigene“.</div>' : ''}`;
+  try { localStorage.setItem('mk-entry', String(cur)); } catch {}
+}
+document.addEventListener('click', (ev) => {
+  const b = ev.target.closest('.step'); if (b) { cur = Number(b.dataset.id); render(); }
+  if (ev.target.closest('a')) ev.preventDefault();
+});
+render();
+</script>
+</body>
+</html>
