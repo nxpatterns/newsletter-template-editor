@@ -16,8 +16,8 @@ Related: `src/core/colors/model.ts` (implemented color levels), `email-colors.md
 
 ## Non-goals (now)
 
-- Implementation of either area. This document only fixes entry points, model and open questions.
-- What exactly the block editor can edit, field by field. Separate chapter. The coarse scope for clones that mockups need is open question 2.
+- Implementation of either area. This document only fixes entry points, model and decisions.
+- What exactly the block editor can edit, field by field. Separate chapter. The coarse scope for clones that mockups need is decision 31.
 - Backend, login, accounts, moderation, cloud sync. Required for the demo page and paid sync, planned later.
 - Marketplace and payments.
 - PDF export. Planned later.
@@ -66,10 +66,10 @@ The free block is a JSON tree of known parts. Every block editor action is a nam
 
 Extends the binding order of the implemented color model in `src/core/colors/model.ts` (block standard colors < general colors < per-block overrides, two sets per template: Light and Dark). A block color is either linked to a role (`{ role }`) or fixed (`{ hex }`). Product rules: `email-colors.md`.
 
-- Adapted block: follows the default colors of the template it is used in, exactly like the original. Exception: "Save as own block" from a placed block carries that block's own colors (open question 5).
+- Adapted block: follows the default colors of the template it is used in, exactly like the original. Exception: "Save as own block" from a placed block carries that block's own colors (decision 34).
 - Free block: the designer sets its own default colors. Each color gets a **role** (background, text, accent, and the other roles the general colors already use).
 - Used in another template, a free block follows that template's colors by role by default. Only colors the designer deliberately marked as **fixed** stay fixed.
-- A fixed color wins over the target template's general colors and loses to a per-block override (decision 19). Whether this is a new level or a default on the per-block level is open question 6.
+- A fixed color wins over the target template's general colors and loses to a per-block override (decision 19). Technically it is a default on the per-block level, not a new level (decision 35).
 - Block editor function **"create a new template for this block"**: an empty template that contains only this block, with general colors taken from the block's own defaults (decision 20).
 
 ## Quality checks
@@ -86,7 +86,7 @@ Checks run while editing and again when an own block is inserted into another te
 
 ## Library, drafts and storage
 
-- Saved own blocks appear in the block panel through a toggle **"All | Own"** inside the existing "All blocks" tab. No eighth tab. Dragging into the newsletter works the same from both lists.
+- Saved own blocks appear in the block panel through a toggle **"Built-in | Own"** (DE "Mitgeliefert | Eigene", decision 32) inside the existing "All blocks" tab. No eighth tab. Dragging into the newsletter works the same from both lists.
 - Own blocks keep the tint of their original type plus a fixed "own" mark. Free blocks get one shared neutral tint plus the mark. The rule "one tint = one block type" stays readable.
 - **Drafts are visible only on the block edit page.** No limit on the number of drafts; the browser's storage limit is the only bound.
   - Drafts are never deleted automatically. The list is sorted by last change, has a search by name, and offers a manual action "delete drafts older than ...".
@@ -115,13 +115,13 @@ Cloud sells convenience, not access. Users store sensitive data; trust must be e
 | Place | Entry | Note |
 | --- | --- | --- |
 | "All blocks" tile | Small "Adjust" control on each tile | Not a ✎: ✎ already means "edit this block's content" in the placed list and preview, and tiles are draggable |
-| "Current blocks" tab row (DE "Aktuelle Bausteine") | "Save as own block" | Turns per-block color overrides into a clean own block (open question 5) |
-| Colors tab warning | Link "edit the block type instead" | Today's warning text promises that a change applies to all blocks of that type. With clones this is no longer true; text and flow change (open question 4) |
+| "Current blocks" tab row (DE "Aktuelle Bausteine") | "Save as own block" | Turns per-block color overrides into a clean own block (decision 34) |
+| Colors tab warning | Link "edit the block type instead" | Today's warning text promises that a change applies to all blocks of that type. With clones this is no longer true; text and flow change (decision 33) |
 | Start page, "Start new" section | Tile "New block" next to the blank template | Works without an open template |
 | Start menu | Entry "New block" | Same |
 | Footer | None | The block editor does not belong in the footer |
 
-Route: its own address (for example `/blocks/:id`), plus an overview of own blocks and drafts (open question 1). Header behaves like the About page today: "Back to" plus the template name, with the template kept as a draft. Opened without a template, the preview uses neutral colors; opened from the editor, it uses the current template's colors, switchable Light / Dark.
+Route: its own address (for example `/blocks/:id`), plus an overview of own blocks and drafts (decision 30). Header behaves like the About page today: "Back to" plus the template name, with the template kept as a draft. Opened without a template, the preview uses neutral colors; opened from the editor, it uses the current template's colors, switchable Light / Dark.
 
 ### Demo page
 
@@ -162,7 +162,7 @@ Numbers refer to the questions in the 2026-10-21 thread.
 | 2 | Global or per template | Library for all templates; insertion records the version; updates only on request |
 | 3 | Colors in the block editor | Adapted: template default colors. Free: own default colors with roles, checked for accessibility |
 | 4 | Visual mark | Tint of the original type plus an "own" mark |
-| 5 | Own tab or toggle | Toggle "All / Own" in the existing tab |
+| 5 | Own tab or toggle | Toggle in the existing tab (label: decision 32) |
 | 6 | Control on the tile | Not a ✎; own control "Adjust" |
 | 7 | Without an open template | Yes, start page and start menu |
 | 8 | Drafts | Only on the block edit page, unlimited, cloud later |
@@ -187,6 +187,16 @@ Numbers refer to the questions in the 2026-10-21 thread.
 | 27 | Drafts | Never auto-deleted; sort, search, manual cleanup; persistent storage request |
 | 28 | Editor actions | Pure operations on the JSON model in `src/core` |
 | 29 | Open and click measurement | Use Listmonk's own tracking (`{{ TrackView }}` in the template, links already wrapped with `TrackLink` at export); per person or totals only is Listmonk's "individual subscriber tracking" setting. No own image IDs; images never expire, only raw request logs are deleted after 14 days. Block editor: image addresses stay data in the model. |
+| 30 | Overview of own blocks and drafts | Yes, an overview page (for example `/blocks`); otherwise drafts have no home. |
+| 31 | What a clone can edit | Starting texts, the existing layout options of the type, colors as roles; structure locked. |
+| 32 | Toggle label in the "All" tab | "Built-in \| Own" (DE "Mitgeliefert \| Eigene"), where "Built-in" lists only shipped blocks. |
+| 33 | "Adjust" from the Colors tab warning | Offer "replace all blocks of this type in this template with the copy", on by default; rewrite the warning text accordingly. |
+| 34 | Colors on "Save as own block" | Colors equal to a general color become role links; all others become fixed. |
+| 35 | Level of a fixed color | A default on the per-block level; same effect, no new level in the model. |
+| 36 | Keyboard alternative to drag and drop | Yes, required (select, arrow keys, insert menu). |
+| 37 | Block editor on phones | View and manage only on phones; editing from tablet width up. |
+| 38 | Nested own blocks | Same as insertion into templates, version recorded, update on request; cycles blocked. |
+| 39 | Frame of the new template for a block | Header, footer and legal parts included; otherwise the legal check fails at once. |
 
 ## Mockup scope
 
@@ -214,15 +224,4 @@ Reset dialog wording (EN; DE in the mockup):
 
 ## Open questions
 
-Recommendations to confirm before or during the first mockup round.
-
-1. Is there an overview page (for example `/blocks`) for own blocks and drafts? Recommendation: yes; otherwise drafts have no home.
-2. What can be edited on a clone? Recommendation for mockups: starting texts, the existing layout options of the type, colors as roles; structure locked.
-3. Label of the toggle inside the tab that is already called "All" (DE "Alle")? Recommendation: "Built-in | Own" (DE "Mitgeliefert | Eigene"), where "Built-in" lists only shipped blocks.
-4. What does "Adjust" from the Colors tab warning do with blocks already placed? Recommendation: offer "replace all blocks of this type in this template with the copy", on by default; rewrite the warning text accordingly.
-5. Per-block colors on "Save as own block": roles or fixed? Recommendation: colors equal to a general color become role links; all others become fixed.
-6. Fixed color as a fourth level or as a default on the per-block level? Recommendation: a default on the per-block level; same effect, no new level in the model.
-7. Must drag and drop have a keyboard alternative? Recommendation: yes, required (select, arrow keys, insert menu).
-8. Block editor on phones? Recommendation: view and manage only; editing from tablet width up.
-9. Nested own blocks: frozen version or live? Recommendation: same as insertion into templates, version recorded, update on request; cycles blocked.
-10. Does the empty template from "create a new template for this block" get header, footer and legal parts? Recommendation: yes; otherwise the legal check fails at once.
+None. Decisions 30 to 39 accepted the recommendations on 2026-10-21; mockups may still change them.
