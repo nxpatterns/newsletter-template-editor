@@ -122,7 +122,7 @@ Saved field names stay HTML-like on purpose; i18n keys and test ids use the term
 | Superscript | Best-effort in email clients |
 | Subscript | Best-effort in email clients |
 | Size | Toolbar label **Size** / **Größe**; T-shirt tokens below |
-| Theme color | **One** Color control: non-collapsed selection → span color; collapsed caret → paragraph base color. Swatches only — no free hex. Tokens (`RICH_COLOR_TOKENS` in `src/core/richtext/model.ts`): `body` · `head` · `link` · `accent` · `dim`; labels "Body text", "Headings", "Links and numbers", "Accent", "Muted text" (`rt.color.*`). The tokens equal the color roles of the same name (`ColorRole`); they replaced the earlier names `standard` / `primary` / `secondary` with the color model (commit `d679942`, 2026-10-17), in code and UI alike |
+| Theme color | **One** Color control: non-collapsed selection → span color; collapsed caret → paragraph base color. Swatches only — no free hex. Tokens (`RICH_COLOR_TOKENS` in `src/core/richtext/model.ts`): `body` · `head` · `link` · `accent` · `dim`; labels "Body text", "Headings", "Links and numbers", "Accent", "Muted text" (`rt.color.*`). The tokens equal the color roles of the same name (`ColorRole`); they replaced the earlier names `standard` / `primary` / `secondary` with the color model (commit `d679942`, 2026-10-17), in code and UI alike. Decided 2026-10-21: keep these names; internal tokens and UI labels must stay one-to-one |
 | Link | Selection = default label; URL field; open target (see links). Apply **replaces** the selection (no duplicate text) |
 | Mono | Monospace face mark |
 

@@ -190,7 +190,7 @@ Never require File System Access for core workflows. FSA Save/Open may exist as 
 └── Reset everything to defaults…
 ```
 
-Labels are the shipped EN strings (`file.*`, `startMenu.*`, `reset.*`). The template file label shows "(.json)"; the earlier rule "no file extension in labels" is not applied there. Internally the envelope stays `kind: 'nte-project'`.
+Labels are the shipped EN strings (`file.*`, `startMenu.*`, `reset.*`). The template file labels keep "(.json)" on purpose (decided 2026-10-21), so users know which file to look for. Other labels stay free of file jargon. Internally the envelope stays `kind: 'nte-project'`.
 
 ### Factory reset
 
