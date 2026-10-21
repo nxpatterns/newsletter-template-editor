@@ -4,7 +4,7 @@ Concept for two new product areas: a **block editor** (users change or create th
 Status: concept only, agreed in discussion on 2026-10-21. Nothing implemented. Mockups come after review.
 Audience: non-technical sellers and marketing people first, designers second. English only.
 
-Related: `email-colors.md` (color levels), `block-content-editing.md` (edit modal, lite kit, render pipeline), `file-management.md` (storage, start page, menus), `docs/sessions/cache/2026-10-17--17-48--Block-Editor-and-Color-Concept.md` (earlier notes), `AGENTS.md` (email CSS rule).
+Related: `src/core/colors/model.ts` (implemented color levels), `email-colors.md` (older color concept, to be updated), `block-content-editing.md` (edit modal, lite kit, render pipeline), `file-management.md` (storage, start page, menus), `design-system.md` (app look), `AGENTS.md` (email CSS rule).
 
 ## Goals
 
@@ -17,7 +17,7 @@ Related: `email-colors.md` (color levels), `block-content-editing.md` (edit moda
 ## Non-goals (now)
 
 - Implementation of either area. This document only fixes entry points, model and open questions.
-- What exactly the block editor can edit (field by field). Separate chapter.
+- What exactly the block editor can edit, field by field. Separate chapter. The coarse scope for clones that mockups need is open question 2.
 - Backend, login, accounts, moderation, cloud sync. Required for the demo page and paid sync, planned later.
 - Marketplace and payments.
 - PDF export. Planned later.
@@ -51,22 +51,26 @@ A built-in block is never changed in place. "Adjust" on a built-in block always 
 ### Free blocks are composed, never coded
 
 - Built only from fixed parts via drag and drop: row, column, text, image, button, spacer, and further parts later (callout, code, highlight, formula).
-- Modern layout is allowed in the editor (for example columns). Export turns it into what old mail clients understand (nested tables), per the existing inliner step.
+- Modern layout is allowed in the editor (for example columns). The shared renderer for free blocks emits what old mail clients understand (nested tables with classes); the existing inliner step then bakes the styles in. The inliner itself does not change layout.
 - Text uses the existing WYSIWYG lite kit. Nothing beyond it should be needed.
 - **No custom HTML and no scripts, ever.** This is a hard rule, not a temporary limit.
 - Own blocks can contain other own blocks (nesting), so a user can build a library of parts.
 
 Why: only composed blocks can be guaranteed to render in mail clients and can be checked automatically.
 
+### Every editor action is an operation on the model
+
+The free block is a JSON tree of known parts. Every block editor action is a named, pure operation on that model in `src/core` (`(document, input) -> document`), and the UI only calls these operations: clone a built-in block, create an empty free block, add / move / remove a part, set a part property, set a color with its role, mark a color as fixed, save a draft, publish a version, rename, delete, insert an own block, update an inserted block to a newer version, mark a check finding as intended, export and import as a file. Block quality checks live in the same core check function as the newsletter checks. This keeps everything testable without the UI.
+
 ## Color model for own blocks
 
-Extends the binding order in `email-colors.md` (block defaults < general colors < per-block overrides, per template, Light and Dark).
+Extends the binding order of the implemented color model in `src/core/colors/model.ts` (block standard colors < general colors < per-block overrides, two sets per template: Light and Dark). A block color is either linked to a role (`{ role }`) or fixed (`{ hex }`). `email-colors.md` still describes an older palette design (tokens, one world per document, one shared style per block definition) and must be updated before own blocks are built (open question 11).
 
-- Adapted block: follows the default colors of the template it is used in, exactly like the original.
+- Adapted block: follows the default colors of the template it is used in, exactly like the original. Exception: "Save as own block" from a placed block carries that block's own colors (open question 5).
 - Free block: the designer sets its own default colors. Each color gets a **role** (background, text, accent, and the other roles the general colors already use).
 - Used in another template, a free block follows that template's colors by role by default. Only colors the designer deliberately marked as **fixed** stay fixed.
-- Whether a fixed color sits above the general colors needs a decision in the color concept (see open questions).
-- Block editor function **"create a new template for this block"**: start a template whose general colors come from the block's own defaults. Needs its own thought (see open questions).
+- A fixed color wins over the target template's general colors and loses to a per-block override (decision 19). Whether this is a new level or a default on the per-block level is open question 6.
+- Block editor function **"create a new template for this block"**: an empty template that contains only this block, with general colors taken from the block's own defaults (decision 20).
 
 ## Quality checks
 
@@ -78,17 +82,19 @@ The block editor checks and tells the user, in plain words, at least:
 - link text that says nothing
 - and other common accessibility or content issues
 
-Checks run while editing and again when an own block is inserted into another template, against that template's colors. They warn; they do not block saving. That could be also intentional, depending on the desired user experience. (E.g. Dark Teaser in light template)
+Checks run while editing and again when an own block is inserted into another template, against that template's colors. They warn; they do not block saving. A finding can also be intentional (for example a dark teaser in a light template): the user marks it as **intended** on the placed block. The mark is stored in the document, the finding stays visible as "accepted", and it returns when the relevant colors change.
 
 ## Library, drafts and storage
 
 - Saved own blocks appear in the block panel through a toggle **"All | Own"** inside the existing "All blocks" tab. No eighth tab. Dragging into the newsletter works the same from both lists.
 - Own blocks keep the tint of their original type plus a fixed "own" mark. Free blocks get one shared neutral tint plus the mark. The rule "one tint = one block type" stays readable.
-- **Drafts are visible only on the block edit page.** No limit on the number of drafts; the browser's storage limit is the only bound. We could consider adding a cleanup mechanism for old drafts if storage becomes an issue and provide a search functionality to find specific drafts quickly, if the list is long.
+- **Drafts are visible only on the block edit page.** No limit on the number of drafts; the browser's storage limit is the only bound.
+  - Drafts are never deleted automatically. The list is sorted by last change, has a search by name, and offers a manual action "delete drafts older than ...".
+  - Browser storage is not durable everywhere: Safari deletes a site's IndexedDB and localStorage after seven days of browser use without a visit to that site. The app requests persistent storage (`navigator.storage.persist()`) and offers the free file export prominently; later cloud sync covers the rest.
 - Insertion records the block's version. Later changes to an own block reach older templates only when the user asks for it.
 - Storage today: IndexedDB, behind a repository interface like `template-repository.token.ts`, so cloud accounts can replace it later.
-- Factory reset and cleared browser data also delete all own blocks and drafts. The reset dialog must say so. The reset dialog could contain a list of checkbuttons for the user to confirm which types of data they want to delete. Default all of them are checked.
-  - Question: What types of data (list) should be included in the reset dialog and whether the default selection of all checked is the best user experience.
+- IDs: every stored object (template, own block, block version, draft) gets a UUIDv7 from one injected ID source. Timestamp plus cryptographic randomness makes IDs globally unique without a backend; the server's unique constraint is the final check at the first sync. Tenant and owner are fields, empty locally and filled at the first sync after login, never part of the ID. Block ids inside one document may stay short and local.
+- Factory reset and cleared browser data also delete all own blocks and drafts. The reset dialog must say so. The reset dialog lists one checkbox per kind of data, each with a count: templates, own blocks, block drafts, current working draft, view settings. All are checked by default, since the entry means "reset everything". The existing acknowledge step stays, plus a button "Save everything as a file first". The app language is not part of the list and stays.
 
 ## Cost model
 
@@ -109,13 +115,13 @@ Cloud sells convenience, not access. Users store sensitive data; trust must be e
 | Place | Entry | Note |
 | --- | --- | --- |
 | "All blocks" tile | Small "Adjust" control on each tile | Not a ✎: ✎ already means "edit this block's content" in the placed list and preview, and tiles are draggable |
-| "Placed blocks" row | "Save as own block" | Turns per-block color overrides into a clean own block |
-| Colors tab warning | Link "edit the block type instead" | The warning already points there |
+| "Current blocks" tab row (DE "Aktuelle Bausteine") | "Save as own block" | Turns per-block color overrides into a clean own block (open question 5) |
+| Colors tab warning | Link "edit the block type instead" | Today's warning text promises that a change applies to all blocks of that type. With clones this is no longer true; text and flow change (open question 4) |
 | Start page, "Start new" section | Tile "New block" next to the blank template | Works without an open template |
 | Start menu | Entry "New block" | Same |
 | Footer | None | The block editor does not belong in the footer |
 
-Route: its own address (for example `/blocks/:id`). Header behaves like the About page today: "Back to template" with the template kept as a draft. Opened without a template, the preview uses neutral colors; opened from the editor, it uses the current template's colors, switchable Light / Dark.
+Route: its own address (for example `/blocks/:id`), plus an overview of own blocks and drafts (open question 1). Header behaves like the About page today: "Back to" plus the template name, with the template kept as a draft. Opened without a template, the preview uses neutral colors; opened from the editor, it uses the current template's colors, switchable Light / Dark.
 
 ### Demo page
 
@@ -142,15 +148,7 @@ Route: its own address (for example `/blocks/:id`). Header behaves like the Abou
 ## Risks and notes
 
 - **Scripts in email do not run.** No common mail client executes JavaScript; it is stripped or ignored and can trigger spam filters. There is no "control through our own JS" in an exported mail. The "no scripts" rule is therefore also an export requirement, not only a security choice.
-- **Open tracking via images is unresolved** (see open questions). Images loaded from our server reveal that a mail was opened, but: Apple Mail Privacy Protection preloads images through proxies, so open rates are heavily distorted; Gmail loads images through its own proxy; many clients block images by default. Legally, a tracking pixel in DE / EU usually requires consent (GDPR, § 25 TDDDG). Image hosting would also change the export from user-provided image addresses to our server.
-
-User:
-
-```plaintext
-If each image gets a unique URL (ULID, etc.), which is requested when the mail client loads it, we can track these requests. That means the opening of the newsletter can at least be measured, even if actual reading cannot be guaranteed. The decisive question is: Do proxies load images automatically, without user interaction? Normally, they are not allowed to do so, right?
-
-Please also not forget: user privacy is of immense importance to us. Customer data is always treated with the utmost confidentiality. But just as important here is that we gain a kind of metric that shows which content is actually opened and read, without violating users' privacy. This is necessary so that we can continue to offer our users ever better services. If we track anything, we are not tracking customers, customer data, etc.; rather, we are tracking how efficiently our own system is functioning and we are allowed to do so legally, ethically and responsibly. You must keep this in mind before drawing any inappropriate, absurd, or incorrect conclusions or proposing measures. Sometimes you drive me crazy, and sometimes I get the impression that you think I might be a potential criminal. Please stop doing that.  
-```
+- **Open and click measurement** is settled by decision 29 (Listmonk's own tracking). Background: Apple Mail Privacy Protection preloads images through proxies, Gmail loads images through its own proxy, and many clients block images by default, so image requests count fetches, not reads. For the block editor this only means image addresses stay data in the model.
 
 - Free blocks plus non-email targets (CV, blog, PDF) widen the product a lot. Mockups should still lead with the newsletter case, since that is the main audience.
 
@@ -178,12 +176,54 @@ Numbers refer to the questions in the 2026-10-21 thread.
 | 16 | Blocks as a file | Yes, free |
 | 17 | Publishing before login exists | In mockups only, hidden in the app |
 | 18 | New name for start tiles | "Beispielvorlage" |
+| 19 | Fixed color in a free block | Wins over the target template's general colors, loses to a per-block override; `email-colors.md` to be updated |
+| 20 | "Create a new template for this block" | Empty template with only this block |
+| 21 | Free block parts in the first version | Row, column, text, image, button, spacer; callout and code later |
+| 22 | New export targets (CV PDF, articles) | Separate export chapter; blocks must not block it |
+| 23 | File format for own blocks | Same envelope as the project file, with a type field |
+| 24 | IDs | UUIDv7 from one injected ID source; tenant as a field |
+| 25 | Reset dialog | One checkbox per kind of data with counts, all checked, "save as file first" |
+| 26 | Intentional warnings | Markable as intended per placed block |
+| 27 | Drafts | Never auto-deleted; sort, search, manual cleanup; persistent storage request |
+| 28 | Editor actions | Pure operations on the JSON model in `src/core` |
+| 29 | Open and click measurement | Use Listmonk's own tracking (`{{ TrackView }}` in the template, links already wrapped with `TrackLink` at export); per person or totals only is Listmonk's "individual subscriber tracking" setting. No own image IDs; images never expire, only raw request logs are deleted after 14 days. Block editor: image addresses stay data in the model. |
+
+## Mockup scope
+
+Every screen in Light and Dark, German first, in the existing glass and gradient look of the editor and the About page (`design-system.md`), block tints as in the "All blocks" tab.
+
+States each screen must show where they apply: empty, in progress, unsaved change when leaving, draft saved, version published, check warnings in Light and Dark, finding marked as intended ("accepted"), error (storage full, invalid import file, persistent storage refused, Safari storage notice).
+
+Order:
+
+1. Block editor page, free block: layout with parts palette, canvas, properties, preview Light / Dark, check list, name and version, "Save draft" and "Publish". Adding parts by drag and drop and by keyboard. Undo and redo.
+2. Clone mode: entry through "Adjust" on a tile in "All blocks", same page with locked areas.
+3. Block panel: toggle built-in / own, tint plus "own" mark, empty state, "newer version" hint and update action in "Current blocks", "Save as own block".
+4. Colors: role picker with the "fixed" mark, check finding with "mark as intended".
+5. Overview of own blocks and drafts (sort, search, rename, delete, export, "delete drafts older than ..."), plus the "New block" tile on the start page and the start menu entry.
+6. Reset dialog.
+7. Demo page: entry points and a gallery skeleton, last.
+
+Reset dialog wording (EN; DE in the mockup):
+
+> **Reset everything?**
+> This data is deleted from this browser. This cannot be undone.
+> [x] Templates (12) · [x] Own blocks (3) · [x] Block drafts (5) · [x] Current working draft · [x] View settings
+> The app language is kept.
+> [Save everything as a file first] [Cancel] [Delete selected]
 
 ## Open questions
 
-1. Does a fixed color in a free block win over the target template's general colors, and does it lose to a per-block override? Recommendation: yes to both; requires an update of `email-colors.md`.
-2. "Create a new template for this block": empty template with only this block, or the current template with its general colors replaced by the block's defaults? Recommendation: empty template; replacing colors of an existing template is too surprising.
-3. Which parts does a free block offer in the first version? Recommendation: row, column, text, image, button, spacer; callout and code later.
-4. Are new export targets (CV PDF, LinkedIn / Medium article) part of the block editor chapter or a separate export chapter? Recommendation: separate chapter; blocks only must not block it.
-5. File format for saving own blocks: same envelope as the project file, or its own? Recommendation: same envelope with a type field.
-6. Open tracking: whether and how to measure opens, given proxy preloading (Apple, Gmail) and the consent requirement (GDPR, § 25 TDDDG). Not decided; separate chapter with legal review.
+Recommendations to confirm before or during the first mockup round.
+
+1. Is there an overview page (for example `/blocks`) for own blocks and drafts? Recommendation: yes; otherwise drafts have no home.
+2. What can be edited on a clone? Recommendation for mockups: starting texts, the existing layout options of the type, colors as roles; structure locked.
+3. Label of the toggle inside the tab that is already called "All" (DE "Alle")? Recommendation: "Built-in | Own" (DE "Mitgeliefert | Eigene"), where "Built-in" lists only shipped blocks.
+4. What does "Adjust" from the Colors tab warning do with blocks already placed? Recommendation: offer "replace all blocks of this type in this template with the copy", on by default; rewrite the warning text accordingly.
+5. Per-block colors on "Save as own block": roles or fixed? Recommendation: colors equal to a general color become role links; all others become fixed.
+6. Fixed color as a fourth level or as a default on the per-block level? Recommendation: a default on the per-block level; same effect, no new level in the model.
+7. Must drag and drop have a keyboard alternative? Recommendation: yes, required (select, arrow keys, insert menu).
+8. Block editor on phones? Recommendation: view and manage only; editing from tablet width up.
+9. Nested own blocks: frozen version or live? Recommendation: same as insertion into templates, version recorded, update on request; cycles blocked.
+10. Does the empty template from "create a new template for this block" get header, footer and legal parts? Recommendation: yes; otherwise the legal check fails at once.
+11. Rewrite `email-colors.md` to match the implemented model before own blocks are built? Recommendation: yes, as a separate step.
