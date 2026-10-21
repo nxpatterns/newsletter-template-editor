@@ -165,6 +165,9 @@ export interface OverviewGroup {
 
 export type OverviewNode = OverviewGroup | OverviewChild;
 
+/** Longest snippet in characters; longer text ends at a word with an ellipsis. */
+export const SNIPPET_MAX = 60;
+
 /** Short text that tells two blocks of the same type apart. */
 export function blockSnippet(block: Block): string {
   const raw = ((): string => {
@@ -205,7 +208,11 @@ export function blockSnippet(block: Block): string {
         return '';
     }
   })();
-  return raw.replace(/\s+/g, ' ').trim();
+  const text = raw.replace(/\s+/g, ' ').trim();
+  if (text.length <= SNIPPET_MAX) return text;
+  const cut = text.slice(0, SNIPPET_MAX);
+  const lastSpace = cut.lastIndexOf(' ');
+  return `${(lastSpace > SNIPPET_MAX / 2 ? cut.slice(0, lastSpace) : cut).replace(/[\s,.;:!?-]+$/, '')}…`;
 }
 
 function partNode(globals: Globals, part: FramePart): OverviewPart {

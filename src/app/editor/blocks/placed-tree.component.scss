@@ -271,7 +271,7 @@ button.node-fold:hover {
   --pl-ink: var(--ds-bg-page);
 
   padding: 0 0.2rem 0 0;
-  border-color: color-mix(in srgb, var(--pl-a) 30%, transparent);
+  border-color: transparent;
   background: linear-gradient(
     100deg,
     color-mix(in srgb, var(--pl-a) 16%, var(--ds-bg-panel)),
@@ -279,11 +279,21 @@ button.node-fold:hover {
   );
 }
 
-.node--block.is-chapter {
-  border-color: color-mix(in srgb, var(--pl-a) 55%, transparent);
+.node--block:hover {
+  border-color: transparent;
 }
 
+/* Long chapter titles wrap inside the box, at most two lines. */
 .node--block.is-chapter .node-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  white-space: normal;
+  overflow-wrap: anywhere;
   font-style: italic;
 }
 

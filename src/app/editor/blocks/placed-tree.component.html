@@ -188,6 +188,7 @@
             [attr.aria-selected]="session.selectedBlockId() === c.id"
             [attr.aria-expanded]="c.children.length ? isOpen(c.id) : null"
             [attr.data-testid]="'tree-block-' + c.id"
+            [attr.title]="c.snippet || null"
             (click)="selectBlock(c.id)"
           >
             <span class="node-pos" [textContent]="c.position"></span>

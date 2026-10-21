@@ -9,6 +9,7 @@ import {
   OVERVIEW_FOOT,
   OVERVIEW_HEAD,
   OVERVIEW_LINKS,
+  SNIPPET_MAX,
   shownLeafCount,
   type OverviewBlock,
   type OverviewPart,
@@ -84,5 +85,13 @@ describe('overview tree', () => {
     const hero = { ...createBlock('hero'), headline: 'Open\n  doors' } as Block;
     expect(blockSnippet(hero)).toBe('Open doors');
     expect(blockSnippet(createBlock('divider'))).toBe('');
+    const long = {
+      ...createBlock('chapter-band'),
+      title: 'Eine von beiden Antworten kostet Sie Umsatz, und zwar jeden einzelnen Tag',
+    } as Block;
+    const snip = blockSnippet(long);
+    expect(snip.length).toBeLessThanOrEqual(SNIPPET_MAX + 1);
+    expect(snip.endsWith('…')).toBe(true);
+    expect(snip.startsWith('Eine von beiden Antworten kostet Sie Umsatz')).toBe(true);
   });
 });
