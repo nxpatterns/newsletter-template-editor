@@ -171,6 +171,7 @@ Cloud sells convenience, not access. Users store sensitive data; trust must be e
 | "All blocks" tile | Small "Adjust" control on each tile | Not a ✎: ✎ already means "edit this block's content" in the placed list and preview, and tiles are draggable |
 | "Current blocks" tab row (DE "Aktuelle Bausteine") | "Save as own block" | Turns per-block color overrides into a clean own block (decision 34) |
 | Colors tab warning | Link "edit the block type instead" | Today's warning text promises that a change applies to all blocks of that type. With clones this is no longer true; text and flow change (decision 33) |
+| "All blocks" tab, "Own" list | Tile "New block" | Free block from inside the editor (decision 48) |
 | Start page, "Start new" section | Tile "New block" next to the blank template | Works without an open template |
 | Start menu | Entry "New block" | Same |
 | Footer | None | The block editor does not belong in the footer |
@@ -259,6 +260,8 @@ Numbers refer to the questions in the 2026-10-21 thread.
 | 45 | Gate for free blocks | All built-in blocks rebuildable as designs with equivalent HTML |
 | 46 | Several designs per block | One active; design proposals use this; UI later |
 | 47 | Excluded in v1 | Background images, visibility only on mobile or desktop |
+| 48 | Free block from inside the editor | Tile "New block" first in the "Own" list of the "All blocks" tab |
+| 49 | Replace placed blocks after "Adjust" | On save, offer "replace all blocks of this type in this template with the copy", off by default |
 
 ## Mockup scope
 
@@ -286,4 +289,4 @@ Reset dialog wording (EN; DE in the mockup):
 
 ## Open questions
 
-None. Decisions 30 to 47 were accepted on 2026-10-21; mockups may still change them.
+None. Decisions 30 to 49 were accepted on 2026-10-21; mockups may still change them.
