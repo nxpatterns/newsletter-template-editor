@@ -60,7 +60,7 @@ Why: only composed blocks can be guaranteed to render in mail clients and can be
 
 ### Every editor action is an operation on the model
 
-The free block is a JSON tree of known parts. Every block editor action is a named, pure operation on that model in `src/core` (`(document, input) -> document`), and the UI only calls these operations: clone a built-in block, create an empty free block, add / move / remove a part, set a part property, set a color with its role, mark a color as fixed, save a draft, publish a version, rename, delete, insert an own block, update an inserted block to a newer version, mark a check finding as intended, export and import as a file. Block quality checks live in the same core check function as the newsletter checks. This keeps everything testable without the UI.
+The free block is a JSON tree of known parts. Every block editor action is a named, pure operation on that model in `src/core` (`(document, input) -> document`), and the UI only calls these operations: clone a built-in block, create an empty free block, add / move / remove a part, set a part property, set a color with its role, mark a color as fixed, save a draft, publish a version, rename, duplicate, delete, insert an own block, update an inserted block to a newer version, mark a check finding as intended, export and import as a file. Block quality checks live in the same core check function as the newsletter checks. This keeps everything testable without the UI.
 
 ## Parts model
 
@@ -268,6 +268,13 @@ Numbers refer to the questions in the 2026-10-21 thread.
 | 53 | Placed block after "Save as own block" | Replaced by the new own block, on by default; it looks the same |
 | 54 | Tint of free blocks | Shared neutral tint plus a striped icon, so it does not read as the divider type |
 | 55 | "Fixed" mark | Neutral pill, not the warning color |
+| 56 | Overview design (mockup R3, step 5) | Variant C: table with one row per block (preview, name, status, used in, changed), filter chips "All \| With draft \| No version yet \| Draft older than 90 days", multi-select for "Save as file" and "Delete" |
+| 57 | Ways to the overview | Start menu entry, link "Manage all" in the "Own" list of the "All blocks" tab, and a start page section "Own blocks" with the latest four, shown only when own blocks exist |
+| 58 | Deleting an own block that templates use | Templates keep their copy and get no more newer-version notices; 8 second undo |
+| 59 | Import of a block that already exists in another version | Keep both; the imported one gets " (2)" appended to its name |
+| 60 | "Delete drafts older than ..." | Choices 30 days, 90 days, 6 months, 1 year; default 90 days; saved versions stay; 8 second undo |
+| 61 | Phones (extends decision 37) | "New block" and "Edit" are hidden, not greyed out |
+| 62 | Duplicate an own block | Yes, in the row menu ⋯; added to the editor operations |
 
 ## Mockup scope
 
@@ -295,4 +302,4 @@ Reset dialog wording (EN; DE in the mockup):
 
 ## Open questions
 
-None. Decisions 30 to 55 were accepted on 2026-10-21; mockups may still change them.
+None. Decisions 30 to 62 were accepted on 2026-10-21; mockups may still change them.
