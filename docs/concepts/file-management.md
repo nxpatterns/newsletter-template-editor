@@ -2,21 +2,21 @@
 
 How sellers open, name, keep, and export newsletter work in this editor.
 Audience: non-technical field sellers. English only.
-**Status: shipped through v0.2.2** for library, recovery, HTML export, and single-template project transfer. Update this doc when product decisions change.
+**Status: shipped** (library, crash recovery, HTML export, template file, start page, factory reset). Items marked *not built* are planned. Update this doc when product decisions change.
 
 No backend. No `.env`. Client-side only. MIT / static-host friendly.
 
-Related: `email-colors.md` (colors inside the document), `logo-upload.md` (embed size / quota), `design-system.md` (chrome), `block-content-editing.md`.
+Related: `email-colors.md` (colors inside the document), `block-editor-and-demo-page.md` (own blocks, drafts, IDs, reset dialog extension), `logo-upload.md` (embed size / quota), `design-system.md` (chrome), `block-content-editing.md`.
 
 ## Goals
 
 - Sellers think in **named templates on their machine**, not storage internals.
-- One place for file / export actions: header **overflow (hamburger) menu**, far right (after locale).
+- **Save** and **Export HTML** are header buttons; every other file action sits in the ☰ menu next to them.
 - Export filenames follow the **current template display name** (after rename, use the new name).
 - Never silently overwrite a differently named draft without an explicit choice.
 - Autosave may protect against browser crash; it must **not** replace conscious “this is my file”.
 - Stay pure client-side; degrade gracefully where File System Access is weak or absent.
-- Moving work to another machine uses **export current template** / **open exported template** (full document including colors when colors ship).
+- Moving work to another machine uses **Save template as file** / **Load template file** (full document including colors).
 
 ## Non-goals
 
@@ -30,7 +30,7 @@ Related: `email-colors.md` (colors inside the document), `logo-upload.md` (embed
 
 | Layer | Role | First-class? |
 | --- | --- | --- |
-| **Newsletter JSON** (`Newsletter`) | Editable document. Schema-versioned. Globals + blocks (+ future color chapter). Logo may embed base64. | **Yes — primary** |
+| **Newsletter JSON** (`Newsletter`) | Editable document. Schema-versioned. Globals + blocks + colors. Logo may embed base64. | **Yes — primary** |
 | **Working session meta** | Display name, dirty flag, library binding, timestamps, optional last file name | Yes |
 | **ListMonk shell / body HTML**, **full HTML** | Generated outputs | Export artifacts |
 | **PDF** | Deferred until product unlock | Not offered in menu yet |
@@ -91,17 +91,16 @@ The app may remember my last work when I reopen the browser — that is recovery
 
 ## Session state
 
+Held by `src/app/editor/newsletter-session.service.ts`:
+
 | Field | Meaning |
 | --- | --- |
 | `newsletter` | Current JSON |
 | `displayName` | Seller-facing name |
-| `dirty` | True after edits since last explicit save (prefer dirty on rename too) |
-| `autosavedAt` | Last crash-recovery write |
-| `lastExplicitSaveAt` | Last Save / Save as / library write |
-| `origin` | `seed` \| `autosave` \| `library` \| `disk` |
-| `libraryId` | If bound to a named library entry |
-| `diskFileName` | Last downloaded / opened file name if known |
-| `fileHandle` | Optional FSA handle in memory only when available |
+| `dirty` | True after edits since the last save |
+| `libraryId` | Library entry the session is bound to, if any |
+
+Not built: separate autosave / explicit-save timestamps, last disk file name, File System Access handle.
 
 ## Persistence layers
 
@@ -116,17 +115,17 @@ The app may remember my last work when I reopen the browser — that is recovery
 
 Each entry:
 
-- `id`, `displayName`, `updatedAt`, `newsletter`
-- **`createdWithAppVersion`** — app/package version that last wrote this entry (e.g. `0.2.2`). Shown in the Open library list next to date/time. Not a “template version” the seller manages; rename does not clear it — refresh on each successful library write from the running app.
+- `id`, `displayName`, `updatedAt`, `newsletter`, optional `pinnedAt` (pinned to the top of the start page; overwriting keeps the pin, a copy starts unpinned)
+- *Not built:* `createdWithAppVersion`, the app version that last wrote the entry, to show next to date/time in the library list. Not a template version the seller manages.
 
-UX: Open from library (modal), Save / Save as, Delete with irreversible confirm.
+UX: Open from library (modal), Save / Save as, Delete with confirm (on the start page with Undo in the snackbar).
 
 ### Disk transfer (explicit)
 
 | Menu action (seller copy) | Behavior |
 | --- | --- |
-| **Export current template** | Download one envelope for the **open** template. Always available. No “.json” in the label. |
-| **Open exported template** | File picker → parse/migrate. If current `dirty`, confirm discard first. |
+| **Save template as file (.json)** | Download one envelope for the **open** template. Always available. |
+| **Load template file…** | File picker → parse/migrate. If current `dirty`, ask first. |
 
 Never require File System Access for core workflows. FSA Save/Open may exist as progressive enhancement; fallback remains download + file input.
 
@@ -136,10 +135,9 @@ Never require File System Access for core workflows. FSA Save/Open may exist as 
 {
   kind: 'nte-project'
   schemaVersion: number          // document data shape
-  createdWithAppVersion: string  // app that wrote the file (package version)
   displayName: string
   libraryId: string | null
-  newsletter: Newsletter         // includes colors once email-colors ships
+  newsletter: Newsletter         // includes colors
   exportedAt: iso
 }
 ```
@@ -147,30 +145,21 @@ Never require File System Access for core workflows. FSA Save/Open may exist as 
 - **v1 = current template only** (not the whole library).
 - Open accepts: `nte-project` envelope, legacy recovery-style `{ newsletter }`, or bare `Newsletter`.
 - Always run `normalizeNewsletter` on open.
-- When email-colors ships: envelope carries palette + shell + **used** definition styles inside `newsletter` (see `email-colors.md`). Content-only sellers still get matching colors on another machine via this file.
-- `createdWithAppVersion` is metadata for support and the library list — not a second schema. Older files without it: omit or show “unknown” in UI; still open if schema normalize succeeds.
+- Colors travel inside `newsletter` (`email-colors.md`), so another machine shows the same look.
+- *Not built:* `createdWithAppVersion` (app version that wrote the file), metadata for support only, not a second schema. Files without it must still open.
+- Own blocks (planned) use the same envelope with a type field (`block-editor-and-demo-page.md`).
 - `schemaVersion` stays the data-contract version; sellers never manage it.
 
 ## Save semantics
 
-### Unbound or Save as
-
-- Ask for **name** (prefill current display name).
-- Create new library entry; bind session; clear dirty.
-
-### Bound to an existing name
-
-```text
-Title: Save template
-Body:  “{displayName}” already exists as the current template.
-[ Overwrite ]   [ Save under a new name… ]   [ Cancel ]
-```
-
-Do **not** split this into mysterious toolbar buttons. One Save affordance → smart dialog when needed.
+- **Save** (header button, ⌘/Ctrl+S): bound to a library entry → overwrites it directly; not bound → asks for a name (Save as).
+- **Save as…** (menu): asks for a name, prefilled with the current display name, and creates a new library entry; the session binds to it and is clean.
+- Save vs Save as is the explicit choice between overwrite and new name. No row of mysterious save buttons.
+- The header shows the state next to the template name: "Not saved", "Saved", or "Changes discarded".
 
 ## Start page and editor addresses
 
-- `/` is the start page on every app launch: tiles **Blank newsletter** (first), **Demo template German**, **Demo template English**; a **Continue** card for unsaved work (never saved, or unsaved changes); **Recently used** = saved library entries, newest first.
+- `/` is the start page on every app launch: tiles **Blank newsletter** (first), **Demo template German**, **Demo template English** (to be renamed "Example template", `block-editor-and-demo-page.md`); a **Continue** card for unsaved work (never saved, or unsaved changes); **Recently used** = saved library entries, pinned first, then newest first; pin, unpin and delete with Undo.
 - Blank = no blocks, house style (brand, logo, colors, legal footer) and texts in the app language. Demos always open as a fresh copy; the originals are never changed.
 - `/edit/:id` is the editor for library entry `id` (UUID); `/edit/draft` is a newsletter not saved yet. Reload reopens exactly that newsletter. Save as / Open… replace the address. Unknown id → start page with a short notice.
 - Leaving the editor for the start page with unsaved changes asks **Save / Discard / Cancel**. Discard returns a saved newsletter to its saved version and drops a never-saved draft.
@@ -178,40 +167,48 @@ Do **not** split this into mysterious toolbar buttons. One Save affordance → s
 
 ### Header vs menu
 
-- Header (editor only): **Start** (icon + label), then **Undo / Redo**.
-- Hamburger (**rightmost**, after locale): Start page, then all file + export.
+- Header (editor): title back to the start page, template name and save state, **Undo / Redo**, **Save**, **Export HTML**, ☰ menu. The language menu is rightmost (`design-system.md`).
+- Start page: ☰ start menu instead of the file menu.
 
-## Hamburger menu IA
+## Menu IA
 
 ```text
-☰ Menu
-├── Current template
-│   ├── Name: {displayName}          (Rename…)
-│   ├── Save
-│   ├── Save as…
-│   ├── Open…                        (in-browser library)
-│   └── Export as newsletter template (HTML)…
-├── Transfer
-│   ├── Export current template
-│   └── Open exported template…
-└── (top) Start page
+☰ Menu (editor)
+├── This template: {displayName} · Not saved / Saved
+│   ├── Rename…
+│   └── Save as…
+├── Other template
+│   └── Open…                          (in-browser library)
+├── Backup as file
+│   ├── Save template as file (.json)
+│   └── Load template file…
+└── Reset everything to defaults…      (danger)
+
+☰ Start menu (start page)
+├── Start new: Blank newsletter, demo templates
+├── Saved templates (recent) · Open…
+└── Reset everything to defaults…
 ```
 
-Section label **Transfer** (or keep “Project” if copy already shipped — prefer **Transfer** when next touching i18n so sellers do not hear “project/JSON”). Implementation may still use `kind: 'nte-project'` internally.
+Labels are the shipped EN strings (`file.*`, `startMenu.*`, `reset.*`). The template file label shows "(.json)"; the earlier rule "no file extension in labels" is not applied there. Internally the envelope stays `kind: 'nte-project'`.
+
+### Factory reset
+
+"Reset everything to defaults…" deletes templates, the working draft and view settings after an acknowledge step ("I understand that this cannot be undone."); the app language stays (`src/app/shell/factory-reset.service.ts`). The planned extension with one checkbox per kind of data is in `block-editor-and-demo-page.md`.
 
 ### Why two different Open entries
 
 | Menu item | Opens | Where data lives |
 | --- | --- | --- |
 | **Open…** | Named draft from **this browser’s library** | IndexedDB |
-| **Open exported template…** | File from disk / USB / mail | Filesystem |
+| **Load template file…** | File from disk / USB / mail | Filesystem |
 
 Do **not** merge into one dialog in v1.
 
 ### Library picker
 
 - Modal: search, sort by date/name, scroll list, Open / Delete.
-- Each row shows **display name**, **updated date/time**, and **app version** that last saved it (`createdWithAppVersion`), e.g. to the right of the timestamp: `v0.2.2`.
+- Each row shows **display name** and **updated date/time**. *Not built:* app version next to it (`createdWithAppVersion`).
 - Delete copy must state the action is irreversible.
 
 ### HTML export
@@ -232,13 +229,15 @@ Naming:
 3. Full HTML → display name stem. ListMonk pair → prefix if non-empty, else display name.
 4. No date suffix by default.
 
+With social links in the footer and an image address set, the download is a ZIP: the HTML plus `social/*.png` to upload there (`block-content-editing.md`, footer social row).
+
 ### PDF
 
 **Not in the menu** until an explicit unlock (lab + concept patch). Session work under `docs/sessions/analysen/pdf-export`. No Puppeteer in this product. No dead placeholder menu item.
 
 ## Dirty navigation guards
 
-Before Open, load library entry, open exported template, start page choices and leaving the editor for the start page:
+Before Open, load library entry, load template file, start page choices and leaving the editor for the start page:
 
 - If `dirty` → Save / Discard / Cancel (in-app dialog, never `window.confirm`).
 - `beforeunload` when dirty.
@@ -246,15 +245,14 @@ Before Open, load library entry, open exported template, start page choices and 
 ## i18n and copy
 
 - Plain verbs: Save, Save as, Open, Export, Rename, Start.
-- No “.json” in seller-facing labels.
-- Preferred transfer labels (DE/EN catalogs):
+- Shipped transfer labels (DE/EN catalogs):
 
-| Key role | EN | DE |
-| --- | --- | --- |
-| Export current | Export current template | Aktuelle Vorlage exportieren |
-| Open exported | Open exported template… | Exportierte Vorlage öffnen… |
-| Snackbar exported | Template exported | Vorlage exportiert |
-| Snackbar opened | Template opened | Vorlage geöffnet |
+| Key | EN |
+| --- | --- |
+| `file.downloadProject` | Save template as file (.json) |
+| `file.openProject` | Load template file… |
+| `file.projectDownloaded` | Template exported |
+| `file.projectOpened` | Template opened |
 
 ## Testing (minimum)
 
@@ -263,17 +261,17 @@ Before Open, load library entry, open exported template, start page choices and 
 - Dirty Open → confirm path.
 - Save overwrite vs save-as leaves two library entries when appropriate.
 - Recovery restore after reload.
-- Export current template / open round-trip preserves newsletter (and colors once implemented).
-- Library row can show app version when field present.
+- Template file save / load round-trip preserves newsletter and colors.
 - Quota / large logo: graceful error (coord with logo concept).
 - No page scroll jump when menu opens.
 
 ## Later (not now)
 
-- **Accounts and cloud storage:** sellers from other companies sign in and keep their templates in the cloud. Add a cloud `TemplateRepository` next to the IndexedDB one; ids are already UUIDs, so entries can move between the two.
+- **Accounts and cloud storage:** sellers from other companies sign in and keep their templates in the cloud. Add a cloud `TemplateRepository` next to the IndexedDB one; ids are already UUIDs, so entries can move between the two. ID and tenant rules for all stored objects: `block-editor-and-demo-page.md` (decision 24).
 
 - Export **all** saved library templates, or a **multi-select** of them; import all or selected. Same mental model as current transfer, wider scope.
 - Optional FSA “true Save” polish where supported.
+- `createdWithAppVersion` on library entries and template files, shown in the library list.
 - PDF menu after product unlock path in next-session / pdf-export sessions.
 
 ## Locks
@@ -283,12 +281,11 @@ Before Open, load library entry, open exported template, start page choices and 
 - No old-style multi-button save row.
 - Overwrite vs new name is always an explicit choice when it matters.
 - Export uses the **currently shown** template name.
-- Hamburger (rightmost) holds Start page + file + HTML export + transfer; header has Start plus undo/redo.
+- Header has Undo / Redo, Save and Export HTML; the ☰ menu holds rename, save as, open, template file and reset.
 - HTML export always asks Full vs ListMonk pair.
 - Library lives in IndexedDB; disk transfer is portability/backup.
 - **v1 disk transfer = current template only.**
-- Envelope stores `createdWithAppVersion` (app build), distinct from `schemaVersion`.
-- Library list shows date/time and app version when known.
-- Seller labels: no file-extension jargon.
-- When colors ship: transfer includes document color state per `email-colors.md`.
+- `schemaVersion` is the data contract; an app version field, once added, stays separate from it.
+- Library list shows date/time.
+- Transfer includes the document colors (`email-colors.md`).
 - Spec before code; update this doc if product decisions change.

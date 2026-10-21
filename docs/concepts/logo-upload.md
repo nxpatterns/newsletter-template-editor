@@ -2,7 +2,7 @@
 
 How sellers put **their own logo** into the newsletter header without raw URL fiddling or oversized mail attachments.
 Audience: non-technical field sellers. English only.
-**Status: shipped** (Brand upload + HTML export optimize through v0.2.x). Preview mouse-resize remains optional polish.
+**Status: shipped** (shared image picker in the Brand tab, HTML export optimize). Preview mouse-resize remains optional polish. Caps and sizes live as `LOGO_*` constants in `src/core/logo/logo-pipeline.ts`; this file keeps the reasons.
 
 No backend. No `.env`. Client-side only. MIT / static-host friendly.
 
@@ -10,12 +10,12 @@ Related: `file-management.md` (document size, recovery quota), `block-content-ed
 
 ## Goals
 
-- Upload from device (click / drag-drop) → logo appears in preview.
+- Paste an image address (hosted, recommended) or upload from device (click / drag-drop) → logo appears in preview.
 - Seller controls **display size** in the layout; aspect ratio stays locked when scaling.
 - Keep a **master** asset in the document (sharp preview / future print-oriented export).
 - **HTML export** optimizes for email weight from the **current display size**.
 - Replace existing logo only after confirm; bad replace is undoable via editor undo (and Clear / demo reset).
-- No seller-facing raw URL/base64 field as the primary path.
+- No raw base64 field. The image address field uses the seller term "Image address", never "URL".
 - Works on desktop + iPad; MIT-only if a library is needed.
 
 ## Non-goals
@@ -23,7 +23,7 @@ Related: `file-management.md` (document size, recovery quota), `block-content-ed
 - Full DAM / multi-asset library.
 - Server-side image CDN.
 - Hard rule that logos must be tiny marketing stamps — display size is seller-owned; intake/export caps protect the app and mail weight.
-- Body-block images (reuse pipeline later).
+- Body-block images: own, simpler pipeline in `src/core/image/email-image.ts` with the same shared picker.
 - PDF logo path before PDF product unlock; master is kept so PDF *can* use higher res later.
 
 ## Two sizes: master vs display
@@ -57,6 +57,8 @@ Related: `file-management.md` (document size, recovery quota), `block-content-ed
 
 Optimize for **mail weight at HTML export**, driven by **display size**. Do **not** force a fixed 200×200 product maximum.
 
+Display height is clamped to `LOGO_DISPLAY_MIN_PX` … `LOGO_DISPLAY_MAX_PX` (16 … 480 px), default 48 px; export box = display × `LOGO_EXPORT_RETINA` (2).
+
 ## Format strategy
 
 **Accept on input:** `image/png`, `image/jpeg`, `image/webp`, `image/gif` (first frame if animated), `image/svg+xml`. Reject PDF/PSD/TIFF/HEIC with a plain message (HEIC: clear error in v1; optional wasm later only if demanded).
@@ -68,6 +70,10 @@ Optimize for **mail weight at HTML export**, driven by **display size**. Do **no
 | Photo-like / many colors | JPEG quality ladder into display box |
 | Flat logo + alpha | PNG; if over hard budget, flatten + JPEG with warning |
 | Small safe SVG | May stay SVG; else rasterize to PNG at export box |
+
+**Hosted logo** (`https://…`): exported unchanged; only width and height attributes are written.
+
+**Embedded logo** (file upload, `data:` URL): Gmail (web and apps) and classic Outlook for Windows do not show embedded images at all, and the bytes count toward Gmail's ~102 KB clipping limit. The shared picker shows this warning; a hosted address is the recommended path.
 
 **Storage:** one master `src` + display metrics in the document. Export derivative is generated at export time; do not require writing it back into `logo.src`. Persistence via IndexedDB (`file-management.md`).
 
@@ -97,6 +103,7 @@ renderExport / download HTML
   → master + current display box
   → scale to export pixel box
   → encode under email binary targets
+  → hosted https source: skip, keep as is
   → inject derivative into exported <img>
   → editor session keeps master
 ```
@@ -116,15 +123,15 @@ Header Undo restores previous newsletter snapshot including prior `logo.*`. Clea
 ## Brand tab UX
 
 ```text
-Logo
-[ preview thumbnail ]
-[ Upload logo ]  [ Replace… ]  [ Clear ]
-Display height   Alt text   Logo link
+Logo                                  [ show / hide in this template ]
+[ shared image picker: image address field or drop zone, thumbnail, remove ]
+Image description (required)   Link target   Display height
 ```
 
-- Drag-drop on Brand zone.
-- Success copy may note Undo is available.
-- No block-edit modal for logo.
+- Same picker component as the image blocks (`src/app/editor/image-picker/`), with its warnings (http, SVG, embedded).
+- A placeholder logo shows a hint to replace it.
+- The logo can be hidden per template (frame part switch).
+- No block-edit modal for the logo.
 
 ## Data model
 
@@ -171,6 +178,6 @@ Seed / demo: CloudLib logo embed on seed; reset-to-demo restores it. Empty-docum
 - Master retained (within intake safety caps); HTML gets export-time optimized derivative from display.
 - Replace requires confirm when a logo already exists.
 - Bad replace → normal **Undo**.
-- No seller-facing URL/base64 primary field.
+- No raw base64 field; hosted image address recommended, embedded file always warned.
 - Future PDF may keep higher resolution from master.
 - Tier 0 Canvas first; small safe SVGs may export as SVG.

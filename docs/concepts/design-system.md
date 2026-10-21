@@ -22,6 +22,8 @@ For anything the user can close (snackbar, modal, drawer, future stacked toasts,
 
 ## Tokens (app chrome)
 
+Source of truth for names and values: `src/styles.scss`. The table lists the core tokens; the file also holds the glass tokens (`--ds-glass-*`, blurred translucent surfaces with a gradient top edge) and the dialog head gradient (`--ds-modal-head-bg`).
+
 | Token | Value | Use |
 | --- | --- | --- |
 | `--ds-bg-page` | `#060b14` | App page background |
@@ -52,7 +54,7 @@ For anything the user can close (snackbar, modal, drawer, future stacked toasts,
 
 ### Intent
 
-Viewport-locked chrome (image2colors-style header/footer). One intentional scroll owner per region. Kill double page + preview scrollbars. Reserve room for a right **side panel** (3b) and a **language switcher** without reflowing the shell later.
+Viewport-locked chrome (image2colors-style header/footer). One intentional scroll owner per region. Kill double page + preview scrollbars. Room for a right **side panel** and the **language menu** without reflowing the shell.
 
 ### Height model
 
@@ -81,7 +83,7 @@ Use `100dvh` with `100vh` fallback. `overflow: clip` on the shell (not only `hid
 | Pane | Role | Scroll |
 | --- | --- | --- |
 | Preview | iframe `srcdoc` email document, `height: 100%`, `min-height: 0` | **Only** email document scroll (iframe) |
-| Side panel | Library / inspector / settings tabs (3b) | **Target: none** — split into tabs so content fits assumed min work height |
+| Side panel | Block list, catalog and settings tabs | **Target: none** — split into tabs so content fits assumed min work height |
 
 Do **not** give the preview host `overflow: auto` and a tall iframe (`min(80vh)` etc.) — that reintroduces double scrollbars.
 
@@ -92,7 +94,7 @@ Do **not** give the preview host `overflow: auto` and a tall iframe (`min(80vh)`
 - **Collapse rail:** always-visible leftmost column inside the side panel (`side-panel-rail`) with a **prominent ice-blue `»` toggle** (high contrast, not muted chrome). The rail stays when the panel body is collapsed so sellers can still find the control.
 - **Mobile default:** when no stored collapse preference exists and the viewport is below `--ds-side-by-side-min`, start **collapsed**.
 - **Resize:** user-draggable left edge. Width clamped from `--ds-panel-width` (min, `21rem` / 336px default) to **50% of the browser viewport width**. Persist open width in `localStorage` (`newsletter-template-editor.side-panel-width.v1`). Resize handle is hidden while collapsed.
-- **Tabs:** Current blocks, All blocks, Campaign, Brand, Colors, Legal. Tab chrome uses connected tab shapes (not plain button chips). Emergency overflow on short viewports may use panel scroll as exception.
+- **Tabs:** Current blocks, All blocks, Campaign, Brand, Colors, Legal, Social (seven; short labels such as "Current" and "All" where space is tight). Tab chrome uses connected tab shapes (not plain button chips). Emergency overflow on short viewports may use panel scroll as exception.
 - **Field chrome sizes:** user-resized heights (e.g. Campaign inbox preview textarea) persist in `localStorage` (`newsletter-template-editor.field-heights.v1`).
 
 ### Catalog drag into preview
@@ -112,19 +114,20 @@ Do **not** give the preview host `overflow: auto` and a tall iframe (`min(80vh)`
 Inspired by image2colors header bar (brand left, actions right), editor-specific content:
 
 ```text
-[ Brand: title ]   [ Undo / Redo — flex wrap ]   [ Locale DE|EN ]  [ ☰ file menu ]
+Editor:      [ ⌂ title · template name · save state ]  [ Undo / Redo ]  [ Save ⌘S ] [ Export HTML ] [ ☰ menu ]  [ 🌐 language ]
+Start page:  [ title ]                                                   [ ☰ start menu ]                     [ 🌐 language ]
 ```
 
 - One bar on iPad/desktop when space allows; toolbar **flex-wrap**s on narrow widths (not a second permanent toolbar row unless wrap requires it).
 - Shell/work layout uses **CSS Grid**; header action cluster uses **Flexbox** + wrap.
-- Toolbar actions (editor only): **Start** (icon + label) and **Undo / Redo**. All save / open / export live in the **hamburger**, **rightmost** after locale (`file-management.md`).
-- No theme toggle in v0 (Glacier dark only). Email Dark/Light starter lives on the Colors tab when email-colors ships — not app chrome.
+- Editor: the title links back to the start page; next to it the template name and the save state ("Not saved" / "Saved"). Toolbar: **Undo / Redo**, then **Save** (with shortcut) and **Export HTML** as buttons, then the ☰ menu (`file-management.md`). The **language menu** is rightmost on every page.
+- No theme toggle for the app chrome (Glacier dark only). The email Dark / Light color set is chosen in the Colors tab (`email-colors.md`), not in app chrome.
 - Safe-area: `padding-top: var(--ds-safe-top)`.
 
 ### Footer
 
 ```text
-[ ]   IMPRESSUM · PRIVACY · ABOUT   [ version ]
+[ ]   HOME · IMPRESSUM · PRIVACY · ABOUT   [ version ]
 ```
 
 - Structure like image2colors: 3-column grid `1fr auto 1fr`; links centered; version bottom-right.
@@ -149,7 +152,7 @@ Every newsletter building block and every shell field (brand, logo, colors, lega
 
 - BDD: home title; footer version; snackbar fixed above footer; **document/body does not scroll** (overflow hidden / scrollY stays 0 with tall preview).
 - BDD: About route shows About content; Impressum/Privacy open a dialog.
-- BDD: locale control present in header (full DE catalog wiring may complete in 3a-i18n if not finished here).
+- BDD: language menu present in the header; switching changes chrome strings.
 
 ### Implementation map
 
@@ -246,33 +249,30 @@ bottom = var(--ds-footer-height) + var(--ds-safe-bottom)
 
 ---
 
-## Language switcher (UI locale)
+## Language menu (UI locale)
 
-Product: **English (default)** and **German**; choice stored in `localStorage` and restored on load. Runtime switch (not a separate build per locale).
+Product: **English (default)** and **German** today; more languages show as "Coming soon" until their catalog exists (`PLANNED_LOCALES` in `src/app/i18n/languages.ts`). Choice stored in `localStorage` and restored on load. Runtime switch, not a build per locale.
 
-### Placement
+### Placement and look
 
-- **Header, near the end (right in LTR)** — after toolbar actions, **before** the file hamburger (hamburger stays rightmost).
-- Compact control showing the **other** locale or active `EN`/`DE` toggle (touch target ≥ 44×44 CSS px).
-- Must not introduce a second page scrollbar or cover the snackbar.
-- Clear selected state (`aria-pressed` on the active locale, or equivalent).
+- **Header, rightmost** on every page. Trigger: globe plus the active language.
+- Opens a glass dropdown in the same family as the ☰ menus: eyebrow, title, sections "Available" and "Coming soon". Each entry shows the name in its own language (endonym) and in the current UI language. No country flags for languages.
+- A search field appears from `LANGUAGE_SEARCH_MIN` (8) languages on.
+- Each endonym renders with its own `lang` and `dir` attributes.
 
 ### Behaviour
 
-- Changing locale updates chrome strings immediately and sets `document.documentElement.lang`.
-- Does **not** rewrite newsletter/email author content inside the preview.
-- Persist on change; invalid stored values fall back to `en`.
-- Storage key: `newsletter-template-editor.locale.v1` (value `en` | `de`).
-
-### Tests
-
-- Default visit → English chrome (existing BDD can stay EN).
-- Switch to DE → key chrome string(s) German; reload → DE still active (when catalogs wired).
+- Changing the language updates chrome strings at once and sets `document.documentElement.lang`.
+- Does **not** rewrite newsletter content in the preview.
+- Invalid stored values fall back to `en`. Storage key: `newsletter-template-editor.locale.v1`.
+- The factory reset keeps the language.
 
 ### Implementation map
 
-- Spec: this section + `docs/guidelines/angular-implementation-guidelines.md` (Internationalisation)
-- Code: `src/app/i18n/`
+- Menu: `src/app/shell/language-menu.component.*`
+- Languages and planned list: `src/app/i18n/languages.ts`
+- Catalogs and service: `src/app/i18n/`
+- Guidelines: `docs/guidelines/angular-implementation-guidelines.md` (Internationalisation)
 
 ---
 
@@ -294,5 +294,5 @@ Production `baseHref` is `/newsletter-template-editor/`. Deploy must ship a `404
 
 ## Future chrome (stubs only — specify before build)
 
-- Colors tab starter / theme library chrome when email-colors is implemented (`email-colors.md`)
-- Library row secondary line: date/time + app version (`createdWithAppVersion`)
+- Library row secondary line: date/time + app version (`createdWithAppVersion`, not stored yet; see `file-management.md`)
+- Block editor page and demo page (`block-editor-and-demo-page.md`)

@@ -14,10 +14,11 @@ Do not add comments unless the logic is non-obvious. Never add comments that res
 | `AGENTS.md` | Project one-liner, no-env rule, session/docs conventions |
 | `docs/sessions/next-session.md` | Current slice only |
 | `docs/concepts/design-system.md` | Chrome UI specs (tokens, snackbar, footer, shell layout) |
-| `docs/concepts/file-management.md` | Save, library, transfer, HTML export |
-| `docs/concepts/email-colors.md` | Email color system (concept until scheduled) |
+| `docs/concepts/file-management.md` | Save, library, transfer, HTML export, reset |
+| `docs/concepts/email-colors.md` | Email color rules; model in `src/core/colors/` |
 | `docs/concepts/block-content-editing.md` | Structure-first block editing |
 | `docs/concepts/logo-upload.md` | Logo master vs display / export optimize |
+| `docs/concepts/block-editor-and-demo-page.md` | Own blocks, block editor, demo page (concept, not built) |
 | `docs/knowledge-corner/GitHub-Deployments/ReadMe.md` | Pages deploy pitfalls |
 
 **Repository docs** (markdown under `docs/`, `AGENTS.md`, README): **English only**. No numbering in documentation section titles.  

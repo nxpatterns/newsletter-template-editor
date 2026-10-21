@@ -4,7 +4,7 @@ Concept for two new product areas: a **block editor** (users change or create th
 Status: concept only, agreed in discussion on 2026-10-21. Nothing implemented. Mockups come after review.
 Audience: non-technical sellers and marketing people first, designers second. English only.
 
-Related: `src/core/colors/model.ts` (implemented color levels), `email-colors.md` (older color concept, to be updated), `block-content-editing.md` (edit modal, lite kit, render pipeline), `file-management.md` (storage, start page, menus), `design-system.md` (app look), `AGENTS.md` (email CSS rule).
+Related: `src/core/colors/model.ts` (implemented color levels), `email-colors.md` (color product rules), `block-content-editing.md` (edit modal, lite kit, render pipeline), `file-management.md` (storage, start page, menus), `design-system.md` (app look), `AGENTS.md` (email CSS rule).
 
 ## Goals
 
@@ -64,7 +64,7 @@ The free block is a JSON tree of known parts. Every block editor action is a nam
 
 ## Color model for own blocks
 
-Extends the binding order of the implemented color model in `src/core/colors/model.ts` (block standard colors < general colors < per-block overrides, two sets per template: Light and Dark). A block color is either linked to a role (`{ role }`) or fixed (`{ hex }`). `email-colors.md` still describes an older palette design (tokens, one world per document, one shared style per block definition) and must be updated before own blocks are built (open question 11).
+Extends the binding order of the implemented color model in `src/core/colors/model.ts` (block standard colors < general colors < per-block overrides, two sets per template: Light and Dark). A block color is either linked to a role (`{ role }`) or fixed (`{ hex }`). Product rules: `email-colors.md`.
 
 - Adapted block: follows the default colors of the template it is used in, exactly like the original. Exception: "Save as own block" from a placed block carries that block's own colors (open question 5).
 - Free block: the designer sets its own default colors. Each color gets a **role** (background, text, accent, and the other roles the general colors already use).
@@ -176,7 +176,7 @@ Numbers refer to the questions in the 2026-10-21 thread.
 | 16 | Blocks as a file | Yes, free |
 | 17 | Publishing before login exists | In mockups only, hidden in the app |
 | 18 | New name for start tiles | "Beispielvorlage" |
-| 19 | Fixed color in a free block | Wins over the target template's general colors, loses to a per-block override; `email-colors.md` to be updated |
+| 19 | Fixed color in a free block | Wins over the target template's general colors, loses to a per-block override; recorded in `email-colors.md` |
 | 20 | "Create a new template for this block" | Empty template with only this block |
 | 21 | Free block parts in the first version | Row, column, text, image, button, spacer; callout and code later |
 | 22 | New export targets (CV PDF, articles) | Separate export chapter; blocks must not block it |
@@ -226,4 +226,3 @@ Recommendations to confirm before or during the first mockup round.
 8. Block editor on phones? Recommendation: view and manage only; editing from tablet width up.
 9. Nested own blocks: frozen version or live? Recommendation: same as insertion into templates, version recorded, update on request; cycles blocked.
 10. Does the empty template from "create a new template for this block" get header, footer and legal parts? Recommendation: yes; otherwise the legal check fails at once.
-11. Rewrite `email-colors.md` to match the implemented model before own blocks are built? Recommendation: yes, as a separate step.

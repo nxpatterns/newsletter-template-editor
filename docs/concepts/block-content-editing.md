@@ -4,7 +4,7 @@ Concept for how operators edit block and brand content in the newsletter templat
 Audience: non-technical field sellers. English only.
 Source of truth remains JSON blocks + globals; HTML is always **generated**.
 
-Related: `email-colors.md` (mail colors), `file-management.md`, `logo-upload.md`, `design-system.md`, `AGENTS.md` (email CSS rule).
+Related: `email-colors.md` (mail colors), `block-editor-and-demo-page.md` (own blocks), `file-management.md`, `logo-upload.md`, `design-system.md`, `AGENTS.md` (email CSS rule).
 
 ## Goals
 
@@ -18,7 +18,7 @@ Related: `email-colors.md` (mail colors), `file-management.md`, `logo-upload.md`
 
 - Full word-processor editing inside the preview iframe.
 - Arbitrary HTML authoring for every field.
-- Free hex / free px sizing in the seller kit (paid **block editor** product later may unlock that; out of scope here).
+- Free hex / free px sizing in the seller kit. The block editor (`block-editor-and-demo-page.md`) uses the same kit and does not unlock it.
 - Server-side document conversion.
 - Email color *definition* outside the Colors tab (see `email-colors.md`).
 - Lists inside paragraph rich text (use benefits / other blocks).
@@ -91,7 +91,7 @@ Saved field names stay HTML-like on purpose; i18n keys and test ids use the term
 - Enum: style (`thin` | `two-tone` | `ornament` | `glow` | `spacer-only`); `two-tone` was `secondary-double` before schema v3.
 - Token: `background` (`content` | `page`), stores the token name, never a color. Not visible with `thin`.
 - Number: height when spacer-only.
-- Lines span the full row width (no side padding). Ornament and glow add 10px above and below; glow steps are mixed from Secondary and the background at render time.
+- Lines span the full row width (no side padding). Ornament and glow add 10px above and below; glow steps are mixed from the link color and the background at render time.
 - No rich text.
 
 ### hero
@@ -122,7 +122,7 @@ Saved field names stay HTML-like on purpose; i18n keys and test ids use the term
 | Superscript | Best-effort in email clients |
 | Subscript | Best-effort in email clients |
 | Size | Toolbar label **Size** / **Größe**; T-shirt tokens below |
-| Theme color | **One** Color control: non-collapsed selection → span color; collapsed caret → paragraph base color. Swatches only — no free hex. Tokens: `standard` · `primary` · `secondary` · `accent` · `dim` (labels match the ids; no color names) |
+| Theme color | **One** Color control: non-collapsed selection → span color; collapsed caret → paragraph base color. Swatches only — no free hex. Tokens (`RICH_COLOR_TOKENS` in `src/core/richtext/model.ts`): `body` · `head` · `link` · `accent` · `dim`; labels "Body text", "Headings", "Links and numbers", "Accent", "Muted text" (`rt.color.*`). The tokens equal the color roles of the same name (`ColorRole`); they replaced the earlier names `standard` / `primary` / `secondary` with the color model (commit `d679942`, 2026-10-17), in code and UI alike |
 | Link | Selection = default label; URL field; open target (see links). Apply **replaces** the selection (no duplicate text) |
 | Mono | Monospace face mark |
 
@@ -140,7 +140,7 @@ T-shirt sizes, smallest to largest; labels equal the ids (no translation). Class
 | `l` | 20 / 32 px |
 | `xl` | 26 / 36 px |
 
-Paid **block editor** (future product): operators may redefine how large each token renders (and more). Seller kit still speaks these token names. Do not design that product here.
+The block editor (`block-editor-and-demo-page.md`) may later redefine how large each token renders. The kit keeps these token names.
 
 #### Links
 
@@ -152,7 +152,7 @@ Paid **block editor** (future product): operators may redefine how large each to
 
 #### Paragraph-level base color
 
-Allowed and useful: each **paragraph node** (`p`) may set a **base text color** from theme swatches (e.g. Standard, Primary, Secondary, Accent).
+Allowed and useful: each **paragraph node** (`p`) may set a **base text color** from the theme swatches above (`body`, `head`, `link`, `accent`, `dim`).
 
 Cascade (high wins):
 
@@ -258,7 +258,7 @@ Product-strength feature, not a polish pass:
 
 - Seller label **Video preview** (Video-Vorschau).
 - Fields: `src`, `alt` (always required), `href` (YouTube, Vimeo or a 3D tour; tidied on blur), `title`, `duration` (optional).
-- Email: full-width linked thumbnail, then a play row: round play cell in the Secondary color, title as a link, `· duration`. No overlay on the picture (not reliable in email clients). Export skips the picture without `src`.
+- Email: full-width linked thumbnail, then a play row: round play cell in the link color (slot `play`), title as a link, `· duration`. No overlay on the picture (not reliable in email clients). Export skips the picture without `src`.
 
 ### teasers
 
@@ -271,14 +271,14 @@ Product-strength feature, not a polish pass:
 
 - Seller label **Event** (Termin).
 - Fields: `title`, `date` (YYYY-MM-DD), `start` / `end` (HH:MM), `timezone` (IANA, defaults to the browser zone, else Europe/Berlin), `locationMode` `online|onsite`, `location`, `buttonLabel`, `href`, `calendar` (on/off), `calendarLabel`, `locale` (`de|en`, set from the app language at creation; month, weekday and time words).
-- Email: calendar sheet left (month in Secondary, big day, weekday), then title, "10:00 bis 10:30 Uhr · Online, Teams", the button and an outlined "Add to calendar" link. Stacks below 600px.
+- Email: calendar sheet left (month in the link color, slot `month`; big day, weekday), then title, "10:00 bis 10:30 Uhr · Online, Teams", the button and an outlined "Add to calendar" link. Stacks below 600px.
 - "Add to calendar" is a Google Calendar link built from the fields (`action=TEMPLATE`, local times with `ctz`; no start = all day, no end = one hour). A downloadable .ics would need hosting.
 
 ### Footer social row (Legal tab, not a block)
 
 - `legal.social`: one link target per network; the list mirrors `public/icons/social/<id>.svg` (a BDD scenario keeps both in sync). Only filled networks render, in the fixed order of `SOCIAL_NETWORKS`.
-- Preview: the SVGs recolored to Primary, as data URLs.
-- Export: icons are burned to PNG (48px for 24px display) in Primary at export time and referenced as `assetBaseUrl/<id>-<color>.png`; the download is a ZIP with the HTML and `social/*.png` to upload there. `assetBaseUrl` (export dialog, "Image address") is stored with the newsletter.
+- Preview: the SVGs recolored to the heading color (`head`), as data URLs.
+- Export: icons are burned to PNG (48px for 24px display) in the heading color at export time and referenced as `assetBaseUrl/<id>-<color>.png`; the download is a ZIP with the HTML and `social/*.png` to upload there. `assetBaseUrl` (export dialog, "Image address") is stored with the newsletter.
 - Without an image address the export warns and the footer uses text links ("LinkedIn · YouTube"), which work in every inbox.
 
 ### price-box (shipped structured fields)
@@ -306,7 +306,7 @@ Renderer composes typography and colors. Legacy `mainPriceHtml` / `strike` migra
 
 Rules shared by all kit surfaces:
 
-- Theme color swatches only (aligned with Colors tab / campaign tokens).
+- Theme color swatches only (the text kit tokens above).
 - Size tokens where size is offered (`xs` | `s` | `m` | `l` | `xl`).
 - Sanitizer + show-suspicious-characters + clear formatting from day one on any kit surface that accepts paste.
 - Modal only; never an editor inside the preview iframe.
@@ -320,18 +320,11 @@ Rules shared by all kit surfaces:
 - Live preview on input; Cancel / Save as shipped.
 - Undo/Redo remain global in the app header (usable above the modal).
 
-## Implementation order
+## Status
 
-1. **cta-link-list** row editor (kill JSON UI) — **done** (icon + structured rows).
-2. Plain-label cleanup (remove “HTML” from seller copy) — **done**.
-3. Benefits list editor — **done**.
-4. Hero / chapter / quote / stat **plain-up** — **done** (paragraph deferred to lite kit).
-5. **Paragraph lite rich-text kit** (model + modal editor + sanitize + migrate seed `html`) — **done** (core on disk).
-6. Reuse kit on brand name / legal notice only if still required.
-7. Email colors data model — separate large track; `email-colors.md` when scheduled (paragraph size/color tokens plug into slots).
-8. Paid block editor product — explicitly **out of scope** until scheduled.
+Everything in this document is shipped: structured fields for all blocks, row editors, the paragraph lite kit, class-based email CSS with the export inliner, the email color model (`email-colors.md`), file management and logo upload.
 
-Already shipped (do not re-open as “next”): file management v1, logo upload, price-box field split, class-based email CSS + export inliner.
+Still open, only if needed: reuse the kit on brand name or legal notice. Own blocks and free blocks: `block-editor-and-demo-page.md`.
 
 ## Locks
 
