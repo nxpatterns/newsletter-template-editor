@@ -1,0 +1,410 @@
+@use '../../../styles/editor-forms';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.tree-pane {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.tree-hint {
+  margin: 0;
+  padding: 0 0.75rem 0.4rem;
+}
+
+.tree-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-color: var(--ds-border) transparent;
+}
+
+.tree-canvas {
+  position: relative;
+  min-width: max-content;
+  padding: 0.6rem 0.9rem 2rem;
+  display: grid;
+  justify-items: center;
+}
+
+.tree-lines {
+  position: absolute;
+  inset: 0 auto auto 0;
+  overflow: visible;
+  pointer-events: none;
+  fill: none;
+  stroke: color-mix(in srgb, var(--ds-text-muted) 60%, transparent);
+  stroke-linecap: round;
+}
+
+/* Root on top, header / content / footer as columns below; leaves stack under their parent. */
+.tree-root {
+  position: relative;
+  z-index: 1;
+  padding: 0.4rem 0.8rem;
+  border-radius: 0.55rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ds-modal-head-color);
+  background: var(--ds-modal-head-bg);
+  border: 1px solid rgb(255 255 255 / 18%);
+}
+
+.tree-cols {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-block-start: 1.5rem;
+}
+
+.tree-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.tree-tabs {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  margin: 0.3rem 0 0 1.1rem;
+}
+
+.tab-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0 0.4rem 0 0.3rem;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  line-height: 1.15rem;
+  color: var(--ds-accent);
+  background: color-mix(in srgb, var(--ds-accent) 10%, var(--ds-bg-panel));
+  border: 1px solid color-mix(in srgb, var(--ds-accent) 30%, transparent);
+}
+
+.tab-icon {
+  flex: none;
+  width: 0.75rem;
+  height: 0.75rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tree-kids {
+  list-style: none;
+  margin: 0.45rem 0 0;
+  padding: 0 0 0 1.1rem;
+  display: grid;
+  gap: 0.25rem;
+  justify-items: start;
+}
+
+.tree-kids .tree-kids {
+  margin-block-start: 0.25rem;
+  padding-inline-start: 1.4rem;
+}
+
+.node {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  max-width: 15rem;
+  min-height: 1.65rem;
+  padding: 0.1rem 0.35rem 0.1rem 0.25rem;
+  border: 1px solid transparent;
+  border-radius: 0.45rem;
+  font: inherit;
+  font-size: 0.74rem;
+  color: var(--ds-text);
+  background: color-mix(in srgb, var(--ds-bg-panel) 94%, transparent);
+  text-align: start;
+}
+
+button.node {
+  cursor: pointer;
+}
+
+.node:hover {
+  border-color: color-mix(in srgb, var(--ds-text-muted) 40%, transparent);
+}
+
+.node.is-pointed {
+  border-color: color-mix(in srgb, var(--ds-accent) 70%, transparent);
+  background: color-mix(in srgb, var(--ds-accent) 10%, var(--ds-bg-panel));
+}
+
+.node:focus-visible,
+.node-main:focus-visible,
+.node-fold:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 1px;
+}
+
+.node--group {
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  border-color: color-mix(in srgb, var(--ds-text-muted) 45%, transparent);
+  background: color-mix(in srgb, var(--ds-text-muted) 14%, var(--ds-bg-panel));
+  font-weight: 600;
+}
+
+.node--links {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--ds-text-muted) 35%, transparent);
+}
+
+.node-label {
+  flex: none;
+  white-space: nowrap;
+}
+
+.node-meta,
+.node-snippet {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.68rem;
+  font-weight: 400;
+  color: var(--ds-text-muted);
+}
+
+.node-fold {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--ds-text-muted) 45%, transparent);
+  font: inherit;
+  font-size: 0.62rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-text-muted);
+  background: var(--ds-bg-panel);
+}
+
+button.node-fold {
+  cursor: pointer;
+}
+
+button.node-fold:hover {
+  color: var(--ds-text);
+  border-color: var(--ds-accent);
+}
+
+.node-glyph {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 0.3rem;
+  font-size: 0.65rem;
+  color: var(--ds-text-muted);
+  background: color-mix(in srgb, var(--ds-text-muted) 16%, transparent);
+}
+
+.node-tab {
+  color: var(--ds-text-muted);
+}
+
+.node-off {
+  flex: none;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  font-size: 0.6rem;
+  color: var(--ds-text-muted);
+  border: 1px solid color-mix(in srgb, var(--ds-text-muted) 40%, transparent);
+}
+
+.node-warn {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--ds-bg-page);
+  background: var(--ds-warning);
+}
+
+.node--part.is-off {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--ds-text-muted) 35%, transparent);
+}
+
+.node--part.is-off .node-label {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.node--part.is-missing {
+  border-color: var(--ds-warning);
+}
+
+/* Blocks keep the block-type tint (same hue as the list and the All Blocks cards). */
+.node--block {
+  --pl-a: var(--ds-text-muted);
+  --pl-b: var(--ds-text-muted);
+  --pl-ink: var(--ds-bg-page);
+
+  padding: 0 0.2rem 0 0;
+  border-color: color-mix(in srgb, var(--pl-a) 30%, transparent);
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--pl-a) 16%, var(--ds-bg-panel)),
+    color-mix(in srgb, var(--ds-bg-panel) 94%, transparent) 70%
+  );
+}
+
+.node--block.is-chapter {
+  border-color: color-mix(in srgb, var(--pl-a) 55%, transparent);
+}
+
+.node--block.is-chapter .node-label {
+  font-style: italic;
+}
+
+.node--block.is-selected {
+  border-color: var(--ds-accent);
+  box-shadow: 0 0 0 1px var(--ds-accent);
+}
+
+.node-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 0;
+  min-height: 1.6rem;
+  padding: 0.1rem 0.2rem 0.1rem 0.25rem;
+  border: 0;
+  border-radius: 0.45rem;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  text-align: start;
+  cursor: pointer;
+}
+
+.node--block .node-label {
+  font-weight: 600;
+  color: var(--pl-a);
+}
+
+.node-pos {
+  flex: none;
+  min-width: 0.9rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  color: var(--ds-text-muted);
+}
+
+.node-tile {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 0.3rem;
+  font-size: 0.62rem;
+  line-height: 1;
+  color: var(--pl-ink);
+  background: linear-gradient(135deg, var(--pl-a), var(--pl-b));
+}
+
+/* Status line: names where the pointed part is edited and opens it. */
+.tree-status {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  padding: 0.35rem 0.75rem;
+  border-block-start: 1px solid var(--ds-border);
+  font-size: 0.74rem;
+  color: var(--ds-text-muted);
+}
+
+.tree-status .tab-icon {
+  width: 0.9rem;
+  height: 0.9rem;
+  color: var(--ds-accent);
+}
+
+.tree-status-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.tree-status-text b {
+  color: var(--ds-text);
+  font-weight: 600;
+}
+
+.tree-status-open {
+  flex: none;
+}
+
+/* Narrow sidebar: columns stack under the root, branches become elbows. */
+@container (max-width: 34rem) {
+  .tree-canvas {
+    justify-items: start;
+  }
+
+  .tree-canvas {
+    min-width: 0;
+  }
+
+  .tree-cols {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+    margin-block-start: 0.5rem;
+    padding-inline-start: 1.1rem;
+  }
+
+  /* Long snippets shorten instead of pushing the tree sideways. */
+  .tree-col,
+  .tree-kids,
+  .tree-kids > li {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .tree-kids {
+    justify-items: stretch;
+  }
+
+  .node {
+    max-width: 100%;
+    justify-self: start;
+  }
+
+  .node-main {
+    overflow: hidden;
+  }
+}
