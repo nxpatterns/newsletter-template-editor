@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup R4 Zurücksetzen</title>
+<style>
+:root {
+  --ds-bg-page: #060b14; --ds-bg-panel: #0c1628; --ds-border: #1a3050; --ds-accent: #7ecfff;
+  --ds-text: #e8f4ff; --ds-text-muted: #7a9ab8; --ds-success: #3dd68c; --ds-warning: #f5b84a; --ds-danger: #ff6b7a;
+  --ds-radius: .25rem;
+  --glass: color-mix(in srgb, var(--ds-bg-panel) 78%, transparent);
+  --glass-edge: linear-gradient(90deg, transparent, rgba(255,255,255,.35) 50%, transparent);
+  --head-bg: linear-gradient(180deg, rgba(255,255,255,.12), transparent 42%), linear-gradient(120deg, #0a1830 0%, #123a5c 48%, #0c5a78 100%);
+  --newmark: #f5c518;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body { font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ds-text); background: #03060c; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .45; }
+:focus-visible { outline: 2px solid var(--ds-accent); outline-offset: 2px; }
+
+/* mockup controls (not part of the design) */
+.mk { position: sticky; top: 0; z-index: 80; display: flex; flex-wrap: wrap; gap: .4rem 1.2rem; align-items: center; padding: .45rem .9rem; background: #2a1d05; border-bottom: 1px dashed #8a6a20; color: #f3d9a0; font-size: 12px; }
+.mk b { font-weight: 600; margin-inline-end: .3rem; }
+.mk .seg { display: inline-flex; flex-wrap: wrap; border: 1px solid #8a6a20; border-radius: .8rem; overflow: hidden; }
+.mk .seg button { background: none; border: 0; padding: .2rem .6rem; color: #f3d9a0; }
+.mk .seg button[aria-pressed="true"] { background: #8a6a20; color: #fff; }
+.mk label { display: inline-flex; gap: .3rem; align-items: center; }
+.mk .note { flex: 1 1 100%; color: #d8b870; }
+.mk a { margin-inline-start: auto; }
+.is-new { outline: 2px dashed var(--newmark); outline-offset: 2px; }
+.hide-new .is-new { outline: 0; }
+
+/* app frame; the phone setting narrows it to 390 px */
+.phone .stagewrap { padding: 1.2rem 0 2rem; }
+.frame { container-type: inline-size; margin: 0 auto; min-height: calc(100vh - 7rem); display: flex; flex-direction: column; background: var(--ds-bg-page); position: relative; overflow: hidden; }
+.phone .frame { width: 390px; min-height: 780px; border: 1px solid var(--ds-border); border-radius: 1.6rem; box-shadow: 0 30px 60px -20px rgba(0,0,0,.8); }
+
+/* app header and footer */
+.hdr { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; min-height: 3.5rem; padding: .45rem .9rem; background: var(--ds-bg-panel); border-bottom: 1px solid var(--ds-border); }
+.hdr .brand { font-weight: 600; }
+.hdr .sp { flex: 1; }
+.hdr .doc-name { font-weight: 600; }
+.dot { display: inline-block; width: .45rem; height: .45rem; border-radius: 50%; background: var(--ds-warning); vertical-align: .1rem; margin-inline-end: .3rem; }
+.back { color: var(--ds-accent); text-decoration: none; padding: .3rem .5rem; border-radius: var(--ds-radius); }
+.ibtn { display: inline-grid; place-items: center; width: 2.1rem; height: 2.1rem; border-radius: var(--ds-radius); border: 1px solid var(--ds-border); background: rgba(255,255,255,.03); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-height: 2.1rem; padding: .3rem .8rem; border-radius: var(--ds-radius); border: 1px solid var(--ds-border); background: rgba(255,255,255,.03); text-align: center; }
+.btn--primary { background: linear-gradient(180deg, #2a86d8, #1d6bb8); border-color: #3b8fe0; color: #fff; }
+.btn--outline { border-color: var(--ds-accent); color: var(--ds-accent); }
+.btn--danger { background: linear-gradient(180deg, #e0505f, #b83a48); border-color: #ff6b7a; color: #fff; }
+.btn--sm { min-height: 1.8rem; padding: .15rem .6rem; font-size: 12px; }
+.linkbtn { border: 0; background: none; padding: 0; color: var(--ds-accent); text-decoration: underline; text-underline-offset: 2px; font-size: 12px; }
+footer.ftr { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 2.75rem; padding: 0 .9rem; font-size: 11px; letter-spacing: .08em; color: var(--ds-text-muted); background: var(--ds-bg-panel); border-top: 1px solid var(--ds-border); margin-top: auto; }
+footer.ftr .links { display: flex; gap: 1rem; }
+footer.ftr .ver { justify-self: end; letter-spacing: 0; }
+
+/* start page as in the app */
+.start { width: 100%; max-width: 64rem; margin: 0 auto; padding: 2rem 1.2rem; display: grid; gap: 1.6rem; }
+.start-title { margin: 0; font-size: 1.6rem; font-weight: 700; }
+.start-lead { margin: .3rem 0 0; color: var(--ds-text-muted); }
+.start-sec { margin: 0 0 .7rem; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ds-text-muted); }
+.start-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: .9rem; }
+.start-tile { display: flex; flex-direction: column; gap: .4rem; padding: 1.15rem; text-align: start; border: 1px solid var(--ds-border); border-radius: var(--ds-radius); background: var(--ds-bg-panel); }
+.start-tile b { font-size: 15px; }
+.start-tile span { color: var(--ds-text-muted); font-size: 13px; }
+.start-tile.is-primary { border-color: color-mix(in srgb, var(--ds-accent) 45%, var(--ds-border)); }
+.recent { list-style: none; margin: 0; padding: 0; display: grid; gap: .4rem; }
+.recent li { display: grid; grid-template-columns: auto 1fr auto; gap: .75rem; align-items: center; padding: .6rem .85rem; border: 1px solid var(--ds-border); border-radius: var(--ds-radius); background: var(--ds-bg-panel); }
+.recent small { color: var(--ds-text-muted); font-size: 12px; }
+.recent .doc { width: 1.6rem; height: 2rem; border-radius: 2px; background: #e8f4ff; box-shadow: inset 0 6px 0 #123a5c; }
+.recent-empty { padding: 1.2rem; border: 1px dashed var(--ds-border); border-radius: var(--ds-radius); color: var(--ds-text-muted); text-align: center; }
+
+/* editor behind the dialog, reduced to its frame */
+.ed { flex: 1; display: grid; grid-template-columns: 20rem 1fr; min-height: 0; }
+.ed-panel { border-inline-end: 1px solid var(--ds-border); background: var(--ds-bg-panel); padding: .8rem; display: grid; gap: .5rem; align-content: start; }
+.ed-tabs { display: flex; gap: .3rem; flex-wrap: wrap; }
+.ed-tabs span { padding: .25rem .55rem; border-radius: 999px; border: 1px solid var(--ds-border); font-size: 12px; color: var(--ds-text-muted); }
+.ed-tabs span:first-child { color: var(--ds-text); border-color: color-mix(in srgb, var(--ds-accent) 55%, var(--ds-border)); background: rgba(126,207,255,.12); }
+.ed-row { height: 2.2rem; border-radius: .4rem; border: 1px solid var(--ds-border); background: linear-gradient(90deg, color-mix(in srgb, var(--a) 22%, transparent), transparent 60%); }
+.ed-prev { display: grid; place-items: start center; padding: 1.4rem; background: #0a1322; }
+.ed-mail { width: min(100%, 26rem); display: grid; gap: .5rem; padding: 1rem; background: #f4f7fb; border-radius: .3rem; }
+.ed-mail i { display: block; height: .55rem; border-radius: 3px; background: #c9d4e0; }
+.ed-mail i.h { height: 3.5rem; background: linear-gradient(135deg, #123a5c, #0c5a78); }
+
+/* dialog (same glass dialog as R3 and the app's confirm dialog) */
+.backdrop { position: absolute; inset: 0; z-index: 60; display: grid; place-items: center; padding: 1rem; background: radial-gradient(circle at 50% 42%, rgba(255,107,122,.18), transparent 42%), rgba(4,8,16,.62); backdrop-filter: blur(5px); }
+.dlg { position: relative; width: min(33rem, 100%); max-height: calc(100vh - 9rem); overflow: auto; border-radius: .6rem; background: var(--glass); backdrop-filter: blur(18px) saturate(140%); border: 1px solid color-mix(in srgb, var(--ds-danger) 45%, var(--ds-border)); box-shadow: 0 22px 48px -12px rgba(0,0,0,.65); }
+.dlg::before { content: ""; position: absolute; inset: 0 0 auto; height: 1px; background: var(--glass-edge); }
+.dlg-head { display: flex; align-items: center; gap: .75rem; padding: .85rem 1.1rem; background: var(--head-bg); color: #fff; border-bottom: 1px solid color-mix(in srgb, var(--ds-danger) 35%, transparent); }
+.dlg-head .hi { flex: none; display: inline-grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: .5rem; border: 1px solid color-mix(in srgb, var(--ds-danger) 45%, transparent); background: color-mix(in srgb, var(--ds-danger) 16%, rgb(0 0 0 / 30%)); color: var(--ds-danger); box-shadow: 0 0 22px -6px color-mix(in srgb, var(--ds-danger) 70%, transparent); }
+.dlg-head .hi svg { width: 1.35rem; height: 1.35rem; fill: none; stroke: currentColor; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; }
+.dlg-head .tt { flex: 1; min-width: 0; }
+.dlg-head .eyebrow { display: block; font-size: .66rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ds-danger); }
+.dlg-head h2 { margin: .05rem 0 0; font-size: 1.05rem; font-weight: 800; line-height: 1.25; }
+.dlg-x { flex: none; width: 1.9rem; height: 1.9rem; border-radius: .35rem; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.14); color: #fff; }
+.dlg-body { padding: 1rem 1.2rem .85rem; display: grid; gap: .8rem; font-size: 13px; }
+.dlg-body p { margin: 0; }
+.lead { font-size: 15px; line-height: 1.45; }
+.dlg-foot { display: flex; justify-content: flex-end; gap: .5rem; flex-wrap: wrap; padding: .2rem 1.2rem 1.1rem; }
+.dlg-foot .sp { flex: 1; }
+.steps { display: flex; gap: .4rem; font-size: 11px; color: var(--ds-text-muted); letter-spacing: .04em; }
+.steps span { padding: .05rem .5rem; border-radius: 999px; border: 1px solid var(--ds-border); }
+.steps span[aria-current="step"] { color: var(--ds-text); border-color: color-mix(in srgb, var(--ds-danger) 55%, var(--ds-border)); background: rgba(255,107,122,.12); }
+
+/* list of data kinds */
+.selall { display: flex; justify-content: space-between; align-items: baseline; gap: .6rem; font-size: 12px; color: var(--ds-text-muted); }
+.selall span { display: flex; gap: .8rem; }
+.kinds { display: grid; border: 1px solid var(--ds-border); border-radius: .5rem; background: color-mix(in srgb, var(--ds-bg-page) 45%, transparent); overflow: hidden; }
+.kind { display: grid; grid-template-columns: auto 1fr auto; gap: .15rem .7rem; align-items: center; padding: .55rem .75rem; border-top: 1px solid var(--ds-border); cursor: pointer; }
+.kind:first-child { border-top: 0; }
+.kind input { width: 1.05rem; height: 1.05rem; accent-color: #e0505f; margin: 0; }
+.kind .n { color: var(--ds-text-muted); font-variant-numeric: tabular-nums; }
+.kind.is-off .lbl { color: var(--ds-text-muted); }
+.kind.is-zero { cursor: default; }
+.kind.is-zero .lbl, .kind.is-zero .n { color: var(--ds-text-muted); opacity: .7; }
+.kinds--b .kind { grid-template-columns: auto auto 1fr auto; padding: .6rem .75rem; }
+.kinds--b .kind small { grid-column: 3; display: block; color: var(--ds-text-muted); font-size: 12px; }
+.kinds--b .kind .lbl { grid-column: 3; font-weight: 600; }
+.kinds--b .kind .ti { grid-row: 1 / span 2; grid-column: 2; display: inline-grid; place-items: center; width: 1.9rem; height: 1.9rem; border-radius: .4rem; background: rgba(126,207,255,.14); color: var(--ds-accent); font-size: 13px; }
+.kinds--b .kind input { grid-row: 1 / span 2; }
+.kinds--b .kind .n { grid-column: 4; grid-row: 1 / span 2; }
+.kinds--b .ti--free { background: repeating-linear-gradient(135deg, #a3b8cc 0 4px, #52677d 4px 8px) !important; color: #0b1220 !important; }
+.pill { display: inline-flex; align-items: center; padding: .05rem .5rem; border-radius: 999px; font-size: 12px; font-weight: 600; border: 1px solid color-mix(in srgb, var(--p) 55%, var(--ds-border)); color: var(--p); background: color-mix(in srgb, var(--p) 12%, transparent); --p: var(--ds-text-muted); }
+.kind:not(.is-off):not(.is-zero) .pill { --p: var(--ds-danger); }
+.keep { color: var(--ds-text-muted); font-size: 12px; }
+.keep b { color: var(--ds-text); font-weight: 600; }
+.hint { display: grid; grid-template-columns: auto 1fr; gap: .5rem; padding: .5rem .65rem; border-radius: .45rem; border: 1px solid color-mix(in srgb, var(--b) 40%, var(--ds-border)); background: color-mix(in srgb, var(--b) 8%, transparent); font-size: 12px; --b: var(--ds-accent); }
+.hint::before { content: "i"; display: inline-grid; place-items: center; width: 1.2rem; height: 1.2rem; border-radius: .3rem; background: color-mix(in srgb, var(--b) 22%, transparent); color: var(--b); font-weight: 700; font-size: 11px; }
+.hint--warn { --b: var(--ds-warning); }
+.hint--warn::before { content: "!"; }
+
+/* save first */
+.save { display: grid; grid-template-columns: 1fr auto; gap: .35rem .8rem; align-items: center; padding: .65rem .75rem; border-radius: .5rem; border: 1px solid color-mix(in srgb, var(--b) 45%, var(--ds-border)); background: color-mix(in srgb, var(--b) 8%, transparent); --b: var(--ds-accent); }
+.save p { font-size: 12px; color: var(--ds-text-muted); }
+.save p b { color: var(--ds-text); font-size: 13px; }
+.save.is-ok { --b: var(--ds-success); }
+.save.is-err { --b: var(--ds-danger); }
+.save .file { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; color: var(--ds-text); }
+.inline-save { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; font-size: 12px; color: var(--ds-text-muted); }
+.ok { color: var(--ds-success); font-weight: 600; }
+.err { color: var(--ds-danger); font-weight: 600; }
+
+.ack { display: flex; gap: .55rem; align-items: flex-start; padding: .6rem .7rem; border-radius: .45rem; border: 1px solid color-mix(in srgb, var(--ds-warning) 40%, var(--ds-border)); background: rgba(245,184,74,.07); font-size: 13px; cursor: pointer; }
+.ack input { margin: .1rem 0 0; width: 1.05rem; height: 1.05rem; accent-color: #f5b84a; }
+.summary { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+.summary div { border: 1px solid var(--ds-border); border-radius: .45rem; padding: .55rem .7rem; background: rgba(255,255,255,.02); }
+.summary h3 { margin: 0 0 .3rem; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+.summary .gone h3 { color: var(--ds-danger); }
+.summary .stay h3 { color: var(--ds-success); }
+.summary ul { margin: 0; padding-inline-start: 1rem; display: grid; gap: .15rem; }
+
+/* banner and snackbar after the reset */
+.banner { display: grid; grid-template-columns: auto 1fr; gap: .3rem .7rem; align-items: start; padding: .7rem .8rem; border-radius: .5rem; border: 1px solid color-mix(in srgb, var(--b) 45%, var(--ds-border)); background: color-mix(in srgb, var(--b) 8%, transparent); font-size: 13px; --b: var(--ds-success); }
+.banner .bi { display: inline-grid; place-items: center; width: 1.7rem; height: 1.7rem; border-radius: .4rem; background: color-mix(in srgb, var(--b) 22%, transparent); color: var(--b); font-weight: 700; }
+.banner p { margin: 0; }
+.banner small { display: block; color: var(--ds-text-muted); font-size: 12px; margin-top: .15rem; }
+.banner .acts { grid-column: 2; display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .3rem; }
+
+/* narrow app: the dialog becomes a sheet from the bottom */
+@container (max-width: 40rem) {
+  .start { padding: 1.2rem .9rem; }
+  .ed { grid-template-columns: 1fr; }
+  .ed-prev { display: none; }
+  .backdrop { place-items: end stretch; padding: 0; }
+  .dlg { width: 100%; max-height: 92%; border-radius: 1rem 1rem 0 0; border-bottom: 0; }
+  .dlg-body { padding: .9rem; }
+  .dlg-foot { padding: .2rem .9rem 1rem; flex-direction: column-reverse; align-items: stretch; }
+  .dlg-foot .sp { display: none; }
+  .summary { grid-template-columns: 1fr; }
+  footer.ftr { grid-template-columns: 1fr; height: auto; padding: .6rem; justify-items: center; gap: .3rem; }
+  footer.ftr .ver { justify-self: center; }
+}
+</style>
+</head>
+<body>
+
+<div class="mk" role="region" aria-label="Mockup-Steuerung">
+  <span><b>Variante</b><span class="seg" data-k="v"><button data-v="A">A Kompakt</button><button data-v="B">B Mit Erklärung</button><button data-v="C">C Zwei Schritte</button></span></span>
+  <span><b>Geöffnet aus</b><span class="seg" data-k="origin"><button data-v="start">Startmenü</button><button data-v="editor">Editor-Menü</button></span></span>
+  <span><b>Breite</b><span class="seg" data-k="w"><button data-v="desk">Desktop</button><button data-v="phone">Handy</button></span></span>
+  <label><input type="checkbox" id="showNew"> Neues gelb umranden</label>
+  <a href="r3-overview.html" style="color:#fff">← Schritt 5 Übersicht</a>
+  <span><b>Szene</b><span class="seg" data-k="sc">
+    <button data-v="normal">Alles angehakt</button><button data-v="partial">Nur Bausteine</button><button data-v="ownOnly">Bausteine ohne Entwürfe</button><button data-v="none">Nichts angehakt</button><button data-v="zero">Keine eigenen Bausteine</button><button data-v="saved">Als Datei gesichert</button><button data-v="saveErr">Sichern abgebrochen</button><button data-v="ready">Bestätigt</button><button data-v="done">Danach</button>
+  </span></span>
+  <span class="note" id="mknote"></span>
+</div>
+
+<div class="stagewrap"><div class="frame" id="frame"></div></div>
+
+<script>
+const S = { v: 'B', origin: 'start', w: 'desk', sc: 'normal', showNew: true };
+try { Object.assign(S, JSON.parse(localStorage.getItem('mk-r4-reset') || '{}')); } catch {}
+// per-scene state, reset whenever a scene is picked
+let T;
+
+const isPhone = () => S.w === 'phone';
+const FILE = 'newsletter-sicherung-2026-10-21.json';
+
+function kinds() {
+  const zero = S.sc === 'zero';
+  const work = S.origin === 'editor'
+    ? { detail: '„Sommeraktion 2027“, <span class="dot"></span>ungespeicherte Änderungen', warn: true }
+    : { detail: '„Frühjahrsangebot 2027“, zuletzt heute geöffnet', warn: false };
+  return [
+    { k: 'tpl', ti: '▤', lbl: 'Vorlagen', n: 12, detail: 'Alle gespeicherten Newsletter-Vorlagen in diesem Browser' },
+    { k: 'own', ti: '◆', free: true, lbl: 'Eigene Bausteine', n: zero ? 0 : 3, detail: zero ? 'Noch keine angelegt' : 'Davon 2 in Vorlagen verwendet', isNew: true },
+    { k: 'drafts', ti: '✎', lbl: 'Baustein-Entwürfe', n: zero ? 0 : 5, detail: zero ? 'Keine Entwürfe' : 'Ältester vom 2. Mai', isNew: true },
+    { k: 'work', ti: '⟳', lbl: 'Aktueller Arbeitsentwurf', n: null, detail: work.detail },
+    { k: 'view', ti: '⚙', lbl: 'Ansichtseinstellungen', n: null, detail: 'Offene Bereiche, Panelbreite, Vorschau Hell oder Dunkel' },
+  ];
+}
+
+function sceneState(sc) {
+  const all = { tpl: true, own: true, drafts: true, work: true, view: true };
+  const s = { sel: { ...all }, ack: false, saved: '', step: 1 };
+  if (sc === 'partial') s.sel = { tpl: false, own: true, drafts: true, work: false, view: false };
+  if (sc === 'ownOnly') s.sel = { tpl: false, own: true, drafts: false, work: false, view: false };
+  if (sc === 'none') s.sel = { tpl: false, own: false, drafts: false, work: false, view: false };
+  if (sc === 'zero') { s.sel.own = false; s.sel.drafts = false; }
+  if (sc === 'saved') s.saved = 'ok';
+  if (sc === 'saveErr') s.saved = 'err';
+  if (sc === 'ready') { s.saved = 'ok'; s.ack = true; s.step = 2; }
+  return s;
+}
+
+const NOTES = {
+  A: 'A Kompakt: der heutige Bestätigungsdialog, nur mit einer Liste zum Anhaken. Zahl hinter jedem Eintrag, keine Erklärung. „Erst alles als Datei sichern“ als Knopf unten links. Wortlaut wie im Konzept.',
+  B: 'B Mit Erklärung: jede Art mit Symbol, einer Zeile „was steckt drin“ und der Zahl als Pille (rot, solange angehakt). „Alle | Keine“ über der Liste. Sichern steht oben als eigener Kasten, weil es der erste sinnvolle Schritt ist; danach zeigt er Dateiname und Inhalt.',
+  C: 'C Zwei Schritte: Schritt 1 „Was löschen?“ mit Liste und Sichern, Schritt 2 „Endgültig löschen?“ mit Zusammenfassung „wird gelöscht | bleibt“ und dem Haken „Ich habe verstanden“. Mehr Klicks, dafür sieht man vor dem Löschen noch einmal alles auf einen Blick.',
+};
+const SCN = {
+  normal: 'Alles angehakt (Standard, Entscheidung 25). Der Knopf heißt „Alles löschen“, solange alles angehakt ist, sonst „Ausgewählte löschen“. Er bleibt gesperrt bis zum Haken „Ich habe verstanden“ (heutiger Bestätigungsschritt).',
+  partial: 'Nur eigene Bausteine und ihre Entwürfe. Vorlagen, die eigene Bausteine nutzen, behalten ihre Kopie (wie Entscheidung 58).',
+  ownOnly: 'Bausteine angehakt, Entwürfe nicht: Entwürfe zu gelöschten Bausteinen bleiben als eigenständige Entwürfe erhalten (Vorschlag, Frage 3).',
+  none: 'Nichts angehakt: Löschen gesperrt, kurzer Hinweis statt Fehlermeldung.',
+  zero: 'Keine eigenen Bausteine und keine Entwürfe: die Zeilen bleiben sichtbar, ausgegraut mit „0“ und ohne Haken (Vorschlag, Frage 4).',
+  saved: 'Nach „Erst alles als Datei sichern“: eine Datei mit allem, egal was angehakt ist (Vorschlag, Frage 5). Dateiname und Inhalt stehen da; der Haken „Ich habe verstanden“ bleibt trotzdem nötig.',
+  saveErr: 'Speichern im Dateidialog abgebrochen oder vom Browser blockiert: klare Meldung, „Erneut versuchen“. Löschen bleibt möglich, die Warnung wird deutlicher.',
+  ready: 'Haken gesetzt, Löschen frei. In Variante C ist das Schritt 2.',
+  done: 'Nach dem Löschen lädt die App neu und zeigt die Startseite. Ein Hinweis sagt, was gelöscht wurde, und wie man die Sicherung wieder öffnet. Kein Rückgängig: das sagt der Dialog vorher.',
+};
+
+const icoDanger = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
+const header = () => S.origin === 'editor'
+  ? `<header class="hdr"><a class="back" href="#">← Startseite</a><span class="doc-name"><span class="dot"></span>Sommeraktion 2027</span><span class="sp"></span><button class="ibtn" data-act="reopen" aria-label="Menü">⋮</button><button class="btn">🌐 DE</button></header>`
+  : `<header class="hdr"><span class="brand">⌂ Newsletter-Editor</span><span class="sp"></span><button class="ibtn" data-act="reopen" aria-label="Startmenü">⋮</button><button class="btn">🌐 DE</button></header>`;
+const footer = () => '<footer class="ftr"><span></span><span class="links"><span>STARTSEITE</span><span>IMPRESSUM</span><span>DATENSCHUTZ</span><span>ÜBER</span></span><span class="ver">v0.4.7</span></footer>';
+
+function startPage(after) {
+  const del = after ? T.deleted : null;
+  const tplGone = del && del.includes('tpl');
+  const banner = after ? `<div class="banner" role="status"><span class="bi">✓</span><div><p><b>${kinds().filter((x) => x.n !== 0).every((x) => del.includes(x.k)) ? 'Alles zurückgesetzt.' : 'Teilweise zurückgesetzt.'}</b> Gelöscht: ${summaryText(del)}</p>
+      <small>${T.saved === 'ok' ? `Ihre Sicherung „${FILE}“ öffnen Sie über das Startmenü, „Aus Datei öffnen …“.` : 'Das lässt sich nicht rückgängig machen.'}</small>
+      ${T.saved === 'ok' ? '<div class="acts"><button class="btn btn--sm btn--outline">Sicherung öffnen …</button></div>' : ''}</div></div>` : '';
+  return `${header()}<main class="start">
+    ${banner}
+    <header><h2 class="start-title">${tplGone ? 'Willkommen' : 'Willkommen zurück'}</h2><p class="start-lead">Neuen Newsletter beginnen oder dort weitermachen, wo Sie aufgehört haben.</p></header>
+    <div><h3 class="start-sec">Neu anfangen</h3><div class="start-tiles">
+      <div class="start-tile is-primary"><b>Leerer Newsletter</b><span>Ohne Vorlage starten, Texte auf Deutsch</span></div>
+      <div class="start-tile"><b>Beispielvorlage Deutsch</b><span>CloudLib.EU, fertig gefüllt zum Ausprobieren</span></div>
+      <div class="start-tile"><b>Beispielvorlage Englisch</b><span>CloudLib.EU auf Englisch, fertig gefüllt</span></div>
+      ${isPhone() ? '' : '<div class="start-tile"><b>Neuer Baustein</b><span>Eigenen Baustein aus Teilen bauen, für jede Vorlage</span></div>'}
+    </div></div>
+    <div><h3 class="start-sec">Zuletzt verwendet</h3>${tplGone ? '<p class="recent-empty">Hier erscheinen Ihre gespeicherten Newsletter.</p>' : `<ul class="recent">
+      <li><span class="doc"></span><span><b>Frühjahrsangebot 2027</b><br><small>Auszeit am See</small></span><small>heute</small></li>
+      <li><span class="doc"></span><span><b>Messe Oktober</b><br><small>Treffen Sie uns in Halle 4</small></span><small>3. Okt.</small></li></ul>`}</div>
+  </main>${footer()}`;
+}
+
+function editorPage() {
+  const rows = ['#fb923c', '#7ecfff', '#fde047', '#a78bfa', '#22d3ee'];
+  return `${header()}<div class="ed"><aside class="ed-panel"><div class="ed-tabs"><span>Aktuelle Bausteine</span><span>Alle</span><span>Farben</span><span>Marke</span></div>
+    ${rows.map((a) => `<div class="ed-row" style="--a:${a}"></div>`).join('')}</aside>
+    <div class="ed-prev"><div class="ed-mail"><i class="h"></i><i></i><i style="width:80%"></i><i style="width:60%"></i><i class="h" style="height:5rem;background:#dbe4ee"></i><i></i><i style="width:70%"></i></div></div></div>`;
+}
+
+function summaryText(keys) {
+  const k = kinds();
+  const parts = k.filter((x) => keys.includes(x.k) && x.n !== 0).map((x) => x.n === null ? (x.k === 'work' ? 'der aktuelle Arbeitsentwurf' : 'die Ansichtseinstellungen') : `${x.n} ${x.k === 'tpl' ? 'Vorlagen' : x.k === 'own' ? 'eigene Bausteine' : 'Baustein-Entwürfe'}`);
+  if (!parts.length) return '';
+  return parts.length === 1 ? `${parts[0]}.` : `${parts.slice(0, -1).join(', ')} und ${parts.at(-1)}.`;
+}
+
+function rowsHtml(variant) {
+  return kinds().map((x) => {
+    const zero = x.n === 0;
+    const on = !zero && T.sel[x.k];
+    const cls = `kind ${on ? '' : 'is-off'} ${zero ? 'is-zero' : ''} ${x.isNew ? 'is-new' : ''}`;
+    const box = `<input type="checkbox" data-kind="${x.k}" ${on ? 'checked' : ''} ${zero ? 'disabled' : ''} aria-describedby="d-${x.k}">`;
+    if (variant === 'A') {
+      const n = x.n === null ? '' : `(${x.n})`;
+      return `<label class="${cls}">${box}<span class="lbl">${x.lbl}</span><span class="n">${n}</span></label>`;
+    }
+    const n = x.n === null ? '' : `<span class="pill">${x.n}</span>`;
+    return `<label class="${cls}">${box}<span class="ti ${x.free ? 'ti--free' : ''}" aria-hidden="true">${x.ti}</span><span class="lbl">${x.lbl}</span><small id="d-${x.k}">${x.detail}</small>${n}</label>`;
+  }).join('');
+}
+
+function selected() { return kinds().filter((x) => x.n !== 0 && T.sel[x.k]).map((x) => x.k); }
+function allOn() { return kinds().filter((x) => x.n !== 0).every((x) => T.sel[x.k]); }
+
+function hints() {
+  const s = T.sel, out = [];
+  const zero = S.sc === 'zero';
+  if (!selected().length) out.push(['', 'Nichts angehakt. Wählen Sie mindestens einen Eintrag.']);
+  if (!zero && s.own && !s.tpl) out.push(['', 'Die 2 Vorlagen, die eigene Bausteine nutzen, behalten ihre Kopie. Hinweise auf neuere Versionen entfallen.']);
+  if (!zero && s.own && !s.drafts) out.push(['', 'Entwürfe zu gelöschten Bausteinen bleiben als eigenständige Entwürfe erhalten.']);
+  if (S.origin === 'editor' && s.work) out.push(['warn', 'Der offene Newsletter „Sommeraktion 2027“ hat ungespeicherte Änderungen. Sie gehen mit verloren.']);
+  if (S.origin === 'editor' && s.tpl && !s.work) out.push(['', 'Der offene Newsletter bleibt als Arbeitsentwurf, gilt danach aber als nicht gespeichert.']);
+  return out.map(([t, x]) => `<p class="hint ${t ? 'hint--warn' : ''}">${x}</p>`).join('');
+}
+
+function saveBox(variant) {
+  const st = T.saved;
+  if (variant === 'A') {
+    if (st === 'ok') return `<p class="inline-save"><span class="ok">✓ Gesichert:</span> <span>${FILE}</span></p>`;
+    if (st === 'err') return `<p class="inline-save"><span class="err">Nicht gesichert.</span> Das Speichern wurde abgebrochen, es gibt keine Datei.</p>`;
+    return '';
+  }
+  if (st === 'ok') return `<div class="save is-ok is-new"><p><b><span class="ok">✓</span> Gesichert als <span class="file">${FILE}</span></b><br>12 Vorlagen, ${S.sc === 'zero' ? 'keine eigenen Bausteine' : '3 eigene Bausteine, 5 Baustein-Entwürfe'}, aktueller Arbeitsentwurf. Wieder öffnen über „Aus Datei öffnen …“.</p><button class="btn btn--sm" data-act="save">Nochmal sichern</button></div>`;
+  if (st === 'err') return `<div class="save is-err is-new" role="alert"><p><b>Nicht gesichert.</b><br>Das Speichern wurde abgebrochen oder vom Browser blockiert. Es gibt keine Datei.</p><button class="btn btn--sm btn--outline" data-act="save">Erneut versuchen</button></div>`;
+  return `<div class="save is-new"><p><b>Erst sichern?</b><br>Eine Datei mit allen Vorlagen, eigenen Bausteinen und Entwürfen. Kostet nichts und lässt sich später wieder öffnen.</p><button class="btn btn--sm btn--outline" data-act="save">Erst alles als Datei sichern</button></div>`;
+}
+
+const ackHtml = () => `<label class="ack"><input type="checkbox" id="ack" ${T.ack ? 'checked' : ''}><span>Ich habe verstanden, dass sich das nicht rückgängig machen lässt.</span></label>`;
+const delLabel = () => allOn() ? 'Alles löschen' : 'Ausgewählte löschen';
+const delBtn = () => `<button class="btn btn--danger" data-act="delete" ${selected().length && T.ack ? '' : 'disabled'}>${delLabel()}</button>`;
+
+function head(title, eyebrow) {
+  return `<div class="dlg-head"><span class="hi">${icoDanger}</span><div class="tt"><span class="eyebrow">${eyebrow}</span><h2 id="dlgT">${title}</h2></div><button class="dlg-x" data-act="close" aria-label="Schließen">×</button></div>`;
+}
+
+function dialog() {
+  const v = S.v;
+  const keep = '<p class="keep">Die App-Sprache bleibt erhalten.</p>';
+  const lead = '<p class="lead">Diese Daten werden aus diesem Browser gelöscht. Das lässt sich nicht rückgängig machen.</p>';
+  let inner = '';
+  if (v === 'A') {
+    inner = `${head('Alles zurücksetzen?', 'Löschen')}
+      <div class="dlg-body">${lead}<div class="kinds is-new">${rowsHtml('A')}</div>${keep}${hints()}${saveBox('A')}${ackHtml()}</div>
+      <div class="dlg-foot"><button class="btn ${T.saved === 'err' ? 'btn--outline' : ''} is-new" data-act="save">${T.saved === 'ok' ? 'Nochmal sichern' : T.saved === 'err' ? 'Erneut sichern' : 'Erst alles als Datei sichern'}</button><span class="sp"></span><button class="btn" data-act="close">Abbrechen</button>${delBtn()}</div>`;
+  } else if (v === 'B') {
+    inner = `${head('Alles zurücksetzen?', 'Löschen')}
+      <div class="dlg-body">${lead}${saveBox('B')}
+        <div class="selall"><span>Was soll gelöscht werden?</span><span><button class="linkbtn" data-act="all">Alle</button><button class="linkbtn" data-act="noneSel">Keine</button></span></div>
+        <div class="kinds kinds--b">${rowsHtml('B')}</div>${keep}${hints()}${ackHtml()}</div>
+      <div class="dlg-foot"><button class="btn" data-act="close">Abbrechen</button>${delBtn()}</div>`;
+  } else {
+    const steps = `<div class="steps" aria-label="Schritte"><span ${T.step === 1 ? 'aria-current="step"' : ''}>1 Auswählen</span><span ${T.step === 2 ? 'aria-current="step"' : ''}>2 Bestätigen</span></div>`;
+    if (T.step === 1) {
+      inner = `${head('Was soll gelöscht werden?', 'Zurücksetzen')}
+        <div class="dlg-body">${steps}${saveBox('B')}<div class="kinds kinds--b">${rowsHtml('B')}</div>${keep}${hints()}</div>
+        <div class="dlg-foot"><button class="btn" data-act="close">Abbrechen</button><button class="btn btn--primary" data-act="next" ${selected().length ? '' : 'disabled'}>Weiter</button></div>`;
+    } else {
+      const k = kinds();
+      const li = (x) => `<li>${x.n === null ? x.lbl : `${x.lbl} (${x.n})`}</li>`;
+      const gone = k.filter((x) => x.n !== 0 && T.sel[x.k]);
+      const stay = k.filter((x) => x.n !== 0 && !T.sel[x.k]);
+      inner = `${head('Endgültig löschen?', 'Zurücksetzen')}
+        <div class="dlg-body">${steps}${lead}
+          <div class="summary"><div class="gone"><h3>Wird gelöscht</h3><ul>${gone.map(li).join('')}</ul></div>
+            <div class="stay"><h3>Bleibt</h3><ul>${stay.map(li).join('')}<li>App-Sprache</li></ul></div></div>
+          ${T.saved === 'ok' ? `<p class="inline-save"><span class="ok">✓ Gesichert:</span> ${FILE}</p>` : '<p class="hint hint--warn">Nicht als Datei gesichert. <button class="linkbtn" data-act="back">Zurück zum Sichern</button></p>'}
+          ${ackHtml()}</div>
+        <div class="dlg-foot"><button class="btn" data-act="back">Zurück</button><span class="sp"></span><button class="btn" data-act="close">Abbrechen</button>${delBtn()}</div>`;
+    }
+  }
+  return `<div class="backdrop" data-act="closeOut"><div class="dlg" role="alertdialog" aria-modal="true" aria-labelledby="dlgT">${inner}</div></div>`;
+}
+
+function render() {
+  document.querySelectorAll('.mk .seg').forEach((g) => g.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(S[g.dataset.k] === b.dataset.v))));
+  document.getElementById('mknote').innerHTML = `${NOTES[S.v]}<br><b>Szene:</b> ${SCN[S.sc]}${S.origin === 'editor' ? '<br><b>Editor-Menü:</b> Der offene Newsletter hat ungespeicherte Änderungen; der Dialog nennt ihn beim Namen.' : ''}${isPhone() ? '<br><b>Handy:</b> Dialog als Blatt von unten, Knöpfe untereinander, „Löschen“ oben.' : ''}`;
+  document.getElementById('showNew').checked = S.showNew;
+  document.body.classList.toggle('hide-new', !S.showNew);
+  document.body.classList.toggle('phone', isPhone());
+  const after = S.sc === 'done';
+  const bg = after ? startPage(true) : S.origin === 'editor' ? editorPage() + footer() : startPage(false);
+  document.getElementById('frame').innerHTML = bg + (after || T.closed ? '' : dialog());
+  try { localStorage.setItem('mk-r4-reset', JSON.stringify(S)); } catch {}
+}
+
+function pickScene(sc) {
+  S.sc = sc;
+  T = sceneState(sc === 'done' ? 'saved' : sc);
+  T.closed = false;
+  if (sc === 'done') T.deleted = ['tpl', 'own', 'drafts', 'work', 'view'];
+}
+
+document.addEventListener('click', (e) => {
+  const mk = e.target.closest('.mk .seg button');
+  if (mk) {
+    const k = mk.parentElement.dataset.k; S[k] = mk.dataset.v;
+    if (k === 'sc') pickScene(S.sc); else T.closed = false;
+    render(); return;
+  }
+  const t = e.target.closest('[data-act]');
+  if (!t) return;
+  const a = t.dataset.act;
+  if (a === 'closeOut') { if (e.target !== t) return; T.closed = true; }
+  else if (a === 'close') T.closed = true;
+  else if (a === 'reopen') { if (S.sc === 'done') pickScene('normal'); T.closed = false; }
+  else if (a === 'save') T.saved = T.saved === 'err' || T.saved === '' ? 'ok' : 'ok';
+  else if (a === 'all') kinds().forEach((x) => { T.sel[x.k] = true; });
+  else if (a === 'noneSel') kinds().forEach((x) => { T.sel[x.k] = false; });
+  else if (a === 'next') { T.step = 2; T.ack = false; }
+  else if (a === 'back') T.step = 1;
+  else if (a === 'delete') { T.deleted = selected(); S.sc = 'done'; }
+  else return;
+  render();
+});
+document.addEventListener('change', (e) => {
+  if (e.target.id === 'showNew') S.showNew = e.target.checked;
+  else if (e.target.id === 'ack') T.ack = e.target.checked;
+  else if (e.target.dataset.kind) T.sel[e.target.dataset.kind] = e.target.checked;
+  else return;
+  render();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && S.sc !== 'done') { T.closed = true; render(); } });
+
+pickScene(S.sc);
+if (S.sc === 'done') T.deleted = ['tpl', 'own', 'drafts', 'work', 'view'];
+render();
+</script>
+</body>
+</html>
