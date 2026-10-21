@@ -15,3 +15,11 @@ When('I go forward in the browser', async ({ page }) => {
   await page.goForward();
 });
 
+
+Then('the not found page should be of kind {string}', async ({ page }, kind: string) => {
+  await expect(page.getByTestId('not-found-page')).toHaveAttribute('data-kind', kind);
+});
+
+When('I follow the not found link {string}', async ({ page }, testId: string) => {
+  await page.getByTestId(testId).click();
+});

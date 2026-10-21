@@ -1,9 +1,10 @@
 import { inject } from '@angular/core';
 import { Router, Routes } from '@angular/router';
 import { NewsletterSession } from './editor/newsletter-session.service';
-import { editorAnyMatcher, editorPanelPath, editorPlaceMatcher } from './editor/panel/panel-routes';
+import { editorDocMatcher, editorPanelPath, editorPlaceMatcher } from './editor/panel/panel-routes';
 import { AboutPage } from './pages/about/about.page';
 import { EditorPage } from './pages/editor/editor.page';
+import { NotFoundPage } from './pages/not-found/not-found.page';
 import { StartPage } from './pages/start/start.page';
 import { UnsavedGuardService } from './shell/unsaved-guard.service';
 
@@ -20,8 +21,8 @@ export const routes: Routes = [
     ],
   },
   {
-    // `/edit/<id>` alone or with an unknown place: Current blocks in the last used view.
-    matcher: editorAnyMatcher,
+    // `/edit/<id>` alone: Current blocks in the last used view.
+    matcher: editorDocMatcher,
     redirectTo: ({ params }) =>
       inject(Router).createUrlTree(editorPanelPath(params['id'], 'placed', inject(NewsletterSession).placedView())),
   },
@@ -34,5 +35,7 @@ export const routes: Routes = [
         next.url === '/' ? inject(UnsavedGuardService).allowLeave() : true,
     ],
   },
-  { path: '**', redirectTo: '' },
+  // Shown (without changing the address) when the template behind `/edit/<id>` no longer exists.
+  { path: 'missing-template', component: NotFoundPage, data: { kind: 'template' } },
+  { path: '**', component: NotFoundPage },
 ];

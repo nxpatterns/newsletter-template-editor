@@ -280,6 +280,7 @@ Numbers refer to the questions in the 2026-10-21 thread.
 | 65 | Coupling between kinds | None. Everything is checked by default and the user unchecks what to keep; drafts of deleted own blocks stay as standalone drafts when "Block drafts" is unchecked |
 | 66 | Kinds without data | Hidden; what does not exist cannot be reset |
 | 67 | Content of the save file | Only the checked kinds ("Save selected as a file"); under the button a line "Selected: everything" (DE "Aktuell: Alles angehakt") or the checked kinds |
+| 68 | Address of a block that no longer exists | The app's not found page in a block variant ("This is not the block you are looking for"), offering "How about a new block?" next to the way back; same pattern as a deleted template |
 
 ## Mockup scope
 

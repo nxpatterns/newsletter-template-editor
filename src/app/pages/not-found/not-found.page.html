@@ -1,0 +1,11 @@
+<article class="not-found" data-testid="not-found-page" [attr.data-kind]="kind">
+  <p class="not-found-code" aria-hidden="true">404</p>
+  <h2 data-testid="not-found-title" [textContent]="i18n.t('notFound.' + kind + '.title')"></h2>
+  <p [textContent]="i18n.t('notFound.' + kind + '.lead')"></p>
+  <p class="not-found-actions">
+    @if (docId) {
+      <a [routerLink]="['/edit', docId]" data-testid="not-found-back-to-doc" [textContent]="i18n.t('notFound.page.toTemplate')"></a>
+    }
+    <a routerLink="/" data-testid="not-found-home" [textContent]="i18n.t(kind === 'template' ? 'notFound.template.offer' : 'about.back')"></a>
+  </p>
+</article>

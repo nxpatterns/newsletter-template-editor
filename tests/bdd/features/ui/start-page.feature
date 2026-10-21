@@ -151,10 +151,12 @@ Feature: Start page
     When I reload the page
     Then the editor should show the document 'Reload check'
 
-  Scenario: An unknown newsletter address goes to the start page
+  Scenario: An unknown newsletter address offers a new template
     Given I open the address '/edit/does-not-exist'
-    Then I should see a snackbar with text "This newsletter no longer exists."
-    And the start page should be visible
+    Then the not found page should be of kind 'template'
+    And the address should end with '/edit/does-not-exist/current-blocks/list'
+    When I follow the not found link 'not-found-home'
+    Then the start page should be visible
 
   Scenario: A stored draft without a name gets a neutral name
     Given I open the editor with an extra greeting block

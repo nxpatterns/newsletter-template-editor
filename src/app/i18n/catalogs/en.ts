@@ -622,6 +622,12 @@ export const EN: MessageCatalog = {
   'about.repoUrl': 'https://github.com/nxpatterns/newsletter-template-editor',
   'about.backToDoc': 'Back to',
   'about.back': 'Back to the start page',
+  'notFound.page.title': 'Oops, this link has drifted off into nirvana.',
+  'notFound.page.lead': 'A small wave of the hand, and we agree: this is not the page you are looking for. The pages that do exist are one click away.',
+  'notFound.page.toTemplate': 'Open the template',
+  'notFound.template.title': 'This is not the template you are looking for.',
+  'notFound.template.lead': 'It seems to have moved to nirvana: deleted, and the bookmark never got the memo. How about a new template?',
+  'notFound.template.offer': 'Start a new template on the start page',
   'block.greeting': 'Greeting',
   'block.greeting.hint':
     'Opening line such as "Dear business partner". Optional: with the recipient name.',

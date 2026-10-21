@@ -13,7 +13,6 @@ import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
-import { SnackbarService } from '../../ui/snackbar/snackbar.service';
 import { filledSocialNetworks, renderPreview, type SocialIconSources } from '../../../core';
 import { EditorPanelComponent } from '../../editor/panel/editor-panel.component';
 import { parsePanelPlace } from '../../editor/panel/panel-routes';
@@ -51,7 +50,6 @@ export class EditorPage {
   private readonly socialIcons = inject(SocialIconsService);
   private readonly catalogDrag = inject(CatalogDragService);
   private readonly router = inject(Router);
-  private readonly snackbar = inject(SnackbarService);
   private readonly route = inject(ActivatedRoute);
   /** `/edit/:id/…`: library id, or `draft` before the first save. */
   private readonly routeReady = signal(false);
@@ -119,8 +117,7 @@ export class EditorPage {
           this.routeReady.set(true);
           return;
         }
-        this.snackbar.error(this.i18n.t('start.notFound'));
-        void this.router.navigateByUrl('/', { replaceUrl: true });
+        void this.router.navigateByUrl('/missing-template', { skipLocationChange: true });
       });
     });
 

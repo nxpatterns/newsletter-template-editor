@@ -56,6 +56,6 @@ export const editorPlaceMatcher: UrlMatcher = (segments) => {
   return { consumed: segments, posParams };
 };
 
-/** Any other `/edit/<id>…` address: param `id`, to be redirected to a known place. */
-export const editorAnyMatcher: UrlMatcher = (segments) =>
-  editSegments(segments) ? { consumed: segments, posParams: { id: segments[1] } } : null;
+/** `/edit/<id>` without a place: param `id`, to be redirected to a known place. */
+export const editorDocMatcher: UrlMatcher = (segments) =>
+  editSegments(segments) && segments.length === 2 ? { consumed: segments, posParams: { id: segments[1] } } : null;

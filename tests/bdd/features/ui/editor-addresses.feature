@@ -35,11 +35,24 @@ Feature: Editor addresses
     And I reload the page
     Then the panel tab 'legal' should be the selected tab
 
-  Scenario: An unknown place opens Current blocks in the last used view
+  Scenario: The template address alone opens Current blocks in the last used view
     Given I open the editor with the German demo
     When I switch the current blocks view to 'tree'
     And I open the panel tab 'social'
-    And I open the address '/edit/draft/nowhere'
+    And I open the address '/edit/draft'
     Then the panel tab 'placed' should be the selected tab
     And the current blocks view should be 'tree'
     And the address should end with '/current-blocks/tree'
+
+  Scenario: An unknown place shows the not found page with a way back to the template
+    Given I open the editor with the German demo
+    And I open the address '/edit/draft/nowhere'
+    Then the not found page should be of kind 'page'
+    When I follow the not found link 'not-found-back-to-doc'
+    Then the panel tab 'placed' should be the selected tab
+
+  Scenario: Any unknown address shows the not found page
+    Given I open the address '/somewhere/else'
+    Then the not found page should be of kind 'page'
+    When I follow the not found link 'not-found-home'
+    Then the start page should be visible
