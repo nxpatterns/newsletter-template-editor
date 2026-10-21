@@ -196,7 +196,7 @@ Route: its own address (for example `/blocks/:id`), plus an overview of own bloc
 - Demo page and marketplace share one gallery route; newsletters first, blocks later.
 - Addresses follow the editor scheme (`src/app/editor/panel/panel-routes.ts`): `/demos` is the gallery, `/demos/<id>` one publication. Once blocks can be published, each kind gets its own address like an editor tab (`/demos/newsletters`, `/demos/blocks`) and `/demos` redirects. A withdrawn, blocked or unknown publication shows the not found page in a publication variant (decision 69).
 - Gallery: cards with preview, title, publisher, language, date, views and likes; search, language and sort "Newest | Most popular" (decisions 70, 72). Single view: preview Light / Dark and desktop / phone, "Use as template" (free copy into this browser, no login) and "Report" (decision 71). Publishing: dialog from the editor ⋮ menu (decision 73).
-- Design: mockup `docs/mockups/block-editor/r5-demo-page.html`, variants A to C, choice open.
+- Design: mockup `docs/mockups/block-editor/r5-demo-page.html`, variant A (grid of cards) chosen (decision 74).
 
 ## Naming
 
@@ -289,6 +289,7 @@ Numbers refer to the questions in the 2026-10-21 thread.
 | 71 | Single publication view | Preview Light / Dark and desktop / phone; "Use as template" (DE "Als Vorlage übernehmen") creates a copy as a new template in this browser, free; "Report" (DE "Melden") for takedown on abuse |
 | 72 | Search and filter | Search, language, sort "Newest \| Most popular" (DE "Neueste \| Beliebteste"); topics or industries later |
 | 73 | Publishing | "Show on demo page" in the editor ⋮ menu opens a dialog: title, description, language, note "public for everyone", checkbox "I am responsible for the content"; without login, login comes first. Shown in mockup R5 |
+| 74 | Demo page design (mockup R5, step 7) | Variant A: grid of equal cards, search, language and sort in a glass bar above; a click on a card opens `/demos/<id>` |
 
 ## Mockup scope
 
@@ -318,4 +319,4 @@ Reset dialog wording (EN; DE in the mockup):
 
 ## Open questions
 
-Design variant of the demo page (mockup R5: A, B or C). Decisions 30 to 73 were accepted on 2026-10-21; mockups may still change them.
+None. Decisions 30 to 74 were accepted on 2026-10-21; mockups may still change them.

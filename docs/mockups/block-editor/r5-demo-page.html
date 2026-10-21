@@ -269,7 +269,7 @@ footer.ftr .ver { justify-self: end; letter-spacing: 0; }
 <body>
 
 <div class="mk" role="region" aria-label="Mockup-Steuerung">
-  <span><b>Variante</b><span class="seg" data-k="v"><button data-v="A">A Raster</button><button data-v="B">B Liste und große Vorschau</button><button data-v="C">C Hervorgehoben und Raster</button></span></span>
+  <span><b>Variante</b><span class="seg" data-k="v"><button data-v="A">A Raster (gewählt)</button><button data-v="B">B Liste und große Vorschau</button><button data-v="C">C Hervorgehoben und Raster</button></span></span>
   <span><b>Bereich</b><span class="seg" data-k="area"><button data-v="gallery">Galerie /demos</button><button data-v="detail">Einzelansicht /demos/&lt;id&gt;</button><button data-v="publish">Veröffentlichen</button><button data-v="entry">Einstiege</button><button data-v="nf">Nicht gefunden</button></span></span>
   <span><b>Vorschau</b><span class="seg" data-k="set"><button data-v="light">Hell</button><button data-v="dark">Dunkel</button></span></span>
   <span><b>Breite</b><span class="seg" data-k="w"><button data-v="desk">Desktop</button><button data-v="phone">Handy</button></span></span>
@@ -315,9 +315,9 @@ const AREAS = {
 };
 
 const NOTES = {
-  A: 'A Raster: alle Veröffentlichungen gleich groß als Karten, wie die Kacheln im Tab „Alle“. Suche, Sprache und Sortierung in einer Glasleiste darüber. Klick auf die Karte öffnet die Einzelansicht /demos/&lt;id&gt;.',
-  B: 'B Liste und große Vorschau: links eine kompakte Liste, rechts die gewählte Veröffentlichung groß mit „Als Vorlage übernehmen“. Man blättert, ohne die Seite zu wechseln; die Adresse folgt trotzdem der Auswahl. Auf dem Handy erst Liste, dann Vorschau.',
-  C: 'C Hervorgehoben und Raster: oben „Beliebt diese Woche“ mit einer großen und zwei kleinen Karten, darunter das Raster wie A. Das spätere Marktplatz-Thema (Entscheidung 11) bekommt so schon einen Platz. Auf dem Handy nur die große Karte.',
+  A: 'A Raster (gewählt, Entscheidung 74): alle Veröffentlichungen gleich groß als Karten, wie die Kacheln im Tab „Alle“. Suche, Sprache und Sortierung in einer Glasleiste darüber. Klick auf die Karte öffnet die Einzelansicht /demos/&lt;id&gt;.',
+  B: 'B Liste und große Vorschau (nicht gewählt): links eine kompakte Liste, rechts die gewählte Veröffentlichung groß mit „Als Vorlage übernehmen“. Man blättert, ohne die Seite zu wechseln; die Adresse folgt trotzdem der Auswahl. Auf dem Handy erst Liste, dann Vorschau.',
+  C: 'C Hervorgehoben und Raster (nicht gewählt): oben „Beliebt diese Woche“ mit einer großen und zwei kleinen Karten, darunter das Raster wie A. Das spätere Marktplatz-Thema (Entscheidung 11) bekommt so schon einen Platz. Auf dem Handy nur die große Karte.',
 };
 const SCN = {
   gallery: {
@@ -338,9 +338,9 @@ const SCN = {
   publish: {
     menu: 'Editor-Menü ⋮ mit „Auf der Demo-Seite zeigen“ direkt unter dem Export (Konzept, Einstiege). In der App erst sichtbar, wenn es Anmeldung gibt (Entscheidung 17).',
     form: 'Dialog (Entscheidung 73). Ohne Anmeldung zuerst die Anmeldung, danach geht es mit dem ausgefüllten Dialog weiter. „Veröffentlichen“ bleibt gesperrt bis zum Haken „Ich trage die Verantwortung“.',
-    checks: 'Die Newsletter-Prüfung läuft mit. Warnungen sperren nicht (wie bei Bausteinen), stehen aber oben. Platzhalter wie {{ Subscriber.Name }} erscheinen auf der Demo-Seite als Beispielwerte, nie mit echten Daten.',
-    done: 'Veröffentlicht: Adresse zum Kopieren und der Weg zur Einzelansicht. Später erneut veröffentlichen heißt „Aktualisieren“ und behält die Adresse.',
-    error: 'Server nicht erreichbar: nichts geht verloren, der Dialog bleibt gefüllt, „Erneut versuchen“.',
+    checks: 'Angemeldet (der Haken oben wird gesetzt). Die Newsletter-Prüfung läuft mit. Warnungen sperren nicht (wie bei Bausteinen), stehen aber oben. Platzhalter wie {{ Subscriber.Name }} erscheinen auf der Demo-Seite als Beispielwerte, nie mit echten Daten.',
+    done: 'Angemeldet. Veröffentlicht: Adresse zum Kopieren und der Weg zur Einzelansicht. Später erneut veröffentlichen heißt „Aktualisieren“ und behält die Adresse.',
+    error: 'Angemeldet. Server nicht erreichbar: nichts geht verloren, der Dialog bleibt gefüllt, „Erneut versuchen“.',
   },
   entry: {
     start: 'Startseite: eigener Abschnitt „Demos“ mit den drei neuesten, darunter „Alle ansehen“. Die Kacheln „Beispielvorlage“ bleiben Starthilfe (Entscheidung 12, 18).',
@@ -569,7 +569,10 @@ function render() {
   try { localStorage.setItem('mk-r5-demo', JSON.stringify(S)); } catch {}
 }
 
-function pick(area, sc) { S.area = area; S.sc = sc || AREAS[area][0][0]; const keep = T && T.sel; T = sceneState(); if (keep) T.sel = keep; }
+function pick(area, sc) { S.area = area; S.sc = sc || AREAS[area][0][0];
+  // these publish scenes exist only after login
+  if (area === 'publish' && ['checks', 'done', 'error'].includes(S.sc)) S.login = true;
+  const keep = T && T.sel; T = sceneState(); if (keep) T.sel = keep; }
 
 document.addEventListener('click', (e) => {
   const mk = e.target.closest('.mk .seg button');
