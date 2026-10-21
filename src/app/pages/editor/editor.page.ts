@@ -10,12 +10,13 @@ import {
   viewChild,
 } from '@angular/core';
 import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
 import { SnackbarService } from '../../ui/snackbar/snackbar.service';
 import { filledSocialNetworks, renderPreview, type SocialIconSources } from '../../../core';
 import { EditorPanelComponent } from '../../editor/panel/editor-panel.component';
+import { parsePanelPlace } from '../../editor/panel/panel-routes';
 import { NewsletterSession } from '../../editor/newsletter-session.service';
 import { LocaleService } from '../../i18n/locale.service';
 import { SocialIconsService } from '../../editor/social-icons.service';
@@ -51,9 +52,10 @@ export class EditorPage {
   private readonly catalogDrag = inject(CatalogDragService);
   private readonly router = inject(Router);
   private readonly snackbar = inject(SnackbarService);
-  /** `/edit/:id`: library id, or `draft` before the first save. */
+  private readonly route = inject(ActivatedRoute);
+  /** `/edit/:id/…`: library id, or `draft` before the first save. */
   private readonly routeReady = signal(false);
-  private readonly routeId = toSignal(inject(ActivatedRoute).paramMap.pipe(map((p) => p.get('id') ?? '')), {
+  private readonly routeId = toSignal(this.route.paramMap.pipe(map((p) => p.get('id') ?? '')), {
     initialValue: '',
   });
 
@@ -122,13 +124,26 @@ export class EditorPage {
       });
     });
 
-    // Save as / Open… / delete change which document is open: keep the address in step.
+    // The address names the panel tab (and Current blocks view): back / forward land there.
+    // Subscribed, not an effect, so the state is set before the effect below compares it.
+    this.route.paramMap.pipe(takeUntilDestroyed()).subscribe((p) => {
+      const place = parsePanelPlace([p.get('tab'), p.get('view')].filter((s) => s !== null));
+      if (!place) return;
+      this.session.setPanelTab(place.tab);
+      if (place.view) this.session.setPlacedView(place.view);
+    });
+
+    // Keep the address in step. A tab or view change is a new history entry; Save as / Open… /
+    // delete change which document is open and replace it.
     // Not while a navigation runs (e.g. saving from the leave question on the way to Start).
     effect(() => {
+      const path = this.session.panelPath();
       const docId = this.session.routeId();
       if (this.router.currentNavigation()) return;
-      if (!this.routeReady() || !this.session.hasDocument() || docId === this.routeId()) return;
-      void this.router.navigate(['/edit', docId], { replaceUrl: true });
+      if (!this.routeReady() || !this.session.hasDocument()) return;
+      const target = this.router.createUrlTree(path);
+      if (this.router.isActive(target, { paths: 'exact', queryParams: 'ignored', fragment: 'ignored', matrixParams: 'ignored' })) return;
+      void this.router.navigateByUrl(target, { replaceUrl: docId !== this.routeId() });
     });
 
     afterNextRender(() => {

@@ -56,7 +56,7 @@
           </div>
         } @else if (onAbout() && session.hasDocument()) {
           <div class="app-header-doc">
-            <a class="app-header-back" [routerLink]="['/edit', session.routeId()]" data-testid="action-back-to-doc">
+            <a class="app-header-back" [routerLink]="session.panelPath()" data-testid="action-back-to-doc">
               <svg class="app-header-back-icon" aria-hidden="true" focusable="false">
                 <use href="#icon-back"></use>
               </svg>

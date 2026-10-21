@@ -206,7 +206,7 @@ Then('the Brand tab should call the logo {string}', async ({ page }, text: strin
 });
 
 Then('the address should point to a saved newsletter', async ({ page }) => {
-  await expect(page).toHaveURL(/\/edit\/[0-9a-f-]{36}$/);
+  await expect(page).toHaveURL(/\/edit\/[0-9a-f-]{36}\/current-blocks\//);
 });
 
 When('I delete the recent newsletter {string}', async ({ page }, name: string) => {

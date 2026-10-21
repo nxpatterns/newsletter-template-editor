@@ -11,7 +11,7 @@ Given('I open the start page', async ({ page }) => {
 Given('I open the editor with the German demo', async ({ page }) => {
   await page.goto('/');
   await page.getByTestId('start-demo-de').click();
-  await expect(page).toHaveURL(/\/edit\/draft$/);
+  await expect(page).toHaveURL(/\/edit\/draft\/current-blocks\//);
   await expect(page.getByTestId('preview-frame')).toBeVisible();
 });
 

@@ -19,6 +19,7 @@ import { clearParagraphStash } from './paragraph-draft-stash';
 import { buildProjectEnvelope, parseProjectFile, type LibraryEntry } from '../../core/persist/idb-docs';
 import type { TemplateSummary } from '../../core/persist/template-repository';
 import { TEMPLATE_REPOSITORY } from './template-repository.token';
+import { editorPanelPath, type EditorPanelTab, type PlacedView } from './panel/panel-routes';
 import { LocaleService } from '../i18n/locale.service';
 import { SnackbarService } from '../ui/snackbar/snackbar.service';
 
@@ -32,14 +33,10 @@ export interface RecentOverview {
 /** Editor URL segment for a document that is not saved in the library yet. */
 export const DRAFT_ROUTE_ID = 'draft';
 
-export type EditorPanelTab =
-  | 'placed'
-  | 'catalog'
-  | 'campaign'
-  | 'brand'
-  | 'legal'
-  | 'social'
-  | 'colors';
+export type { EditorPanelTab } from './panel/panel-routes';
+
+/** UI-only choice between list and tree for Current blocks (localStorage); the list is the default. */
+export const PLACED_VIEW_KEY = 'newsletter-template-editor.placed-view.v1';
 
 /** How a mutation records undo history. */
 export type HistoryMode = 'immediate' | 'coalesce';
@@ -60,6 +57,7 @@ export class NewsletterSession {
   private readonly newsletterSignal = signal<Newsletter>(seedNewsletter());
   private readonly selectedBlockIdSignal = signal<string | null>(null);
   private readonly panelTabSignal = signal<EditorPanelTab>('placed');
+  private readonly placedViewSignal = signal<PlacedView>(this.readPlacedView());
   private readonly editingBlockIdSignal = signal<string | null>(null);
   /** Monotonic token so re-selecting the same block still triggers a preview scroll. */
   private readonly previewScrollTokenSignal = signal(0);
@@ -108,6 +106,7 @@ export class NewsletterSession {
   readonly libraryId = this.libraryIdSignal.asReadonly();
   readonly selectedBlockId = this.selectedBlockIdSignal.asReadonly();
   readonly panelTab = this.panelTabSignal.asReadonly();
+  readonly placedView = this.placedViewSignal.asReadonly();
   /** When set, the block edit modal is open for this id. */
   readonly editingBlockId = this.editingBlockIdSignal.asReadonly();
   readonly previewScrollToken = this.previewScrollTokenSignal.asReadonly();
@@ -130,6 +129,8 @@ export class NewsletterSession {
   readonly blocks = computed(() => this.newsletterSignal().blocks);
   /** URL segment of the open document: library id, or `draft` before the first save. */
   readonly routeId = computed(() => this.libraryIdSignal() ?? DRAFT_ROUTE_ID);
+  /** Address of the open document at the current panel tab (and Current blocks view). */
+  readonly panelPath = computed(() => editorPanelPath(this.routeId(), this.panelTabSignal(), this.placedViewSignal()));
   readonly globals = computed(() => this.newsletterSignal().globals);
   /** Colors of the set that is currently edited, previewed and exported. */
   readonly palette = computed(() => activeColors(this.globals().colors));
@@ -381,6 +382,25 @@ export class NewsletterSession {
 
   setPanelTab(tab: EditorPanelTab): void {
     this.panelTabSignal.set(tab);
+  }
+
+  setPlacedView(view: PlacedView): void {
+    this.placedViewSignal.set(view);
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      localStorage.setItem(PLACED_VIEW_KEY, view);
+    } catch {
+      // quota / private mode
+    }
+  }
+
+  private readPlacedView(): PlacedView {
+    if (!isPlatformBrowser(this.platformId)) return 'list';
+    try {
+      return localStorage.getItem(PLACED_VIEW_KEY) === 'tree' ? 'tree' : 'list';
+    } catch {
+      return 'list';
+    }
   }
 
   selectBlock(
