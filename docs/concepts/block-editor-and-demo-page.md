@@ -148,7 +148,7 @@ Checks run while editing and again when an own block is inserted into another te
 - Insertion records the block's version. Later changes to an own block reach older templates only when the user asks for it.
 - Storage today: IndexedDB, behind a repository interface like `template-repository.token.ts`, so cloud accounts can replace it later.
 - IDs: every stored object (template, own block, block version, draft) gets a UUIDv7 from one injected ID source. Timestamp plus cryptographic randomness makes IDs globally unique without a backend; the server's unique constraint is the final check at the first sync. Tenant and owner are fields, empty locally and filled at the first sync after login, never part of the ID. Block ids inside one document may stay short and local.
-- Factory reset and cleared browser data also delete all own blocks and drafts. The reset dialog must say so. The reset dialog lists one checkbox per kind of data, each with a count: templates, own blocks, block drafts, current working draft, view settings. All are checked by default, since the entry means "reset everything". The existing acknowledge step stays, plus a button "Save everything as a file first". The app language is not part of the list and stays.
+- Factory reset and cleared browser data also delete all own blocks and drafts. The reset dialog must say so. The reset dialog lists one checkbox per kind of data, each with a count: templates, own blocks, block drafts, current working draft, view settings. Kinds without data are hidden. All are checked by default, since the entry means "reset everything"; the rows are independent, and whatever the user unchecks stays. The existing acknowledge step stays, plus a button "Save selected as a file" that saves only the checked kinds, with a line "Selected: everything" (or the checked kinds) under it. The delete button reads "Delete everything" while everything is checked, otherwise "Delete selected", and stays disabled until the acknowledge box is ticked. The app language is not part of the list and stays. Design: decisions 63 to 67, mockup `docs/mockups/block-editor/r4-reset-dialog.html`.
 
 ## Cost model
 
@@ -237,7 +237,7 @@ Numbers refer to the questions in the 2026-10-21 thread.
 | 22 | New export targets (CV PDF, articles) | Separate export chapter; blocks must not block it |
 | 23 | File format for own blocks | Same envelope as the project file, with a type field |
 | 24 | IDs | UUIDv7 from one injected ID source; tenant as a field |
-| 25 | Reset dialog | One checkbox per kind of data with counts, all checked, "save as file first" |
+| 25 | Reset dialog | One checkbox per kind of data with counts, all checked, "save as file first"; refined by decisions 63 to 67 |
 | 26 | Intentional warnings | Markable as intended per placed block |
 | 27 | Drafts | Never auto-deleted; sort, search, manual cleanup; persistent storage request |
 | 28 | Editor actions | Pure operations on the JSON model in `src/core` |
@@ -275,6 +275,11 @@ Numbers refer to the questions in the 2026-10-21 thread.
 | 60 | "Delete drafts older than ..." | Choices 30 days, 90 days, 6 months, 1 year; default 90 days; saved versions stay; 8 second undo |
 | 61 | Phones (extends decision 37) | "New block" and "Edit" are hidden, not greyed out |
 | 62 | Duplicate an own block | Yes, in the row menu ⋯; added to the editor operations |
+| 63 | Reset dialog design (mockup R4, step 6) | Variant B: each kind of data with icon, a one-line description and its count; "All \| None" above the list; the save box at the top |
+| 64 | Delete button label | "Delete everything" (DE "Alles löschen") only while everything is checked (the default), otherwise "Delete selected"; enabled only after "I understand ..." is ticked |
+| 65 | Coupling between kinds | None. Everything is checked by default and the user unchecks what to keep; drafts of deleted own blocks stay as standalone drafts when "Block drafts" is unchecked |
+| 66 | Kinds without data | Hidden; what does not exist cannot be reset |
+| 67 | Content of the save file | Only the checked kinds ("Save selected as a file"); under the button a line "Selected: everything" (DE "Aktuell: Alles angehakt") or the checked kinds |
 
 ## Mockup scope
 
@@ -296,10 +301,12 @@ Reset dialog wording (EN; DE in the mockup):
 
 > **Reset everything?**
 > This data is deleted from this browser. This cannot be undone.
+> [Save selected as a file] Selected: everything
 > [x] Templates (12) · [x] Own blocks (3) · [x] Block drafts (5) · [x] Current working draft · [x] View settings
 > The app language is kept.
-> [Save everything as a file first] [Cancel] [Delete selected]
+> [x] I understand that this cannot be undone.
+> [Cancel] [Delete everything]
 
 ## Open questions
 
-None. Decisions 30 to 62 were accepted on 2026-10-21; mockups may still change them.
+None. Decisions 30 to 67 were accepted on 2026-10-21; mockups may still change them.

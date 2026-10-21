@@ -139,6 +139,8 @@ footer.ftr .ver { justify-self: end; letter-spacing: 0; }
 .save.is-ok { --b: var(--ds-success); }
 .save.is-err { --b: var(--ds-danger); }
 .save .file { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; color: var(--ds-text); }
+.save .cur { grid-column: 1 / -1; font-size: 12px; color: var(--ds-text); }
+.save .cur--warn { color: var(--ds-warning); }
 .inline-save { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; font-size: 12px; color: var(--ds-text-muted); }
 .ok { color: var(--ds-success); font-weight: 600; }
 .err { color: var(--ds-danger); font-weight: 600; }
@@ -178,7 +180,7 @@ footer.ftr .ver { justify-self: end; letter-spacing: 0; }
 <body>
 
 <div class="mk" role="region" aria-label="Mockup-Steuerung">
-  <span><b>Variante</b><span class="seg" data-k="v"><button data-v="A">A Kompakt</button><button data-v="B">B Mit Erklärung</button><button data-v="C">C Zwei Schritte</button></span></span>
+  <span><b>Variante</b><span class="seg" data-k="v"><button data-v="A">A Kompakt</button><button data-v="B">B Mit Erklärung (gewählt)</button><button data-v="C">C Zwei Schritte</button></span></span>
   <span><b>Geöffnet aus</b><span class="seg" data-k="origin"><button data-v="start">Startmenü</button><button data-v="editor">Editor-Menü</button></span></span>
   <span><b>Breite</b><span class="seg" data-k="w"><button data-v="desk">Desktop</button><button data-v="phone">Handy</button></span></span>
   <label><input type="checkbox" id="showNew"> Neues gelb umranden</label>
@@ -224,21 +226,22 @@ function sceneState(sc) {
   if (sc === 'saved') s.saved = 'ok';
   if (sc === 'saveErr') s.saved = 'err';
   if (sc === 'ready') { s.saved = 'ok'; s.ack = true; s.step = 2; }
+  s.savedSel = Object.keys(s.sel).filter((k) => s.sel[k]);
   return s;
 }
 
 const NOTES = {
-  A: 'A Kompakt: der heutige Bestätigungsdialog, nur mit einer Liste zum Anhaken. Zahl hinter jedem Eintrag, keine Erklärung. „Erst alles als Datei sichern“ als Knopf unten links. Wortlaut wie im Konzept.',
-  B: 'B Mit Erklärung: jede Art mit Symbol, einer Zeile „was steckt drin“ und der Zahl als Pille (rot, solange angehakt). „Alle | Keine“ über der Liste. Sichern steht oben als eigener Kasten, weil es der erste sinnvolle Schritt ist; danach zeigt er Dateiname und Inhalt.',
-  C: 'C Zwei Schritte: Schritt 1 „Was löschen?“ mit Liste und Sichern, Schritt 2 „Endgültig löschen?“ mit Zusammenfassung „wird gelöscht | bleibt“ und dem Haken „Ich habe verstanden“. Mehr Klicks, dafür sieht man vor dem Löschen noch einmal alles auf einen Blick.',
+  A: 'A Kompakt (nicht gewählt): der heutige Bestätigungsdialog, nur mit einer Liste zum Anhaken. Zahl hinter jedem Eintrag, keine Erklärung. „Angehakte als Datei sichern“ als Knopf unten links. Wortlaut wie im Konzept.',
+  B: 'B Mit Erklärung (gewählt, Entscheidung 63): jede Art mit Symbol, einer Zeile „was steckt drin“ und der Zahl als Pille (rot, solange angehakt). „Alle | Keine“ über der Liste. Sichern steht oben als eigener Kasten und sichert nur das Angehakte, darunter „Aktuell: …“ (Entscheidung 67); danach zeigt er Dateiname und Inhalt.',
+  C: 'C Zwei Schritte (nicht gewählt): Schritt 1 „Was löschen?“ mit Liste und Sichern, Schritt 2 „Endgültig löschen?“ mit Zusammenfassung „wird gelöscht | bleibt“ und dem Haken „Ich habe verstanden“. Mehr Klicks, dafür sieht man vor dem Löschen noch einmal alles auf einen Blick.',
 };
 const SCN = {
-  normal: 'Alles angehakt (Standard, Entscheidung 25). Der Knopf heißt „Alles löschen“, solange alles angehakt ist, sonst „Ausgewählte löschen“. Er bleibt gesperrt bis zum Haken „Ich habe verstanden“ (heutiger Bestätigungsschritt).',
+  normal: 'Alles angehakt (Standard, Entscheidung 25). Der Knopf heißt „Alles löschen“, solange alles angehakt ist, sonst „Ausgewählte löschen“. Er bleibt gesperrt bis zum Haken „Ich habe verstanden“ (Entscheidung 64).',
   partial: 'Nur eigene Bausteine und ihre Entwürfe. Vorlagen, die eigene Bausteine nutzen, behalten ihre Kopie (wie Entscheidung 58).',
-  ownOnly: 'Bausteine angehakt, Entwürfe nicht: Entwürfe zu gelöschten Bausteinen bleiben als eigenständige Entwürfe erhalten (Vorschlag, Frage 3).',
-  none: 'Nichts angehakt: Löschen gesperrt, kurzer Hinweis statt Fehlermeldung.',
-  zero: 'Keine eigenen Bausteine und keine Entwürfe: die Zeilen bleiben sichtbar, ausgegraut mit „0“ und ohne Haken (Vorschlag, Frage 4).',
-  saved: 'Nach „Erst alles als Datei sichern“: eine Datei mit allem, egal was angehakt ist (Vorschlag, Frage 5). Dateiname und Inhalt stehen da; der Haken „Ich habe verstanden“ bleibt trotzdem nötig.',
+  ownOnly: 'Bausteine angehakt, Entwürfe nicht: keine Kopplung zwischen den Zeilen, was nicht angehakt ist, bleibt. Entwürfe zu gelöschten Bausteinen bleiben als eigenständige Entwürfe (Entscheidung 65).',
+  none: 'Nichts angehakt: Löschen und Sichern gesperrt, kurzer Hinweis statt Fehlermeldung.',
+  zero: 'Keine eigenen Bausteine und keine Entwürfe: die Zeilen fehlen ganz. Was es nicht gibt, kann man nicht zurücksetzen (Entscheidung 66).',
+  saved: 'Nach „Angehakte als Datei sichern“: die Datei enthält nur das Angehakte (Entscheidung 67). Dateiname und Inhalt stehen da; ändert sich danach die Auswahl, sagt der Kasten das. Der Haken „Ich habe verstanden“ bleibt trotzdem nötig.',
   saveErr: 'Speichern im Dateidialog abgebrochen oder vom Browser blockiert: klare Meldung, „Erneut versuchen“. Löschen bleibt möglich, die Warnung wird deutlicher.',
   ready: 'Haken gesetzt, Löschen frei. In Variante C ist das Schritt 2.',
   done: 'Nach dem Löschen lädt die App neu und zeigt die Startseite. Ein Hinweis sagt, was gelöscht wurde, und wie man die Sicherung wieder öffnet. Kein Rückgängig: das sagt der Dialog vorher.',
@@ -286,7 +289,8 @@ function summaryText(keys) {
 }
 
 function rowsHtml(variant) {
-  return kinds().map((x) => {
+  // kinds without data are hidden (decision 66)
+  return kinds().filter((x) => x.n !== 0).map((x) => {
     const zero = x.n === 0;
     const on = !zero && T.sel[x.k];
     const cls = `kind ${on ? '' : 'is-off'} ${zero ? 'is-zero' : ''} ${x.isNew ? 'is-new' : ''}`;
@@ -321,9 +325,21 @@ function saveBox(variant) {
     if (st === 'err') return `<p class="inline-save"><span class="err">Nicht gesichert.</span> Das Speichern wurde abgebrochen, es gibt keine Datei.</p>`;
     return '';
   }
-  if (st === 'ok') return `<div class="save is-ok is-new"><p><b><span class="ok">✓</span> Gesichert als <span class="file">${FILE}</span></b><br>12 Vorlagen, ${S.sc === 'zero' ? 'keine eigenen Bausteine' : '3 eigene Bausteine, 5 Baustein-Entwürfe'}, aktueller Arbeitsentwurf. Wieder öffnen über „Aus Datei öffnen …“.</p><button class="btn btn--sm" data-act="save">Nochmal sichern</button></div>`;
-  if (st === 'err') return `<div class="save is-err is-new" role="alert"><p><b>Nicht gesichert.</b><br>Das Speichern wurde abgebrochen oder vom Browser blockiert. Es gibt keine Datei.</p><button class="btn btn--sm btn--outline" data-act="save">Erneut versuchen</button></div>`;
-  return `<div class="save is-new"><p><b>Erst sichern?</b><br>Eine Datei mit allen Vorlagen, eigenen Bausteinen und Entwürfen. Kostet nichts und lässt sich später wieder öffnen.</p><button class="btn btn--sm btn--outline" data-act="save">Erst alles als Datei sichern</button></div>`;
+  const none = !selected().length ? 'disabled' : '';
+  const cur = `<p class="cur">Aktuell: ${selText()}</p>`;
+  if (st === 'ok') {
+    const changed = T.savedSel.join() !== selected().join() ? '<p class="cur cur--warn">Die Auswahl hat sich seit dem Sichern geändert.</p>' : '';
+    return `<div class="save is-ok is-new"><p><b><span class="ok">✓</span> Gesichert als <span class="file">${FILE}</span></b><br>Enthält: ${summaryText(T.savedSel)} Wieder öffnen über „Aus Datei öffnen …“.</p><button class="btn btn--sm" data-act="save" ${none}>Nochmal sichern</button>${cur}${changed}</div>`;
+  }
+  if (st === 'err') return `<div class="save is-err is-new" role="alert"><p><b>Nicht gesichert.</b><br>Das Speichern wurde abgebrochen oder vom Browser blockiert. Es gibt keine Datei.</p><button class="btn btn--sm btn--outline" data-act="save" ${none}>Erneut versuchen</button>${cur}</div>`;
+  return `<div class="save is-new"><p><b>Erst sichern?</b><br>Das Angehakte als Datei. Kostet nichts und lässt sich später wieder öffnen.</p><button class="btn btn--sm btn--outline" data-act="save" ${none}>Angehakte als Datei sichern</button>${cur}</div>`;
+}
+
+function selText() {
+  const s = selected();
+  if (!s.length) return 'nichts angehakt';
+  if (allOn()) return 'Alles angehakt';
+  return kinds().filter((x) => s.includes(x.k)).map((x) => x.lbl).join(', ');
 }
 
 const ackHtml = () => `<label class="ack"><input type="checkbox" id="ack" ${T.ack ? 'checked' : ''}><span>Ich habe verstanden, dass sich das nicht rückgängig machen lässt.</span></label>`;
@@ -342,7 +358,7 @@ function dialog() {
   if (v === 'A') {
     inner = `${head('Alles zurücksetzen?', 'Löschen')}
       <div class="dlg-body">${lead}<div class="kinds is-new">${rowsHtml('A')}</div>${keep}${hints()}${saveBox('A')}${ackHtml()}</div>
-      <div class="dlg-foot"><button class="btn ${T.saved === 'err' ? 'btn--outline' : ''} is-new" data-act="save">${T.saved === 'ok' ? 'Nochmal sichern' : T.saved === 'err' ? 'Erneut sichern' : 'Erst alles als Datei sichern'}</button><span class="sp"></span><button class="btn" data-act="close">Abbrechen</button>${delBtn()}</div>`;
+      <div class="dlg-foot"><button class="btn ${T.saved === 'err' ? 'btn--outline' : ''} is-new" data-act="save">${T.saved === 'ok' ? 'Nochmal sichern' : T.saved === 'err' ? 'Erneut sichern' : 'Angehakte als Datei sichern'}</button><span class="sp"></span><button class="btn" data-act="close">Abbrechen</button>${delBtn()}</div>`;
   } else if (v === 'B') {
     inner = `${head('Alles zurücksetzen?', 'Löschen')}
       <div class="dlg-body">${lead}${saveBox('B')}
@@ -404,7 +420,7 @@ document.addEventListener('click', (e) => {
   if (a === 'closeOut') { if (e.target !== t) return; T.closed = true; }
   else if (a === 'close') T.closed = true;
   else if (a === 'reopen') { if (S.sc === 'done') pickScene('normal'); T.closed = false; }
-  else if (a === 'save') T.saved = T.saved === 'err' || T.saved === '' ? 'ok' : 'ok';
+  else if (a === 'save') { T.saved = 'ok'; T.savedSel = selected(); }
   else if (a === 'all') kinds().forEach((x) => { T.sel[x.k] = true; });
   else if (a === 'noneSel') kinds().forEach((x) => { T.sel[x.k] = false; });
   else if (a === 'next') { T.step = 2; T.ack = false; }
