@@ -262,6 +262,12 @@ Numbers refer to the questions in the 2026-10-21 thread.
 | 47 | Excluded in v1 | Background images, visibility only on mobile or desktop |
 | 48 | Free block from inside the editor | Tile "New block" first in the "Own" list of the "All blocks" tab |
 | 49 | Replace placed blocks after "Adjust" | On save, offer "replace all blocks of this type in this template with the copy", off by default |
+| 50 | Block panel design (mockup R2, step 3) | Variant A: toggle without counts, "own" pill next to the name, newer-version notice directly under the placed row, "Save as own block" in a new ⋯ row menu |
+| 51 | Colors design (mockup R2, step 4) | Variant B: glass picker "Role \| Fixed" showing each role in Light and Dark, findings collected at the top of the block, accepted ones in a collapsible group with an optional reason |
+| 52 | "Update" to a newer version | The user's texts stay; layout and colors come from the new version. Undone with the editor's undo (↶) like any other change |
+| 53 | Placed block after "Save as own block" | Replaced by the new own block, on by default; it looks the same |
+| 54 | Tint of free blocks | Shared neutral tint plus a striped icon, so it does not read as the divider type |
+| 55 | "Fixed" mark | Neutral pill, not the warning color |
 
 ## Mockup scope
 
@@ -289,4 +295,4 @@ Reset dialog wording (EN; DE in the mockup):
 
 ## Open questions
 
-None. Decisions 30 to 49 were accepted on 2026-10-21; mockups may still change them.
+None. Decisions 30 to 55 were accepted on 2026-10-21; mockups may still change them.
