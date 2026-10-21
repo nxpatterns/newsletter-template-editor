@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup R5 Demo-Seite</title>
+<style>
+:root {
+  --ds-bg-page: #060b14; --ds-bg-panel: #0c1628; --ds-border: #1a3050; --ds-accent: #7ecfff;
+  --ds-text: #e8f4ff; --ds-text-muted: #7a9ab8; --ds-success: #3dd68c; --ds-warning: #f5b84a; --ds-danger: #ff6b7a;
+  --ds-radius: .25rem;
+  --glass: color-mix(in srgb, var(--ds-bg-panel) 78%, transparent);
+  --glass-edge: linear-gradient(90deg, transparent, rgba(255,255,255,.35) 50%, transparent);
+  --head-bg: linear-gradient(180deg, rgba(255,255,255,.12), transparent 42%), linear-gradient(120deg, #0a1830 0%, #123a5c 48%, #0c5a78 100%);
+  --newmark: #f5c518;
+  --like: #ff7a9a;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body { font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ds-text); background: #03060c; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .45; }
+:focus-visible { outline: 2px solid var(--ds-accent); outline-offset: 2px; }
+
+/* mockup controls (not part of the design) */
+.mk { position: sticky; top: 0; z-index: 80; display: flex; flex-wrap: wrap; gap: .4rem 1.2rem; align-items: center; padding: .45rem .9rem; background: #2a1d05; border-bottom: 1px dashed #8a6a20; color: #f3d9a0; font-size: 12px; }
+.mk b { font-weight: 600; margin-inline-end: .3rem; }
+.mk .seg { display: inline-flex; flex-wrap: wrap; border: 1px solid #8a6a20; border-radius: .8rem; overflow: hidden; }
+.mk .seg button { background: none; border: 0; padding: .2rem .6rem; color: #f3d9a0; }
+.mk .seg button[aria-pressed="true"] { background: #8a6a20; color: #fff; }
+.mk label { display: inline-flex; gap: .3rem; align-items: center; }
+.mk .note { flex: 1 1 100%; color: #d8b870; }
+.mk a { margin-inline-start: auto; }
+.is-new { outline: 2px dashed var(--newmark); outline-offset: 2px; }
+.hide-new .is-new { outline: 0; }
+
+/* app frame with a fake address bar, so the route decision is visible */
+.stagewrap { padding: 0 0 2rem; }
+.phone .stagewrap { padding: 1.2rem 0 2rem; }
+.frame { container-type: inline-size; margin: 0 auto; min-height: calc(100vh - 7rem); display: flex; flex-direction: column; background: var(--ds-bg-page); position: relative; overflow: hidden; }
+.phone .frame { width: 390px; min-height: 780px; border: 1px solid var(--ds-border); border-radius: 1.6rem; box-shadow: 0 30px 60px -20px rgba(0,0,0,.8); }
+.url { display: flex; align-items: center; gap: .5rem; padding: .35rem .9rem; background: #02050a; border-bottom: 1px solid var(--ds-border); font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ds-text-muted); }
+.url b { color: var(--ds-text); font-weight: 500; overflow-wrap: anywhere; }
+.url .nav { letter-spacing: .2rem; }
+
+/* app header and footer */
+.hdr { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; min-height: 3.5rem; padding: .45rem .9rem; background: var(--ds-bg-panel); border-bottom: 1px solid var(--ds-border); position: relative; }
+.hdr .brand { font-weight: 600; }
+.hdr .sp { flex: 1; }
+.hdr .doc-name { font-weight: 600; }
+.dot { display: inline-block; width: .45rem; height: .45rem; border-radius: 50%; background: var(--ds-warning); vertical-align: .1rem; margin-inline-end: .3rem; }
+.back { color: var(--ds-accent); text-decoration: none; padding: .3rem .5rem; border-radius: var(--ds-radius); border: 0; background: none; }
+.ibtn { display: inline-grid; place-items: center; width: 2.1rem; height: 2.1rem; border-radius: var(--ds-radius); border: 1px solid var(--ds-border); background: rgba(255,255,255,.03); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-height: 2.1rem; padding: .3rem .8rem; border-radius: var(--ds-radius); border: 1px solid var(--ds-border); background: rgba(255,255,255,.03); text-align: center; }
+.btn--primary { background: linear-gradient(180deg, #2a86d8, #1d6bb8); border-color: #3b8fe0; color: #fff; }
+.btn--outline { border-color: var(--ds-accent); color: var(--ds-accent); }
+.btn--sm { min-height: 1.8rem; padding: .15rem .6rem; font-size: 12px; }
+.linkbtn { border: 0; background: none; padding: 0; color: var(--ds-accent); text-decoration: underline; text-underline-offset: 2px; font-size: 12px; }
+.acct { font-size: 12px; color: var(--ds-text-muted); }
+footer.ftr { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 2.75rem; padding: 0 .9rem; font-size: 11px; letter-spacing: .08em; color: var(--ds-text-muted); background: var(--ds-bg-panel); border-top: 1px solid var(--ds-border); margin-top: auto; }
+footer.ftr .links { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+footer.ftr .links .on { color: var(--ds-accent); }
+footer.ftr .ver { justify-self: end; letter-spacing: 0; }
+
+/* start page and start menu as in the app (R3) */
+.start { width: 100%; max-width: 64rem; margin: 0 auto; padding: 2rem 1.2rem; display: grid; gap: 1.6rem; }
+.start-title { margin: 0; font-size: 1.6rem; font-weight: 700; }
+.start-lead { margin: .3rem 0 0; color: var(--ds-text-muted); }
+.start-sec { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 .7rem; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ds-text-muted); }
+.start-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: .9rem; }
+.start-tile { display: flex; flex-direction: column; gap: .4rem; padding: 1.15rem; text-align: start; border: 1px solid var(--ds-border); border-radius: var(--ds-radius); background: var(--ds-bg-panel); }
+.start-tile b { font-size: 15px; }
+.start-tile span { color: var(--ds-text-muted); font-size: 13px; }
+.start-tile.is-primary { border-color: color-mix(in srgb, var(--ds-accent) 45%, var(--ds-border)); }
+.scrim { position: absolute; inset: 0; z-index: 30; background: rgba(4,8,16,.45); }
+.smenu { position: absolute; top: 5.2rem; right: .9rem; z-index: 31; width: 20rem; max-width: calc(100% - 1.8rem); border-radius: .6rem; overflow: hidden; background: var(--glass); backdrop-filter: blur(18px) saturate(140%); border: 1px solid var(--ds-border); box-shadow: 0 22px 48px -12px rgba(0,0,0,.65); font-size: 13px; }
+.smenu::before { content: ""; display: block; height: 1px; background: var(--glass-edge); }
+.smenu .h { padding: .65rem .8rem; background: var(--head-bg); color: #fff; }
+.smenu .h small { display: block; opacity: .75; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+.smenu .lbl { padding: .55rem .8rem .2rem; color: var(--ds-text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+.smenu .it { display: flex; gap: .6rem; align-items: center; width: 100%; padding: .45rem .8rem; border: 0; background: none; text-align: start; }
+.smenu .it:hover { background: rgba(126,207,255,.08); }
+.smenu .tile { flex: 0 0 auto; display: inline-grid; place-items: center; width: 1.7rem; height: 1.7rem; border-radius: .4rem; background: rgba(126,207,255,.14); color: var(--ds-accent); font-size: 13px; }
+.smenu .tile--free { background: repeating-linear-gradient(135deg, #a3b8cc 0 4px, #52677d 4px 8px); color: #0b1220; }
+.smenu .hint { display: block; font-size: 11px; color: var(--ds-text-muted); }
+.smenu .sep { border-top: 1px solid var(--ds-border); margin-top: .3rem; }
+
+/* editor behind the menu and the publish dialog, reduced to its frame */
+.ed { flex: 1; display: grid; grid-template-columns: 20rem 1fr; min-height: 0; }
+.ed-panel { border-inline-end: 1px solid var(--ds-border); background: var(--ds-bg-panel); padding: .8rem; display: grid; gap: .5rem; align-content: start; }
+.ed-tabs { display: flex; gap: .3rem; flex-wrap: wrap; }
+.ed-tabs span { padding: .25rem .55rem; border-radius: 999px; border: 1px solid var(--ds-border); font-size: 12px; color: var(--ds-text-muted); }
+.ed-tabs span:first-child { color: var(--ds-text); border-color: color-mix(in srgb, var(--ds-accent) 55%, var(--ds-border)); background: rgba(126,207,255,.12); }
+.ed-row { height: 2.2rem; border-radius: .4rem; border: 1px solid var(--ds-border); background: linear-gradient(90deg, color-mix(in srgb, var(--a) 22%, transparent), transparent 60%); }
+.ed-prev { display: grid; place-items: start center; padding: 1.4rem; background: #0a1322; }
+
+/* demo page */
+.demo { width: 100%; max-width: 72rem; margin: 0 auto; padding: 1.6rem 1.2rem 2rem; display: grid; gap: 1.1rem; align-content: start; }
+.demo-head h2 { margin: 0; font-size: 1.6rem; font-weight: 700; }
+.demo-head p { margin: .3rem 0 0; color: var(--ds-text-muted); max-width: 46rem; }
+.kindtabs { display: flex; gap: .3rem; }
+.kindtabs button { padding: .3rem .8rem; border-radius: 999px; border: 1px solid var(--ds-border); background: none; color: var(--ds-text-muted); }
+.kindtabs button[aria-selected="true"] { color: var(--ds-text); border-color: color-mix(in srgb, var(--ds-accent) 55%, var(--ds-border)); background: rgba(126,207,255,.12); }
+.tools { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; padding: .6rem; border: 1px solid var(--ds-border); border-radius: .6rem; background: var(--glass); backdrop-filter: blur(14px); }
+.search { flex: 1 1 14rem; display: flex; align-items: center; gap: .4rem; min-height: 2.1rem; padding: 0 .6rem; border: 1px solid var(--ds-border); border-radius: var(--ds-radius); background: rgba(0,0,0,.25); }
+.search input { flex: 1; min-width: 0; border: 0; background: none; outline: 0; }
+.sel { min-height: 2.1rem; padding: 0 .5rem; border: 1px solid var(--ds-border); border-radius: var(--ds-radius); background: #0a1424; }
+.segui { display: inline-flex; border: 1px solid var(--ds-border); border-radius: var(--ds-radius); overflow: hidden; }
+.segui button { border: 0; background: none; padding: .3rem .7rem; color: var(--ds-text-muted); font-size: 13px; }
+.segui button[aria-pressed="true"] { background: rgba(126,207,255,.16); color: var(--ds-text); }
+.count { font-size: 12px; color: var(--ds-text-muted); }
+
+/* newsletter thumbnail, colors from the preview set (Light / Dark) */
+.thumb { --h: #1d6bb8; display: block; padding: .5rem; background: var(--tp); border-radius: .35rem .35rem 0 0; overflow: hidden; }
+.thumb .mail { margin: 0 auto; max-width: 15rem; background: var(--tc); border-radius: .2rem; overflow: hidden; display: grid; gap: .3rem; padding-bottom: .5rem; }
+.thumb .band { height: 2.6rem; background: linear-gradient(135deg, var(--h), color-mix(in srgb, var(--h) 45%, #000)); display: grid; place-items: center; color: #fff; font-size: 9px; font-weight: 700; letter-spacing: .05em; padding: 0 .4rem; text-align: center; }
+.thumb i { display: block; height: .32rem; margin: 0 .55rem; border-radius: 2px; background: var(--tb); opacity: .55; }
+.thumb i.t { height: .45rem; width: 60%; background: var(--th); opacity: .9; }
+.thumb .img { height: 2.8rem; margin: 0 .55rem; border-radius: .15rem; background: linear-gradient(160deg, color-mix(in srgb, var(--h) 35%, var(--tc)), color-mix(in srgb, var(--h) 12%, var(--tc))); }
+.thumb .cta { justify-self: center; width: 40%; height: .7rem; border-radius: .2rem; background: var(--h); }
+.thumb .ft { height: .9rem; margin-top: .2rem; background: var(--tl); }
+.thumb--lg { padding: 1.2rem; border-radius: .5rem; }
+.thumb--lg .mail { max-width: 36rem; gap: .7rem; padding-bottom: 1.2rem; }
+.thumb--lg .band { height: 7rem; font-size: 20px; }
+.thumb--lg i { height: .6rem; margin: 0 1.4rem; }
+.thumb--lg i.t { height: .95rem; }
+.thumb--lg .img { height: 9rem; margin: 0 1.4rem; }
+.thumb--lg .cta { height: 1.8rem; width: 30%; }
+.thumb--lg .ft { height: 3rem; }
+.thumb--phone .mail { max-width: 20rem; }
+.thumb--phone .band { height: 5rem; font-size: 15px; }
+.thumb--phone .img { height: 6rem; }
+
+/* cards (variant A and C) */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1rem; }
+.card { display: flex; flex-direction: column; border: 1px solid var(--ds-border); border-radius: .5rem; background: var(--ds-bg-panel); overflow: hidden; text-align: start; padding: 0; }
+.card:hover { border-color: color-mix(in srgb, var(--ds-accent) 45%, var(--ds-border)); }
+.card .body { display: grid; gap: .2rem; padding: .6rem .7rem .3rem; }
+.card .title { font-weight: 600; font-size: 14px; }
+.card .who, .meta { font-size: 12px; color: var(--ds-text-muted); }
+.card .stats { display: flex; align-items: center; gap: .8rem; padding: .3rem .7rem .6rem; font-size: 12px; color: var(--ds-text-muted); }
+.card .stats .sp { flex: 1; }
+.lang { display: inline-block; padding: 0 .35rem; border-radius: .25rem; border: 1px solid var(--ds-border); font-size: 10px; font-weight: 700; letter-spacing: .05em; color: var(--ds-text-muted); vertical-align: .1rem; }
+.like { display: inline-flex; align-items: center; gap: .25rem; border: 1px solid transparent; background: none; padding: .1rem .35rem; border-radius: 999px; color: var(--ds-text-muted); font-size: 12px; }
+.like:hover { border-color: var(--ds-border); }
+.like[aria-pressed="true"] { color: var(--like); border-color: color-mix(in srgb, var(--like) 45%, transparent); background: color-mix(in srgb, var(--like) 10%, transparent); }
+.like--lg { font-size: 14px; padding: .35rem .8rem; border-color: var(--ds-border); }
+.views::before { content: "◉ "; font-size: 10px; }
+.featured { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
+.featured .card:first-child .thumb { padding: 1rem; }
+.featured .card:first-child .thumb .mail { max-width: 22rem; }
+.featured .card:first-child .band { height: 4rem; font-size: 13px; }
+.featured .card:first-child .img { height: 4.5rem; }
+.rank { display: inline-block; margin-inline-end: .35rem; padding: 0 .4rem; border-radius: .25rem; background: rgba(245,197,24,.16); color: var(--newmark); font-size: 11px; font-weight: 700; }
+.sec { margin: .4rem 0 0; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ds-text-muted); }
+
+/* variant B: list plus large preview */
+.split { display: grid; grid-template-columns: 22rem 1fr; gap: 1rem; align-items: start; }
+.rows { display: grid; gap: .35rem; }
+.row { display: grid; grid-template-columns: 4.2rem 1fr; gap: .6rem; align-items: center; padding: .4rem; border: 1px solid var(--ds-border); border-radius: .45rem; background: var(--ds-bg-panel); text-align: start; }
+.row[aria-current="true"] { border-color: color-mix(in srgb, var(--ds-accent) 60%, var(--ds-border)); background: rgba(126,207,255,.08); }
+.row .thumb { padding: .2rem; border-radius: .25rem; }
+.row .thumb .band { height: 1.1rem; font-size: 0; }
+.row .thumb i, .row .thumb .img, .row .thumb .ft { display: none; }
+.row .thumb .mail { padding-bottom: .25rem; gap: .2rem; }
+.row .thumb .cta { height: .35rem; }
+.row .t { font-weight: 600; font-size: 13px; }
+.pane { border: 1px solid var(--ds-border); border-radius: .6rem; background: var(--ds-bg-panel); overflow: hidden; position: sticky; top: .5rem; }
+.pane-head { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; padding: .7rem .9rem; border-bottom: 1px solid var(--ds-border); }
+.pane-head h3 { margin: 0; font-size: 16px; flex: 1 1 12rem; }
+.pane .thumb { border-radius: 0; }
+
+/* detail page */
+.det { display: grid; grid-template-columns: 1fr 19rem; gap: 1.2rem; align-items: start; }
+.stage { border: 1px solid var(--ds-border); border-radius: .6rem; overflow: hidden; background: var(--ds-bg-panel); }
+.stage-bar { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; justify-content: space-between; padding: .5rem .7rem; border-bottom: 1px solid var(--ds-border); font-size: 12px; color: var(--ds-text-muted); }
+.stage .thumb { border-radius: 0; }
+.side { display: grid; gap: .8rem; padding: 1rem; border: 1px solid var(--ds-border); border-radius: .6rem; background: var(--glass); backdrop-filter: blur(14px); position: sticky; top: .5rem; }
+.side h2 { margin: 0; font-size: 1.25rem; }
+.side p { margin: 0; }
+.side .desc { color: var(--ds-text-muted); font-size: 13px; }
+.side .facts { display: grid; grid-template-columns: auto 1fr; gap: .25rem .8rem; font-size: 12px; }
+.side .facts dt { color: var(--ds-text-muted); }
+.side .facts dd { margin: 0; }
+.side .acts { display: grid; gap: .5rem; }
+.side .small { font-size: 12px; color: var(--ds-text-muted); }
+.side .report { justify-self: start; color: var(--ds-text-muted); }
+
+/* banners, toast, skeleton, empty */
+.banner { display: grid; grid-template-columns: auto 1fr; gap: .3rem .7rem; align-items: start; padding: .7rem .8rem; border-radius: .5rem; border: 1px solid color-mix(in srgb, var(--b) 45%, var(--ds-border)); background: color-mix(in srgb, var(--b) 8%, transparent); font-size: 13px; --b: var(--ds-accent); }
+.banner .bi { display: inline-grid; place-items: center; width: 1.7rem; height: 1.7rem; border-radius: .4rem; background: color-mix(in srgb, var(--b) 22%, transparent); color: var(--b); font-weight: 700; }
+.banner p { margin: 0; }
+.banner small { display: block; color: var(--ds-text-muted); font-size: 12px; margin-top: .15rem; }
+.banner .acts { grid-column: 2; display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .3rem; }
+.b-ok { --b: var(--ds-success); }
+.b-warn { --b: var(--ds-warning); }
+.b-danger { --b: var(--ds-danger); }
+.toast { position: absolute; left: 50%; bottom: 3.6rem; z-index: 70; transform: translateX(-50%); display: flex; gap: .8rem; align-items: center; max-width: calc(100% - 2rem); padding: .6rem .9rem; border-radius: .5rem; background: var(--glass); backdrop-filter: blur(18px); border: 1px solid var(--ds-border); box-shadow: 0 16px 32px -10px rgba(0,0,0,.7); font-size: 13px; }
+.sk { position: relative; overflow: hidden; background: #0f1d33; border-radius: .3rem; }
+.sk::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.06), transparent); animation: sh 1.4s infinite; }
+@keyframes sh { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) { .sk::after { animation: none; } }
+.empty { display: grid; justify-items: center; gap: .6rem; padding: 2.5rem 1rem; border: 1px dashed var(--ds-border); border-radius: .6rem; text-align: center; color: var(--ds-text-muted); }
+.empty b { color: var(--ds-text); font-size: 16px; }
+
+/* dialogs (same glass dialog as R3 and R4) */
+.backdrop { position: absolute; inset: 0; z-index: 60; display: grid; place-items: center; padding: 1rem; background: rgba(4,8,16,.62); backdrop-filter: blur(5px); }
+.dlg { position: relative; width: min(34rem, 100%); max-height: calc(100vh - 9rem); overflow: auto; border-radius: .6rem; background: var(--glass); backdrop-filter: blur(18px) saturate(140%); border: 1px solid var(--ds-border); box-shadow: 0 22px 48px -12px rgba(0,0,0,.65); }
+.dlg::before { content: ""; position: absolute; inset: 0 0 auto; height: 1px; background: var(--glass-edge); }
+.dlg-head { display: flex; align-items: center; gap: .75rem; padding: .85rem 1.1rem; background: var(--head-bg); color: #fff; border-bottom: 1px solid var(--ds-border); }
+.dlg-head .hi { flex: none; display: inline-grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: .5rem; border: 1px solid rgba(126,207,255,.4); background: rgba(126,207,255,.14); color: var(--ds-accent); font-size: 1.1rem; }
+.dlg-head .tt { flex: 1; min-width: 0; }
+.dlg-head .eyebrow { display: block; font-size: .66rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ds-accent); }
+.dlg-head h2 { margin: .05rem 0 0; font-size: 1.05rem; font-weight: 800; line-height: 1.25; }
+.dlg-x { flex: none; width: 1.9rem; height: 1.9rem; border-radius: .35rem; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.14); color: #fff; }
+.dlg-body { padding: 1rem 1.2rem .85rem; display: grid; gap: .8rem; font-size: 13px; }
+.dlg-body p { margin: 0; }
+.dlg-foot { display: flex; justify-content: flex-end; gap: .5rem; flex-wrap: wrap; padding: .2rem 1.2rem 1.1rem; }
+.field { display: grid; gap: .25rem; }
+.field label, .field .l { font-size: 12px; color: var(--ds-text-muted); }
+.field input, .field textarea, .field select { width: 100%; padding: .45rem .55rem; border: 1px solid var(--ds-border); border-radius: var(--ds-radius); background: rgba(0,0,0,.25); }
+.field textarea { min-height: 4.2rem; resize: vertical; }
+.field small { font-size: 11px; color: var(--ds-text-muted); justify-self: end; }
+.pubgrid { display: grid; grid-template-columns: 8.5rem 1fr; gap: .9rem; }
+.pubgrid .thumb { border-radius: .35rem; }
+.ack { display: flex; gap: .55rem; align-items: flex-start; padding: .6rem .7rem; border-radius: .45rem; border: 1px solid color-mix(in srgb, var(--ds-warning) 40%, var(--ds-border)); background: rgba(245,184,74,.07); font-size: 13px; cursor: pointer; }
+.ack input { margin: .1rem 0 0; width: 1.05rem; height: 1.05rem; accent-color: #f5b84a; }
+.hint { display: grid; grid-template-columns: auto 1fr; gap: .5rem; padding: .5rem .65rem; border-radius: .45rem; border: 1px solid color-mix(in srgb, var(--b) 40%, var(--ds-border)); background: color-mix(in srgb, var(--b) 8%, transparent); font-size: 12px; --b: var(--ds-accent); }
+.hint::before { content: "i"; display: inline-grid; place-items: center; width: 1.2rem; height: 1.2rem; border-radius: .3rem; background: color-mix(in srgb, var(--b) 22%, transparent); color: var(--b); font-weight: 700; font-size: 11px; }
+.hint--warn { --b: var(--ds-warning); }
+.hint--warn::before { content: "!"; }
+.reasons { display: grid; gap: .3rem; }
+.reasons label { display: flex; gap: .5rem; align-items: center; padding: .35rem .5rem; border: 1px solid var(--ds-border); border-radius: .35rem; cursor: pointer; }
+.reasons input { accent-color: #7ecfff; }
+.urlbox { font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; padding: .45rem .55rem; border: 1px solid var(--ds-border); border-radius: var(--ds-radius); background: rgba(0,0,0,.25); overflow-wrap: anywhere; }
+
+/* not found page, as in the app */
+.nf { box-sizing: border-box; max-inline-size: 40rem; margin-inline: auto; padding: 3rem 1.25rem 2rem; line-height: 1.5; }
+.nf .code { margin: 0 0 .25rem; font-size: 4rem; font-weight: 700; line-height: 1; color: var(--ds-text-muted); opacity: .35; }
+.nf h2 { margin: 0 0 1rem; font-size: 1.5rem; font-weight: 600; }
+.nf p { margin: 0 0 .85rem; color: var(--ds-text-muted); }
+.nf .acts { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; }
+.nf a { color: var(--ds-accent); }
+
+/* narrow app */
+@container (max-width: 40rem) {
+  .start, .demo { padding: 1.2rem .9rem; }
+  .ed { grid-template-columns: 1fr; }
+  .ed-prev { display: none; }
+  .featured { grid-template-columns: 1fr; }
+  .featured .card:not(:first-child) { display: none; }
+  .split, .det { grid-template-columns: 1fr; }
+  .split .pane { display: none; }
+  .split.is-detail .rows { display: none; }
+  .split.is-detail .pane { display: block; position: static; }
+  .side { position: static; }
+  .tools .segui, .tools .sel { flex: 1 1 auto; }
+  .pubgrid { grid-template-columns: 1fr; }
+  .pubgrid .thumb { display: none; }
+  .backdrop { place-items: end stretch; padding: 0; }
+  .dlg { width: 100%; max-height: 92%; border-radius: 1rem 1rem 0 0; border-bottom: 0; }
+  .dlg-foot { flex-direction: column-reverse; align-items: stretch; }
+  footer.ftr { grid-template-columns: 1fr; height: auto; padding: .6rem; justify-items: center; gap: .3rem; }
+  footer.ftr .ver { justify-self: center; }
+}
+</style>
+</head>
+<body>
+
+<div class="mk" role="region" aria-label="Mockup-Steuerung">
+  <span><b>Variante</b><span class="seg" data-k="v"><button data-v="A">A Raster</button><button data-v="B">B Liste und große Vorschau</button><button data-v="C">C Hervorgehoben und Raster</button></span></span>
+  <span><b>Bereich</b><span class="seg" data-k="area"><button data-v="gallery">Galerie /demos</button><button data-v="detail">Einzelansicht /demos/&lt;id&gt;</button><button data-v="publish">Veröffentlichen</button><button data-v="entry">Einstiege</button><button data-v="nf">Nicht gefunden</button></span></span>
+  <span><b>Vorschau</b><span class="seg" data-k="set"><button data-v="light">Hell</button><button data-v="dark">Dunkel</button></span></span>
+  <span><b>Breite</b><span class="seg" data-k="w"><button data-v="desk">Desktop</button><button data-v="phone">Handy</button></span></span>
+  <label><input type="checkbox" id="login"> Angemeldet</label>
+  <label><input type="checkbox" id="showNew"> Neues gelb umranden</label>
+  <a href="r4-reset-dialog.html" style="color:#fff">← Schritt 6 Zurücksetzen</a>
+  <span><b>Szene</b><span class="seg" data-k="sc" id="scSeg"></span></span>
+  <span class="note" id="mknote"></span>
+</div>
+
+<div class="stagewrap"><div class="frame" id="frame"></div></div>
+
+<script>
+const S = { v: 'A', area: 'gallery', set: 'light', w: 'desk', sc: 'normal', login: false, showNew: true };
+try { Object.assign(S, JSON.parse(localStorage.getItem('mk-r5-demo') || '{}')); } catch {}
+// per-scene state, reset whenever a scene or area is picked
+let T;
+
+const isPhone = () => S.w === 'phone';
+const PUBS = [
+  { id: '0192f3a1-7c2e-7b44-9e1f-3a5d8c0b6e21', title: 'Frühjahrsaktion Gartenbau', who: 'Grünwerk Müller', lang: 'DE', date: '18. Okt. 2026', age: 3, views: 1240, likes: 86, h: '#3a9a55', desc: 'Saisonstart mit drei Angeboten, Terminbuchung und Gutschein. Gebaut aus der Beispielvorlage, Farben an das eigene Logo angepasst.' },
+  { id: '0192e8b4-11d0-7a3c-8c52-6e0f4a9d2b17', title: 'Messe-Einladung Halle 4', who: 'Hartmann Maschinenbau', lang: 'DE', date: '12. Okt. 2026', age: 9, views: 2310, likes: 141, h: '#1d6bb8', desc: 'Einladung mit Standplan, Terminbuchung und Anfahrt. Zwei Fassungen: Kunden und Partner.' },
+  { id: '0192ea02-5b6f-7e01-b3a4-0c7d9e8f1a62', title: 'Monthly product update', who: 'Nordlicht Software', lang: 'EN', date: '14. Okt. 2026', age: 7, views: 980, likes: 64, h: '#6d55e0', desc: 'Release notes with three feature highlights and a webinar invitation.' },
+  { id: '0192f0c7-2a18-7f93-a0e6-41b8c3d5e7f9', title: 'Herbstmenü im Gasthaus', who: 'Gasthaus zur Linde', lang: 'DE', date: '16. Okt. 2026', age: 5, views: 640, likes: 52, h: '#c0621c', desc: 'Wochenkarte, Reservierung per Telefon und ein Rezept zum Nachkochen.' },
+  { id: '0192d9e3-8c41-7b20-9f17-5d2a6b0c4e88', title: 'Webinar: Steuern 2027', who: 'Kanzlei Berger', lang: 'DE', date: '2. Okt. 2026', age: 19, views: 1510, likes: 38, h: '#0c5a78', desc: 'Einladung zu zwei Terminen, Anmeldung über einen Knopf, Hinweise zum Datenschutz.' },
+  { id: '0192f5d8-6e3b-7c14-8a29-9b1e0d3f5c46', title: 'Open house invitation', who: 'Studio Vela Architects', lang: 'EN', date: '20. Okt. 2026', age: 1, views: 210, likes: 19, h: '#b0476b', desc: 'Invitation with a project gallery, a map link and an RSVP button.' },
+  { id: '0192cf11-4d7a-7a65-b0c8-2e9f6a1b3d05', title: 'Vereinsnachrichten November', who: 'TSV Lindenau', lang: 'DE', date: '25. Sep. 2026', age: 26, views: 430, likes: 27, h: '#b8890f', desc: 'Termine, Spielberichte und ein Aufruf für Helferinnen und Helfer beim Adventsmarkt.' },
+  { id: '0192f2aa-9b05-7d8e-8f61-7c4d2e0a9b33', title: 'Neue Kurse im Winter', who: 'Yogaraum Süd', lang: 'DE', date: '17. Okt. 2026', age: 4, views: 560, likes: 48, h: '#3f8f8a', desc: 'Kursplan als Liste, Probestunde mit Gutschein, Kontakt und Anfahrt.' },
+];
+const SETS = {
+  dark: { p: '#08101e', c: '#0c1628', b: '#a9c0d6', h: '#d8eeff', l: '#1e3a5c' },
+  light: { p: '#e9eff6', c: '#ffffff', b: '#3b4f63', h: '#0c1d33', l: '#d5dee8' },
+};
+const fmt = (n) => n.toLocaleString('de-DE');
+const pub = (id) => PUBS.find((p) => p.id === id) || PUBS[0];
+
+const AREAS = {
+  gallery: [['normal', 'Normal'], ['nohit', 'Suche ohne Treffer'], ['loading', 'Laden'], ['empty', 'Noch leer'], ['offline', 'Nicht erreichbar'], ['later', 'Später: mit Bausteinen']],
+  detail: [['normal', 'Normal'], ['copied', 'Als Vorlage übernommen'], ['report', 'Melden'], ['reported', 'Gemeldet'], ['own', 'Eigene Veröffentlichung']],
+  publish: [['menu', 'Editor-Menü ⋮'], ['form', 'Dialog'], ['checks', 'Mit Prüfhinweisen'], ['done', 'Veröffentlicht'], ['error', 'Fehler']],
+  entry: [['start', 'Startseite'], ['smenu', 'Startmenü ⋮'], ['footer', 'Fußzeile']],
+  nf: [['gone', 'Zurückgezogen oder gesperrt'], ['typo', 'Unbekannte Adresse']],
+};
+
+const NOTES = {
+  A: 'A Raster: alle Veröffentlichungen gleich groß als Karten, wie die Kacheln im Tab „Alle“. Suche, Sprache und Sortierung in einer Glasleiste darüber. Klick auf die Karte öffnet die Einzelansicht /demos/&lt;id&gt;.',
+  B: 'B Liste und große Vorschau: links eine kompakte Liste, rechts die gewählte Veröffentlichung groß mit „Als Vorlage übernehmen“. Man blättert, ohne die Seite zu wechseln; die Adresse folgt trotzdem der Auswahl. Auf dem Handy erst Liste, dann Vorschau.',
+  C: 'C Hervorgehoben und Raster: oben „Beliebt diese Woche“ mit einer großen und zwei kleinen Karten, darunter das Raster wie A. Das spätere Marktplatz-Thema (Entscheidung 11) bekommt so schon einen Platz. Auf dem Handy nur die große Karte.',
+};
+const SCN = {
+  gallery: {
+    normal: 'Acht Veröffentlichungen. Suche, Sprache und Sortierung sind klickbar. Gefällt-mir (♥) geht nur angemeldet; ohne Anmeldung erklärt ein Hinweis, warum (Entscheidung 70).',
+    nohit: 'Suche ohne Treffer. Das X im Suchfeld und der Link leeren Suche und Filter.',
+    loading: 'Laden: Platzhalter in der Form der Karten, ohne Drehkreisel. Ohne Bewegung, wenn das System weniger Bewegung wünscht.',
+    empty: 'Noch keine Veröffentlichung (Start der Seite). Der Weg zum Veröffentlichen steht da: im Editor über ⋮.',
+    offline: 'Die Demo-Seite braucht den Server, der Editor nicht. Die Meldung sagt deshalb ausdrücklich, dass die eigenen Vorlagen nicht betroffen sind.',
+    later: 'Später, sobald Bausteine veröffentlicht werden können: Reiter „Newsletter | Bausteine“, jeder mit eigener Adresse wie die Tabs im Editor. /demos leitet dann auf /demos/newsletters weiter (Entscheidung 69).',
+  },
+  detail: {
+    normal: 'Einzelansicht mit eigener Adresse. Vorschau Hell und Dunkel, Desktop und Handy direkt über der Vorschau. „Als Vorlage übernehmen“ legt eine Kopie als neue Vorlage in diesem Browser an, kostenlos (Entscheidung 71).',
+    copied: 'Nach „Als Vorlage übernehmen“: der Editor öffnet die Kopie unter ihrer eigenen Adresse. Der Hinweis nennt die Herkunft; Texte, Bilder und Links gehören jetzt Ihnen und sollten angepasst werden.',
+    report: '„Melden“ für die Sperre bei Missbrauch (Konzept: Verantwortung liegt bei der veröffentlichenden Person). Geht auch ohne Anmeldung, damit Missbrauch schnell ankommt.',
+    reported: 'Nach dem Melden: Bestätigung, die Veröffentlichung bleibt sichtbar, bis jemand sie geprüft hat.',
+    own: 'Die eigene Veröffentlichung (angemeldet): statt „Melden“ stehen „Aktualisieren“ und „Zurückziehen“ da. Zurückziehen führt danach auf die Nicht-gefunden-Seite.',
+  },
+  publish: {
+    menu: 'Editor-Menü ⋮ mit „Auf der Demo-Seite zeigen“ direkt unter dem Export (Konzept, Einstiege). In der App erst sichtbar, wenn es Anmeldung gibt (Entscheidung 17).',
+    form: 'Dialog (Entscheidung 73). Ohne Anmeldung zuerst die Anmeldung, danach geht es mit dem ausgefüllten Dialog weiter. „Veröffentlichen“ bleibt gesperrt bis zum Haken „Ich trage die Verantwortung“.',
+    checks: 'Die Newsletter-Prüfung läuft mit. Warnungen sperren nicht (wie bei Bausteinen), stehen aber oben. Platzhalter wie {{ Subscriber.Name }} erscheinen auf der Demo-Seite als Beispielwerte, nie mit echten Daten.',
+    done: 'Veröffentlicht: Adresse zum Kopieren und der Weg zur Einzelansicht. Später erneut veröffentlichen heißt „Aktualisieren“ und behält die Adresse.',
+    error: 'Server nicht erreichbar: nichts geht verloren, der Dialog bleibt gefüllt, „Erneut versuchen“.',
+  },
+  entry: {
+    start: 'Startseite: eigener Abschnitt „Demos“ mit den drei neuesten, darunter „Alle ansehen“. Die Kacheln „Beispielvorlage“ bleiben Starthilfe (Entscheidung 12, 18).',
+    smenu: 'Startmenü: neuer Abschnitt „Entdecken“ mit „Demos“, zwischen den eigenen Sachen und dem Zurücksetzen.',
+    footer: 'Fußzeile: „Demos“ ist die einzige neue Verknüpfung dort (Konzept, Einstiege). Auf der Demo-Seite selbst ist sie hervorgehoben.',
+  },
+  nf: {
+    gone: 'Zurückgezogen oder wegen Missbrauch gesperrt: die Nicht-gefunden-Seite in einer eigenen Variante, gleiches Muster wie bei einer gelöschten Vorlage und Entscheidung 68. Die Adresse bleibt stehen. Kein Hinweis, ob gesperrt oder zurückgezogen.',
+    typo: 'Eine Adresse unter /demos, die es nie gab: dieselbe Variante. /demos/irgendwas/mehr bekommt die allgemeine Nicht-gefunden-Seite.',
+  },
+};
+
+function sceneState() {
+  return { q: S.area === 'gallery' && S.sc === 'nohit' ? 'Bäckerei' : '', lang: 'all', sort: 'new', sel: PUBS[1].id, pset: S.set, pw: 'desk', liked: [], toast: '', ack: false, reason: 'spam', menuOpen: true, phoneDetail: false };
+}
+
+const thumb = (p, set, cls = '') => {
+  const c = SETS[set];
+  return `<span class="thumb ${cls}" style="--h:${p.h};--tp:${c.p};--tc:${c.c};--tb:${c.b};--th:${c.h};--tl:${c.l}" aria-hidden="true"><span class="mail"><span class="band">${p.title}</span><i class="t"></i><i></i><i style="width:75%"></i><span class="img"></span><i></i><i style="width:55%"></i><span class="cta"></span><span class="ft"></span></span></span>`;
+};
+const likeBtn = (p, lg = false) => {
+  const on = T.liked.includes(p.id);
+  return `<button class="like ${lg ? 'like--lg' : ''}" data-act="like" data-id="${p.id}" aria-pressed="${on}" aria-label="Gefällt mir, ${fmt(p.likes + (on ? 1 : 0))}">${on ? '♥' : '♡'} ${fmt(p.likes + (on ? 1 : 0))}</button>`;
+};
+
+/* chrome */
+const URLS = {
+  gallery: () => S.sc === 'later' ? '/demos/newsletters' : `/demos${T.q || T.lang !== 'all' || T.sort !== 'new' ? queryStr() : ''}`,
+  detail: () => S.sc === 'copied' ? '/edit/0192f6e0-3c1d-7a82-9b4e-5f8a1c2d7e40/current-blocks/list' : `/demos/${T.sel}`,
+  publish: () => '/edit/0192a4c5-0d2e-7f31-8c6b-1e9a7d3b5f02/current-blocks/list',
+  entry: () => '/',
+  nf: () => S.sc === 'gone' ? '/demos/0192b7d2-6a1f-7c08-a3e5-8d4f2b6c0e19' : '/demos/fruehjahr-2026',
+};
+function queryStr() {
+  const q = [];
+  if (T.q) q.push(`q=${encodeURIComponent(T.q)}`);
+  if (T.lang !== 'all') q.push(`lang=${T.lang.toLowerCase()}`);
+  if (T.sort !== 'new') q.push('sort=popular');
+  return q.length ? `?${q.join('&')}` : '';
+}
+const urlBar = () => `<div class="url"><span class="nav">‹ ›</span><span>newsletter-editor.app</span><b class="is-new">${URLS[S.area]()}</b></div>`;
+const acct = () => S.login ? '<span class="acct is-new">● Grünwerk Müller</span>' : '<button class="btn btn--sm is-new" data-act="login">Anmelden</button>';
+const appHeader = (left) => `<header class="hdr">${left}<span class="sp"></span>${acct()}<button class="ibtn" data-act="smenu" aria-label="Startmenü">⋮</button><button class="btn">🌐 DE</button></header>`;
+const footer = (on = false) => `<footer class="ftr"><span></span><span class="links"><span>STARTSEITE</span><span class="is-new ${on ? 'on' : ''}">DEMOS</span><span>IMPRESSUM</span><span>DATENSCHUTZ</span><span>ÜBER</span></span><span class="ver">v0.4.7</span></footer>`;
+
+/* gallery */
+function visible() {
+  let list = PUBS.filter((p) => (T.lang === 'all' || p.lang === T.lang) && (!T.q || `${p.title} ${p.who}`.toLowerCase().includes(T.q.toLowerCase())));
+  list = [...list].sort((a, b) => T.sort === 'new' ? a.age - b.age : b.likes - a.likes);
+  return list;
+}
+function tools() {
+  return `<div class="tools is-new" role="search">
+    <label class="search"><span aria-hidden="true">⌕</span><input id="q" type="search" placeholder="Titel oder Absender suchen" value="${T.q}" aria-label="Suchen">${T.q ? '<button class="linkbtn" data-act="clearQ" aria-label="Suche leeren">×</button>' : ''}</label>
+    <select class="sel" id="lang" aria-label="Sprache"><option value="all" ${T.lang === 'all' ? 'selected' : ''}>Alle Sprachen</option><option value="DE" ${T.lang === 'DE' ? 'selected' : ''}>Deutsch</option><option value="EN" ${T.lang === 'EN' ? 'selected' : ''}>Englisch</option></select>
+    <span class="segui" role="group" aria-label="Sortierung"><button data-act="sort" data-v="new" aria-pressed="${T.sort === 'new'}">Neueste</button><button data-act="sort" data-v="popular" aria-pressed="${T.sort === 'popular'}">Beliebteste</button></span>
+  </div>`;
+}
+function card(p) {
+  return `<article class="card"><button data-act="open" data-id="${p.id}" style="all:unset;cursor:pointer;display:block">${thumb(p, S.set)}<span class="body"><span class="title">${p.title}</span><span class="who">${p.who} · <span class="lang">${p.lang}</span> · ${p.date}</span></span></button>
+    <span class="stats"><span class="views">${fmt(p.views)}</span><span class="sp"></span>${likeBtn(p)}</span></article>`;
+}
+function skeleton() {
+  return `<div class="grid">${Array.from({ length: 6 }, () => '<div class="card"><div class="sk" style="height:10.5rem;border-radius:0"></div><div class="body"><div class="sk" style="height:.9rem;width:70%"></div><div class="sk" style="height:.7rem;width:50%"></div></div><div class="stats"><div class="sk" style="height:.7rem;width:30%"></div></div></div>').join('')}</div>`;
+}
+function galleryBody() {
+  if (S.sc === 'loading') return skeleton();
+  if (S.sc === 'offline') return `<div class="banner b-warn"><span class="bi">!</span><div><p><b>Die Demo-Seite ist gerade nicht erreichbar.</b></p><small>Ihre Vorlagen und Bausteine liegen in diesem Browser und sind davon nicht betroffen.</small></div><div class="acts"><button class="btn btn--sm btn--primary">Erneut versuchen</button><button class="btn btn--sm">Zur Startseite</button></div></div>`;
+  if (S.sc === 'empty') return `<div class="empty"><b>Hier ist noch nichts veröffentlicht.</b><span>Zeigen Sie als Erste oder Erster, was Sie gebaut haben: im Editor über ⋮, „Auf der Demo-Seite zeigen“.</span><button class="btn btn--outline">Zur Startseite</button></div>`;
+  const list = visible();
+  if (!list.length) return `<div class="empty"><b>Keine Treffer für „${T.q}“.</b><span>Versuchen Sie einen anderen Begriff oder alle Sprachen.</span><button class="linkbtn" data-act="clearAll">Suche und Filter zurücksetzen</button></div>`;
+  const count = `<p class="count">${list.length} ${list.length === 1 ? 'Newsletter' : 'Newsletter'}</p>`;
+  if (S.v === 'A') return `${count}<div class="grid">${list.map(card).join('')}</div>`;
+  if (S.v === 'C') {
+    const top = [...PUBS].sort((a, b) => b.likes - a.likes).slice(0, 3);
+    const feat = T.q || T.lang !== 'all' ? '' : `<h3 class="sec is-new">Beliebt diese Woche</h3><div class="featured">${top.map((p, i) => card(p).replace('<span class="title">', `<span class="title"><span class="rank">${i + 1}</span>`)).join('')}</div><h3 class="sec">Alle Newsletter</h3>`;
+    return `${feat}${count}<div class="grid">${list.map(card).join('')}</div>`;
+  }
+  if (!list.some((p) => p.id === T.sel)) T.sel = list[0].id;
+  const p = pub(T.sel);
+  return `${count}<div class="split ${T.phoneDetail ? 'is-detail' : ''}"><div class="rows" role="list">${list.map((x) => `<button class="row" role="listitem" data-act="pick" data-id="${x.id}" aria-current="${x.id === T.sel}">${thumb(x, S.set)}<span><span class="t">${x.title}</span><br><span class="meta">${x.who} · <span class="lang">${x.lang}</span> · ${x.date}</span><br><span class="meta"><span class="views">${fmt(x.views)}</span> · ♡ ${fmt(x.likes)}</span></span></button>`).join('')}</div>
+    <section class="pane is-new" aria-label="Vorschau">${isPhone() ? '<div class="pane-head"><button class="back" data-act="unpick">← Alle Newsletter</button></div>' : ''}<div class="pane-head"><h3>${p.title}</h3>${likeBtn(p)}<button class="btn btn--sm" data-act="open" data-id="${p.id}">Groß ansehen</button><button class="btn btn--sm btn--primary" data-act="copy">Als Vorlage übernehmen</button></div>
+      <p class="meta" style="margin:.5rem .9rem">${p.who} · ${p.date} · ${p.desc}</p>${thumb(p, S.set, 'thumb--lg')}</section></div>`;
+}
+function gallery() {
+  const later = S.sc === 'later';
+  return `${appHeader('<button class="back" data-act="home">← Startseite</button>')}<main class="demo">
+    <header class="demo-head"><h2>Demos</h2><p>Newsletter, die andere mit diesem Editor gebaut und veröffentlicht haben. Ansehen, Gefällt-mir geben oder als eigene Vorlage übernehmen.</p></header>
+    ${later ? '<div class="kindtabs is-new" role="tablist"><button role="tab" aria-selected="true">Newsletter</button><button role="tab" aria-selected="false">Bausteine</button></div>' : ''}
+    ${S.sc === 'offline' || S.sc === 'empty' ? '' : tools()}${galleryBody()}</main>${footer(true)}${toast()}`;
+}
+
+/* detail */
+function detail() {
+  const p = S.sc === 'own' ? PUBS[0] : pub(T.sel);
+  if (S.sc === 'copied') return copiedEditor(p);
+  const pw = T.pw === 'phone' || isPhone();
+  const own = S.sc === 'own';
+  const actions = own
+    ? '<button class="btn btn--primary">Aus dem Editor aktualisieren</button><button class="btn">Adresse kopieren</button><button class="linkbtn report" style="color:var(--ds-danger)" data-act="withdraw">Zurückziehen …</button>'
+    : `<button class="btn btn--primary is-new" data-act="copy">Als Vorlage übernehmen</button><p class="small">Legt eine Kopie in diesem Browser an. Kostenlos, ohne Anmeldung.</p>
+       ${S.sc === 'reported' ? '<p class="banner b-ok" role="status"><span class="bi">✓</span><span>Danke, die Meldung ist angekommen. Wir prüfen die Veröffentlichung.</span></p>' : '<button class="linkbtn report is-new" data-act="report">⚑ Melden</button>'}`;
+  return `${appHeader('<button class="back" data-act="gallery">← Demos</button>')}<main class="demo"><div class="det">
+    <section class="stage"><div class="stage-bar"><span>Vorschau</span><span style="display:flex;gap:.4rem;flex-wrap:wrap">
+      <span class="segui" role="group" aria-label="Farbschema"><button data-act="pset" data-v="light" aria-pressed="${T.pset === 'light'}">Hell</button><button data-act="pset" data-v="dark" aria-pressed="${T.pset === 'dark'}">Dunkel</button></span>
+      ${isPhone() ? '' : `<span class="segui" role="group" aria-label="Breite"><button data-act="pw" data-v="desk" aria-pressed="${T.pw === 'desk'}">Desktop</button><button data-act="pw" data-v="phone" aria-pressed="${T.pw === 'phone'}">Handy</button></span>`}</span></div>
+      ${thumb(p, T.pset, `thumb--lg ${pw ? 'thumb--phone' : ''}`)}</section>
+    <aside class="side">
+      <div><h2>${p.title}</h2><p class="meta">von ${p.who}</p></div>
+      <p class="desc">${p.desc}</p>
+      <dl class="facts"><dt>Sprache</dt><dd>${p.lang === 'DE' ? 'Deutsch' : 'Englisch'}</dd><dt>Veröffentlicht</dt><dd>${p.date}</dd><dt>Aufrufe</dt><dd>${fmt(p.views)}</dd></dl>
+      <div>${likeBtn(p, true)}</div>
+      <div class="acts">${actions}</div>
+    </aside></div></main>${footer(true)}${toast()}${S.sc === 'report' ? reportDlg(p) : ''}`;
+}
+function reportDlg(p) {
+  const r = [['illegal', 'Rechtswidriger Inhalt'], ['spam', 'Spam oder Betrug'], ['personal', 'Persönliche Daten anderer'], ['copyright', 'Fremde Bilder oder Texte'], ['other', 'Etwas anderes']];
+  return `<div class="backdrop" data-act="closeOut"><div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlgT">
+    <div class="dlg-head"><span class="hi">⚑</span><div class="tt"><span class="eyebrow">Melden</span><h2 id="dlgT">„${p.title}“ melden?</h2></div><button class="dlg-x" data-act="close" aria-label="Schließen">×</button></div>
+    <div class="dlg-body"><p>Was stimmt nicht? Wir prüfen jede Meldung und nehmen Veröffentlichungen bei Missbrauch offline.</p>
+      <div class="reasons" role="radiogroup">${r.map(([k, t]) => `<label><input type="radio" name="reason" value="${k}" ${T.reason === k ? 'checked' : ''}>${t}</label>`).join('')}</div>
+      <div class="field"><label for="rtext">Was genau? (freiwillig)</label><textarea id="rtext" placeholder="Zum Beispiel: Das Bild im Kopf stammt von unserer Website."></textarea></div>
+      <p class="hint">Geht ohne Anmeldung. Ihre Meldung sieht nur unser Team, nicht die veröffentlichende Person.</p></div>
+    <div class="dlg-foot"><button class="btn" data-act="close">Abbrechen</button><button class="btn btn--primary" data-act="sendReport">Meldung senden</button></div></div></div>`;
+}
+function copiedEditor(p) {
+  const rows = ['#fb923c', '#7ecfff', '#fde047', '#a78bfa', '#22d3ee'];
+  return `${appHeader(`<button class="back" data-act="home">← Startseite</button><span class="doc-name">${p.title}</span>`)}
+    <div style="padding:.7rem .9rem 0"><div class="banner b-ok is-new" role="status"><span class="bi">✓</span><div><p><b>Kopie angelegt: „${p.title}“.</b></p><small>Vorlage von ${p.who}, Demo-Seite. Ersetzen Sie Texte, Bilder, Links und Absender durch Ihre eigenen, bevor Sie verschicken.</small></div><div class="acts"><button class="btn btn--sm" data-act="detailBack">← Zurück zur Demo</button></div></div></div>
+    <div class="ed"><aside class="ed-panel"><div class="ed-tabs"><span>Aktuelle Bausteine</span><span>Alle</span><span>Farben</span><span>Marke</span></div>${rows.map((a) => `<div class="ed-row" style="--a:${a}"></div>`).join('')}</aside>
+    <div class="ed-prev">${thumb(p, S.set, 'thumb--lg')}</div></div>${footer()}`;
+}
+
+/* publish from the editor */
+const EDOC = { title: 'Frühjahrsangebot 2027', who: 'Grünwerk Müller', h: '#3a9a55', lang: 'DE' };
+function editorBase(menu) {
+  const rows = ['#fb923c', '#7ecfff', '#fde047', '#a78bfa', '#22d3ee'];
+  const m = menu ? `<div class="scrim" data-act="close"></div><div class="smenu" role="menu"><div class="h"><small>Vorlage</small>${EDOC.title}</div>
+      <button class="it"><span class="tile">💾</span><span>Speichern</span></button><button class="it"><span class="tile">📄</span><span>Speichern unter …</span></button>
+      <div class="lbl">Weitergeben</div><button class="it"><span class="tile">⤓</span><span>HTML exportieren …<span class="hint">Für Listmonk und andere Versandsysteme</span></span></button>
+      <button class="it is-new" data-act="pubOpen"><span class="tile">◎</span><span>Auf der Demo-Seite zeigen …<span class="hint">${S.login ? 'Öffentlich für alle' : 'Braucht eine Anmeldung'}</span></span></button>
+      <div class="sep"></div><button class="it"><span class="tile">⌂</span><span>Zur Startseite</span></button></div>` : '';
+  return `${appHeader(`<button class="back" data-act="home">← Startseite</button><span class="doc-name">${EDOC.title}</span>`).replace('data-act="smenu" aria-label="Startmenü"', 'data-act="emenu" aria-label="Menü"')}
+    <div class="ed"><aside class="ed-panel"><div class="ed-tabs"><span>Aktuelle Bausteine</span><span>Alle</span><span>Farben</span><span>Marke</span></div>${rows.map((a) => `<div class="ed-row" style="--a:${a}"></div>`).join('')}</aside>
+    <div class="ed-prev">${thumb(EDOC, S.set, 'thumb--lg')}</div></div>${footer()}${m}`;
+}
+function pubDlg() {
+  const head = (t, e = 'Demo-Seite') => `<div class="dlg-head"><span class="hi">◎</span><div class="tt"><span class="eyebrow">${e}</span><h2 id="dlgT">${t}</h2></div><button class="dlg-x" data-act="close" aria-label="Schließen">×</button></div>`;
+  let inner;
+  if (!S.login) {
+    inner = `${head('Erst anmelden')}<div class="dlg-body"><p>Veröffentlichen braucht ein Konto, damit klar ist, wer verantwortlich ist. Ansehen und übernehmen geht ohne.</p>
+      <p class="hint">Ihre Vorlage bleibt dabei offen und unverändert. Nach der Anmeldung geht es hier weiter.</p></div>
+      <div class="dlg-foot"><button class="btn" data-act="close">Abbrechen</button><button class="btn">Konto anlegen</button><button class="btn btn--primary" data-act="login">Anmelden</button></div>`;
+  } else if (S.sc === 'done') {
+    inner = `${head('Veröffentlicht', 'Erledigt')}<div class="dlg-body"><div class="banner b-ok"><span class="bi">✓</span><div><p><b>„${EDOC.title}“ ist jetzt auf der Demo-Seite.</b></p><small>Öffentlich für alle. Ändern Sie die Vorlage, aktualisieren Sie die Veröffentlichung über dasselbe Menü; die Adresse bleibt.</small></div></div>
+      <div class="field"><span class="l">Adresse</span><div class="urlbox">newsletter-editor.app/demos/0192f7a3-1e4c-7d90-8b25-6c0f3a9e2d71</div></div></div>
+      <div class="dlg-foot"><button class="btn">Adresse kopieren</button><button class="btn" data-act="close">Schließen</button><button class="btn btn--primary" data-act="gallery">Ansehen</button></div>`;
+  } else {
+    const checks = S.sc === 'checks' ? '<p class="hint hint--warn"><span>Die Prüfung meldet 2 Hinweise: ein Bild ohne Beschreibung, ein Link „hier klicken“. Sie können trotzdem veröffentlichen. <button class="linkbtn">Hinweise ansehen</button></span></p>' : '';
+    const err = S.sc === 'error' ? '<div class="banner b-danger" role="alert"><span class="bi">!</span><div><p><b>Nicht veröffentlicht.</b></p><small>Die Demo-Seite ist gerade nicht erreichbar. Ihre Eingaben bleiben stehen.</small></div></div>' : '';
+    inner = `${head('Auf der Demo-Seite zeigen?')}<div class="dlg-body">${err}${checks}
+      <div class="pubgrid">${thumb(EDOC, S.set)}<div style="display:grid;gap:.6rem">
+        <div class="field"><label for="pt">Titel</label><input id="pt" value="${EDOC.title}"></div>
+        <div class="field"><label for="pl">Sprache</label><select id="pl"><option>Deutsch</option><option>Englisch</option></select></div></div></div>
+      <div class="field"><label for="pd">Beschreibung</label><textarea id="pd" maxlength="280">Saisonstart mit drei Angeboten und Gutschein.</textarea><small>44 / 280</small></div>
+      <p class="hint">Öffentlich für alle. Jede Person kann die Vorlage ansehen und als Kopie übernehmen. Platzhalter wie Name und Anrede erscheinen als Beispielwerte.</p>
+      <label class="ack"><input type="checkbox" id="ack" ${T.ack ? 'checked' : ''}><span>Ich trage die Verantwortung für den Inhalt und habe die Rechte an Texten und Bildern.</span></label></div>
+      <div class="dlg-foot"><button class="btn" data-act="close">Abbrechen</button><button class="btn btn--primary" data-act="publish" ${T.ack ? '' : 'disabled'}>${S.sc === 'error' ? 'Erneut versuchen' : 'Veröffentlichen'}</button></div>`;
+  }
+  return `<div class="backdrop" data-act="closeOut"><div class="dlg is-new" role="dialog" aria-modal="true" aria-labelledby="dlgT">${inner}</div></div>`;
+}
+
+/* entry points */
+function startPage() {
+  const latest = [...PUBS].sort((a, b) => a.age - b.age).slice(0, 3);
+  return `${appHeader('<span class="brand">⌂ Newsletter-Editor</span>')}<main class="start">
+    <header><h2 class="start-title">Willkommen zurück</h2><p class="start-lead">Neuen Newsletter beginnen oder dort weitermachen, wo Sie aufgehört haben.</p></header>
+    <div><h3 class="start-sec">Neu anfangen</h3><div class="start-tiles">
+      <div class="start-tile is-primary"><b>Leerer Newsletter</b><span>Ohne Vorlage starten, Texte auf Deutsch</span></div>
+      <div class="start-tile"><b>Beispielvorlage Deutsch</b><span>CloudLib.EU, fertig gefüllt zum Ausprobieren</span></div>
+      <div class="start-tile"><b>Beispielvorlage Englisch</b><span>CloudLib.EU auf Englisch, fertig gefüllt</span></div>
+      ${isPhone() ? '' : '<div class="start-tile"><b>Neuer Baustein</b><span>Eigenen Baustein aus Teilen bauen, für jede Vorlage</span></div>'}
+    </div></div>
+    <div class="is-new"><h3 class="start-sec"><span>Demos</span><button class="linkbtn" data-act="gallery">Alle ansehen →</button></h3><div class="grid">${latest.map(card).join('')}</div></div>
+  </main>${footer()}`;
+}
+function startMenu() {
+  const it = (tile, t, hint = '', cls = '', act = '') => `<button class="it ${cls}" ${act ? `data-act="${act}"` : ''}><span class="tile ${tile[1] || ''}">${tile[0]}</span><span>${t}${hint ? `<span class="hint">${hint}</span>` : ''}</span></button>`;
+  return `${startPage()}<div class="scrim" data-act="close"></div><div class="smenu" role="menu"><div class="h"><small>Startseite</small>Womit möchten Sie anfangen?</div>
+    <div class="lbl">Neu anfangen</div>${it(['＋'], 'Leerer Newsletter', 'Ohne Vorlage starten')}${it(['DE'], 'Beispielvorlage Deutsch', 'DE · AT · CH')}${it(['UK'], 'Beispielvorlage Englisch', 'UK · US · CA · AU · NZ · IE')}
+    <div class="lbl">Bausteine</div>${isPhone() ? '' : it(['◆', 'tile--free'], 'Neuer Baustein', 'Aus Teilen bauen')}${it(['▦'], 'Eigene Bausteine verwalten', '3 Bausteine, 5 Entwürfe')}
+    <div class="lbl">Gespeicherte Vorlagen</div>${it(['📁'], 'Öffnen …')}
+    <div class="lbl is-new">Entdecken</div>${it(['◎'], 'Demos', 'Newsletter von anderen ansehen und übernehmen', 'is-new', 'gallery')}
+    <div class="sep" style="color:var(--ds-danger)">${it(['↺'], 'Alles auf Standard zurücksetzen …')}</div></div>`;
+}
+
+/* not found */
+function notFound() {
+  return `${appHeader('<button class="back" data-act="home">← Startseite</button>')}<main><article class="nf is-new"><p class="code" aria-hidden="true">404</p>
+    <h2>Das ist nicht der Newsletter, den du suchst.</h2>
+    <p>Er ist wohl ins Nirvana umgezogen: zurückgezogen oder entfernt, und das Lesezeichen hat es nicht mitbekommen. Auf der Demo-Seite warten andere.</p>
+    <p class="acts"><a href="#" data-act="gallery">Zur Demo-Seite</a><a href="#" data-act="home">Zur Startseite</a></p></article></main>${footer()}`;
+}
+
+function toast() { return T.toast ? `<div class="toast" role="status">${T.toast}</div>` : ''; }
+
+function render() {
+  const seg = document.getElementById('scSeg');
+  seg.innerHTML = AREAS[S.area].map(([k, t]) => `<button data-v="${k}">${t}</button>`).join('');
+  document.querySelectorAll('.mk .seg').forEach((g) => g.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(S[g.dataset.k] === b.dataset.v))));
+  const vNote = S.area === 'gallery' || (S.area === 'entry' && S.sc === 'start') ? NOTES[S.v] + '<br>' : '';
+  document.getElementById('mknote').innerHTML = `${vNote}<b>Szene:</b> ${SCN[S.area][S.sc]}${isPhone() ? '<br><b>Handy:</b> eine Spalte, Filter untereinander, Dialoge als Blatt von unten.' : ''}`;
+  document.getElementById('showNew').checked = S.showNew;
+  document.getElementById('login').checked = S.login;
+  document.body.classList.toggle('hide-new', !S.showNew);
+  document.body.classList.toggle('phone', isPhone());
+  let html = '';
+  if (S.area === 'gallery') html = gallery();
+  else if (S.area === 'detail') html = detail();
+  else if (S.area === 'publish') html = editorBase(S.sc === 'menu' && T.menuOpen) + (S.sc !== 'menu' && !T.closed ? pubDlg() : '');
+  else if (S.area === 'entry') html = S.sc === 'smenu' && !T.closed ? startMenu() : S.sc === 'footer' ? gallery() : startPage();
+  else html = notFound();
+  const focusQ = document.activeElement && document.activeElement.id === 'q';
+  document.getElementById('frame').innerHTML = urlBar() + html;
+  if (focusQ) { const q = document.getElementById('q'); q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+  try { localStorage.setItem('mk-r5-demo', JSON.stringify(S)); } catch {}
+}
+
+function pick(area, sc) { S.area = area; S.sc = sc || AREAS[area][0][0]; const keep = T && T.sel; T = sceneState(); if (keep) T.sel = keep; }
+
+document.addEventListener('click', (e) => {
+  const mk = e.target.closest('.mk .seg button');
+  if (mk) {
+    const k = mk.parentElement.dataset.k;
+    if (k === 'area') pick(mk.dataset.v);
+    else if (k === 'sc') pick(S.area, mk.dataset.v);
+    else S[k] = mk.dataset.v;
+    if (k === 'set') T.pset = S.set;
+    render(); return;
+  }
+  const t = e.target.closest('[data-act]');
+  if (!t) return;
+  const a = t.dataset.act;
+  if (t.tagName === 'A') e.preventDefault();
+  T.toast = '';
+  if (a === 'closeOut') { if (e.target !== t) return; close(); }
+  else if (a === 'close') close();
+  else if (a === 'like') {
+    if (!S.login) T.toast = 'Gefällt-mir geht mit Anmeldung, damit jede Person nur einmal zählt. <button class="btn btn--sm btn--primary" data-act="login">Anmelden</button>';
+    else T.liked = T.liked.includes(t.dataset.id) ? T.liked.filter((x) => x !== t.dataset.id) : [...T.liked, t.dataset.id];
+  }
+  else if (a === 'login') { S.login = true; }
+  else if (a === 'open') { T.sel = t.dataset.id; pick('detail', 'normal'); }
+  else if (a === 'pick') { T.sel = t.dataset.id; T.phoneDetail = isPhone(); }
+  else if (a === 'unpick') T.phoneDetail = false;
+  else if (a === 'copy') pick('detail', 'copied');
+  else if (a === 'detailBack') pick('detail', 'normal');
+  else if (a === 'report') S.sc = 'report';
+  else if (a === 'sendReport') S.sc = 'reported';
+  else if (a === 'withdraw') pick('nf', 'gone');
+  else if (a === 'gallery') pick('gallery', 'normal');
+  else if (a === 'home') pick('entry', 'start');
+  else if (a === 'smenu') { if (S.area === 'entry' || S.area === 'gallery' || S.area === 'nf' || S.area === 'detail') pick('entry', 'smenu'); }
+  else if (a === 'emenu') { pick('publish', 'menu'); }
+  else if (a === 'pubOpen') pick('publish', 'form');
+  else if (a === 'publish') S.sc = 'done';
+  else if (a === 'sort') T.sort = t.dataset.v;
+  else if (a === 'clearQ') T.q = '';
+  else if (a === 'clearAll') { T.q = ''; T.lang = 'all'; if (S.sc === 'nohit') S.sc = 'normal'; }
+  else if (a === 'pset') T.pset = t.dataset.v;
+  else if (a === 'pw') T.pw = t.dataset.v;
+  else return;
+  render();
+});
+function close() {
+  if (S.area === 'detail' && S.sc === 'report') S.sc = 'normal';
+  else if (S.area === 'publish' && S.sc === 'menu') T.menuOpen = false;
+  else T.closed = true;
+}
+document.addEventListener('input', (e) => { if (e.target.id === 'q') { T.q = e.target.value; render(); } });
+document.addEventListener('change', (e) => {
+  if (e.target.id === 'showNew') S.showNew = e.target.checked;
+  else if (e.target.id === 'login') { S.login = e.target.checked; T.closed = false; }
+  else if (e.target.id === 'lang') T.lang = e.target.value;
+  else if (e.target.id === 'ack') T.ack = e.target.checked;
+  else if (e.target.name === 'reason') T.reason = e.target.value;
+  else return;
+  render();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { close(); render(); } });
+
+if (!AREAS[S.area] || !AREAS[S.area].some(([k]) => k === S.sc)) { S.area = 'gallery'; S.sc = 'normal'; }
+T = sceneState();
+render();
+</script>
+</body>
+</html>

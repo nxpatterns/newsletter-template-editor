@@ -194,6 +194,9 @@ Route: its own address (for example `/blocks/:id`), plus an overview of own bloc
 - Responsibility for published content lies with the publisher. We need the ability to take a publication offline on abuse.
 - The demo page is the first step toward the marketplace: when a publication gets many views or likes, we can invite its designer to sell on the marketplace. "Earn and let earn."
 - Demo page and marketplace share one gallery route; newsletters first, blocks later.
+- Addresses follow the editor scheme (`src/app/editor/panel/panel-routes.ts`): `/demos` is the gallery, `/demos/<id>` one publication. Once blocks can be published, each kind gets its own address like an editor tab (`/demos/newsletters`, `/demos/blocks`) and `/demos` redirects. A withdrawn, blocked or unknown publication shows the not found page in a publication variant (decision 69).
+- Gallery: cards with preview, title, publisher, language, date, views and likes; search, language and sort "Newest | Most popular" (decisions 70, 72). Single view: preview Light / Dark and desktop / phone, "Use as template" (free copy into this browser, no login) and "Report" (decision 71). Publishing: dialog from the editor ⋮ menu (decision 73).
+- Design: mockup `docs/mockups/block-editor/r5-demo-page.html`, variants A to C, choice open.
 
 ## Naming
 
@@ -281,6 +284,11 @@ Numbers refer to the questions in the 2026-10-21 thread.
 | 66 | Kinds without data | Hidden; what does not exist cannot be reset |
 | 67 | Content of the save file | Only the checked kinds ("Save selected as a file"); under the button a line "Selected: everything" (DE "Aktuell: Alles angehakt") or the checked kinds |
 | 68 | Address of a block that no longer exists | The app's not found page in a block variant ("This is not the block you are looking for"), offering "How about a new block?" next to the way back; same pattern as a deleted template |
+| 69 | Address of the demo page | `/demos` for the gallery, `/demos/<id>` for one publication; later `/demos/newsletters` and `/demos/blocks` like the editor tabs, `/demos` then redirects; a withdrawn or blocked publication shows the not found page in its own variant, as in decision 68 |
+| 70 | Gallery card | Preview, title, publisher, language, date, views and likes; liking needs login |
+| 71 | Single publication view | Preview Light / Dark and desktop / phone; "Use as template" (DE "Als Vorlage übernehmen") creates a copy as a new template in this browser, free; "Report" (DE "Melden") for takedown on abuse |
+| 72 | Search and filter | Search, language, sort "Newest \| Most popular" (DE "Neueste \| Beliebteste"); topics or industries later |
+| 73 | Publishing | "Show on demo page" in the editor ⋮ menu opens a dialog: title, description, language, note "public for everyone", checkbox "I am responsible for the content"; without login, login comes first. Shown in mockup R5 |
 
 ## Mockup scope
 
@@ -310,4 +318,4 @@ Reset dialog wording (EN; DE in the mockup):
 
 ## Open questions
 
-None. Decisions 30 to 67 were accepted on 2026-10-21; mockups may still change them.
+Design variant of the demo page (mockup R5: A, B or C). Decisions 30 to 73 were accepted on 2026-10-21; mockups may still change them.
