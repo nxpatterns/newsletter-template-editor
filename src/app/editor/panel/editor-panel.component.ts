@@ -9,31 +9,19 @@ import { ColorsFieldsComponent } from '../globals/colors-fields.component';
 import { LegalFieldsComponent } from '../globals/legal-fields.component';
 import { SocialFieldsComponent } from '../globals/social-fields.component';
 import { PANEL_TAB_ICONS as ICONS } from './panel-tab-icons';
-import { type EditorPanelTab, NewsletterSession } from '../newsletter-session.service';
+import {
+  type EditorPanelTab,
+  NewsletterSession,
+} from '../newsletter-session.service';
 
 /** Short label on the tab; `fullKey` names it for tooltip and screen readers. */
 const TABS: { value: EditorPanelTab; labelKey: string; fullKey?: string; icon: string[] }[] = [
-  {
-    value: 'placed',
-    labelKey: 'panel.tab.placed',
-    fullKey: 'panel.tab.placed.full',
-    icon: ICONS.placed,
-  },
-  {
-    value: 'catalog',
-    labelKey: 'panel.tab.catalog',
-    fullKey: 'panel.tab.catalog.full',
-    icon: ICONS.catalog,
-  },
+  { value: 'placed', labelKey: 'panel.tab.placed', fullKey: 'panel.tab.placed.full', icon: ICONS.placed },
+  { value: 'catalog', labelKey: 'panel.tab.catalog', fullKey: 'panel.tab.catalog.full', icon: ICONS.catalog },
   { value: 'campaign', labelKey: 'panel.tab.campaign', icon: ICONS.campaign },
   { value: 'brand', labelKey: 'panel.tab.brand', icon: ICONS.brand },
   { value: 'legal', labelKey: 'panel.tab.legal', icon: ICONS.legal },
-  {
-    value: 'social',
-    labelKey: 'panel.tab.social',
-    fullKey: 'panel.tab.social.full',
-    icon: ICONS.social,
-  },
+  { value: 'social', labelKey: 'panel.tab.social', fullKey: 'panel.tab.social.full', icon: ICONS.social },
   { value: 'colors', labelKey: 'panel.tab.colors', icon: ICONS.colors },
 ];
 
