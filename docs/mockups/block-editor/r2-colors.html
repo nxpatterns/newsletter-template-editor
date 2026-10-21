@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup R2 Farben</title>
+<style>
+:root {
+  --ds-bg-page: #060b14; --ds-bg-panel: #0c1628; --ds-border: #1a3050; --ds-accent: #7ecfff;
+  --ds-text: #e8f4ff; --ds-text-muted: #7a9ab8; --ds-success: #3dd68c; --ds-warning: #f5b84a; --ds-danger: #ff6b7a;
+  --ds-radius: .25rem;
+  --glass: color-mix(in srgb, var(--ds-bg-panel) 78%, transparent);
+  --glass-edge: linear-gradient(90deg, transparent, rgba(255,255,255,.35) 50%, transparent);
+  --head-bg: linear-gradient(180deg, rgba(255,255,255,.12), transparent 42%), linear-gradient(120deg, #0a1830 0%, #123a5c 48%, #0c5a78 100%);
+  --sel: #20d4c8; --newmark: #f5c518;
+  --free-a: #a3b8cc; --free-b: #52677d;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ds-text); background: var(--ds-bg-page); display: grid; grid-template-rows: auto auto 1fr auto; overflow: hidden; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--ds-accent); outline-offset: 2px; }
+
+/* mockup controls (not part of the design) */
+.mk { display: flex; flex-wrap: wrap; gap: .4rem 1.2rem; align-items: center; padding: .45rem .9rem; background: #2a1d05; border-bottom: 1px dashed #8a6a20; color: #f3d9a0; font-size: 12px; }
+.mk b { font-weight: 600; margin-inline-end: .3rem; }
+.mk .seg { display: inline-flex; flex-wrap: wrap; border: 1px solid #8a6a20; border-radius: .8rem; overflow: hidden; }
+.mk .seg button { background: none; border: 0; padding: .2rem .6rem; color: #f3d9a0; }
+.mk .seg button[aria-pressed="true"] { background: #8a6a20; color: #fff; }
+.mk label { display: inline-flex; gap: .3rem; align-items: center; }
+.mk .note { flex: 1 1 100%; color: #d8b870; }
+.mk a { margin-inline-start: auto; }
+.is-new { outline: 2px dashed var(--newmark); outline-offset: 2px; }
+.hide-new .is-new { outline: 0; }
+
+/* header */
+.hdr { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; min-height: 3.5rem; padding: .45rem .9rem; background: var(--ds-bg-panel); border-bottom: 1px solid var(--ds-border); }
+.hdr .sp { flex: 1; }
+.hdr .doc { color: var(--ds-text-muted); }
+.back { color: var(--ds-accent); text-decoration: none; padding: .3rem .5rem; }
+.ibtn { display: inline-grid; place-items: center; width: 2.1rem; height: 2.1rem; border-radius: var(--ds-radius); border: 1px solid var(--ds-border); background: rgba(255,255,255,.03); }
+.btn { display: inline-flex; align-items: center; gap: .4rem; height: 2.1rem; padding: 0 .8rem; border-radius: var(--ds-radius); border: 1px solid var(--ds-border); background: rgba(255,255,255,.03); white-space: nowrap; }
+.btn--primary { background: linear-gradient(180deg, #2a86d8, #1d6bb8); border-color: #3b8fe0; color: #fff; }
+.btn--outline { border-color: var(--ds-accent); color: var(--ds-accent); }
+.btn--sm { height: 1.8rem; padding: 0 .6rem; font-size: 12px; }
+.kind { display: inline-flex; align-items: center; gap: .3rem; padding: .15rem .55rem; border-radius: 999px; font-size: 12px; border: 1px solid color-mix(in srgb, var(--free-a) 55%, var(--ds-border)); background: linear-gradient(160deg, color-mix(in srgb, var(--free-a) 22%, var(--ds-bg-panel)), var(--ds-bg-panel)); }
+.own { font-size: 9px; letter-spacing: .05em; text-transform: uppercase; padding: 0 .3rem; border-radius: 3px; background: rgba(255,255,255,.16); font-weight: 600; }
+.state { font-size: 12px; color: var(--ds-text-muted); }
+
+/* work */
+.work { min-height: 0; display: grid; grid-template-columns: minmax(0,1fr) 22rem; overflow: hidden; }
+.stage { min-height: 0; overflow: auto; }
+.stage-bar { position: sticky; top: 0; z-index: 3; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .5rem; padding: .5rem .9rem; background: color-mix(in srgb, var(--ds-bg-page) 85%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--ds-border); font-size: 12px; color: var(--ds-text-muted); }
+.seg2 { display: inline-flex; border: 1px solid var(--ds-border); border-radius: 999px; overflow: hidden; }
+.seg2 button { border: 0; background: none; padding: .25rem .75rem; color: var(--ds-text-muted); font-size: 12px; }
+.seg2 button[aria-pressed="true"] { background: rgba(126,207,255,.16); color: var(--ds-text); }
+.canvas { padding: 1.5rem 1rem 3rem; display: grid; justify-items: center; }
+.mail { width: 100%; max-width: 600px; background: var(--m-page); padding: 1rem 0; border-radius: .25rem; box-shadow: 0 10px 30px rgba(0,0,0,.35); font: 16px/1.55 Georgia, serif; color: var(--m-body); }
+.mb { margin: 0 auto; max-width: 560px; background: var(--m-content); padding: 20px 28px; position: relative; }
+.mb + .mb { border-top: 1px solid var(--m-line); }
+.mb.is-sel { outline: 2px solid var(--sel); outline-offset: -2px; }
+.mb .ctx { font: 12px system-ui; text-align: center; color: var(--m-dim); }
+.offer { display: flex; gap: 18px; align-items: center; }
+.offer .pic { flex: 0 0 40%; aspect-ratio: 4/3; border-radius: 4px; background: linear-gradient(135deg, #38618a, #1c3550); }
+.offer .kick { font: 600 12px system-ui; letter-spacing: .08em; text-transform: uppercase; color: var(--c-kick); }
+.offer h3 { margin: 2px 0 4px; color: var(--m-head); font: italic 600 22px/1.25 Georgia, serif; }
+.offer p { margin: 0; color: var(--c-body); font-size: 15px; }
+.offer .b { display: inline-block; margin-top: 10px; padding: 9px 18px; border-radius: 4px; background: var(--m-btn); color: var(--m-btnText); font: 600 14px system-ui; }
+.flag { position: absolute; top: -.55rem; left: -.6rem; display: inline-grid; place-items: center; width: 1.2rem; height: 1.2rem; border-radius: 50%; background: var(--ds-warning); color: #1a1100; font: 700 11px system-ui; box-shadow: 0 0 0 2px var(--m-content); }
+.flag--ok { background: #5d748b; color: #fff; }
+.rel { position: relative; display: inline-block; }
+
+/* panel */
+.pane { min-height: 0; overflow: auto; overflow-x: hidden; background: var(--ds-bg-panel); border-inline-start: 1px solid var(--ds-border); }
+.tabs { position: sticky; top: 0; z-index: 4; display: flex; gap: 2px; padding: .5rem .5rem 0; background: var(--ds-bg-panel); border-bottom: 1px solid var(--ds-border); }
+.tab { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: .45rem .1rem; border: 1px solid var(--ds-border); border-bottom: 0; border-radius: .4rem .4rem 0 0; background: rgba(255,255,255,.02); color: var(--ds-text-muted); font-size: 12px; position: relative; top: 1px; }
+.tab[aria-selected="true"] { background: var(--ds-bg-panel); color: var(--ds-text); }
+.badge { display: inline-grid; place-items: center; min-width: 1.15rem; height: 1.15rem; margin-inline-start: .25rem; border-radius: 999px; font-size: 11px; background: var(--ds-warning); color: #1a1100; }
+.pane-body { padding: .7rem .7rem 1.4rem; display: grid; gap: .65rem; align-content: start; }
+.ed-hint { margin: 0; font-size: 12px; color: var(--ds-text-muted); }
+.sub { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ds-text-muted); }
+.legend { display: grid; gap: .1rem; font-size: 11px; color: var(--ds-text-muted); padding: .45rem .55rem; border: 1px solid var(--ds-border); border-radius: .4rem; }
+
+/* field groups (block editor) */
+.fgroup { border: 1px solid var(--ds-border); border-radius: .5rem; }
+.fgroup > h4 { margin: 0; padding: .45rem .65rem; font-size: 13px; background: rgba(255,255,255,.03); border-bottom: 1px solid var(--ds-border); border-radius: .5rem .5rem 0 0; display: flex; justify-content: space-between; gap: .5rem; }
+.fgroup > h4 span { font-weight: 400; font-size: 11px; color: var(--ds-text-muted); }
+.fgroup .in { padding: .6rem .65rem; display: grid; gap: .55rem; }
+
+/* color rows (shared by block editor and colors tab) */
+.crow { display: grid; grid-template-columns: 1.5rem 1fr auto; gap: .5rem; align-items: center; font-size: 13px; }
+.sw { width: 1.5rem; height: 1.5rem; border-radius: .3rem; border: 1px solid rgba(255,255,255,.25); padding: 0; }
+.sw--sm { width: 1rem; height: 1rem; border-radius: .2rem; }
+.crow small { display: block; color: var(--ds-text-muted); font-size: 11px; }
+.crow small.ov { color: var(--ds-text); }
+.fixed { display: inline-flex; align-items: center; gap: .2rem; font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; padding: .05rem .35rem; border-radius: 3px; border: 1px solid color-mix(in srgb, var(--ds-text) 50%, transparent); color: var(--ds-text); vertical-align: 1px; margin-inline-start: .3rem; }
+.linkbtn { border: 0; background: none; padding: 0; color: var(--ds-accent); text-decoration: underline; text-underline-offset: 2px; font-size: 12px; }
+.reset { border: 1px solid var(--ds-border); background: none; border-radius: var(--ds-radius); width: 1.7rem; height: 1.7rem; color: var(--ds-text-muted); }
+.warn { display: grid; gap: .35rem; padding: .45rem .55rem; border-radius: .4rem; border: 1px solid color-mix(in srgb, var(--ds-warning) 45%, var(--ds-border)); background: rgba(245,184,74,.07); font-size: 12px; }
+.warn .acts { display: flex; gap: .8rem; flex-wrap: wrap; }
+.accepted { display: grid; gap: .3rem; padding: .4rem .55rem; border-radius: .4rem; border: 1px dashed var(--ds-border); font-size: 12px; color: var(--ds-text-muted); }
+.accepted b { color: var(--ds-text); font-weight: 500; }
+.accepted .acts { display: flex; gap: .8rem; flex-wrap: wrap; }
+.returned { border-color: color-mix(in srgb, var(--ds-warning) 45%, var(--ds-border)); }
+.chip-acc { display: inline-flex; align-items: center; gap: .25rem; padding: 0 .4rem; border-radius: 999px; font-size: 10px; font-weight: 600; color: var(--ds-text); background: rgba(122,154,184,.22); border: 1px solid rgba(122,154,184,.5); white-space: nowrap; }
+.reason { width: 100%; min-height: 3rem; resize: vertical; padding: .4rem .5rem; border-radius: var(--ds-radius); border: 1px solid var(--ds-border); background: #081120; font-size: 12px; }
+
+/* role picker: A inline list */
+.picker { display: grid; gap: .45rem; padding: .55rem; border-radius: .45rem; border: 1px solid var(--ds-border); background: rgba(255,255,255,.02); }
+.picker h5 { margin: .1rem 0 0; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ds-text-muted); }
+.ropt { display: grid; grid-template-columns: auto 1rem 1rem 1fr; gap: .45rem; align-items: center; padding: .25rem .35rem; border-radius: .3rem; font-size: 12px; border: 1px solid transparent; background: none; text-align: start; width: 100%; }
+.ropt[aria-checked="true"] { border-color: var(--ds-accent); background: rgba(126,207,255,.08); }
+.ropt .r { width: .8rem; height: .8rem; border-radius: 50%; border: 1px solid var(--ds-text-muted); }
+.ropt[aria-checked="true"] .r { border: 4px solid var(--ds-accent); }
+.hexrow { display: flex; gap: .4rem; align-items: center; }
+.inp { position: relative; flex: 1; }
+.inp input { width: 100%; padding: .35rem 1.7rem .35rem .5rem; border-radius: var(--ds-radius); border: 1px solid var(--ds-border); background: #081120; font: 12px ui-monospace, Menlo, monospace; }
+.inp .x { position: absolute; right: .3rem; top: 50%; transform: translateY(-50%); border: 0; background: none; color: var(--ds-text-muted); }
+.help { font-size: 11px; color: var(--ds-text-muted); }
+.check { display: grid; grid-template-columns: auto 1fr; gap: .45rem; align-items: start; font-size: 12px; }
+.check input { margin-top: .15rem; accent-color: #2a86d8; }
+
+/* B glass popover */
+.pop { position: relative; z-index: 5; border-radius: .6rem; overflow: hidden; background: var(--glass); backdrop-filter: blur(18px) saturate(140%); border: 1px solid var(--ds-border); box-shadow: 0 22px 48px -12px rgba(0,0,0,.65); }
+.pop::before { content: ""; display: block; height: 1px; background: var(--glass-edge); }
+.pop .h { display: flex; justify-content: space-between; align-items: center; gap: .5rem; padding: .5rem .65rem; background: var(--head-bg); font-size: 13px; }
+.pop .body { padding: .55rem .65rem .7rem; display: grid; gap: .45rem; }
+.rgrid { display: grid; grid-template-columns: 1fr 1fr; gap: .3rem; }
+.rcell { display: grid; grid-template-columns: auto auto 1fr; gap: .3rem; align-items: center; padding: .3rem .35rem; border-radius: .35rem; border: 1px solid var(--ds-border); background: none; font-size: 11px; text-align: start; }
+.rcell[aria-checked="true"] { border-color: var(--ds-accent); background: rgba(126,207,255,.1); }
+.pair { display: inline-flex; }
+.pair .sw--sm + .sw--sm { margin-inline-start: -2px; }
+.cpreview { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; }
+.cpreview div { padding: .4rem .5rem; border-radius: .3rem; font: 13px Georgia, serif; display: grid; gap: .1rem; }
+.cpreview small { font: 11px system-ui; }
+
+/* C switch per row */
+.sw2 { display: inline-flex; border: 1px solid var(--ds-border); border-radius: 999px; overflow: hidden; }
+.sw2 button { border: 0; background: none; padding: .15rem .55rem; font-size: 11px; color: var(--ds-text-muted); }
+.sw2 button[aria-pressed="true"] { background: rgba(126,207,255,.16); color: var(--ds-text); }
+.selrole { width: 100%; padding: .3rem .4rem; border-radius: var(--ds-radius); border: 1px solid var(--ds-border); background: #081120; font-size: 12px; }
+.crow-c { display: grid; gap: .35rem; padding-bottom: .5rem; border-bottom: 1px solid var(--ds-border); }
+.crow-c:last-child { border-bottom: 0; padding-bottom: 0; }
+
+/* checks */
+.chk { display: grid; grid-template-columns: 1.3rem 1fr; gap: .45rem; padding: .5rem .55rem; border-radius: .45rem; border: 1px solid var(--ds-border); background: rgba(255,255,255,.02); font-size: 13px; }
+.chk .i { display: inline-grid; place-items: center; width: 1.3rem; height: 1.3rem; border-radius: 50%; font: 700 11px system-ui; }
+.chk--ok .i { background: rgba(61,214,140,.18); color: var(--ds-success); }
+.chk--warn { border-color: color-mix(in srgb, var(--ds-warning) 45%, var(--ds-border)); }
+.chk--warn .i { background: var(--ds-warning); color: #1a1100; }
+.chk small { display: block; color: var(--ds-text-muted); font-size: 12px; margin-top: .1rem; }
+.setpill { display: inline-block; font-size: 10px; font-weight: 600; padding: 0 .35rem; border-radius: 3px; margin-inline-end: .25rem; }
+.setpill--dark { background: #0c1628; color: #d8eeff; border: 1px solid #3a5a80; }
+.setpill--light { background: #fff; color: #0c1d33; border: 1px solid #b8c7d6; }
+
+/* colors tab accordions */
+.acc { border: 1px solid color-mix(in srgb, var(--pl-a, #7a9ab8) 35%, var(--ds-border)); border-radius: .5rem; background: linear-gradient(160deg, color-mix(in srgb, var(--pl-a, #7a9ab8) 10%, var(--ds-bg-panel)), var(--ds-bg-panel) 70%); }
+.acc-h { display: flex; align-items: center; gap: .45rem; width: 100%; padding: .45rem .55rem; border: 0; background: none; text-align: start; font-size: 13px; }
+.acc-h .chev { color: var(--ds-text-muted); width: .8rem; }
+.acc-h .ix { font-size: 11px; color: var(--ds-text-muted); }
+.acc-h .ic { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: .3rem; background: linear-gradient(135deg, var(--pl-a), var(--pl-b)); color: var(--pl-ink); font-size: 11px; }
+.acc-h .ic--free { background: repeating-linear-gradient(135deg, var(--pl-a) 0 4px, var(--pl-b) 4px 8px); }
+.acc-h .t { flex: 1; min-width: 0; }
+.acc-h .wc { display: inline-grid; place-items: center; width: 1.2rem; height: 1.2rem; border-radius: 50%; background: var(--ds-warning); color: #1a1100; font: 700 11px system-ui; }
+.acc-h .meta { font-size: 11px; color: var(--ds-text-muted); white-space: nowrap; }
+.acc-p { padding: .2rem .6rem .7rem; display: grid; gap: .55rem; }
+.slot { display: grid; gap: .35rem; }
+.grpbox { display: grid; gap: .4rem; padding: .5rem .55rem; border-radius: .45rem; border: 1px solid var(--ds-border); background: rgba(255,255,255,.02); font-size: 12px; }
+.grpbox summary { cursor: pointer; color: var(--ds-text-muted); }
+details.grpbox > span, details.grpbox > button { display: block; margin-top: .35rem; }
+
+/* dialog, snackbar */
+.backdrop { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: radial-gradient(circle at 50% 42%, rgba(126,207,255,.28), transparent 42%), rgba(4,8,16,.62); }
+.dlg { width: min(30rem, calc(100vw - 2rem)); border-radius: .6rem; overflow: hidden; background: var(--glass); backdrop-filter: blur(18px) saturate(140%); border: 1px solid var(--ds-border); box-shadow: 0 22px 48px -12px rgba(0,0,0,.65); }
+.dlg-head { display: flex; align-items: center; gap: .6rem; padding: .8rem 1rem; background: var(--head-bg); color: #fff; }
+.dlg-head .hi { display: inline-grid; place-items: center; width: 1.8rem; height: 1.8rem; border-radius: .4rem; background: rgba(126,207,255,.25); color: var(--ds-accent); font-weight: 700; }
+.dlg-head h2 { margin: 0; font-size: 16px; flex: 1; }
+.dlg-x { width: 1.9rem; height: 1.9rem; border-radius: .35rem; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.14); color: #fff; }
+.dlg-body { padding: 1rem; display: grid; gap: .8rem; font-size: 13px; }
+.dlg-body p { margin: 0; }
+.conseq { border: 1px solid var(--ds-border); border-radius: .45rem; padding: .6rem .7rem; background: rgba(255,255,255,.03); display: grid; gap: .3rem; }
+.dlg-foot { display: flex; justify-content: flex-end; gap: .5rem; padding: 0 1rem 1rem; }
+.snack { position: fixed; left: 50%; bottom: 3.4rem; transform: translateX(-50%); z-index: 50; display: flex; gap: .8rem; align-items: center; padding: .55rem .6rem .55rem .9rem; border-radius: var(--ds-radius); background: var(--glass); backdrop-filter: blur(18px); border: 1px solid var(--ds-border); border-inline-start: 3px solid var(--ds-success); box-shadow: 0 18px 40px -12px rgba(0,0,0,.7); font-size: 13px; }
+.xbtn { display: inline-grid; place-items: center; width: 1.7rem; height: 1.7rem; border-radius: var(--ds-radius); border: 1px solid var(--ds-border); background: none; }
+
+footer.ftr { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 2.75rem; padding: 0 .9rem; font-size: 11px; letter-spacing: .08em; color: var(--ds-text-muted); background: var(--ds-bg-panel); border-top: 1px solid var(--ds-border); }
+footer.ftr .links { display: flex; gap: 1rem; }
+footer.ftr .ver { justify-self: end; letter-spacing: 0; }
+@media (max-width: 52rem) { .work { grid-template-columns: 1fr; } .stage { display: none; } }
+@media (prefers-reduced-motion: no-preference) { .snack { animation: rise .18s ease-out; } @keyframes rise { from { opacity: 0; transform: translate(-50%, .4rem); } } }
+</style>
+</head>
+<body>
+
+<div class="mk" role="region" aria-label="Mockup-Steuerung">
+  <span><b>Variante</b><span class="seg" data-k="v"><button data-v="A">A Liste wie heute</button><button data-v="B">B Glas-Auswahl mit Hell und Dunkel</button><button data-v="C">C Schalter je Farbe</button></span></span>
+  <span><b>Farbsatz</b><span class="seg" data-k="set"><button data-v="dark">Dunkel</button><button data-v="light">Hell</button></span></span>
+  <label><input type="checkbox" id="showNew"> Neues gelb umranden</label>
+  <span><b>Szene</b><span class="seg" data-k="sc">
+    <button data-v="pick">Block-Editor: Rolle wählen</button><button data-v="fixed">Block-Editor: fest</button><button data-v="checks">Block-Editor: Prüfung</button><button data-v="tab">Vorlage: Hinweis</button><button data-v="accepted">Vorlage: akzeptiert</button><button data-v="back">Vorlage: Farben geändert</button>
+  </span></span>
+  <a href="r2-blocks-panel.html" style="color:#fff">← Zu Schritt 3 Bausteinleiste</a>
+  <span class="note" id="mknote"></span>
+</div>
+
+<header class="hdr" id="hdr"></header>
+<main class="work" id="work"></main>
+<footer class="ftr"><span></span><span class="links"><span>STARTSEITE</span><span>IMPRESSUM</span><span>DATENSCHUTZ</span><span>ÜBER</span></span><span class="ver">v0.4.7</span></footer>
+<div id="overlay"></div>
+
+<script>
+const S = { v: 'A', set: 'dark', sc: 'pick', showNew: true };
+try { Object.assign(S, JSON.parse(localStorage.getItem('mk-r2-colors') || '{}')); } catch {}
+// per-scene interaction state, not persisted
+let T = {};
+
+const ROLES = [
+  ['Hintergründe', [['page', 'Seitenhintergrund'], ['content', 'Inhaltsfläche'], ['surface', 'Hervorgehobene Flächen']]],
+  ['Text', [['body', 'Fließtext'], ['head', 'Überschriften'], ['dim', 'Gedämpfter Text'], ['link', 'Links und Zahlen']]],
+  ['Betonung', [['accent', 'Akzent'], ['btn', 'Button-Fläche'], ['btnText', 'Button-Schrift']]],
+  ['Linien', [['line', 'Trennlinien']]],
+];
+const SETS = {
+  dark: { page: '#08101e', content: '#0c1628', surface: '#11213a', body: '#a9c0d6', head: '#d8eeff', dim: '#6b88a6', link: '#7ecfff', accent: '#f5c518', btn: '#1d6bb8', btnText: '#ffffff', line: '#1e3a5c' },
+  light: { page: '#e9eff6', content: '#ffffff', surface: '#f1f5fa', body: '#3b4f63', head: '#0c1d33', dim: '#56697c', link: '#1565b0', accent: '#8a6200', btn: '#1d6bb8', btnText: '#ffffff', line: '#d5dee8' },
+};
+const CHANGED = { dark: '#111d33', light: '#fbf7ef' }; // content area after the user changed it (scene "back")
+const KICK = '#F5C518', BODY = '#3B4F63';
+const FIX = { dark: '#8FA6BD', light: '#8A6200' }; // what "Lesbar machen" proposes
+const FINDING = {
+  dark: { part: 'Fließtext', hex: BODY, bg: 'Inhaltsfläche', ratio: '2,1 : 1', ratioBack: '2,0 : 1' },
+  light: { part: 'Untertitel', hex: KICK, bg: 'Inhaltsfläche', ratio: '1,6 : 1', ratioBack: '1,5 : 1' },
+};
+const NOTES = {
+  A: 'A: Auswahl klappt unter der Farbe auf, wie heute im Tab „Farben“. Rollen als Liste nach Gruppen, „Feste Farbe“ als letzte Möglichkeit. Akzeptierte Hinweise bleiben als graue Zeile an der Farbe stehen.',
+  B: 'B: Glas-Auswahl mit „Rolle | Fest“. Jede Rolle zeigt beide Farben der Vorlage, Hell und Dunkel. Bei „Fest“ sofortige Lesbarkeit auf beiden. Hinweise stehen gesammelt oben im Baustein, akzeptierte wandern in eine aufklappbare Gruppe mit Grund.',
+  C: 'C: Jede Farbe hat einen Schalter „Vorlage | Fest“ und darunter die Rolle oder den Farbcode. „Ist beabsichtigt“ fragt kurz nach, der Kopf des Bausteins zeigt dann „akzeptiert“ statt „!“.',
+};
+const SCN = {
+  pick: 'Block-Editor, freier Baustein „Bild mit Angebot“, geöffnet aus „Frühjahrsangebot 2027“. Farbe „Fließtext“ wird gewählt. Rolle heißt: folgt in jeder Vorlage deren Farbe (Entscheidung 14).',
+  fixed: 'Fließtext ist jetzt fest #3B4F63, Untertitel fest #F5C518. Fest gewinnt gegen die allgemeinen Farben einer Vorlage und verliert gegen eine Änderung am platzierten Baustein (19, 35).',
+  checks: 'Tab „Prüfung“ im Block-Editor: geprüft wird immer in Hell und Dunkel. Hier gibt es kein „Ist beabsichtigt“, das gehört zum platzierten Baustein (26).',
+  tab: 'Vorlage, Tab „Farben“, eingefügter Baustein. Farbsatz oben umschalten: in Dunkel ist der Fließtext schwer lesbar, in Hell der Untertitel. „Ist beabsichtigt“ markiert nur diesen Hinweis an diesem Baustein.',
+  accepted: 'Hinweis als beabsichtigt markiert: bleibt sichtbar als „akzeptiert“, zählt nicht mehr als Warnung. Gespeichert in der Vorlage.',
+  back: 'Danach wurde die allgemeine Farbe „Inhaltsfläche“ geändert. Der akzeptierte Hinweis ist wieder offen, weil sich eine beteiligte Farbe geändert hat.',
+};
+const inEditor = () => ['pick', 'fixed', 'checks'].includes(S.sc);
+const isAcc = () => (S.sc === 'accepted' && !T.unacc) || (S.sc === 'tab' && T.acc) || (S.sc === 'back' && T.acc);
+const setName = (s = S.set) => (s === 'dark' ? 'Dunkel' : 'Hell');
+
+function seg() {
+  document.querySelectorAll('.mk .seg').forEach((g) => g.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(S[g.dataset.k] === b.dataset.v))));
+  document.getElementById('mknote').innerHTML = `${NOTES[S.v]}<br><b>Szene:</b> ${SCN[S.sc]}`;
+  document.getElementById('showNew').checked = S.showNew;
+  document.body.classList.toggle('hide-new', !S.showNew);
+}
+
+function header() {
+  const h = document.getElementById('hdr');
+  h.innerHTML = inEditor()
+    ? `<a class="back" href="#">← Zurück zu „Frühjahrsangebot 2027“</a><b style="font-size:15px">Bild mit Angebot</b><span class="kind">Freier Baustein <span class="own">eigen</span></span><span class="state">● Nicht gespeichert</span>
+       <span class="sp"></span><button class="ibtn">↶</button><button class="ibtn">↷</button><button class="btn btn--outline">Entwurf speichern</button><button class="btn btn--primary">Neue Version speichern</button><button class="ibtn">⋮</button><button class="btn">🌐 DE</button>`
+    : `<b>⌂ Newsletter-Editor</b><span class="doc">· Frühjahrsangebot 2027</span><span class="sp"></span><button class="ibtn">↶</button><button class="ibtn">↷</button><button class="btn btn--primary">Speichern</button><button class="btn">HTML exportieren</button><button class="ibtn">⋮</button><button class="btn">🌐 DE</button>`;
+}
+
+function colors() {
+  const c = { ...SETS[S.set] };
+  if (S.sc === 'back') c.content = CHANGED[S.set];
+  return c;
+}
+function bodyHex() {
+  if (S.sc === 'pick' && !T.fixedBody) return colors().body;
+  if (T.fix && S.set === 'dark') return FIX.dark;
+  return BODY;
+}
+function kickHex() { return T.fix && S.set === 'light' ? FIX.light : KICK; }
+function hasFinding(set = S.set) { return !(T.fix && set === S.set); }
+
+function mail() {
+  const c = colors();
+  const vars = `--m-page:${c.page};--m-content:${c.content};--m-body:${c.body};--m-head:${c.head};--m-dim:${c.dim};--m-btn:${c.btn};--m-btnText:${c.btnText};--m-line:${c.line};--c-kick:${kickHex()};--c-body:${bodyHex()}`;
+  const showFlag = !(S.sc === 'pick');
+  const flag = (which) => {
+    if (!showFlag || FINDING[S.set].part !== which || !hasFinding()) return '';
+    return isAcc() && !inEditor() ? '<span class="flag flag--ok" title="akzeptiert">✓</span>' : '<span class="flag" title="Prüfung: Hinweis">!</span>';
+  };
+  const block = `<div class="mb is-sel"><div class="offer"><div class="pic"></div><div>
+      <div class="rel"><span class="kick">Frühbucher</span>${flag('Untertitel')}</div>
+      <h3>Frühjahr am See</h3>
+      <div class="rel"><p>Drei Nächte mit Frühstück und Seeblick, buchbar bis 30. April.</p>${flag('Fließtext')}</div>
+      <span class="b">Angebot ansehen</span></div></div></div>`;
+  return `<div class="mail" style="${vars}"><div class="mb"><div class="ctx">… Baustein davor …</div></div>${block}<div class="mb"><div class="ctx">… Baustein danach …</div></div></div>`;
+}
+
+function stage() {
+  const label = inEditor() ? 'Vorschau mit den Farben von „Frühjahrsangebot 2027“' : 'Vorschau';
+  const sw = inEditor() ? `<span class="seg2" role="group" aria-label="Vorschau-Farben"><button data-set="dark" aria-pressed="${S.set === 'dark'}">Dunkel</button><button data-set="light" aria-pressed="${S.set === 'light'}">Hell</button></span>` : `<span>Farbsatz „${setName()}“</span>`;
+  return `<section class="stage" aria-label="Vorschau"><div class="stage-bar">${sw}<span>${label}</span></div><div class="canvas">${mail()}</div></section>`;
+}
+
+/* ---------- block editor: role picker ---------- */
+function roleRows(selected) {
+  const c = colors();
+  return ROLES.map(([g, list]) => `<h5>${g}</h5>${list.map(([id, n]) => `<button class="ropt" role="radio" aria-checked="${selected === id}" data-role="${id}"><span class="r"></span><span class="sw sw--sm" style="background:${c[id]}"></span><span class="sw sw--sm" style="background:${SETS[S.set === 'dark' ? 'light' : 'dark'][id]}" title="anderer Farbsatz"></span><span>${n}</span></button>`).join('')}`).join('');
+}
+
+function pickerA(fixedNow) {
+  return `<div class="picker is-new" role="radiogroup" aria-label="Farbe für Fließtext">
+    <span class="help">Folgt der Vorlage: in jeder Vorlage deren Farbe für diese Rolle. Kleine Felder: Dunkel und Hell der aktuellen Vorlage.</span>
+    ${roleRows(fixedNow ? '' : 'body')}
+    <h5>Fest</h5>
+    <button class="ropt" role="radio" aria-checked="${fixedNow}" data-fixbody><span class="r"></span><span class="sw sw--sm" style="background:${BODY}"></span><span></span><span>Feste Farbe</span></button>
+    <div class="hexrow"><span class="sw" style="background:${BODY}"></span><div class="inp"><input value="${BODY}" aria-label="Farbcode"><button class="x" aria-label="Leeren">×</button></div></div>
+    <span class="help">Bleibt in jeder Vorlage gleich. Eine Änderung am platzierten Baustein geht trotzdem vor.</span>
+  </div>`;
+}
+
+function pickerB(fixedNow) {
+  const c = SETS;
+  const cells = ROLES.flatMap(([, l]) => l).map(([id, n]) => `<button class="rcell" role="radio" aria-checked="${!fixedNow && id === 'body'}" data-role="${id}"><span class="pair"><span class="sw sw--sm" style="background:${c.dark[id]}"></span><span class="sw sw--sm" style="background:${c.light[id]}"></span></span><span></span><span>${n}</span></button>`).join('');
+  const mode = `<span class="seg2" role="group"><button aria-pressed="${!fixedNow}" data-unfix>Rolle</button><button aria-pressed="${fixedNow}" data-fixbody>Fest</button></span>`;
+  const body = fixedNow
+    ? `<div class="hexrow"><span class="sw" style="background:${BODY}"></span><div class="inp"><input value="${BODY}" aria-label="Farbcode"><button class="x" aria-label="Leeren">×</button></div></div>
+       <div class="cpreview"><div style="background:${c.dark.content};color:${BODY}">Seeblick<small style="color:var(--ds-warning)">auf Dunkel 2,1 : 1 ✕</small></div><div style="background:${c.light.content};color:${BODY}">Seeblick<small style="color:#16794a">auf Hell 8,4 : 1 ✓</small></div></div>
+       <span class="help">Fest: bleibt in jeder Vorlage gleich. Eine Änderung am platzierten Baustein geht vor.</span>`
+    : `<span class="help">Je Rolle: links Dunkel, rechts Hell von „Frühjahrsangebot 2027“.</span><div class="rgrid">${cells}</div>`;
+  return `<div class="pop is-new" role="dialog" aria-label="Farbe für Fließtext"><div class="h"><span>Farbe für „Fließtext“</span>${mode}</div><div class="body">${body}</div></div>`;
+}
+
+function rowC(name, roleId, fixedHex, warnTxt) {
+  const fx = !!fixedHex;
+  const opts = ROLES.flatMap(([, l]) => l).map(([id, n]) => `<option ${id === roleId ? 'selected' : ''}>${n}</option>`).join('');
+  return `<div class="crow-c"><div class="crow"><span class="sw" style="background:${fx ? fixedHex : colors()[roleId]}"></span><span>${name}${fx ? ' <span class="fixed">fest</span>' : ''}</span><span class="sw2 is-new" role="group" aria-label="Herkunft der Farbe"><button aria-pressed="${!fx}" ${name === 'Fließtext' ? 'data-unfix' : ''}>Vorlage</button><button aria-pressed="${fx}" ${name === 'Fließtext' ? 'data-fixbody' : ''}>Fest</button></span></div>
+    ${fx ? `<div class="hexrow"><div class="inp"><input value="${fixedHex}" aria-label="Farbcode ${name}"><button class="x" aria-label="Leeren">×</button></div></div>` : `<select class="selrole" aria-label="Rolle für ${name}">${opts}</select>`}
+    ${warnTxt ? `<span class="help" style="color:var(--ds-warning)">⚠ ${warnTxt}</span>` : ''}</div>`;
+}
+
+function editorProps() {
+  const fixedNow = S.sc !== 'pick' || T.fixedBody;
+  const warnD = fixedNow ? 'In Dunkel schwer lesbar: 2,1 : 1, nötig 4,5 : 1.' : '';
+  const warnL = 'In Hell schwer lesbar: 1,6 : 1, nötig 4,5 : 1.';
+  const role = (sw, name, sub, extra = '') => `<div class="crow"><span class="sw" style="background:${sw}"></span><span>${name}<small>${sub}</small></span>${extra}</div>`;
+  const fixedRow = (hex, name, w) => `<div class="crow"><span class="sw" style="background:${hex}"></span><span>${name} <span class="fixed is-new">fest</span><small>feste Farbe ${hex}</small></span><button class="linkbtn">Ändern</button></div>${w ? `<span class="help" style="color:var(--ds-warning)">⚠ ${w}</span>` : ''}`;
+  const c = colors();
+  let rows;
+  if (S.v === 'C') {
+    rows = rowC('Untertitel', 'accent', KICK, warnL) + rowC('Überschrift', 'head', '', '') + rowC('Fließtext', 'body', fixedNow ? BODY : '', warnD) + rowC('Button-Fläche', 'btn', '', '');
+  } else {
+    const bodyRow = S.sc === 'pick' && !T.closed
+      ? `${role(fixedNow ? BODY : c.body, 'Fließtext', fixedNow ? `feste Farbe ${BODY}` : 'folgt „Fließtext“', '<button class="linkbtn" data-close-picker>Fertig</button>')}${S.v === 'A' ? pickerA(fixedNow) : pickerB(fixedNow)}`
+      : fixedNow ? fixedRow(BODY, 'Fließtext', warnD) : role(c.body, 'Fließtext', 'folgt „Fließtext“', '<button class="linkbtn" data-open-picker>Ändern</button>');
+    rows = fixedRow(KICK, 'Untertitel', warnL) + role(c.head, 'Überschrift', 'folgt „Überschriften“', '<button class="linkbtn">Ändern</button>') + bodyRow + role(c.btn, 'Button-Fläche', 'folgt „Button-Fläche“', '<button class="linkbtn">Ändern</button>');
+  }
+  return `<div class="fgroup"><h4>Farben des Bausteins <span>folgen der Vorlage, außer „fest“</span></h4><div class="in">${rows}</div></div>
+    <div class="legend"><span>folgt „…“ = Farbe dieser Rolle aus der jeweiligen Vorlage</span><span><span class="fixed">fest</span> = in jeder Vorlage gleich</span></div>`;
+}
+
+function editorChecks() {
+  const w = (set, t, s) => `<div class="chk chk--warn"><span class="i">!</span><span><span class="setpill setpill--${set}">${setName(set)}</span>${t}<small>${s}</small><button class="linkbtn">Lesbar machen</button></span></div>`;
+  const ok = (t) => `<div class="chk chk--ok"><span class="i">✓</span><span>${t}</span></div>`;
+  return `<p class="ed-hint">Geprüft mit den Farben von „Frühjahrsangebot 2027“, in Hell und Dunkel. Warnungen blockieren das Speichern nicht.</p>
+    ${w('dark', 'Fließtext schwer lesbar', `Feste Farbe ${BODY} auf ${SETS.dark.content.toUpperCase()}: 2,1 : 1, nötig 4,5 : 1.`)}
+    ${w('light', 'Untertitel schwer lesbar', `Feste Farbe ${KICK} auf ${SETS.light.content.toUpperCase()}: 1,6 : 1, nötig 4,5 : 1.`)}
+    ${ok('Bildbeschreibung vorhanden')}${ok('Linktext sagt, wohin es geht')}
+    <div class="legend is-new"><span>Ist ein Hinweis Absicht, etwa ein dunkler Teaser in einer hellen Vorlage? Das markieren Sie am eingefügten Baustein in der Vorlage, Tab „Farben“.</span></div>`;
+}
+
+/* ---------- template: colors tab ---------- */
+function slotRow(sw, name, status, extra = '') { return `<div class="crow"><button class="sw" style="background:${sw}" aria-label="${name.replace(/<[^>]+>/g, '').trim()}"></button><span>${name}<small>${status}</small></span>${extra}</div>`; }
+
+function findingUi() {
+  const f = FINDING[S.set];
+  if (!hasFinding() || S.v === 'B') return '';
+  const ratio = S.sc === 'back' ? f.ratioBack : f.ratio;
+  const bg = colors().content.toUpperCase();
+  const txt = `Schwer lesbar: ${f.hex} auf ${bg}. Kontrast ${ratio}, nötig sind 4,5 : 1. Ursache: feste Farbe des Bausteins.`;
+  const reason = T.reason || 'Bewusst gedämpft, wie im Original-Design.';
+  if (S.sc === 'back' && !T.acc) {
+    return `<div class="warn returned is-new" role="note"><span><b>Wieder offen.</b> Sie hatten diesen Hinweis als beabsichtigt markiert. Seitdem hat sich die Farbe „Inhaltsfläche“ geändert.</span><span>${txt}</span><span class="acts"><button class="linkbtn" data-fix>Lesbar machen</button><button class="linkbtn" data-acc>Weiter beabsichtigt</button></span></div>`;
+  }
+  if (isAcc()) {
+    return `<div class="accepted is-new"><span><span class="chip-acc">✓ akzeptiert</span> <b>Als beabsichtigt markiert</b> · nur Farbsatz „${setName()}“</span><span>${txt}</span>${S.v === 'C' ? `<span>Grund: ${reason}</span>` : ''}<span class="acts"><button class="linkbtn" data-unacc>Markierung aufheben</button></span></div>`;
+  }
+  return `<div class="warn" role="note"><span>${txt}</span><span class="acts"><button class="linkbtn" data-fix>Lesbar machen</button><button class="linkbtn is-new" data-acc>Ist beabsichtigt</button></span></div>`;
+}
+
+function groupBoxB() {
+  const f = FINDING[S.set];
+  if (!hasFinding()) return '';
+  const ratio = S.sc === 'back' ? f.ratioBack : f.ratio;
+  const open = !isAcc();
+  const reason = T.reason || 'Bewusst gedämpft, wie im Original-Design.';
+  const openUi = T.asking
+    ? `<div class="grpbox is-new"><b>„${f.part}“ als beabsichtigt markieren</b><label class="help" for="rs">Grund (freiwillig, hilft Kollegen)</label><textarea id="rs" class="reason" placeholder="zum Beispiel: dunkler Teaser, bewusst gedämpft"></textarea><span class="help">Bleibt sichtbar als „akzeptiert“. Kommt zurück, wenn sich eine beteiligte Farbe ändert.</span><span style="display:flex;gap:.4rem;justify-content:flex-end"><button class="btn btn--sm" data-cancel>Abbrechen</button><button class="btn btn--sm btn--primary" data-acc-ok>Markieren</button></span></div>`
+    : `<div class="grpbox ${S.sc === 'back' ? 'returned' : ''}" style="border-color:color-mix(in srgb,var(--ds-warning) 45%,var(--ds-border))"><b>Prüfung · 1 Hinweis in „${setName()}“</b>${S.sc === 'back' ? '<span class="is-new">Wieder offen: „Inhaltsfläche“ hat sich geändert, seit Sie ihn als beabsichtigt markiert hatten.</span>' : ''}<span>${f.part}: ${f.hex} auf ${colors().content.toUpperCase()}, ${ratio}, nötig 4,5 : 1. Ursache: feste Farbe des Bausteins.</span><span style="display:flex;gap:.8rem"><button class="linkbtn" data-fix>Lesbar machen</button><button class="linkbtn is-new" data-ask>Ist beabsichtigt …</button></span></div>`;
+  const acc = `<details class="grpbox is-new" ${T.det ? 'open' : ''}><summary>Akzeptiert (1)</summary><span><span class="chip-acc">✓ akzeptiert</span> ${f.part} in „${setName()}“, ${ratio}</span><span>Grund: ${reason}</span><button class="linkbtn" style="justify-self:start" data-unacc>Markierung aufheben</button></details>`;
+  return open ? openUi : acc;
+}
+
+function colorsTab() {
+  const c = colors();
+  const f = FINDING[S.set];
+  const finding = hasFinding();
+  const acc = isAcc();
+  const bodyHexNow = bodyHex();
+  const kickNow = kickHex();
+  const kickStatus = T.fix && S.set === 'light' ? `● eigene Farbe ${FIX.light}` : `fest ${KICK} · vom Baustein`;
+  const bodyStatus = T.fix && S.set === 'dark' ? `● eigene Farbe ${FIX.dark}` : `fest ${BODY} · vom Baustein`;
+  const fixMark = (isFixed) => (isFixed ? ' <span class="fixed is-new">fest</span>' : '');
+  const resetBtn = (on) => (on ? '<button class="reset" title="Zurück zu geerbt">↺</button>' : '');
+  const rowsAll = [
+    slotRow(c.content, 'Hintergrund', 'wie „Inhaltsfläche“'),
+    slotRow(kickNow, `Untertitel${fixMark(!(T.fix && S.set === 'light'))}`, kickStatus, resetBtn(T.fix && S.set === 'light')) + (f.part === 'Untertitel' ? findingUi() : ''),
+    slotRow(c.head, 'Überschrift', 'wie „Überschriften“'),
+    slotRow(bodyHexNow, `Fließtext${fixMark(!(T.fix && S.set === 'dark'))}`, bodyStatus, resetBtn(T.fix && S.set === 'dark')) + (f.part === 'Fließtext' ? findingUi() : ''),
+    slotRow(c.btn, 'Button-Fläche', 'wie „Button-Fläche“'),
+  ].map((r) => `<div class="slot">${r}</div>`).join('');
+  let headMark = '';
+  if (finding && !acc) headMark = '<span class="wc" aria-label="1 Hinweis">!</span>';
+  if (finding && acc && S.v === 'C') headMark = '<span class="chip-acc is-new">✓ 1 akzeptiert</span>';
+  if (finding && acc && S.v !== 'C') headMark = '<span class="meta">✓ 1 akzeptiert</span>';
+  const modeSw = `<div class="fgroup"><h4>Farbsatz dieser Vorlage</h4><div class="in"><span class="seg2" role="group"><button data-set="dark" aria-pressed="${S.set === 'dark'}">Dunkel</button><button data-set="light" aria-pressed="${S.set === 'light'}">Hell</button></span></div></div>`;
+  const legend = `<div class="legend"><span>wie … = geerbt</span><span><span class="fixed">fest</span> = vom eigenen Baustein vorgegeben, gilt in jeder Vorlage</span><span>● eigene Farbe = nur hier geändert, geht vor „fest“</span><span>↺ = zurück zu geerbt</span></div>`;
+  const plain = (n, ic, a, b, ink, meta = '') => `<div class="acc" style="--pl-a:${a};--pl-b:${b};--pl-ink:${ink}"><button class="acc-h"><span class="chev">▸</span><span class="ix">${n}</span><span class="ic">${ic}</span><span class="t">${['', 'Hero', 'Preisbox', '', 'Ansprechpartner'][n]}</span>${meta}</button></div>`;
+  return `${modeSw}${legend}
+    <div class="acc" style="--pl-a:#7a9ab8"><button class="acc-h"><span class="chev">▸</span><span class="t">Allgemeine Farben</span><span class="meta">gelten für alle Bausteine${S.sc === 'back' ? ' · ● geändert' : ''}</span></button></div>
+    <div class="sub">Farben genutzter Bausteine</div>
+    ${plain(1, '✨', '#fb923c', '#ea580c', '#0b1220')}${plain(2, '€', '#fde047', '#ca8a04', '#0b1220')}
+    <div class="acc" style="--pl-a:${'#a3b8cc'};--pl-b:#52677d;--pl-ink:#0b1220"><button class="acc-h" aria-expanded="true"><span class="chev">▾</span><span class="ix">3</span><span class="ic ic--free">◆</span><span class="t">Bild mit Angebot <span class="own">eigen</span></span>${headMark}</button>
+      <div class="acc-p">${S.v === 'B' ? groupBoxB() : ''}${rowsAll}</div></div>
+    ${plain(4, '☎', '#a78bfa', '#5b21b6', '#fff')}`;
+}
+
+function panel() {
+  if (inEditor()) {
+    const tab = S.sc === 'checks' ? 'check' : 'props';
+    const t = (id, n, b) => `<button class="tab" role="tab" aria-selected="${tab === id}" data-tab="${id}">${n}${b ? `<span class="badge">${b}</span>` : ''}</button>`;
+    const nW = S.sc === 'pick' && !T.fixedBody ? 1 : 2;
+    return `<aside class="pane"><div class="tabs" role="tablist">${t('parts', 'Teile')}${t('props', 'Eigenschaften')}${t('check', 'Prüfung', nW)}</div><div class="pane-body">${tab === 'check' ? editorChecks() : `<p class="ed-hint">Gewählt: Text „Frühjahr am See“</p>${editorProps()}`}</div></aside>`;
+  }
+  const T7 = ['Aktuell', 'Alle', 'Kampagne', 'Marke', 'Farben', 'Legal', 'Social'];
+  return `<aside class="pane"><div class="tabs" role="tablist">${T7.map((n) => `<button class="tab" role="tab" aria-selected="${n === 'Farben'}">${n}</button>`).join('')}</div><div class="pane-body">${colorsTab()}</div></aside>`;
+}
+
+function dialog() {
+  if (!T.confirm) return '';
+  const f = FINDING[S.set];
+  return `<div class="backdrop" role="dialog" aria-modal="true" aria-labelledby="dT"><div class="dlg">
+    <div class="dlg-head"><span class="hi">i</span><h2 id="dT">Als beabsichtigt markieren?</h2><button class="dlg-x" aria-label="Schließen" data-cancel>×</button></div>
+    <div class="dlg-body"><p>„${f.part}“ in „Bild mit Angebot“, Farbsatz „${setName()}“.</p>
+      <div class="conseq"><span>Der Hinweis bleibt sichtbar, als „akzeptiert“. Er zählt nicht mehr als Warnung.</span><span>Er kommt zurück, wenn sich eine beteiligte Farbe ändert.</span><span>Gilt nur für diesen Baustein in dieser Vorlage.</span></div>
+      <label class="help" for="rs2">Grund (freiwillig)</label><textarea id="rs2" class="reason" placeholder="zum Beispiel: dunkler Teaser, bewusst gedämpft"></textarea></div>
+    <div class="dlg-foot"><button class="btn" data-cancel>Abbrechen</button><button class="btn btn--primary" data-acc-ok>Markieren</button></div></div></div>`;
+}
+
+function render() {
+  seg(); header();
+  document.getElementById('work').innerHTML = stage() + panel();
+  document.getElementById('overlay').innerHTML = dialog() + (T.snack ? `<div class="snack" role="status">${T.snack} <button class="btn btn--sm" data-undo>Rückgängig</button><button class="xbtn" aria-label="Schließen" data-unsnack>×</button></div>` : '');
+  try { localStorage.setItem('mk-r2-colors', JSON.stringify(S)); } catch {}
+}
+
+let timer;
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('button, a, summary');
+  if (!t) return;
+  if (t.tagName === 'A') { if (t.getAttribute('href') !== '#') return; e.preventDefault(); }
+  if (t.tagName === 'SUMMARY') { e.preventDefault(); T.det = !T.det; render(); return; }
+  const g = t.closest('.mk .seg');
+  if (g) { S[g.dataset.k] = t.dataset.v; if (g.dataset.k !== 'set') T = {}; else { T.fix = false; T.snack = ''; } render(); return; }
+  if (t.dataset.set) { S.set = t.dataset.set; T.fix = false; T.snack = ''; render(); return; }
+  if (t.dataset.tab) { S.sc = t.dataset.tab === 'check' ? 'checks' : 'fixed'; T = {}; render(); return; }
+  if (t.hasAttribute('data-fixbody')) { T.fixedBody = true; render(); return; }
+  if (t.hasAttribute('data-unfix') || t.dataset.role) { T.fixedBody = false; render(); return; }
+  if (t.hasAttribute('data-close-picker')) { T.closed = true; render(); return; }
+  if (t.hasAttribute('data-open-picker')) { T.closed = false; render(); return; }
+  if (t.hasAttribute('data-acc')) { if (S.v === 'C') T.confirm = true; else { T.acc = true; T.unacc = false; } render(); return; }
+  if (t.hasAttribute('data-ask')) { T.asking = true; render(); return; }
+  if (t.hasAttribute('data-acc-ok')) { const r = document.querySelector('.reason'); T.reason = r && r.value.trim(); T.acc = true; T.unacc = false; T.confirm = false; T.asking = false; render(); return; }
+  if (t.hasAttribute('data-cancel')) { T.confirm = false; T.asking = false; render(); return; }
+  if (t.hasAttribute('data-unacc')) { T.acc = false; T.unacc = true; render(); return; }
+  if (t.hasAttribute('data-fix')) {
+    T.fix = true; T.snack = `„${FINDING[S.set].part}“ an diesem Baustein auf ${FIX[S.set]} geändert.`;
+    clearTimeout(timer); timer = setTimeout(() => { T.snack = ''; render(); }, 8000); render(); return;
+  }
+  if (t.hasAttribute('data-undo')) { T.fix = false; T.snack = ''; render(); return; }
+  if (t.hasAttribute('data-unsnack')) { T.snack = ''; render(); return; }
+});
+document.addEventListener('change', (e) => { if (e.target.id === 'showNew') { S.showNew = e.target.checked; render(); } });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && (T.confirm || T.asking)) { T.confirm = false; T.asking = false; render(); } });
+render();
+</script>
+</body>
+</html>
