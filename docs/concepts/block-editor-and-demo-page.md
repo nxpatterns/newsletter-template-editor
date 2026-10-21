@@ -50,7 +50,7 @@ A built-in block is never changed in place. "Adjust" on a built-in block always 
 
 ### Free blocks are composed, never coded
 
-- Built only from fixed parts via drag and drop: row, column, text, image, button, spacer, and further parts later (callout, code, highlight, formula).
+- Built only from fixed parts via drag and drop (see Parts model), further parts later (callout, code, highlight, formula).
 - Modern layout is allowed in the editor (for example columns). The shared renderer for free blocks emits what old mail clients understand (nested tables with classes); the existing inliner step then bakes the styles in. The inliner itself does not change layout.
 - Text uses the existing WYSIWYG lite kit. Nothing beyond it should be needed.
 - **No custom HTML and no scripts, ever.** This is a hard rule, not a temporary limit.
@@ -61,6 +61,60 @@ Why: only composed blocks can be guaranteed to render in mail clients and can be
 ### Every editor action is an operation on the model
 
 The free block is a JSON tree of known parts. Every block editor action is a named, pure operation on that model in `src/core` (`(document, input) -> document`), and the UI only calls these operations: clone a built-in block, create an empty free block, add / move / remove a part, set a part property, set a color with its role, mark a color as fixed, save a draft, publish a version, rename, delete, insert an own block, update an inserted block to a newer version, mark a check finding as intended, export and import as a file. Block quality checks live in the same core check function as the newsletter checks. This keeps everything testable without the UI.
+
+## Parts model
+
+Decisions 40 to 47. Goal: every sensible email block can be built from parts, including all built-in blocks, and a block can get a new design without touching its content.
+
+### Content and design are separate
+
+- **Content**: a flat list of content parts. Each has a stable id, a kind (text, image, button, …) and a **role** (headline, body, call to action, image, price, badge, name, …). Only words, addresses, numbers and dates.
+- **Design**: a layout tree (sections, columns, boxes, lists) that **places** content parts by id, plus every style property: sizes, colors as roles, spacing, alignment, order, column ratios.
+- A block has one content and one or more designs, one of them active. A new design over the same content is a **design proposal**; the user picks one. A check fails when a content part is neither placed nor deliberately hidden, so a redesign cannot lose content.
+- Built-in blocks fit the same shape: their fields are content parts with roles, their current look is their default design.
+
+### Inheritance
+
+For font, base text size, text color, link color and alignment the nearest value wins: part → block design → template (Campaign font, general colors) → app standard. Unset means inherit. A font is always a stack with a safe fallback, because Gmail and classic Outlook ignore web fonts; the check warns when the first font is not a system font.
+
+### Finite scales
+
+Every style property picks from a small scale, so every design stays email-safe and checkable, and proposals have a finite space to choose from.
+
+| Scale | Values |
+| --- | --- |
+| Text size | `xs` 12, `s` 14, `m` 17, `l` 20, `xl` 26, `2xl` 32, `3xl` 40, `4xl` 48 (px) |
+| Spacing | 0, 4, 8, 12, 16, 24, 32, 48 |
+| Radius | none, 4, 8, 16, round |
+| Border width | 0, 1, 2, 4 |
+| Line height | tight, normal, loose |
+| Font | inherit, presets, custom stack |
+| Colors | roles, or fixed (decisions 19, 35) |
+
+### Parts
+
+Every part has box properties: padding, background (role), border (sides, width, role), radius, alignment, width.
+
+| Part | Content | Design |
+| --- | --- | --- |
+| Section | parts | box properties |
+| Columns | 1 to 4 columns | ratio from a fixed list, gap, vertical alignment, order, order when stacked below 600 px |
+| Box | parts | box properties |
+| List | items, each with the same small set of parts | stacked or grid of 2 or 3, gap; at least one item |
+| Text | rich text (lite kit), placeholders | font, size, weight, italic, uppercase, letter spacing, line height, alignment, color role |
+| Image | image address, image description, link target | width, radius, alignment, border |
+| Button | link text, link target (web, mail, phone) | filled, outline or text link; size, full width, radius, colors |
+| Icon | one glyph from the fixed email-safe set | size, color role, optional circle |
+| Divider | none | style, thickness, width, color roles |
+| Spacer | none | height |
+| Built-in block | an embedded built-in block | its own settings |
+
+A **Date** part (formatted month, day, weekday, time range) and a calendar link come later. Until then the event block stays a built-in block and can be embedded as a whole.
+
+### Coverage and limits
+
+- With these parts and the size scale, all 18 built-in blocks can be rebuilt; only the event needs the embedded built-in block. **Gate:** before free blocks ship, every built-in block is rebuilt as a design over its own content and renders equivalent HTML.
+- Email limits for every design: tables, `bgcolor`, padding and borders; width up to 600 px; up to 4 columns (3 recommended); radius degrades to square in classic Outlook; stacking below 600 px by media query (classic Outlook keeps columns). Not in v1: background images (Outlook needs VML), visibility only on mobile or desktop. Never: scripts, forms, video.
 
 ## Color model for own blocks
 
@@ -178,7 +232,7 @@ Numbers refer to the questions in the 2026-10-21 thread.
 | 18 | New name for start tiles | "Beispielvorlage" |
 | 19 | Fixed color in a free block | Wins over the target template's general colors, loses to a per-block override; recorded in `email-colors.md` |
 | 20 | "Create a new template for this block" | Empty template with only this block |
-| 21 | Free block parts in the first version | Row, column, text, image, button, spacer; callout and code later |
+| 21 | Free block parts in the first version | Row, column, text, image, button, spacer; callout and code later. Extended by decision 43 |
 | 22 | New export targets (CV PDF, articles) | Separate export chapter; blocks must not block it |
 | 23 | File format for own blocks | Same envelope as the project file, with a type field |
 | 24 | IDs | UUIDv7 from one injected ID source; tenant as a field |
@@ -188,7 +242,7 @@ Numbers refer to the questions in the 2026-10-21 thread.
 | 28 | Editor actions | Pure operations on the JSON model in `src/core` |
 | 29 | Open and click measurement | Use Listmonk's own tracking (`{{ TrackView }}` in the template, links already wrapped with `TrackLink` at export); per person or totals only is Listmonk's "individual subscriber tracking" setting. No own image IDs; images never expire, only raw request logs are deleted after 14 days. Block editor: image addresses stay data in the model. |
 | 30 | Overview of own blocks and drafts | Yes, an overview page (for example `/blocks`); otherwise drafts have no home. |
-| 31 | What a clone can edit | Starting texts, the existing layout options of the type, colors as roles; structure locked. |
+| 31 | What a clone can edit | Starting texts, the existing layout options of the type, colors as roles; structure locked in v1. With the parts model a clone later becomes a new design over the built-in content |
 | 32 | Toggle label in the "All" tab | "Built-in \| Own" (DE "Mitgeliefert \| Eigene"), where "Built-in" lists only shipped blocks. |
 | 33 | "Adjust" from the Colors tab warning | Offer "replace all blocks of this type in this template with the copy", on by default; rewrite the warning text accordingly. |
 | 34 | Colors on "Save as own block" | Colors equal to a general color become role links; all others become fixed. |
@@ -197,6 +251,14 @@ Numbers refer to the questions in the 2026-10-21 thread.
 | 37 | Block editor on phones | View and manage only on phones; editing from tablet width up. |
 | 38 | Nested own blocks | Same as insertion into templates, version recorded, update on request; cycles blocked. |
 | 39 | Frame of the new template for a block | Header, footer and legal parts included; otherwise the legal check fails at once. |
+| 40 | Address of the block editor | `/blocks/<id>`; `?from=<template id>` when opened from a template (back link, preview colors); a reload opens the same block |
+| 41 | Content and design | Separate: content parts with id and role; design places them and holds all styles |
+| 42 | Inheritance | Part → block → template for font, size, colors, alignment; fonts as stacks with fallback |
+| 43 | Parts in v1 | Section, Columns, Box, List, Text, Image, Button, Icon, Divider, Spacer, embedded built-in block; Date later |
+| 44 | Text size scale | Add `2xl` 32, `3xl` 40, `4xl` 48 |
+| 45 | Gate for free blocks | All built-in blocks rebuildable as designs with equivalent HTML |
+| 46 | Several designs per block | One active; design proposals use this; UI later |
+| 47 | Excluded in v1 | Background images, visibility only on mobile or desktop |
 
 ## Mockup scope
 
@@ -224,4 +286,4 @@ Reset dialog wording (EN; DE in the mockup):
 
 ## Open questions
 
-None. Decisions 30 to 39 accepted the recommendations on 2026-10-21; mockups may still change them.
+None. Decisions 30 to 47 were accepted on 2026-10-21; mockups may still change them.
