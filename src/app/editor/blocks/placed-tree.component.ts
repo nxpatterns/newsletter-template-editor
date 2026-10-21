@@ -12,6 +12,7 @@ import {
   output,
   PLATFORM_ID,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import type { Block, FramePart } from '../../../core';
@@ -95,11 +96,14 @@ export class PlacedTreeComponent {
   /** Header and footer start closed; content, chapters and links start open. */
   private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly collapsed = signal<ReadonlySet<string>>(this.readCollapsed());
-  /** Node the pointer or focus is on; the status line describes it. */
-  protected readonly pointed = signal<string | null>(null);
+  /** Branch the user picked; the status line keeps describing it until another one is picked (never on hover). */
+  protected readonly chosen = signal<string | null>(null);
+  /** Bumped on every pick, so the status line draws attention again even for the same branch. */
+  private readonly arrivals = signal(0);
+  private readonly statusEl = viewChild<ElementRef<HTMLElement>>('statusLine');
 
   protected readonly status = computed((): StatusLine | null => {
-    const id = this.pointed() ?? this.session.selectedBlockId();
+    const id = this.chosen() ?? this.session.selectedBlockId();
     return id ? this.describe(id) : null;
   });
 
@@ -113,6 +117,13 @@ export class PlacedTreeComponent {
         this.collapsed();
         this.i18n.locale();
         this.drawLines();
+      },
+    });
+
+    afterRenderEffect({
+      write: () => {
+        if (this.arrivals() === 0) return;
+        this.replayArrival();
       },
     });
 
@@ -137,6 +148,7 @@ export class PlacedTreeComponent {
         return;
       }
       if (!id) return;
+      if (untracked(this.chosen) !== id) this.choose(id);
       const chapter = this.chapterOf(id);
       this.collapsed.update((set) => {
         if (!set.has('body') && (!chapter || !set.has(chapter))) return set;
@@ -153,7 +165,7 @@ export class PlacedTreeComponent {
   }
 
   protected toggle(id: string): void {
-    this.pointed.set(id);
+    this.choose(id);
     this.collapsed.update((set) => {
       const next = new Set(set);
       if (next.has(id)) next.delete(id);
@@ -162,19 +174,13 @@ export class PlacedTreeComponent {
     });
   }
 
-  protected point(id: string): void {
-    this.pointed.set(id);
-  }
-
-  protected onPointer(event: Event): void {
-    const id = (event.target as HTMLElement | null)?.closest<HTMLElement>('[data-node]')?.dataset[
-      'node'
-    ];
-    if (id && id !== 'root' && id !== this.pointed()) this.pointed.set(id);
+  protected choose(id: string): void {
+    this.chosen.set(id);
+    this.arrivals.update((n) => n + 1);
   }
 
   protected selectBlock(id: string): void {
-    this.pointed.set(id);
+    this.choose(id);
     this.session.selectBlock(id);
   }
 
@@ -219,6 +225,15 @@ export class PlacedTreeComponent {
 
   protected hue(type: Block['type']): BlockTypeHue {
     return blockTypeHue(type);
+  }
+
+  /** Restarts the light-edge animation on the status line (CSS handles reduced motion). */
+  private replayArrival(): void {
+    const el = this.statusEl()?.nativeElement;
+    if (!el) return;
+    el.classList.remove('is-arriving');
+    void el.offsetWidth;
+    el.classList.add('is-arriving');
   }
 
   private readCollapsed(): ReadonlySet<string> {

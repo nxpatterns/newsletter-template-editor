@@ -145,7 +145,7 @@ button.node {
   border-color: color-mix(in srgb, var(--ds-text-muted) 40%, transparent);
 }
 
-.node.is-pointed {
+.node.is-chosen {
   border-color: color-mix(in srgb, var(--ds-accent) 70%, transparent);
   background: color-mix(in srgb, var(--ds-accent) 10%, var(--ds-bg-panel));
 }
@@ -336,8 +336,11 @@ button.node-fold:hover {
   background: linear-gradient(135deg, var(--pl-a), var(--pl-b));
 }
 
-/* Status line: names where the pointed part is edited and opens it. */
+/* Status line: names where the chosen branch is edited and opens it. */
 .tree-status {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -366,7 +369,144 @@ button.node-fold:hover {
 }
 
 .tree-status-open {
+  position: relative;
+  overflow: hidden;
   flex: none;
+}
+
+/*
+ * Arrival after a pick: a light streak runs once along the top edge while the line lightens,
+ * then the button fills with the accent for a moment and a sheen passes over it.
+ * Reduced motion: nothing travels; edge, wash and fill only fade in and out.
+ */
+.tree-status::before {
+  content: '';
+  position: absolute;
+  inset: -1px 0 auto;
+  z-index: 1;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--ds-accent) 45%,
+    #fff 50%,
+    var(--ds-accent) 55%,
+    transparent
+  );
+  opacity: 0;
+  transform: translateX(-100%);
+  pointer-events: none;
+}
+
+.tree-status::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ds-accent) 9%, transparent),
+    transparent 80%
+  );
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tree-status-open::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 45%) 50%, transparent 70%);
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+
+.tree-status.is-arriving::before {
+  animation: status-edge 900ms cubic-bezier(0.4, 0, 0.2, 1) 1;
+}
+
+.tree-status.is-arriving::after {
+  animation: status-wash 1400ms ease-out 1;
+}
+
+.tree-status.is-arriving .tree-status-open {
+  animation: status-fill 1500ms ease-in-out 380ms 1;
+}
+
+.tree-status.is-arriving .tree-status-open::after {
+  animation: status-sheen 900ms ease-out 450ms 1;
+}
+
+@keyframes status-edge {
+  0% {
+    opacity: 1;
+    transform: translateX(-100%);
+  }
+
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+@keyframes status-wash {
+  0%,
+  100% {
+    opacity: 0;
+  }
+
+  25% {
+    opacity: 1;
+  }
+}
+
+@keyframes status-fill {
+  18%,
+  70% {
+    color: var(--ds-bg-page);
+    border-color: var(--ds-accent);
+    background: var(--ds-accent);
+    box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--ds-accent) 70%, transparent);
+  }
+}
+
+@keyframes status-sheen {
+  to {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes status-edge-still {
+  0%,
+  100% {
+    opacity: 0;
+  }
+
+  25% {
+    opacity: 0.9;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tree-status::before {
+    transform: none;
+  }
+
+  .tree-status.is-arriving::before {
+    animation: status-edge-still 1400ms ease-out 1;
+  }
+
+  .tree-status.is-arriving .tree-status-open {
+    animation: status-fill 1700ms linear 1;
+  }
+
+  .tree-status.is-arriving .tree-status-open::after {
+    animation: none;
+  }
 }
 
 /* Narrow sidebar: columns stack under the root, branches become elbows. */

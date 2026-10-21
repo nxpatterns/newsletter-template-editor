@@ -85,3 +85,11 @@ When('I collapse the tree group {string}', async ({ page }, group: string) => {
 Then('the tree group {string} should be expanded', async ({ page }, group: string) => {
   await expect(page.getByTestId(`tree-group-${group}`)).toHaveAttribute('aria-expanded', 'true');
 });
+
+When('I hover the tree part {string}', async ({ page }, part: string) => {
+  await page.getByTestId(`tree-part-${part}`).hover();
+});
+
+Then('the tree status should draw attention', async ({ page }) => {
+  await expect(page.getByTestId('tree-status')).toHaveClass(/\bis-arriving\b/);
+});

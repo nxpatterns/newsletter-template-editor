@@ -8,8 +8,6 @@
       role="tree"
       aria-readonly="true"
       [attr.aria-label]="i18n.t('tree.label')"
-      (mouseover)="onPointer($event)"
-      (focusin)="onPointer($event)"
     >
       <svg class="tree-lines" #lines aria-hidden="true"></svg>
 
@@ -23,7 +21,7 @@
             <button
               type="button"
               class="node node--group"
-              [class.is-pointed]="pointed() === g.id"
+              [class.is-chosen]="chosen() === g.id"
               role="treeitem"
               aria-level="2"
               data-parent="root"
@@ -76,7 +74,7 @@
     </div>
   </div>
 
-  <div class="tree-status" role="status" data-testid="tree-status">
+  <div class="tree-status" #statusLine role="status" data-testid="tree-status">
     @if (status(); as s) {
       <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
         @for (d of tabIcon(s.tab); track $index) {
@@ -109,7 +107,7 @@
         <button
           type="button"
           class="node node--part"
-          [class.is-pointed]="pointed() === c.id"
+          [class.is-chosen]="chosen() === c.id"
           role="treeitem"
           [class.is-off]="!c.shown"
           [class.is-missing]="c.missing"
@@ -118,7 +116,7 @@
           [attr.data-parent]="parent"
           [attr.data-depth]="depth"
           [attr.data-testid]="'tree-part-' + c.part"
-          (click)="point(c.id)"
+          (click)="choose(c.id)"
         >
           <span class="node-glyph" aria-hidden="true" [textContent]="partGlyph(c.part)"></span>
           <span class="node-label" [textContent]="partLabel(c.part)"></span>
@@ -139,7 +137,7 @@
         <button
           type="button"
           class="node node--links"
-          [class.is-pointed]="pointed() === c.id"
+          [class.is-chosen]="chosen() === c.id"
           role="treeitem"
           [attr.aria-level]="depth + 1"
           [attr.aria-expanded]="isOpen(c.id)"

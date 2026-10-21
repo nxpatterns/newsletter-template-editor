@@ -47,3 +47,16 @@ Feature: Current blocks as a read-only tree
     And I reload the page
     Then the tree group 'head' should be expanded
     And the tree group 'body' should be collapsed
+
+  Scenario: The status line keeps the picked branch while the pointer moves on
+    Given I open the editor with the German demo
+    When I switch the current blocks view to 'tree'
+    And I expand the tree group 'foot'
+    And I point at the tree part 'starsBottom'
+    Then the tree status should name the route 'Brand › 1 Stars › Bottom'
+    And the tree status should draw attention
+    When I hover the tree part 'privacy'
+    Then the tree status should name the route 'Brand › 1 Stars › Bottom'
+    When I open the place from the tree status
+    Then the panel tab 'brand' should be the selected tab
+    And the group 'brand-stars' should be open
