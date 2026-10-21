@@ -1,84 +1,131 @@
 <section class="placed-tab" data-testid="placed-blocks-tab" #placedRoot>
-  <div class="placed-list-pane">
-    <p class="ed-hint" [textContent]="i18n.t('placed.hint')"></p>
-
-    @if (session.blocks().length === 0) {
-      <p class="ed-hint empty" data-testid="placed-empty" [textContent]="i18n.t('placed.empty')"></p>
-    } @else {
-      <ul
-        class="placed-list"
-        data-testid="block-list"
-        cdkDropList
-        [cdkDropListData]="listData()"
-        (cdkDropListDropped)="onDrop($event)"
+  <div class="placed-view-bar">
+    <div class="view-switch" role="group" [attr.aria-label]="i18n.t('placed.view')">
+      <button
+        type="button"
+        data-testid="placed-view-list"
+        [attr.aria-pressed]="view() === 'list'"
+        (click)="setView('list')"
       >
-        @for (block of session.blocks(); track block.id; let i = $index) {
-          <li
-            class="placed-item"
-            cdkDrag
-            [class.is-selected]="session.selectedBlockId() === block.id"
-            [attr.data-testid]="'placed-item-' + block.id"
-            [style.--pl-a]="hue(block.type).a"
-            [style.--pl-b]="hue(block.type).b"
-            [style.--pl-ink]="hue(block.type).ink"
-          >
-            <button type="button" class="drag-handle" cdkDragHandle [attr.aria-label]="i18n.t('placed.drag')" title="⋮⋮">
-              ⋮⋮
-            </button>
-            <button
-              type="button"
-              class="placed-select"
-              [attr.data-testid]="'select-block-' + block.id"
-              [attr.aria-label]="i18n.t('blocks.select')"
-              [attr.aria-pressed]="session.selectedBlockId() === block.id"
-              (click)="session.selectBlock(block.id)"
-            >
-              <span class="placed-icon" aria-hidden="true" [textContent]="icon(block.type)"></span>
-              <span class="placed-index">{{ i + 1 }}</span>
-              <span class="placed-label" [textContent]="blockLabel(block.type)"></span>
-            </button>
-            <div class="placed-actions">
-              <button
-                type="button"
-                class="ed-btn"
-                [attr.data-testid]="'edit-block-' + block.id"
-                [attr.aria-label]="i18n.t('blocks.edit')"
-                [attr.title]="i18n.t('blocks.edit')"
-                (click)="session.openBlockEditor(block.id)"
-              >
-                ✎
-              </button>
-              <button
-                type="button"
-                class="ed-btn"
-                [attr.aria-label]="i18n.t('blocks.moveUp')"
-                [disabled]="i === 0"
-                (click)="session.moveBlock(block.id, -1)"
-              >
-                ↑
-              </button>
-              <button
-                type="button"
-                class="ed-btn"
-                [attr.aria-label]="i18n.t('blocks.moveDown')"
-                [disabled]="i === session.blocks().length - 1"
-                (click)="session.moveBlock(block.id, 1)"
-              >
-                ↓
-              </button>
-              <button
-                type="button"
-                class="ed-btn ed-btn--danger"
-                [attr.aria-label]="i18n.t('blocks.remove')"
-                [attr.data-testid]="'remove-block-' + block.id"
-                (click)="session.removeBlock(block.id)"
-              >
-                ✕
-              </button>
-            </div>
-          </li>
-        }
-      </ul>
-    }
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" />
+        </svg>
+        <span [textContent]="i18n.t('placed.view.list')"></span>
+      </button>
+      <button
+        type="button"
+        data-testid="placed-view-tree"
+        [attr.aria-pressed]="view() === 'tree'"
+        (click)="setView('tree')"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 4v4M12 8H6v4M12 8h6v4M4 12h4v4H4zM16 12h4v4h-4z" />
+        </svg>
+        <span [textContent]="i18n.t('placed.view.tree')"></span>
+      </button>
+    </div>
   </div>
+
+  @if (view() === 'tree') {
+    @defer {
+      <app-placed-tree (openList)="openInList($event)" />
+    }
+  } @else {
+    <div class="placed-list-pane">
+      <p class="ed-hint" [textContent]="i18n.t('placed.hint')"></p>
+
+      @if (session.blocks().length === 0) {
+        <p
+          class="ed-hint empty"
+          data-testid="placed-empty"
+          [textContent]="i18n.t('placed.empty')"
+        ></p>
+      } @else {
+        <ul
+          class="placed-list"
+          data-testid="block-list"
+          cdkDropList
+          [cdkDropListData]="listData()"
+          (cdkDropListDropped)="onDrop($event)"
+        >
+          @for (block of session.blocks(); track block.id; let i = $index) {
+            <li
+              class="placed-item"
+              cdkDrag
+              [class.is-selected]="session.selectedBlockId() === block.id"
+              [attr.data-testid]="'placed-item-' + block.id"
+              [style.--pl-a]="hue(block.type).a"
+              [style.--pl-b]="hue(block.type).b"
+              [style.--pl-ink]="hue(block.type).ink"
+            >
+              <button
+                type="button"
+                class="drag-handle"
+                cdkDragHandle
+                [attr.aria-label]="i18n.t('placed.drag')"
+                title="⋮⋮"
+              >
+                ⋮⋮
+              </button>
+              <button
+                type="button"
+                class="placed-select"
+                [attr.data-testid]="'select-block-' + block.id"
+                [attr.aria-label]="i18n.t('blocks.select')"
+                [attr.aria-pressed]="session.selectedBlockId() === block.id"
+                (click)="session.selectBlock(block.id)"
+              >
+                <span
+                  class="placed-icon"
+                  aria-hidden="true"
+                  [textContent]="icon(block.type)"
+                ></span>
+                <span class="placed-index">{{ i + 1 }}</span>
+                <span class="placed-label" [textContent]="blockLabel(block.type)"></span>
+              </button>
+              <div class="placed-actions">
+                <button
+                  type="button"
+                  class="ed-btn"
+                  [attr.data-testid]="'edit-block-' + block.id"
+                  [attr.aria-label]="i18n.t('blocks.edit')"
+                  [attr.title]="i18n.t('blocks.edit')"
+                  (click)="session.openBlockEditor(block.id)"
+                >
+                  ✎
+                </button>
+                <button
+                  type="button"
+                  class="ed-btn"
+                  [attr.aria-label]="i18n.t('blocks.moveUp')"
+                  [disabled]="i === 0"
+                  (click)="session.moveBlock(block.id, -1)"
+                >
+                  ↑
+                </button>
+                <button
+                  type="button"
+                  class="ed-btn"
+                  [attr.aria-label]="i18n.t('blocks.moveDown')"
+                  [disabled]="i === session.blocks().length - 1"
+                  (click)="session.moveBlock(block.id, 1)"
+                >
+                  ↓
+                </button>
+                <button
+                  type="button"
+                  class="ed-btn ed-btn--danger"
+                  [attr.aria-label]="i18n.t('blocks.remove')"
+                  [attr.data-testid]="'remove-block-' + block.id"
+                  (click)="session.removeBlock(block.id)"
+                >
+                  ✕
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  }
 </section>

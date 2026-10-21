@@ -1,0 +1,229 @@
+<div class="tree-pane" data-testid="placed-tree">
+  <p class="ed-hint tree-hint" [textContent]="i18n.t('tree.hint')"></p>
+
+  <div class="tree-scroll">
+    <div
+      class="tree-canvas"
+      #canvas
+      role="tree"
+      aria-readonly="true"
+      [attr.aria-label]="i18n.t('tree.label')"
+    >
+      <svg class="tree-lines" #lines aria-hidden="true"></svg>
+
+      <div class="tree-root" data-node="root" role="treeitem" aria-level="1" aria-expanded="true">
+        <span [textContent]="i18n.t('tree.root')"></span>
+      </div>
+
+      <div class="tree-cols" role="group">
+        @for (g of groups(); track g.id) {
+          <div class="tree-col" [attr.data-testid]="'tree-col-' + g.id">
+            <button
+              type="button"
+              class="node node--group"
+              [class.is-chosen]="chosen() === g.id"
+              role="treeitem"
+              aria-level="2"
+              data-parent="root"
+              data-depth="1"
+              [attr.data-node]="g.id"
+              [attr.data-testid]="'tree-group-' + g.id"
+              [attr.aria-expanded]="isOpen(g.id)"
+              [attr.aria-label]="
+                i18n.t('tree.group.' + g.id) +
+                ', ' +
+                i18n.t(isOpen(g.id) ? 'tree.collapse' : 'tree.expand')
+              "
+              (click)="toggle(g.id)"
+            >
+              <span class="node-label" [textContent]="i18n.t('tree.group.' + g.id)"></span>
+              <span class="node-meta" [textContent]="groupMeta(g)"></span>
+              <span
+                class="node-fold"
+                aria-hidden="true"
+                [textContent]="isOpen(g.id) ? '−' : '+' + leafCount(g)"
+              ></span>
+              @if (!isOpen(g.id) && hasMissing(g)) {
+                <span class="node-warn" [attr.title]="i18n.t('tree.missing')">!</span>
+              }
+            </button>
+            <div class="tree-tabs">
+              @for (t of g.tabs; track t) {
+                <span class="tab-pill">
+                  <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    @for (d of tabIcon(t); track $index) {
+                      <path [attr.d]="d" />
+                    }
+                  </svg>
+                  <span [textContent]="tabName(t)"></span>
+                </span>
+              }
+            </div>
+            @if (isOpen(g.id)) {
+              <ul class="tree-kids" role="group">
+                @for (c of g.children; track c.id) {
+                  <ng-container
+                    *ngTemplateOutlet="child; context: { $implicit: c, parent: g.id, depth: 2 }"
+                  />
+                }
+              </ul>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="tree-status" #statusLine role="status" data-testid="tree-status">
+    @if (status(); as s) {
+      <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
+        @for (d of tabIcon(s.tab); track $index) {
+          <path [attr.d]="d" />
+        }
+      </svg>
+      <span class="tree-status-text">
+        <b [textContent]="s.name"></b>
+        <span [textContent]="' ' + i18n.t('tree.status.editIn') + ' '"></span>
+        <span data-testid="tree-status-route" [textContent]="s.route"></span>
+      </span>
+      <button
+        type="button"
+        class="ed-btn tree-status-open"
+        data-testid="tree-open"
+        (click)="openStatus(s)"
+      >
+        {{ i18n.t(s.target ? 'tree.open' : 'tree.openList') }}
+      </button>
+    } @else {
+      <span class="tree-status-text" [textContent]="i18n.t('tree.status.idle')"></span>
+    }
+  </div>
+</div>
+
+<ng-template #child let-c let-parent="parent" let-depth="depth">
+  <li role="none">
+    @switch (c.kind) {
+      @case ('part') {
+        <button
+          type="button"
+          class="node node--part"
+          [class.is-chosen]="chosen() === c.id"
+          role="treeitem"
+          [class.is-off]="!c.shown"
+          [class.is-missing]="c.missing"
+          [attr.aria-level]="depth + 1"
+          [attr.data-node]="c.id"
+          [attr.data-parent]="parent"
+          [attr.data-depth]="depth"
+          [attr.data-testid]="'tree-part-' + c.part"
+          (click)="choose(c.id)"
+        >
+          <span class="node-glyph" aria-hidden="true" [textContent]="partGlyph(c.part)"></span>
+          <span class="node-label" [textContent]="partLabel(c.part)"></span>
+          @if (!c.shown) {
+            <span class="node-off" [textContent]="i18n.t('tree.off')"></span>
+          }
+          @if (c.missing) {
+            <span class="node-warn" [attr.title]="i18n.t('tree.missing')">!</span>
+          }
+          <svg class="tab-icon node-tab" viewBox="0 0 24 24" aria-hidden="true">
+            @for (d of tabIcon(partTab(c.part)); track $index) {
+              <path [attr.d]="d" />
+            }
+          </svg>
+        </button>
+      }
+      @case ('links') {
+        <button
+          type="button"
+          class="node node--links"
+          [class.is-chosen]="chosen() === c.id"
+          role="treeitem"
+          [attr.aria-level]="depth + 1"
+          [attr.aria-expanded]="isOpen(c.id)"
+          [attr.data-node]="c.id"
+          [attr.data-parent]="parent"
+          [attr.data-depth]="depth"
+          data-testid="tree-links"
+          (click)="toggle(c.id)"
+        >
+          <span class="node-label" [textContent]="i18n.t('tree.links')"></span>
+          <span
+            class="node-fold"
+            aria-hidden="true"
+            [textContent]="isOpen(c.id) ? '−' : '+' + leafCount(c)"
+          ></span>
+          @if (!isOpen(c.id) && hasMissing(c)) {
+            <span class="node-warn" [attr.title]="i18n.t('tree.missing')">!</span>
+          }
+        </button>
+        @if (isOpen(c.id)) {
+          <ul class="tree-kids" role="group">
+            @for (k of c.children; track k.id) {
+              <ng-container
+                *ngTemplateOutlet="child; context: { $implicit: k, parent: c.id, depth: depth + 1 }"
+              />
+            }
+          </ul>
+        }
+      }
+      @case ('block') {
+        <div
+          class="node node--block"
+          [class.is-chapter]="c.block.type === 'chapter-band'"
+          [class.is-selected]="session.selectedBlockId() === c.id"
+          [attr.data-node]="c.id"
+          [attr.data-parent]="parent"
+          [attr.data-depth]="depth"
+          [attr.data-hue]="hue(c.block.type).a"
+          [style.--pl-a]="hue(c.block.type).a"
+          [style.--pl-b]="hue(c.block.type).b"
+          [style.--pl-ink]="hue(c.block.type).ink"
+        >
+          <button
+            type="button"
+            class="node-main"
+            role="treeitem"
+            [attr.aria-level]="depth + 1"
+            [attr.aria-selected]="session.selectedBlockId() === c.id"
+            [attr.aria-expanded]="c.children.length ? isOpen(c.id) : null"
+            [attr.data-testid]="'tree-block-' + c.id"
+            [attr.title]="c.snippet || null"
+            (click)="selectBlock(c.id)"
+          >
+            <span class="node-pos" [textContent]="c.position"></span>
+            <span class="node-tile" aria-hidden="true" [textContent]="icon(c.block.type)"></span>
+            <span
+              class="node-label"
+              [textContent]="
+                c.block.type === 'chapter-band' && c.snippet ? c.snippet : blockLabel(c.block.type)
+              "
+            ></span>
+            @if (c.block.type !== 'chapter-band' && c.snippet) {
+              <span class="node-snippet" [textContent]="c.snippet"></span>
+            }
+          </button>
+          @if (c.children.length) {
+            <button
+              type="button"
+              class="node-fold"
+              [attr.data-testid]="'tree-fold-' + c.id"
+              [attr.aria-label]="i18n.t(isOpen(c.id) ? 'tree.collapse' : 'tree.expand')"
+              (click)="toggle(c.id)"
+              [textContent]="isOpen(c.id) ? '−' : '+' + c.children.length"
+            ></button>
+          }
+        </div>
+        @if (c.children.length && isOpen(c.id)) {
+          <ul class="tree-kids" role="group">
+            @for (k of c.children; track k.id) {
+              <ng-container
+                *ngTemplateOutlet="child; context: { $implicit: k, parent: c.id, depth: depth + 1 }"
+              />
+            }
+          </ul>
+        }
+      }
+    }
+  </li>
+</ng-template>

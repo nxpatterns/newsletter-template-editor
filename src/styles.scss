@@ -710,3 +710,33 @@ input.ed-input.ed-input--clearable.ed-input--clear-hover {
     grid-template-columns: 1fr;
   }
 }
+
+/* Target of a jump from the Current blocks tree: glows twice (reduced motion: steady ring, no pulse). */
+.is-jump-target {
+  border-radius: var(--ds-radius);
+  animation: jump-glow 1.4s ease-out 2;
+}
+
+@keyframes jump-glow {
+  from {
+    box-shadow: 0 0 0 2px var(--ds-accent), 0 0 0 0 rgb(126 207 255 / 55%);
+  }
+  to {
+    box-shadow: 0 0 0 2px var(--ds-accent), 0 0 0 12px rgb(126 207 255 / 0%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .is-jump-target {
+    animation: jump-glow-still 2.8s step-end 1;
+  }
+}
+
+@keyframes jump-glow-still {
+  from {
+    box-shadow: 0 0 0 2px var(--ds-accent);
+  }
+  to {
+    box-shadow: none;
+  }
+}
