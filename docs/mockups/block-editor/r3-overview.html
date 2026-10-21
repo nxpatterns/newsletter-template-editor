@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup R3 Eigene Bausteine</title>
+<style>
+:root {
+  --ds-bg-page: #060b14; --ds-bg-panel: #0c1628; --ds-border: #1a3050; --ds-accent: #7ecfff;
+  --ds-text: #e8f4ff; --ds-text-muted: #7a9ab8; --ds-success: #3dd68c; --ds-warning: #f5b84a; --ds-danger: #ff6b7a;
+  --ds-radius: .25rem;
+  --glass: color-mix(in srgb, var(--ds-bg-panel) 78%, transparent);
+  --glass-edge: linear-gradient(90deg, transparent, rgba(255,255,255,.35) 50%, transparent);
+  --head-bg: linear-gradient(180deg, rgba(255,255,255,.12), transparent 42%), linear-gradient(120deg, #0a1830 0%, #123a5c 48%, #0c5a78 100%);
+  --sel: #20d4c8; --newmark: #f5c518;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body { font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ds-text); background: #03060c; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--ds-accent); outline-offset: 2px; }
+
+/* mockup controls (not part of the design) */
+.mk { position: sticky; top: 0; z-index: 80; display: flex; flex-wrap: wrap; gap: .4rem 1.2rem; align-items: center; padding: .45rem .9rem; background: #2a1d05; border-bottom: 1px dashed #8a6a20; color: #f3d9a0; font-size: 12px; }
+.mk b { font-weight: 600; margin-inline-end: .3rem; }
+.mk .seg { display: inline-flex; flex-wrap: wrap; border: 1px solid #8a6a20; border-radius: .8rem; overflow: hidden; }
+.mk .seg button { background: none; border: 0; padding: .2rem .6rem; color: #f3d9a0; }
+.mk .seg button[aria-pressed="true"] { background: #8a6a20; color: #fff; }
+.mk label { display: inline-flex; gap: .3rem; align-items: center; }
+.mk .note { flex: 1 1 100%; color: #d8b870; }
+.mk a { margin-inline-start: auto; }
+.is-new { outline: 2px dashed var(--newmark); outline-offset: 2px; }
+.hide-new .is-new { outline: 0; }
+
+/* app frame; the phone setting narrows it to 390 px */
+.stagewrap { padding: 0; }
+.phone .stagewrap { padding: 1.2rem 0 2rem; }
+.frame { container-type: inline-size; margin: 0 auto; min-height: calc(100vh - 6rem); display: flex; flex-direction: column; background: var(--ds-bg-page); position: relative; }
+.phone .frame { width: 390px; min-height: 780px; border: 1px solid var(--ds-border); border-radius: 1.6rem; overflow: hidden; box-shadow: 0 30px 60px -20px rgba(0,0,0,.8); }
+
+/* app header */
+.hdr { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; min-height: 3.5rem; padding: .45rem .9rem; background: var(--ds-bg-panel); border-bottom: 1px solid var(--ds-border); }
+.hdr .brand { font-weight: 600; }
+.hdr .sp { flex: 1; }
+.back { color: var(--ds-accent); text-decoration: none; padding: .3rem .5rem; border-radius: var(--ds-radius); }
+.ibtn { display: inline-grid; place-items: center; width: 2.1rem; height: 2.1rem; border-radius: var(--ds-radius); border: 1px solid var(--ds-border); background: rgba(255,255,255,.03); }
+.btn { display: inline-flex; align-items: center; gap: .4rem; height: 2.1rem; padding: 0 .8rem; border-radius: var(--ds-radius); border: 1px solid var(--ds-border); background: rgba(255,255,255,.03); white-space: nowrap; }
+.btn--primary { background: linear-gradient(180deg, #2a86d8, #1d6bb8); border-color: #3b8fe0; color: #fff; }
+.btn--outline { border-color: var(--ds-accent); color: var(--ds-accent); }
+.btn--danger { background: linear-gradient(180deg, #e0505f, #b83a48); border-color: #ff6b7a; color: #fff; }
+.btn--sm { height: 1.8rem; padding: 0 .6rem; font-size: 12px; }
+.linkbtn { border: 0; background: none; padding: 0; color: var(--ds-accent); text-decoration: underline; text-underline-offset: 2px; font-size: 12px; }
+
+footer.ftr { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 2.75rem; padding: 0 .9rem; font-size: 11px; letter-spacing: .08em; color: var(--ds-text-muted); background: var(--ds-bg-panel); border-top: 1px solid var(--ds-border); margin-top: auto; }
+footer.ftr .links { display: flex; gap: 1rem; }
+footer.ftr .ver { justify-self: end; letter-spacing: 0; }
+
+/* page */
+.page { width: 100%; max-width: 72rem; margin: 0 auto; padding: 1.4rem 1.2rem 2rem; display: grid; gap: 1rem; align-content: start; }
+.page-head h2 { margin: 0; font-size: 1.6rem; font-weight: 700; }
+.page-head p { margin: .3rem 0 0; color: var(--ds-text-muted); }
+.toolbar { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.toolbar .sp { flex: 1; }
+.search { position: relative; flex: 0 1 16rem; min-width: 11rem; }
+.search input { width: 100%; height: 2.1rem; padding: 0 1.9rem 0 .6rem; border-radius: var(--ds-radius); border: 1px solid var(--ds-border); background: #081120; }
+.search .x { position: absolute; right: .25rem; top: 50%; transform: translateY(-50%); width: 1.6rem; height: 1.6rem; border: 0; background: none; color: var(--ds-text-muted); }
+select.sel { height: 2.1rem; padding: 0 .5rem; border-radius: var(--ds-radius); border: 1px solid var(--ds-border); background: #081120; }
+.toggle { display: inline-flex; border: 1px solid var(--ds-border); border-radius: 999px; padding: 2px; background: rgba(255,255,255,.02); }
+.toggle button { border: 0; background: none; padding: .3rem .75rem; border-radius: 999px; color: var(--ds-text-muted); font-size: 13px; }
+.toggle button[aria-pressed="true"] { background: rgba(126,207,255,.16); color: var(--ds-text); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ds-accent) 45%, transparent); }
+.lbl-mini { font-size: 12px; color: var(--ds-text-muted); }
+.helper { margin: -.4rem 0 0; font-size: 12px; color: var(--ds-text-muted); }
+.trust { display: flex; flex-wrap: wrap; gap: .4rem .8rem; align-items: center; padding: .6rem .8rem; border-radius: .5rem; border: 1px solid var(--ds-border); background: rgba(255,255,255,.02); font-size: 12px; color: var(--ds-text-muted); }
+.meter { flex: 0 0 8rem; height: .4rem; border-radius: 999px; background: rgba(255,255,255,.08); overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--ds-accent); }
+.meter.full i { background: var(--ds-danger); }
+
+/* banners */
+.banner { display: grid; grid-template-columns: auto 1fr auto; gap: .3rem .7rem; align-items: start; padding: .7rem .8rem; border-radius: .5rem; border: 1px solid color-mix(in srgb, var(--b) 45%, var(--ds-border)); background: color-mix(in srgb, var(--b) 8%, transparent); font-size: 13px; }
+.banner .bi { display: inline-grid; place-items: center; width: 1.7rem; height: 1.7rem; border-radius: .4rem; background: color-mix(in srgb, var(--b) 22%, transparent); color: var(--b); font-weight: 700; }
+.banner p { margin: 0; }
+.banner small { display: block; color: var(--ds-text-muted); font-size: 12px; margin-top: .15rem; }
+.banner .acts { grid-column: 2; display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .3rem; }
+.banner .bx { border: 0; background: none; color: var(--ds-text-muted); width: 1.6rem; height: 1.6rem; }
+.b-info { --b: var(--ds-accent); } .b-warn { --b: var(--ds-warning); } .b-danger { --b: var(--ds-danger); } .b-ok { --b: var(--ds-success); }
+
+/* pills */
+.own { display: inline-block; vertical-align: 1px; margin-inline-start: .25rem; font-size: 9px; letter-spacing: .05em; text-transform: uppercase; padding: 0 .3rem; border-radius: 3px; background: rgba(255,255,255,.16); color: var(--ds-text); font-weight: 600; }
+.pill { display: inline-flex; align-items: center; gap: .25rem; padding: .05rem .45rem; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; border: 1px solid color-mix(in srgb, var(--p) 55%, var(--ds-border)); color: var(--p); background: color-mix(in srgb, var(--p) 12%, transparent); }
+.p-ver { --p: var(--ds-success); } .p-draft { --p: var(--ds-accent); } .p-old { --p: var(--ds-text-muted); }
+
+/* block icon tile */
+.bico { position: relative; flex: 0 0 auto; display: grid; place-items: center; width: 1.9rem; height: 1.9rem; border-radius: .4rem; font-size: 1rem; color: var(--ink); background: linear-gradient(135deg, var(--a), var(--b2)); }
+.is-free .bico { background: repeating-linear-gradient(135deg, var(--a) 0 5px, var(--b2) 5px 10px); }
+.bico--sm { width: 1.5rem; height: 1.5rem; font-size: 12px; border-radius: .3rem; }
+
+/* mini preview of a block in neutral colors */
+.mini { position: relative; overflow: hidden; background: var(--m-page); padding: .5rem; display: grid; place-items: center; font: 12px/1.35 Georgia, serif; color: var(--m-body); }
+.mini .in { width: 100%; background: var(--m-content); padding: .55rem .7rem; border-radius: 2px; }
+.mini h4 { margin: 0 0 2px; color: var(--m-head); font: italic 600 15px/1.2 Georgia, serif; }
+.mini .kick { font: 600 9px system-ui; letter-spacing: .08em; text-transform: uppercase; color: var(--m-accent); }
+.mini .chip { display: inline-block; font: 600 9px system-ui; letter-spacing: .05em; text-transform: uppercase; background: var(--m-accent); color: var(--m-content); padding: .05rem .4rem; border-radius: 999px; }
+.mini .amt { color: var(--m-head); font: 700 22px/1.1 Georgia, serif; }
+.mini .mbtn { display: inline-block; margin-top: 4px; padding: 3px 8px; border-radius: 3px; background: var(--m-btn); color: var(--m-btnText); font: 600 10px system-ui; }
+.mini .mbtn--ol { background: none; border: 1px solid var(--m-btn); color: var(--m-head); }
+.mini .row { display: flex; gap: 8px; align-items: center; text-align: start; }
+.mini .pic { flex: 0 0 38%; aspect-ratio: 4/3; border-radius: 2px; background: linear-gradient(135deg, #38618a, #1c3550); }
+.mini .av { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #5b7ea6, #2b4566); }
+.mini .date { flex: 0 0 auto; display: grid; place-items: center; width: 34px; padding: 2px 0; border-radius: 3px; border: 1px solid var(--m-line); font: 700 14px/1 system-ui; color: var(--m-head); }
+.mini .date small { font: 600 8px system-ui; color: var(--m-accent); }
+.mini .ln { height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--m-body) 35%, transparent); margin-top: 4px; }
+.mini .ph { padding: .9rem; border: 1px dashed var(--m-line); border-radius: 3px; font: 11px system-ui; color: var(--m-dim); text-align: center; }
+.mini .tagset { position: absolute; left: .35rem; bottom: .3rem; font: 600 9px system-ui; letter-spacing: .04em; padding: 0 .3rem; border-radius: 3px; background: rgba(0,0,0,.45); color: #e8f4ff; }
+
+/* variant A: cards */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(14.5rem, 1fr)); gap: .9rem; }
+.bcard { position: relative; display: flex; flex-direction: column; border: 1px solid color-mix(in srgb, var(--a) 38%, var(--ds-border)); border-radius: .6rem; overflow: hidden; background: linear-gradient(160deg, color-mix(in srgb, var(--a) 14%, var(--ds-bg-panel)), var(--ds-bg-panel) 70%); }
+.bcard .mini { height: 7.2rem; border-bottom: 1px solid color-mix(in srgb, var(--a) 25%, var(--ds-border)); }
+.bcard .meta { display: grid; grid-template-columns: auto 1fr; gap: .15rem .55rem; padding: .6rem .65rem .4rem; }
+.bcard .nm { font-weight: 700; color: var(--a); font-size: 14px; min-width: 0; overflow-wrap: anywhere; }
+.bcard .from { grid-column: 2; font-size: 12px; color: var(--ds-text-muted); }
+.bcard .st { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .3rem; align-items: center; margin-top: .3rem; font-size: 12px; color: var(--ds-text-muted); }
+.bcard .foot { display: flex; align-items: center; justify-content: space-between; gap: .3rem; margin-top: auto; padding: .4rem .55rem; border-top: 1px solid color-mix(in srgb, var(--a) 22%, transparent); background: rgb(0 0 0 / 28%); font-size: 12px; }
+.del { position: absolute; top: .35rem; right: .35rem; z-index: 2; display: inline-grid; place-items: center; width: 1.7rem; height: 1.7rem; border-radius: 50%; border: 1px solid rgba(255,255,255,.3); background: rgba(6,11,20,.7); color: var(--ds-text); font-size: 15px; line-height: 1; }
+.bcard--new { --a: #9fb3c8; border-style: dashed; background: rgba(255,255,255,.02); display: grid; place-items: center; align-content: center; text-align: center; padding: 1.2rem; gap: .4rem; min-height: 12rem; cursor: pointer; }
+.bcard--new b { font-size: 14px; }
+.bcard--new span { font-size: 12px; color: var(--ds-text-muted); }
+.rename { grid-column: 1 / -1; display: grid; gap: .25rem; }
+.rename .search { flex: none; min-width: 0; }
+.rename small { font-size: 11px; color: var(--ds-text-muted); }
+
+/* variant B: list and detail */
+.split { display: grid; grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr); gap: 1rem; align-items: start; }
+.blist { display: grid; gap: .3rem; border: 1px solid var(--ds-border); border-radius: .6rem; padding: .45rem; background: var(--ds-bg-panel); }
+.blist .grp { padding: .45rem .4rem .2rem; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ds-text-muted); }
+.brow { display: grid; grid-template-columns: auto 1fr auto; gap: .55rem; align-items: center; width: 100%; padding: .45rem .5rem; border: 1px solid transparent; border-radius: .45rem; background: none; text-align: start; }
+.brow:hover { background: rgba(126,207,255,.06); }
+.brow[aria-current="true"] { border-color: var(--sel); background: rgba(32,212,200,.07); }
+.brow b { display: block; font-size: 13px; color: var(--a); }
+.brow small { display: block; font-size: 11px; color: var(--ds-text-muted); }
+.brow .when { font-size: 11px; color: var(--ds-text-muted); white-space: nowrap; }
+.subrow { display: flex; gap: .4rem; align-items: center; margin: -.15rem 0 .15rem 2.95rem; font-size: 11px; color: var(--ds-text-muted); }
+.detail { position: relative; border: 1px solid color-mix(in srgb, var(--a) 35%, var(--ds-border)); border-radius: .6rem; background: linear-gradient(160deg, color-mix(in srgb, var(--a) 10%, var(--ds-bg-panel)), var(--ds-bg-panel) 55%); padding: 1rem; display: grid; gap: .9rem; }
+.detail h3 { margin: 0; font-size: 1.2rem; color: var(--a); }
+.dhead { display: flex; gap: .7rem; align-items: center; padding-inline-end: 2rem; }
+.dhead small { display: block; color: var(--ds-text-muted); font-size: 12px; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+.pair figure { margin: 0; display: grid; gap: .3rem; font-size: 11px; color: var(--ds-text-muted); }
+.pair .mini { height: 9rem; border-radius: .4rem; border: 1px solid var(--ds-border); }
+.facts { display: grid; grid-template-columns: auto 1fr; gap: .3rem 1rem; font-size: 13px; }
+.facts dt { color: var(--ds-text-muted); } .facts dd { margin: 0; }
+.vers { display: grid; gap: .25rem; font-size: 12px; }
+.vers div { display: flex; justify-content: space-between; gap: .5rem; padding: .3rem .5rem; border-radius: .35rem; border: 1px solid var(--ds-border); }
+.dacts { display: flex; flex-wrap: wrap; gap: .45rem; }
+
+/* variant C: table */
+.chips { display: flex; flex-wrap: wrap; gap: .35rem; }
+.chips button { padding: .25rem .65rem; border-radius: 999px; border: 1px solid var(--ds-border); background: rgba(255,255,255,.02); color: var(--ds-text-muted); font-size: 12px; }
+.chips button[aria-pressed="true"] { color: var(--ds-text); border-color: color-mix(in srgb, var(--ds-accent) 55%, var(--ds-border)); background: rgba(126,207,255,.12); }
+.tbl { border: 1px solid var(--ds-border); border-radius: .6rem; overflow: hidden; background: var(--ds-bg-panel); }
+.tr { display: grid; grid-template-columns: 2rem 5.5rem minmax(0, 1.6fr) minmax(0, 1.2fr) 6.5rem 6rem 4.2rem; gap: .7rem; align-items: center; padding: .45rem .7rem; border-top: 1px solid var(--ds-border); font-size: 13px; }
+.tr:first-child { border-top: 0; }
+.tr.th { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ds-text-muted); background: rgba(255,255,255,.02); }
+.tr.is-checked { background: rgba(126,207,255,.06); }
+.tr .mini { zoom: .5; width: 11rem; height: 7rem; border-radius: .6rem; border: 2px solid var(--ds-border); }
+.tr .nmc { display: flex; gap: .5rem; align-items: center; min-width: 0; }
+.tr .nmc b { display: block; color: var(--a); }
+.tr .nmc small { display: block; font-size: 11px; color: var(--ds-text-muted); }
+.tr .muted { color: var(--ds-text-muted); font-size: 12px; }
+.tr .acts { display: flex; gap: .25rem; justify-content: flex-end; }
+.tr input[type=checkbox] { accent-color: #2a86d8; width: 1rem; height: 1rem; }
+.mini-x { display: inline-grid; place-items: center; width: 1.7rem; height: 1.7rem; border-radius: var(--ds-radius); border: 1px solid var(--ds-border); background: rgba(255,255,255,.03); }
+.bulk { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; padding: .5rem .7rem; border-radius: .5rem; border: 1px solid color-mix(in srgb, var(--ds-accent) 45%, var(--ds-border)); background: rgba(126,207,255,.07); font-size: 13px; }
+
+/* empty state */
+.empty { display: grid; justify-items: center; gap: .6rem; padding: 2.5rem 1rem; border: 1px dashed var(--ds-border); border-radius: .6rem; text-align: center; color: var(--ds-text-muted); }
+.empty b { color: var(--ds-text); font-size: 15px; }
+.empty .acts { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center; }
+
+/* glass menu */
+.rel { position: relative; }
+.menu { position: absolute; right: 0; top: 2.2rem; z-index: 20; width: 16rem; border-radius: .6rem; overflow: hidden; background: var(--glass); backdrop-filter: blur(18px) saturate(140%); border: 1px solid var(--ds-border); box-shadow: 0 22px 48px -12px rgba(0,0,0,.65); font-size: 13px; text-align: start; }
+.menu::before { content: ""; display: block; height: 1px; background: var(--glass-edge); }
+.menu .h { padding: .5rem .7rem; background: var(--head-bg); font-size: 12px; }
+.menu button { display: flex; gap: .55rem; align-items: center; width: 100%; padding: .45rem .7rem; border: 0; border-top: 1px solid var(--ds-border); background: none; text-align: start; }
+.menu button:hover { background: rgba(126,207,255,.08); }
+.menu .ti { flex: 0 0 auto; display: inline-grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: .35rem; background: rgba(126,207,255,.14); color: var(--ds-accent); font-size: 12px; }
+
+/* start page as in the app */
+.start { width: 100%; max-width: 64rem; margin: 0 auto; padding: 2rem 1.2rem; display: grid; gap: 1.6rem; }
+.start-title { margin: 0; font-size: 1.6rem; font-weight: 700; }
+.start-lead { margin: .3rem 0 0; color: var(--ds-text-muted); }
+.start-sec { margin: 0 0 .7rem; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ds-text-muted); display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.start-sec a { letter-spacing: 0; text-transform: none; font-weight: 500; font-size: 13px; color: var(--ds-accent); }
+.start-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: .9rem; }
+.start-tile { position: relative; display: flex; flex-direction: column; gap: .6rem; padding: 1.15rem; text-align: start; border: 1px solid var(--ds-border); border-radius: var(--ds-radius); background: var(--ds-bg-panel); overflow: hidden; }
+.start-tile b { font-size: 15px; }
+.start-tile > span { color: var(--ds-text-muted); font-size: 13px; }
+.start-tile.is-primary { border-color: color-mix(in srgb, var(--ds-accent) 45%, var(--ds-border)); }
+.start-tile.lang { border-color: color-mix(in srgb, var(--t) 35%, var(--ds-border)); background: radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--t) 16%, transparent), transparent 60%), var(--ds-bg-panel); }
+.start-tile.blockt { border-color: color-mix(in srgb, #a3b8cc 40%, var(--ds-border)); background: radial-gradient(120% 90% at 0% 0%, rgba(163,184,204,.14), transparent 60%), repeating-linear-gradient(135deg, rgba(163,184,204,.035) 0 8px, transparent 8px 16px), var(--ds-bg-panel); }
+.tfoot { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin: auto -1.15rem -1.15rem; padding: .55rem 1.15rem; border-top: 1px solid var(--ds-border); background: rgb(0 0 0 / 30%); font-size: 12px; color: var(--ds-text-muted); }
+.tfoot a { color: var(--ds-accent); }
+.start-icon { width: 3.5rem; height: 3.5rem; }
+.ic-paper { fill: #e8f4ff; } .ic-line { stroke: #7ecfff; stroke-width: 1.5; fill: none; } .ic-accent { fill: #2a86d8; } .ic-plus { stroke: #fff; stroke-width: 2.4; stroke-linecap: round; }
+.ic-dark { fill: #123a5c; } .ic-text { fill: #9fb3c8; }
+.flag { display: inline-block; width: 1.3rem; height: .9rem; border-radius: 2px; }
+.minirow { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: .7rem; }
+.mcard { border: 1px solid color-mix(in srgb, var(--a) 38%, var(--ds-border)); border-radius: .5rem; overflow: hidden; background: var(--ds-bg-panel); }
+.mcard .mini { height: 4.6rem; }
+.mcard .mini h4 { font-size: 12px; } .mcard .mini .amt { font-size: 16px; }
+.mcard div.cap { display: flex; gap: .45rem; align-items: center; padding: .4rem .5rem; font-size: 12px; }
+.mcard div.cap b { color: var(--a); }
+.recent { list-style: none; margin: 0; padding: 0; display: grid; gap: .4rem; }
+.recent li { display: grid; grid-template-columns: auto 1fr auto; gap: .75rem; align-items: center; padding: .6rem .85rem; border: 1px solid var(--ds-border); border-radius: var(--ds-radius); background: var(--ds-bg-panel); }
+.recent small { color: var(--ds-text-muted); font-size: 12px; }
+.recent .doc { width: 1.6rem; height: 2rem; border-radius: 2px; background: #e8f4ff; box-shadow: inset 0 6px 0 #123a5c; }
+
+/* start menu as in the app */
+.scrim { position: absolute; inset: 3.5rem 0 0; background: rgba(4,8,16,.45); z-index: 30; }
+.smenu { position: absolute; top: 3.2rem; right: .9rem; z-index: 31; width: 20rem; max-width: calc(100% - 1.8rem); border-radius: .6rem; overflow: hidden; background: var(--glass); backdrop-filter: blur(18px) saturate(140%); border: 1px solid var(--ds-border); box-shadow: 0 22px 48px -12px rgba(0,0,0,.65); font-size: 13px; }
+.smenu::before { content: ""; display: block; height: 1px; background: var(--glass-edge); }
+.smenu .h { padding: .65rem .8rem; background: var(--head-bg); color: #fff; }
+.smenu .h small { display: block; opacity: .75; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+.smenu .lbl { padding: .55rem .8rem .2rem; color: var(--ds-text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+.smenu .it { display: flex; gap: .6rem; align-items: center; width: 100%; padding: .45rem .8rem; border: 0; background: none; text-align: start; }
+.smenu .it:hover { background: rgba(126,207,255,.08); }
+.smenu .it[aria-disabled="true"] { opacity: .55; }
+.smenu .tile { flex: 0 0 auto; display: inline-grid; place-items: center; width: 1.7rem; height: 1.7rem; border-radius: .4rem; background: rgba(126,207,255,.14); color: var(--ds-accent); font-size: 13px; }
+.smenu .tile--free { background: repeating-linear-gradient(135deg, #a3b8cc 0 4px, #52677d 4px 8px); color: #0b1220; }
+.smenu .hint { display: block; font-size: 11px; color: var(--ds-text-muted); }
+.smenu .danger { border-top: 1px solid var(--ds-border); margin-top: .3rem; }
+.smenu .danger .it { color: var(--ds-danger); }
+.smenu .danger .tile { background: rgba(255,107,122,.14); color: var(--ds-danger); }
+
+/* dialog */
+.backdrop { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: radial-gradient(circle at 50% 42%, rgba(255,107,122,.18), transparent 42%), rgba(4,8,16,.62); }
+.dlg { width: min(32rem, calc(100vw - 2rem)); max-height: calc(100vh - 3rem); overflow: auto; border-radius: .6rem; background: var(--glass); backdrop-filter: blur(18px) saturate(140%); border: 1px solid var(--ds-border); box-shadow: 0 22px 48px -12px rgba(0,0,0,.65); }
+.dlg-head { display: flex; align-items: center; gap: .6rem; padding: .8rem 1rem; background: var(--head-bg); color: #fff; }
+.dlg-head .hi { display: inline-grid; place-items: center; width: 1.8rem; height: 1.8rem; border-radius: .4rem; font-weight: 700; background: rgba(255,107,122,.25); color: var(--ds-danger); }
+.dlg-head h2 { margin: 0; font-size: 16px; flex: 1; }
+.dlg-x { width: 1.9rem; height: 1.9rem; border-radius: .35rem; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.14); color: #fff; }
+.dlg-body { padding: 1rem; display: grid; gap: .8rem; font-size: 13px; }
+.dlg-body p { margin: 0; }
+.conseq { border: 1px solid var(--ds-border); border-radius: .45rem; padding: .6rem .7rem; background: rgba(255,255,255,.03); display: grid; gap: .35rem; }
+.conseq .r { display: flex; justify-content: space-between; gap: .5rem; }
+.conseq small { color: var(--ds-text-muted); }
+.dlg-foot { display: flex; justify-content: flex-end; gap: .5rem; flex-wrap: wrap; padding: 0 1rem 1rem; }
+.field { display: grid; gap: .25rem; }
+.field label { font-size: 12px; color: var(--ds-text-muted); }
+
+/* snackbar */
+.snack { position: fixed; left: 50%; bottom: 1.4rem; transform: translateX(-50%); z-index: 70; display: grid; grid-template-columns: 1fr auto; gap: .2rem .8rem; align-items: center; width: max-content; max-width: calc(100vw - 2rem); padding: .55rem .6rem .55rem .9rem; border-radius: var(--ds-radius); background: var(--glass); backdrop-filter: blur(18px); border: 1px solid var(--ds-border); border-inline-start: 3px solid var(--ds-success); box-shadow: 0 18px 40px -12px rgba(0,0,0,.7); font-size: 13px; overflow: hidden; }
+.snack small { display: block; color: var(--ds-text-muted); font-size: 12px; }
+.snack .tmr { position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: var(--ds-accent); transform-origin: left; }
+@media (prefers-reduced-motion: no-preference) {
+  .snack { animation: rise .18s ease-out; } @keyframes rise { from { opacity: 0; transform: translate(-50%, .4rem); } }
+  .snack .tmr { animation: tmr 8s linear forwards; } @keyframes tmr { to { transform: scaleX(0); } }
+}
+
+/* narrow app (phone, decision 37) */
+@container (max-width: 40rem) {
+  .page { padding: 1rem .9rem 1.5rem; }
+  .page-head h2 { font-size: 1.35rem; }
+  .search { flex: 1 1 100%; }
+  .grid { grid-template-columns: 1fr; }
+  .bcard { flex-direction: row; flex-wrap: wrap; }
+  .bcard .mini { zoom: .6; flex: 0 0 11rem; height: auto; min-height: 9rem; border-bottom: 0; border-inline-end: 2px solid color-mix(in srgb, var(--a) 25%, var(--ds-border)); }
+  .bcard .meta { flex: 1; padding-inline-end: 2.2rem; }
+  .bcard .foot { flex: 1 1 100%; }
+  .split { grid-template-columns: 1fr; }
+  .pair { grid-template-columns: 1fr 1fr; }
+  .tr { grid-template-columns: 1.6rem minmax(0, 1fr) auto; }
+  .tr .c-prev, .tr .c-uses, .tr .c-when, .tr.th { display: none; }
+  .tr .c-stat { grid-column: 2; }
+  .tr .acts { grid-column: 3; grid-row: 1 / span 2; }
+  .hdr .wide { display: none; }
+  .start { padding: 1.2rem .9rem; }
+  footer.ftr { grid-template-columns: 1fr; height: auto; padding: .6rem; justify-items: center; gap: .3rem; }
+  footer.ftr .ver { justify-self: center; }
+}
+</style>
+</head>
+<body>
+
+<div class="mk" role="region" aria-label="Mockup-Steuerung">
+  <span><b>Variante</b><span class="seg" data-k="v"><button data-v="A">A Kacheln</button><button data-v="B">B Liste und Vorschau</button><button data-v="C">C Tabelle</button></span></span>
+  <span><b>Bereich</b><span class="seg" data-k="area"><button data-v="ov">Übersicht /blocks</button><button data-v="start">Startseite</button><button data-v="menu">Startmenü ⋮</button></span></span>
+  <span><b>Vorschau</b><span class="seg" data-k="set"><button data-v="dark">Dunkel</button><button data-v="light">Hell</button></span></span>
+  <span><b>Breite</b><span class="seg" data-k="w"><button data-v="desk">Desktop</button><button data-v="phone">Handy</button></span></span>
+  <label><input type="checkbox" id="showNew"> Neues gelb umranden</label>
+  <a href="r2-colors.html" style="color:#fff">← Schritt 4 Farben</a>
+  <span id="scCtl"><b>Szene</b><span class="seg" data-k="sc">
+    <button data-v="normal">Normal</button><button data-v="empty">Leer</button><button data-v="nohit">Suche ohne Treffer</button><button data-v="rename">Umbenennen</button><button data-v="deleted">Gelöscht, Rückgängig</button><button data-v="oldDlg">Alte Entwürfe löschen</button><button data-v="importOk">Datei geöffnet</button><button data-v="importErr">Datei ungültig</button><button data-v="full">Speicher voll</button><button data-v="persist">Dauerspeicher abgelehnt</button><button data-v="safari">Safari-Hinweis</button>
+  </span></span>
+  <span class="note" id="mknote"></span>
+</div>
+
+<div class="stagewrap"><div class="frame" id="frame"></div></div>
+<div id="overlay"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><pattern id="stp" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="3" height="6" fill="#a3b8cc"/><rect x="3" width="3" height="6" fill="#52677d"/></pattern></defs></svg>
+
+<script>
+const S = { v: 'A', area: 'ov', set: 'dark', w: 'desk', sc: 'normal', showNew: true, q: '', sort: 'changed', filter: 'all', sel: 'pbf', phoneDetail: false, menu: '', checked: [], undo: [] };
+try { Object.assign(S, JSON.parse(localStorage.getItem('mk-r3-overview') || '{}'), { menu: '', undo: [], phoneDetail: false }); } catch {}
+
+const HUE = {
+  hero: ['#fb923c', '#ea580c', '#0b1220', '✨', 'Hero'],
+  'price-box': ['#fde047', '#ca8a04', '#0b1220', '€', 'Preisbox'],
+  'cta-button': ['#22d3ee', '#0e7490', '#0b1220', '▶', 'Button'],
+  contact: ['#a78bfa', '#5b21b6', '#fff', '☎', 'Ansprechpartner'],
+  event: ['#fdba74', '#c2410c', '#0b1220', '📅', 'Termin'],
+  free: ['#a3b8cc', '#52677d', '#0b1220', '◆', 'Freier Baustein'],
+};
+// ver: saved version (0 = only a draft so far); draft: age in days of the open draft (null = none)
+const ALL = [
+  { id: 'pbf', type: 'price-box', name: 'Preisbox Frühjahr', ver: 3, verWhen: 'heute, 10:12', draft: 0, draftWhen: 'heute, 14:05', uses: 2, age: 0, prev: 'price' },
+  { id: 'teaser', type: 'free', name: 'Messe-Teaser', ver: 0, draft: 0, draftWhen: 'vor 2 Std.', uses: 0, age: 0.1, prev: 'teaser' },
+  { id: 'hero2', type: 'hero', name: 'Hero mit Kennzahl', ver: 0, draft: 1, draftWhen: 'gestern', uses: 0, age: 1, prev: 'hero' },
+  { id: 'kk', type: 'contact', name: 'Kontakt kompakt', ver: 2, verWhen: 'gestern', draft: null, uses: 4, age: 1.2, prev: 'contact' },
+  { id: 'bma', type: 'free', name: 'Bild mit Angebot', ver: 1, verWhen: '12. Okt.', draft: null, uses: 1, age: 9, prev: 'imgoffer' },
+  { id: 'cta', type: 'cta-button', name: 'Button Rückruf', ver: 0, draft: 48, draftWhen: '3. Sep.', uses: 0, age: 48, prev: 'cta' },
+  { id: 'ev', type: 'event', name: 'Webinar-Termin', ver: 0, draft: 129, draftWhen: '14. Juni', uses: 0, age: 129, prev: 'event' },
+  { id: 'ohne', type: 'free', name: 'Ohne Namen', ver: 0, draft: 172, draftWhen: '2. Mai', uses: 0, age: 172, prev: 'blank' },
+];
+const fromText = (b) => b.type === 'free' ? 'Freier Baustein' : `Kopie von ${HUE[b.type][4]}`;
+const SETS = {
+  dark: { page: '#08101e', content: '#0c1628', body: '#a9c0d6', head: '#d8eeff', dim: '#6b88a6', accent: '#f5c518', btn: '#1d6bb8', btnText: '#ffffff', line: '#1e3a5c' },
+  light: { page: '#e9eff6', content: '#ffffff', body: '#3b4f63', head: '#0c1d33', dim: '#56697c', accent: '#8a6200', btn: '#1d6bb8', btnText: '#ffffff', line: '#d5dee8' },
+};
+const NOTES = {
+  A: 'A Kacheln: Raster wie die Karten im Tab „Alle“, jede Karte mit kleiner Vorschau. Filter „Alle | Bausteine | Entwürfe“ ohne Zahlen (wie Entscheidung 50). Ein offener Entwurf erscheint als Schildchen auf der Karte seines Bausteins. Startseite: eigener Abschnitt „Eigene Bausteine“ mit den letzten vier, nur wenn es welche gibt.',
+  B: 'B Liste und Vorschau: links eine Liste in zwei Gruppen („In Arbeit“, „Gespeichert“), rechts der gewählte Baustein mit Vorschau Hell und Dunkel nebeneinander, Versionen und Verwendung. Auf dem Handy erst Liste, dann Details. Startseite: Kachel „Neuer Baustein“ mit Fußband „3 Bausteine · 5 Entwürfe, Übersicht“.',
+  C: 'C Tabelle: eine Zeile pro Baustein, Spalten Status, Verwendet in, Geändert. Filterchips statt Umschalter, Mehrfachauswahl für „Als Datei sichern“ und „Löschen“. Startseite: nur die Kachel. Die Übersicht erreicht man über das Startmenü (eigener Abschnitt „Bausteine“) und im Editor über „Alle verwalten“ in der Liste „Eigene“.',
+};
+const SCN = {
+  normal: '3 gespeicherte Bausteine, 5 Entwürfe (einer davon ist eine offene Änderung an „Preisbox Frühjahr“). Suche, Sortierung und Filter sind klickbar. Klick auf × löscht mit 8 Sekunden Rückgängig, ⋯ öffnet das Menü.',
+  empty: 'Noch nichts angelegt. Drei Wege: neu bauen, aus einer Datei öffnen, im Editor „Anpassen“ (Entscheidungen 6, 16).',
+  nohit: 'Suche ohne Treffer. Das X im Suchfeld und der Link leeren die Suche.',
+  rename: 'Umbenennen direkt an der Stelle des Namens, mit X zum Leeren. Enter speichert, Esc bricht ab.',
+  deleted: '„Kontakt kompakt“ wurde gelöscht. Er steckt in 4 Vorlagen: die behalten ihre Kopie, bekommen aber keine Hinweise auf neue Versionen mehr. 8 Sekunden Rückgängig (UI-Prinzipien).',
+  oldDlg: 'Dialog „Entwürfe älter als … löschen“ (Entscheidung 27). Gespeicherte Versionen bleiben. Nach dem Löschen 8 Sekunden Rückgängig.',
+  importOk: 'Datei mit 3 Bausteinen geöffnet: 2 neu, 1 gab es schon in einer anderen Fassung und liegt jetzt daneben.',
+  importErr: 'Datei ist eine Vorlage, kein Baustein (gleicher Umschlag, anderes Typfeld, Entscheidung 23). Die Meldung sagt, wo man sie öffnet.',
+  full: 'Browser-Speicher voll. Neue Entwürfe lassen sich nicht sichern; Ausweg: Datei sichern, alte Entwürfe löschen.',
+  persist: 'Browser hat dauerhaften Speicher abgelehnt (navigator.storage.persist). Hinweis einmal, wegklickbar.',
+  safari: 'Safari: Daten der Seite verschwinden nach 7 Tagen ohne Besuch. Hinweis nennt die letzte Sicherung als Datei.',
+};
+
+const today = (b) => b.draft !== null ? b.draftWhen : b.verWhen;
+function vis() {
+  let list = S.sc === 'empty' ? [] : ALL.filter((b) => !b.gone && !(S.sc === 'deleted' && b.id === 'kk'));
+  if (S.sc === 'importOk') list = [{ id: 'imp1', type: 'free', name: 'Zitat mit Foto', ver: 1, verWhen: 'gerade eben', draft: null, uses: 0, age: -1, prev: 'contact', isNew: 1 }, { id: 'imp2', type: 'price-box', name: 'Preisbox Frühjahr (2)', ver: 2, verWhen: 'gerade eben', draft: null, uses: 0, age: -1, prev: 'price', isNew: 1 }, ...list];
+  const q = S.q.trim().toLowerCase();
+  if (q) list = list.filter((b) => b.name.toLowerCase().includes(q));
+  if (S.v === 'A' && S.filter === 'blocks') list = list.filter((b) => b.ver > 0);
+  if (S.v === 'A' && S.filter === 'drafts') list = list.filter((b) => b.draft !== null);
+  if (S.v === 'C' && S.filter === 'withDraft') list = list.filter((b) => b.draft !== null);
+  if (S.v === 'C' && S.filter === 'noVer') list = list.filter((b) => b.ver === 0);
+  if (S.v === 'C' && S.filter === 'old') list = list.filter((b) => b.draft !== null && b.draft > 90);
+  if (S.sort === 'name') list = [...list].sort((a, b) => a.name.localeCompare(b.name, 'de'));
+  if (S.sort === 'type') list = [...list].sort((a, b) => HUE[a.type][4].localeCompare(HUE[b.type][4], 'de'));
+  return list;
+}
+
+const tint = (b) => { const h = HUE[b.type]; return `--a:${h[0]};--b2:${h[1]};--ink:${h[2]}`; };
+const ico = (b, sm) => `<span class="bico ${sm ? 'bico--sm' : ''}" aria-hidden="true">${HUE[b.type][3]}</span>`;
+const mvars = (set) => { const c = SETS[set]; return `--m-page:${c.page};--m-content:${c.content};--m-body:${c.body};--m-head:${c.head};--m-dim:${c.dim};--m-accent:${c.accent};--m-btn:${c.btn};--m-btnText:${c.btnText};--m-line:${c.line}`; };
+const PREV = {
+  price: '<div class="in" style="text-align:center"><span class="chip">Frühbucher</span><div class="amt">149 €</div><div style="font:10px system-ui">3 Nächte mit Frühstück</div></div>',
+  teaser: '<div class="in"><h4>Besuchen Sie uns auf der Messe</h4><div class="ln" style="width:90%"></div><div class="ln" style="width:70%"></div><span class="mbtn mbtn--ol">Termin sichern</span></div>',
+  hero: '<div class="in"><div class="kick">Unser Jahr</div><h4>+38 % mehr Rundgänge</h4><div class="ln" style="width:80%"></div></div>',
+  contact: '<div class="in"><div class="row"><span class="av"></span><div><b style="color:var(--m-head);font:600 11px system-ui">Alex Berger</b><div style="font:10px system-ui">+49 30 1234567</div></div></div></div>',
+  imgoffer: '<div class="in"><div class="row"><span class="pic"></span><div><h4 style="font-size:12px">Frühjahr am See</h4><span class="mbtn">Ansehen</span></div></div></div>',
+  cta: '<div class="in" style="text-align:center"><span class="mbtn" style="font-size:11px;padding:5px 12px">Rückruf vereinbaren</span></div>',
+  event: '<div class="in"><div class="row"><span class="date">12<small>MÄR</small></span><div><h4 style="font-size:12px">Webinar: Neue Funktionen</h4><div style="font:10px system-ui">10:00 bis 11:00 Uhr</div></div></div></div>',
+  blank: '<div class="in"><div class="ph">Leerer Baustein</div></div>',
+};
+const mini = (b, set = S.set, tag = false) => `<div class="mini" style="${mvars(set)}" aria-label="Vorschau ${set === 'dark' ? 'Dunkel' : 'Hell'}">${PREV[b.prev]}${tag ? `<span class="tagset">${set === 'dark' ? 'Dunkel' : 'Hell'}</span>` : ''}</div>`;
+
+function status(b, compact) {
+  const out = [];
+  if (b.ver > 0) out.push(`<span class="pill p-ver">✓ Version ${b.ver}</span>`);
+  if (b.draft !== null) out.push(`<span class="pill p-draft">${b.ver > 0 ? 'Entwurf offen' : 'Entwurf'}</span>`);
+  if (b.draft !== null && b.draft > 90) out.push('<span class="pill p-old">älter als 90 Tage</span>');
+  if (compact) return out.join(' ');
+  const when = b.draft !== null ? `geändert ${b.draftWhen}` : `gespeichert ${b.verWhen}`;
+  return `${out.join(' ')}<span>${when}</span>`;
+}
+const isPhone = () => S.w === 'phone';
+const editLabel = () => isPhone() ? 'Ansehen' : 'Bearbeiten';
+
+function menuHtml(b) {
+  const it = (ti, t, act = '') => `<button data-act="${act}" data-id="${b.id}"><span class="ti">${ti}</span>${t}</button>`;
+  return `<div class="menu" role="menu"><div class="h">${b.name}</div>
+    ${it(isPhone() ? '👁' : '✎', editLabel())}${it('Aa', 'Umbenennen', 'rename')}${it('⧉', 'Duplizieren')}${it('⤓', 'Als Datei sichern')}${b.ver > 0 ? it('▤', 'Neue Vorlage mit diesem Baustein') : ''}</div>`;
+}
+
+function header() {
+  return `<header class="hdr"><a class="back" href="#">← Zurück zur Startseite</a><span class="sp"></span>
+    <span class="wide" style="font-size:12px;color:var(--ds-text-muted)">Gespeichert in diesem Browser</span><button class="ibtn" data-act="smenu" aria-label="Startmenü">⋮</button><button class="btn">🌐 DE</button></header>`;
+}
+const startHeader = () => `<header class="hdr"><span class="brand">⌂ Newsletter-Editor</span><span class="sp"></span><button class="ibtn" aria-label="Startmenü">⋮</button><button class="btn">🌐 DE</button></header>`;
+const footer = () => '<footer class="ftr"><span></span><span class="links"><span>STARTSEITE</span><span>IMPRESSUM</span><span>DATENSCHUTZ</span><span>ÜBER</span></span><span class="ver">v0.4.7</span></footer>';
+
+function banners() {
+  const bx = '<button class="bx" aria-label="Hinweis schließen">×</button>';
+  switch (S.sc) {
+    case 'persist': return `<div class="banner b-warn"><span class="bi">!</span><div><p>Ihr Browser darf diese Bausteine löschen, wenn ihm der Platz ausgeht.</p><small>Er hat dauerhaften Speicher abgelehnt. Sichern Sie Ihre Bausteine deshalb regelmäßig als Datei.</small></div>${bx}<div class="acts"><button class="btn btn--sm btn--primary">Alle als Datei sichern</button></div></div>`;
+    case 'safari': return `<div class="banner b-info"><span class="bi">i</span><div><p>Safari löscht die Daten dieser Seite, wenn Sie sie 7 Tage lang nicht öffnen.</p><small>Letzte Sicherung als Datei: noch nie.</small></div>${bx}<div class="acts"><button class="btn btn--sm btn--primary">Alle als Datei sichern</button></div></div>`;
+    case 'full': return `<div class="banner b-danger"><span class="bi">!</span><div><p>Der Speicher dieses Browsers ist voll. Neue Entwürfe lassen sich gerade nicht sichern.</p><small>Was offen ist, bleibt erhalten, solange die Seite offen ist.</small></div><span></span><div class="acts"><button class="btn btn--sm btn--primary">Alle als Datei sichern</button><button class="btn btn--sm" data-act="old">Alte Entwürfe löschen …</button></div></div>`;
+    case 'importErr': return `<div class="banner b-danger"><span class="bi">!</span><div><p>„angebot-fruehjahr.json“ enthält keine Bausteine.</p><small>Die Datei ist eine Newsletter-Vorlage. Öffnen Sie sie auf der Startseite über „Gespeicherte Vorlagen“.</small></div>${bx}</div>`;
+    case 'importOk': return `<div class="banner b-ok"><span class="bi">✓</span><div><p>3 Bausteine aus „bausteine-team.json“ übernommen.</p><small>„Preisbox Frühjahr“ gab es schon in einer anderen Fassung. Beide sind jetzt da, die neue heißt „Preisbox Frühjahr (2)“.</small></div>${bx}</div>`;
+    default: return '';
+  }
+}
+function trust() {
+  const full = S.sc === 'full';
+  return `<div class="trust"><span>Gespeichert in diesem Browser, nicht in der Cloud.</span><span class="meter ${full ? 'full' : ''}"><i style="width:${full ? 100 : 6}%"></i></span><span>${full ? 'voll' : '2,1 MB belegt'}</span><span style="flex:1"></span><button class="linkbtn">Alle als Datei sichern</button></div>`;
+}
+const searchBox = () => `<span class="search"><input id="q" type="search" placeholder="Nach Namen suchen" aria-label="Nach Namen suchen" value="${S.q}">${S.q ? '<button class="x" data-act="clearq" aria-label="Suche leeren">×</button>' : ''}</span>`;
+const sortSel = () => `<select class="sel" id="sort" aria-label="Sortieren"><option value="changed" ${S.sort === 'changed' ? 'selected' : ''}>Zuletzt geändert</option><option value="name" ${S.sort === 'name' ? 'selected' : ''}>Name</option><option value="type" ${S.sort === 'type' ? 'selected' : ''}>Art</option></select>`;
+const moreMenu = () => `<span class="rel"><button class="ibtn" data-act="more" aria-label="Weitere Aktionen">⋯</button>${S.menu === '_more' ? `<div class="menu" role="menu"><div class="h">Alle Bausteine</div><button data-act="noop"><span class="ti">⤓</span>Alle als Datei sichern</button><button data-act="old"><span class="ti">🗑</span>Entwürfe älter als … löschen</button></div>` : ''}</span>`;
+const newBtn = () => isPhone() ? '' : '<button class="btn btn--primary">＋ Neuer Baustein</button>';
+const openBtn = () => '<button class="btn">Datei öffnen …</button>';
+const phoneHelp = () => isPhone() ? '<p class="helper">Auf dem Handy können Sie Bausteine ansehen, umbenennen, sichern und löschen. Bearbeiten geht ab Tablet-Breite.</p>' : '';
+
+function emptyState() {
+  if (S.sc === 'empty') {
+    return `<div class="empty"><svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true"><rect x="8" y="8" width="40" height="10" rx="2.5" fill="#52677d"/><rect x="8" y="21" width="19" height="14" rx="2.5" fill="#33475c"/><rect x="29" y="21" width="19" height="14" rx="2.5" fill="#33475c"/><rect x="8" y="38" width="22" height="6" rx="2" fill="#2a86d8"/></svg>
+      <b>Noch keine eigenen Bausteine</b><span>Bauen Sie einen neuen aus Teilen oder öffnen Sie Bausteine aus einer Datei.</span>
+      <div class="acts">${isPhone() ? '' : '<button class="btn btn--primary">＋ Neuer Baustein</button>'}${openBtn()}</div>
+      <span style="font-size:12px">Tipp: Im Editor im Tab „Alle“ bei einem Baustein auf „Anpassen“ klicken. Die Kopie landet hier.</span></div>`;
+  }
+  return `<div class="empty"><b>Kein Baustein passt zu „${S.q}“</b><button class="linkbtn" data-act="clearq">Suche leeren</button></div>`;
+}
+
+/* variant A */
+function cardA(b) {
+  const renaming = S.sc === 'rename' && b.id === 'pbf';
+  const nameHtml = renaming
+    ? `<div class="rename"><span class="search"><input value="Preisbox Frühjahr 2027" aria-label="Name" autofocus><button class="x" aria-label="Name leeren">×</button></span><small>Enter speichert, Esc bricht ab.</small></div>`
+    : `${ico(b)}<span class="nm">${b.name}<span class="own">eigen</span></span><span class="from">${fromText(b)}${b.uses ? ` · in ${b.uses} ${b.uses === 1 ? 'Vorlage' : 'Vorlagen'}` : ''}</span>`;
+  return `<article class="bcard ${b.type === 'free' ? 'is-free' : ''} ${b.isNew ? 'is-new' : ''}" style="${tint(b)}">
+    <button class="del" data-act="del" data-id="${b.id}" aria-label="${b.name} löschen">×</button>
+    ${mini(b)}
+    <div class="meta">${nameHtml}<div class="st">${status(b)}</div></div>
+    <div class="foot"><span class="rel"><button class="btn btn--sm" data-act="menu" data-id="${b.id}" aria-label="Weitere Aktionen">⋯</button>${S.menu === b.id ? menuHtml(b) : ''}</span><button class="btn btn--sm btn--outline">${b.draft !== null && !isPhone() ? 'Weiterbearbeiten' : editLabel()}</button></div>
+  </article>`;
+}
+function viewA() {
+  const list = vis();
+  const seg = (k, t) => `<button data-act="filter" data-f="${k}" aria-pressed="${S.filter === k}">${t}</button>`;
+  const tools = S.sc === 'empty' ? '' : `<div class="toolbar">${searchBox()}<span class="toggle">${seg('all', 'Alle')}${seg('blocks', 'Bausteine')}${seg('drafts', 'Entwürfe')}</span>${sortSel()}<span class="sp"></span>${openBtn()}${moreMenu()}</div>`;
+  const draftsFoot = S.filter === 'drafts' && list.length ? '<div style="display:flex;justify-content:flex-end"><button class="linkbtn" data-act="old">Entwürfe älter als … löschen</button></div>' : '';
+  const body = list.length ? `<div class="grid">${!isPhone() && !S.q ? '<button class="bcard bcard--new is-new"><svg width="44" height="44" viewBox="0 0 56 56" aria-hidden="true"><rect x="8" y="8" width="32" height="10" rx="2.5" fill="url(#stp)"/><rect x="8" y="21" width="15" height="14" rx="2.5" fill="#cfe0f0" opacity=".85"/><rect x="25" y="21" width="15" height="14" rx="2.5" fill="#cfe0f0" opacity=".5"/><circle cx="40" cy="42" r="10" fill="#2a86d8"/><path d="M40 37v10M35 42h10" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg><b>Neuer Baustein</b><span>Frei aus Teilen bauen</span></button>' : ''}${list.map(cardA).join('')}</div>${draftsFoot}` : emptyState();
+  return `${tools}${phoneHelp()}${body}`;
+}
+
+/* variant B */
+function viewB() {
+  const list = vis();
+  const tools = S.sc === 'empty' ? '' : `<div class="toolbar">${searchBox()}${sortSel()}<span class="sp"></span>${newBtn()}${openBtn()}${moreMenu()}</div>`;
+  if (!list.length) return `${tools}${phoneHelp()}${emptyState()}`;
+  const work = list.filter((b) => b.ver === 0);
+  const saved = list.filter((b) => b.ver > 0);
+  if (!list.find((b) => b.id === S.sel)) S.sel = list[0].id;
+  const row = (b) => `<button class="brow ${b.type === 'free' ? 'is-free' : ''} ${b.isNew ? 'is-new' : ''}" style="${tint(b)}" data-act="pick" data-id="${b.id}" aria-current="${!isPhone() && S.sel === b.id}">${ico(b, true)}<span><b>${b.name}<span class="own">eigen</span></b><small>${fromText(b)}</small></span><span class="when">${today(b)}</span></button>
+    ${b.ver > 0 && b.draft !== null ? `<div class="subrow"><span class="pill p-draft">Entwurf offen</span>${b.draftWhen}</div>` : ''}`;
+  const listHtml = `<div class="blist">${work.length ? `<div class="grp">In Arbeit (noch keine Version)</div>${work.map(row).join('')}` : ''}${saved.length ? `<div class="grp">Gespeichert</div>${saved.map(row).join('')}` : ''}
+    ${work.some((b) => b.draft > 90) ? '<div style="padding:.4rem .5rem"><button class="linkbtn" data-act="old">Entwürfe älter als … löschen</button></div>' : ''}</div>`;
+  const b = list.find((x) => x.id === S.sel);
+  const renaming = S.sc === 'rename' && b.id === 'pbf';
+  const vers = b.ver > 0 ? `<div class="vers">${b.draft !== null ? `<div><span><span class="pill p-draft">Entwurf</span> Änderungen seit Version ${b.ver}</span><span>${b.draftWhen}</span></div>` : ''}${Array.from({ length: b.ver }, (_, i) => b.ver - i).map((n, i) => `<div><span>Version ${n}${i === 0 ? ' (aktuell)' : ''}</span><span>${i === 0 ? b.verWhen : ['10. Okt.', '2. Okt.'][i - 1] || ''}</span></div>`).join('')}</div>` : '<p class="lbl-mini" style="margin:0">Noch keine Version gespeichert. Erst eine Version lässt sich in Vorlagen einfügen.</p>';
+  const detail = `<section class="detail ${b.type === 'free' ? 'is-free' : ''}" style="${tint(b)}" aria-label="Details">
+    <button class="del" data-act="del" data-id="${b.id}" aria-label="${b.name} löschen">×</button>
+    ${isPhone() ? '<button class="linkbtn" data-act="phoneBack" style="justify-self:start">← Alle Bausteine</button>' : ''}
+    <div class="dhead">${ico(b)}<div>${renaming ? `<span class="search" style="display:block;min-width:14rem"><input value="Preisbox Frühjahr 2027" aria-label="Name"><button class="x" aria-label="Name leeren">×</button></span><small>Enter speichert, Esc bricht ab.</small>` : `<h3>${b.name} <span class="own">eigen</span></h3><small>${fromText(b)}</small>`}</div></div>
+    <div class="pair"><figure>${mini(b, 'light')}<figcaption>Vorschau Hell, neutrale Farben</figcaption></figure><figure>${mini(b, 'dark')}<figcaption>Vorschau Dunkel, neutrale Farben</figcaption></figure></div>
+    <dl class="facts"><dt>Status</dt><dd>${status(b, true)}</dd><dt>Verwendet in</dt><dd>${b.uses ? `${b.uses} ${b.uses === 1 ? 'Vorlage' : 'Vorlagen'}` : 'noch keiner Vorlage'}</dd><dt>Geändert</dt><dd>${today(b)}</dd></dl>
+    ${vers}
+    <div class="dacts"><button class="btn btn--primary">${b.draft !== null && !isPhone() ? 'Weiterbearbeiten' : editLabel()}</button>${isPhone() ? '' : ''}<button class="btn">Umbenennen</button><button class="btn">Duplizieren</button><button class="btn">Als Datei sichern</button>${b.ver > 0 && !isPhone() ? '<button class="btn">Neue Vorlage mit diesem Baustein</button>' : ''}</div>
+  </section>`;
+  if (isPhone()) return `${tools}${phoneHelp()}${S.phoneDetail ? detail : listHtml}`;
+  return `${tools}<div class="split">${listHtml}${detail}</div>`;
+}
+
+/* variant C */
+function viewC() {
+  const list = vis();
+  const chip = (k, t) => `<button data-act="filter" data-f="${k}" aria-pressed="${S.filter === k}">${t}</button>`;
+  const tools = S.sc === 'empty' ? '' : `<div class="toolbar">${searchBox()}${sortSel()}<span class="sp"></span>${newBtn()}${openBtn()}${moreMenu()}</div>
+    <div class="chips">${chip('all', 'Alle')}${chip('withDraft', 'Mit Entwurf')}${chip('noVer', 'Noch ohne Version')}${chip('old', 'Entwurf älter als 90 Tage')}</div>`;
+  if (!list.length) return `${tools}${phoneHelp()}${emptyState()}`;
+  const ck = S.checked.filter((id) => list.some((b) => b.id === id));
+  const bulk = ck.length ? `<div class="bulk"><b>${ck.length} ausgewählt</b><span style="flex:1"></span><button class="btn btn--sm">Als Datei sichern</button><button class="btn btn--sm" data-act="bulkdel">Löschen</button><button class="linkbtn" data-act="uncheck">Auswahl aufheben</button></div>` : '';
+  const row = (b) => {
+    const renaming = S.sc === 'rename' && b.id === 'pbf';
+    return `<div class="tr ${ck.includes(b.id) ? 'is-checked' : ''} ${b.type === 'free' ? 'is-free' : ''} ${b.isNew ? 'is-new' : ''}" style="${tint(b)}">
+      <input type="checkbox" data-act="check" data-id="${b.id}" ${ck.includes(b.id) ? 'checked' : ''} aria-label="${b.name} auswählen">
+      <span class="c-prev">${mini(b)}</span>
+      <span class="nmc">${ico(b, true)}<span style="min-width:0">${renaming ? `<span class="search" style="display:block"><input value="Preisbox Frühjahr 2027" aria-label="Name"><button class="x" aria-label="Name leeren">×</button></span>` : `<b>${b.name}<span class="own">eigen</span></b><small>${fromText(b)}</small>`}</span></span>
+      <span class="c-stat" style="display:flex;flex-wrap:wrap;gap:.25rem">${status(b, true)}</span>
+      <span class="c-uses muted">${b.uses ? `${b.uses} ${b.uses === 1 ? 'Vorlage' : 'Vorlagen'}` : '–'}</span>
+      <span class="c-when muted">${today(b)}</span>
+      <span class="acts"><span class="rel"><button class="mini-x" data-act="menu" data-id="${b.id}" aria-label="Weitere Aktionen">⋯</button>${S.menu === b.id ? menuHtml(b) : ''}</span><button class="mini-x" data-act="del" data-id="${b.id}" aria-label="${b.name} löschen">×</button></span>
+    </div>`;
+  };
+  return `${tools}${phoneHelp()}${bulk}<div class="tbl" role="table"><div class="tr th"><span></span><span>Vorschau</span><span>Name</span><span>Status</span><span>Verwendet in</span><span>Geändert</span><span></span></div>${list.map(row).join('')}</div>`;
+}
+
+function overview() {
+  const n = S.sc === 'empty' ? '' : '3 Bausteine, 5 Entwürfe';
+  const view = { A: viewA, B: viewB, C: viewC }[S.v]();
+  return `${header()}<main class="page">
+    <div class="page-head"><h2>Eigene Bausteine</h2><p>${n ? `${n}. ` : ''}Hier verwalten Sie Ihre Bausteine und Entwürfe. Entwürfe sehen nur Sie, in Vorlagen landet nur eine gespeicherte Version.</p></div>
+    ${banners()}${view}${trust()}
+  </main>${footer()}`;
+}
+
+/* start page */
+const icoBlank = '<svg class="start-icon" viewBox="0 0 56 56" aria-hidden="true"><path d="M14 6h20l10 10v32a3 3 0 0 1-3 3H14a3 3 0 0 1-3-3V9a3 3 0 0 1 3-3z" class="ic-paper"/><path d="M34 6v10h10" class="ic-line"/><circle cx="40" cy="42" r="10" class="ic-accent"/><path d="M40 37v10M35 42h10" class="ic-plus"/></svg>';
+const icoLang = (flag) => `<span style="position:relative;display:inline-block"><svg class="start-icon" viewBox="0 0 56 56" aria-hidden="true"><rect x="8" y="4" width="30" height="40" rx="3" class="ic-paper"/><rect x="12" y="8" width="22" height="7" rx="1.5" class="ic-dark"/><rect x="12" y="19" width="22" height="2" rx="1" class="ic-text"/><rect x="12" y="23" width="22" height="2" rx="1" class="ic-text"/><rect x="12" y="27" width="14" height="2" rx="1" class="ic-text"/></svg><span class="flag" style="position:absolute;right:0;bottom:.4rem;background:${flag}"></span></span>`;
+const icoBlock = '<svg class="start-icon" viewBox="0 0 56 56" aria-hidden="true"><rect x="6" y="8" width="34" height="11" rx="2.5" fill="url(#stp)"/><rect x="6" y="22" width="16" height="15" rx="2.5" fill="#e8f4ff"/><rect x="24" y="22" width="16" height="15" rx="2.5" fill="#e8f4ff" opacity=".55"/><rect x="6" y="40" width="20" height="6" rx="2" fill="#7ecfff"/><circle cx="42" cy="42" r="10" class="ic-accent"/><path d="M42 37v10M37 42h10" class="ic-plus"/></svg>';
+const DE = 'linear-gradient(#111 0 33%, #d00 33% 66%, #fc0 66%)';
+const UK = 'linear-gradient(90deg, transparent 42%, #c8102e 42% 58%, transparent 58%), linear-gradient(transparent 38%, #c8102e 38% 62%, transparent 62%), #012169';
+
+function startPage() {
+  const empty = S.sc === 'empty';
+  const own = ALL.filter((b) => b.ver > 0 || b.draft !== null).slice(0, 4);
+  const footB = S.v === 'B' && !empty ? '<span class="tfoot"><span>3 Bausteine · 5 Entwürfe</span><a href="#">Übersicht →</a></span>' : '';
+  const blockTile = isPhone() ? '' : `<button class="start-tile blockt is-new">${icoBlock}<b>Neuer Baustein</b><span>Eigenen Baustein aus Teilen bauen, für jede Vorlage</span>${footB}</button>`;
+  const ownSec = S.v === 'A' && !empty ? `<div class="is-new"><h3 class="start-sec"><span>Eigene Bausteine</span><a href="#">Alle anzeigen (8)</a></h3><div class="minirow">${own.map((b) => `<div class="mcard ${b.type === 'free' ? 'is-free' : ''}" style="${tint(b)}">${mini(b)}<div class="cap">${ico(b, true)}<span><b>${b.name}</b><br><span style="color:var(--ds-text-muted)">${b.draft !== null ? (b.ver ? 'Entwurf offen' : 'Entwurf') : `Version ${b.ver}`}</span></span></div></div>`).join('')}</div></div>` : '';
+  return `${startHeader()}<main class="start">
+    <header><h2 class="start-title">Willkommen zurück</h2><p class="start-lead">Neuen Newsletter beginnen oder dort weitermachen, wo Sie aufgehört haben.</p></header>
+    <div><h3 class="start-sec"><span>Neu anfangen</span></h3><div class="start-tiles">
+      <button class="start-tile is-primary">${icoBlank}<b>Leerer Newsletter</b><span>Ohne Vorlage starten, Texte auf Deutsch</span></button>
+      <button class="start-tile lang" style="--t:#fc0">${icoLang(DE)}<b>Beispielvorlage Deutsch</b><span>CloudLib.EU, fertig gefüllt zum Ausprobieren</span><span class="tfoot"><span></span><span>DE · AT · CH</span></span></button>
+      <button class="start-tile lang" style="--t:#3b6fd8">${icoLang(UK)}<b>Beispielvorlage Englisch</b><span>CloudLib.EU auf Englisch, fertig gefüllt</span><span class="tfoot"><span></span><span>UK · US · CA · AU · NZ · IE</span></span></button>
+      ${blockTile}
+    </div>${isPhone() ? '<p class="helper" style="margin-top:.6rem">„Neuer Baustein“ erscheint ab Tablet-Breite.</p>' : ''}</div>
+    ${ownSec}
+    <div><h3 class="start-sec"><span>Zuletzt verwendet</span></h3><ul class="recent">
+      <li><span class="doc"></span><span><b>Frühjahrsangebot 2027</b><br><small>Auszeit am See</small></span><small>heute</small></li>
+      <li><span class="doc"></span><span><b>Messe Oktober</b><br><small>Treffen Sie uns in Halle 4</small></span><small>3. Okt.</small></li>
+    </ul></div>
+  </main>${footer()}`;
+}
+
+function startMenu() {
+  const empty = S.sc === 'empty';
+  const it = (tile, t, hint = '', cls = '', dis = false) => `<button class="it ${cls}" ${dis ? 'aria-disabled="true"' : ''}><span class="tile ${tile[1] || ''}">${tile[0]}</span><span>${t}${hint ? `<span class="hint">${hint}</span>` : ''}</span></button>`;
+  const newBlock = isPhone() ? '' : it(['◆', 'tile--free'], 'Neuer Baustein', 'Aus Teilen bauen', 'is-new');
+  const ownHint = empty ? 'Noch keine eigenen Bausteine' : '3 Bausteine, 5 Entwürfe';
+  const ownItem = (t) => it(['▦'], t, ownHint, 'is-new', empty);
+  let body = '';
+  const base = it(['＋'], 'Leerer Newsletter', 'Ohne Vorlage starten, Texte auf Deutsch') + it(['DE'], 'Beispielvorlage Deutsch', 'DE · AT · CH') + it(['UK'], 'Beispielvorlage Englisch', 'UK · US · CA · AU · NZ · IE');
+  if (S.v === 'A') body = `<div class="lbl">Neu anfangen</div>${base}${newBlock}<div class="lbl">Gespeicherte Vorlagen</div>${it(['📁'], 'Öffnen …')}<div class="lbl is-new">Eigene Bausteine</div>${ownItem('Übersicht öffnen')}`;
+  if (S.v === 'B') body = `<div class="lbl">Neu anfangen</div>${base}${newBlock}<div class="lbl is-new">Gespeichert</div>${it(['📁'], 'Vorlagen öffnen …')}${ownItem('Eigene Bausteine')}`;
+  if (S.v === 'C') body = `<div class="lbl">Neu anfangen</div>${base}<div class="lbl is-new">Bausteine</div>${newBlock}${ownItem('Eigene Bausteine verwalten')}<div class="lbl">Gespeicherte Vorlagen</div>${it(['📁'], 'Öffnen …')}`;
+  return `${startPage()}<div class="scrim"></div><div class="smenu" role="menu"><div class="h"><small>Startseite</small>Womit möchten Sie anfangen?</div>${body}
+    <div class="danger">${it(['↺'], 'Alles auf Standard zurücksetzen …')}</div></div>`;
+}
+
+function dialog() {
+  if (S.sc !== 'oldDlg') return '';
+  const days = Number(S.days || 90);
+  const hit = ALL.filter((b) => b.draft !== null && b.draft > days);
+  return `<div class="backdrop" data-act="closeDlg"><div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlgT" data-stop="1">
+    <div class="dlg-head"><span class="hi">!</span><h2 id="dlgT">Alte Entwürfe löschen?</h2><button class="dlg-x" data-act="closeDlg" aria-label="Schließen">×</button></div>
+    <div class="dlg-body">
+      <div class="field"><label for="days">Entwürfe, die länger nicht geändert wurden als</label><select class="sel" id="days">${[[30, '30 Tage'], [90, '90 Tage'], [180, '6 Monate'], [365, '1 Jahr']].map(([v, t]) => `<option value="${v}" ${v === days ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
+      <div class="conseq"><b>${hit.length ? `${hit.length} ${hit.length === 1 ? 'Entwurf wird' : 'Entwürfe werden'} aus diesem Browser gelöscht:` : 'Kein Entwurf ist so alt.'}</b>
+        ${hit.map((b) => `<div class="r"><span>${b.name}</span><small>${b.draftWhen}</small></div>`).join('')}
+        <small>Gespeicherte Versionen bleiben erhalten. Danach haben Sie 8 Sekunden für „Rückgängig“.</small></div>
+    </div>
+    <div class="dlg-foot"><button class="btn">Erst als Datei sichern</button><button class="btn" data-act="closeDlg">Abbrechen</button><button class="btn btn--danger" ${hit.length ? '' : 'disabled'}>Löschen</button></div>
+  </div></div>`;
+}
+function snack() {
+  if (S.sc === 'deleted' || S.undo.length) {
+    const gone = S.undo.length ? ALL.filter((x) => S.undo.includes(x.id)) : [ALL.find((x) => x.id === 'kk')];
+    const uses = gone.reduce((n, x) => n + x.uses, 0);
+    const extra = uses ? `<small>${uses === 1 ? 'Die Vorlage, die ihn nutzt, behält ihre' : `Die ${uses} Vorlagen, die ${gone.length > 1 ? 'sie' : 'ihn'} nutzen, behalten ihre`} Kopie.</small>` : '';
+    return `<div class="snack" role="status"><span>${gone.length > 1 ? `${gone.length} Bausteine gelöscht.` : `„${gone[0].name}“ gelöscht.`}${extra}</span><button class="btn btn--sm" data-act="restore">Rückgängig</button><span class="tmr"></span></div>`;
+  }
+  return '';
+}
+
+function render() {
+  if (!['ov', 'start', 'menu'].includes(S.area)) S.area = 'ov';
+  if (S.sc === 'nohit') S.q = S.q || 'Newsletter-Kopf';
+  document.querySelectorAll('.mk .seg').forEach((g) => g.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(S[g.dataset.k] === b.dataset.v))));
+  const areaNote = S.area === 'ov' ? `<b>Szene:</b> ${SCN[S.sc]}` : S.area === 'start' ? '<b>Startseite:</b> Kachel „Neuer Baustein“ als vierte Kachel unter „Neu anfangen“ (Entscheidung 15), gestreiftes Symbol wie freie Bausteine (54). Szene „Leer“ zeigt den Zustand ohne eigene Bausteine.' : '<b>Startmenü ⋮:</b> Eintrag „Neuer Baustein“ und ein Weg zur Übersicht. Szene „Leer“: Eintrag ausgegraut mit Hinweis, wie heute bei „Gespeicherte Vorlagen“.';
+  document.getElementById('mknote').innerHTML = `${NOTES[S.v]}<br>${areaNote}${isPhone() ? '<br><b>Handy:</b> nur ansehen und verwalten (Entscheidung 37). „Neuer Baustein“ und „Bearbeiten“ fehlen, statt ausgegraut zu sein.' : ''}`;
+  document.getElementById('showNew').checked = S.showNew;
+  document.body.classList.toggle('hide-new', !S.showNew);
+  document.body.classList.toggle('phone', isPhone());
+  document.getElementById('frame').innerHTML = S.area === 'ov' ? overview() : S.area === 'start' ? startPage() : startMenu();
+  document.getElementById('overlay').innerHTML = S.area === 'ov' ? dialog() + snack() : '';
+  try { const { menu, undo, phoneDetail, checked, ...keep } = S; localStorage.setItem('mk-r3-overview', JSON.stringify(keep)); } catch {}
+}
+
+document.addEventListener('click', (e) => {
+  const mk = e.target.closest('.mk .seg button');
+  if (mk) {
+    const k = mk.parentElement.dataset.k; S[k] = mk.dataset.v;
+    if (k === 'sc') { S.q = ''; S.menu = ''; S.undo = []; ALL.forEach((b) => { b.gone = false; }); S.filter = 'all'; if (S.sc !== 'normal') S.area = 'ov'; }
+    if (k === 'v') { S.filter = 'all'; S.checked = []; }
+    if (k === 'area' && S.sc !== 'empty') S.sc = 'normal';
+    render(); return;
+  }
+  const t = e.target.closest('[data-act]');
+  if (!t) { if (S.menu) { S.menu = ''; render(); } return; }
+  const a = t.dataset.act, id = t.dataset.id;
+  if (a === 'menu') S.menu = S.menu === id ? '' : id;
+  else if (a === 'more') S.menu = S.menu === '_more' ? '' : '_more';
+  else if (a === 'filter') S.filter = t.dataset.f;
+  else if (a === 'clearq') { S.q = ''; if (S.sc === 'nohit') S.sc = 'normal'; }
+  else if (a === 'del') { S.undo = [id]; S.sc = 'normal'; ALL.find((b) => b.id === id).gone = true; }
+  else if (a === 'restore') { S.undo.forEach((x) => { ALL.find((b) => b.id === x).gone = false; }); S.undo = []; if (S.sc === 'deleted') S.sc = 'normal'; }
+  else if (a === 'old') { S.sc = 'oldDlg'; S.menu = ''; }
+  else if (a === 'closeDlg') { if (e.target.closest('[data-stop]') && !e.target.closest('.dlg-x, .btn')) return; S.sc = 'normal'; }
+  else if (a === 'rename') { S.sc = 'rename'; S.menu = ''; }
+  else if (a === 'pick') { S.sel = id; S.phoneDetail = true; }
+  else if (a === 'phoneBack') S.phoneDetail = false;
+  else if (a === 'check') { S.checked = S.checked.includes(id) ? S.checked.filter((x) => x !== id) : [...S.checked, id]; }
+  else if (a === 'uncheck') S.checked = [];
+  else if (a === 'bulkdel') { S.undo = [...S.checked]; S.checked.forEach((x) => { ALL.find((b) => b.id === x).gone = true; }); S.checked = []; }
+  else if (a === 'smenu') S.area = 'menu';
+  else if (a !== 'noop') return;
+  else S.menu = '';
+  render();
+});
+document.addEventListener('input', (e) => { if (e.target.id === 'q') { S.q = e.target.value; if (S.sc === 'nohit') S.sc = 'normal'; const pos = e.target.selectionStart; render(); const q = document.getElementById('q'); if (q) { q.focus(); q.setSelectionRange(pos, pos); } } });
+document.addEventListener('change', (e) => {
+  if (e.target.id === 'showNew') S.showNew = e.target.checked;
+  else if (e.target.id === 'sort') S.sort = e.target.value;
+  else if (e.target.id === 'days') S.days = e.target.value;
+  else return;
+  render();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { S.menu = ''; if (['oldDlg', 'rename'].includes(S.sc)) S.sc = 'normal'; render(); } });
+render();
+</script>
+</body>
+</html>
