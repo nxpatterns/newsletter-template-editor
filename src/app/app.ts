@@ -14,6 +14,7 @@ import {
   type LegalModalKind,
 } from './ui/legal-modal/legal-modal.component';
 import { FileMenuComponent } from './shell/file-menu.component';
+import { LanguageMenuComponent } from './shell/language-menu.component';
 import { StartMenuComponent } from './shell/start-menu.component';
 import { UnsavedGuardService } from './shell/unsaved-guard.service';
 import { SnackbarComponent } from './ui/snackbar/snackbar.component';
@@ -30,6 +31,7 @@ import { SnackbarComponent } from './ui/snackbar/snackbar.component';
     BlockEditModalComponent,
     ConfirmDialogComponent,
     FileMenuComponent,
+    LanguageMenuComponent,
     StartMenuComponent,
   ],
   selector: 'app-root',
@@ -70,10 +72,6 @@ export class App {
 
   protected closeLegal(): void {
     this.legalKind.set(null);
-  }
-
-  protected setLocale(code: 'en' | 'de'): void {
-    this.i18n.setLocale(code);
   }
 
   protected onDocumentKeydown(event: KeyboardEvent): void {

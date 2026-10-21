@@ -181,8 +181,9 @@ Then('the preview should contain {string}', async ({ page }, text: string) => {
 });
 
 When('I switch the app language to {string}', async ({ page }, lang: string) => {
+  await page.getByTestId('locale-menu-trigger').click();
   await page.getByTestId(`locale-${lang}`).click();
-  await expect(page.getByTestId(`locale-${lang}`)).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('html')).toHaveAttribute('lang', lang);
 });
 
 Then('the preview should not contain {string}', async ({ page }, text: string) => {

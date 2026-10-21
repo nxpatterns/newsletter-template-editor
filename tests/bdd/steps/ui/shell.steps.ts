@@ -14,8 +14,7 @@ Then('the document should not scroll', async ({ page }) => {
 });
 
 Then('I should see the locale switcher', async ({ page }) => {
-  await expect(page.getByTestId('locale-en')).toBeVisible();
-  await expect(page.getByTestId('locale-de')).toBeVisible();
+  await expect(page.getByTestId('locale-menu-trigger')).toBeVisible();
 });
 
 When('I open the impressum footer link', async ({ page }) => {

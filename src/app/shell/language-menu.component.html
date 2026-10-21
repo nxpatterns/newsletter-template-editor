@@ -1,0 +1,100 @@
+<div class="lang-menu" #root data-testid="locale-menu">
+  <button
+    #trigger
+    type="button"
+    class="lang-menu-trigger"
+    data-testid="locale-menu-trigger"
+    aria-haspopup="menu"
+    [attr.aria-expanded]="open()"
+    [attr.aria-label]="i18n.t('action.locale')"
+    [attr.title]="i18n.t('action.locale')"
+    (click)="toggle($event)"
+  >
+    <span class="lang-menu-globe"><app-menu-icon name="globe" /></span>
+    <span [textContent]="i18n.locale().toUpperCase()"></span>
+  </button>
+
+  @if (open()) {
+    <div class="file-menu-panel lang-menu-panel" #panel data-testid="locale-menu-panel" (keydown)="onKeydown($event)">
+      <div class="file-menu-head">
+        <span class="file-menu-eyebrow" [textContent]="i18n.t('locale.menuEyebrow')"></span>
+        <b class="file-menu-head-title" [textContent]="i18n.t('locale.menuTitle')"></b>
+      </div>
+
+      @if (showSearch()) {
+        <div class="lang-menu-search">
+          <input
+            data-search
+            type="search"
+            class="lang-menu-search-input"
+            data-testid="locale-search"
+            autocomplete="off"
+            spellcheck="false"
+            [attr.aria-label]="i18n.t('locale.search')"
+            [placeholder]="i18n.t('locale.search')"
+            [value]="query()"
+            (input)="onQuery($event)"
+          />
+        </div>
+      }
+
+      <div class="file-menu-body lang-menu-body" role="menu" [attr.aria-label]="i18n.t('locale.menuTitle')">
+        @if (available().length) {
+          <div role="group" aria-labelledby="lang-menu-available">
+            <div class="file-menu-section-label" id="lang-menu-available" [textContent]="i18n.t('locale.sectionAvailable')"></div>
+            @for (e of available(); track e.code) {
+              <button
+                type="button"
+                class="file-menu-item"
+                role="menuitemradio"
+                [attr.data-testid]="'locale-' + e.code"
+                [attr.aria-checked]="e.code === i18n.locale()"
+                (click)="choose(e.code)"
+              >
+                <span class="file-menu-tile lang-menu-tile" [textContent]="e.code.toUpperCase()"></span>
+                <span class="lang-menu-names">
+                  <span class="lang-menu-endonym" [attr.lang]="e.code" [attr.dir]="e.dir" [textContent]="e.endonym"></span>
+                  @if (e.localName !== e.endonym) {
+                    <span class="file-menu-hint" [textContent]="e.localName"></span>
+                  }
+                </span>
+                @if (e.code === i18n.locale()) {
+                  <span class="lang-menu-check"><app-menu-icon name="check" /></span>
+                }
+              </button>
+            }
+          </div>
+        }
+
+        @if (soon().length) {
+          <div role="group" aria-labelledby="lang-menu-soon">
+            <div class="file-menu-section-label" id="lang-menu-soon" [textContent]="i18n.t('locale.sectionSoon')"></div>
+            @for (e of soon(); track e.code) {
+              <div
+                class="lang-menu-row"
+                role="menuitemradio"
+                aria-checked="false"
+                aria-disabled="true"
+                [attr.data-testid]="'locale-soon-' + e.code"
+              >
+                <span class="file-menu-tile lang-menu-tile" [textContent]="e.code.toUpperCase()"></span>
+                <span class="lang-menu-names">
+                  <span class="lang-menu-endonym" [attr.lang]="e.code" [attr.dir]="e.dir" [textContent]="e.endonym"></span>
+                  @if (e.localName !== e.endonym) {
+                    <span class="file-menu-hint" [textContent]="e.localName"></span>
+                  }
+                </span>
+              </div>
+            }
+          </div>
+        }
+
+        @if (!available().length && !soon().length) {
+          <p class="lang-menu-empty" data-testid="locale-search-empty" [textContent]="i18n.t('locale.searchEmpty')"></p>
+        }
+      </div>
+
+      <p class="lang-menu-foot" [textContent]="i18n.t('locale.communityHint')"></p>
+    </div>
+  }
+</div>

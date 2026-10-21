@@ -1,16 +1,7 @@
 import { isPlatformBrowser } from '@angular/common';
 import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
-import { DE } from './catalogs/de';
-import { EN } from './catalogs/en';
-import {
-  DEFAULT_LOCALE,
-  LOCALE_STORAGE_KEY,
-  type Locale,
-  type MessageCatalog,
-  LOCALES,
-} from './types';
-
-const CATALOGS: Record<Locale, MessageCatalog> = { en: EN, de: DE };
+import { CATALOGS, LOCALES } from './catalogs';
+import { DEFAULT_LOCALE, LOCALE_STORAGE_KEY, type Locale } from './types';
 
 @Injectable({ providedIn: 'root' })
 export class LocaleService {
@@ -44,10 +35,6 @@ export class LocaleService {
     this.apply(next, true);
   }
 
-  toggleLocale(): void {
-    this.setLocale(this.localeSignal() === 'en' ? 'de' : 'en');
-  }
-
   private apply(next: Locale, persist: boolean): void {
     this.localeSignal.set(next);
     if (!isPlatformBrowser(this.platformId)) return;
@@ -58,7 +45,6 @@ export class LocaleService {
   }
 
   private parseLocale(value: string | null): Locale | null {
-    if (value === 'en' || value === 'de') return value;
-    return null;
+    return LOCALES.find((l) => l === value) ?? null;
   }
 }

@@ -1,6 +1,7 @@
-export type Locale = 'en' | 'de';
+import type { CATALOGS } from './catalogs';
 
-export const LOCALES: readonly Locale[] = ['en', 'de'] as const;
+/** UI languages that have a catalog. */
+export type Locale = keyof typeof CATALOGS;
 
 export const DEFAULT_LOCALE: Locale = 'en';
 

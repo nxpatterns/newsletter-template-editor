@@ -87,7 +87,7 @@ Then('the browser should keep no app state except the language', async ({ page }
 });
 
 Then('the app language should be {string}', async ({ page }, lang: string) => {
-  await expect(page.getByTestId(`locale-${lang}`)).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('html')).toHaveAttribute('lang', lang);
 });
 
 const LONG_NAME = 'Herbstaktion-2026-'.repeat(15).slice(0, 255);

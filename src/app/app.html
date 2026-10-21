@@ -130,26 +130,7 @@
           <app-start-menu />
         }
 
-        <div class="locale-switch" role="group" [attr.aria-label]="i18n.t('action.locale')">
-          <button
-            type="button"
-            class="locale-btn"
-            data-testid="locale-en"
-            [class.is-active]="i18n.locale() === 'en'"
-            [attr.aria-pressed]="i18n.locale() === 'en'"
-            [textContent]="i18n.t('locale.en')"
-            (click)="setLocale('en')"
-          ></button>
-          <button
-            type="button"
-            class="locale-btn"
-            data-testid="locale-de"
-            [class.is-active]="i18n.locale() === 'de'"
-            [attr.aria-pressed]="i18n.locale() === 'de'"
-            [textContent]="i18n.t('locale.de')"
-            (click)="setLocale('de')"
-          ></button>
-        </div>
+        <app-language-menu />
       </div>
     </div>
   </header>

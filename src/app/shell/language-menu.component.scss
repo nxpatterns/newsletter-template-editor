@@ -1,0 +1,142 @@
+@use './dropdown-menu';
+
+:host {
+  display: contents;
+}
+
+.lang-menu {
+  position: relative;
+}
+
+/* Same 2.75rem footprint as the other header triggers, plus the language code. */
+.lang-menu-trigger {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-inline-size: 2.75rem;
+  min-block-size: 2.75rem;
+  margin: 0;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius);
+  padding: 0 0.65rem;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ds-text);
+  background: transparent;
+  cursor: pointer;
+}
+
+.lang-menu-trigger:hover,
+.lang-menu-trigger[aria-expanded='true'] {
+  background: color-mix(in srgb, var(--ds-accent) 16%, var(--ds-bg-panel));
+}
+
+.lang-menu-trigger:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: -2px;
+}
+
+.lang-menu-globe,
+.lang-menu-check {
+  display: inline-flex;
+  color: var(--ds-accent);
+}
+
+.lang-menu-check {
+  margin-inline-start: auto;
+}
+
+/* Head, search and community hint stay put; only the language list scrolls. */
+.lang-menu-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.lang-menu-body {
+  min-height: 0;
+  overflow: auto;
+}
+
+.lang-menu-tile {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.lang-menu-names {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.lang-menu-endonym {
+  overflow-wrap: anywhere;
+}
+
+/* Planned language without a catalog: listed, not a button. */
+.lang-menu-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.42rem 0.9rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ds-text-muted);
+  cursor: default;
+}
+
+.lang-menu-row .file-menu-tile {
+  border-color: var(--ds-border);
+  color: var(--ds-text-muted);
+  background: transparent;
+}
+
+.lang-menu-search {
+  flex: none;
+  padding: 0.6rem 0.75rem 0.3rem;
+}
+
+.lang-menu-search-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-block-size: 2.25rem;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius);
+  padding: 0 0.6rem;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--ds-text);
+  background: color-mix(in srgb, var(--ds-bg-page) 60%, transparent);
+}
+
+.lang-menu-search-input::placeholder {
+  color: var(--ds-text-muted);
+}
+
+.lang-menu-search-input:focus-visible {
+  border-color: var(--ds-accent);
+  outline: 2px solid var(--ds-accent);
+  outline-offset: -2px;
+}
+
+.lang-menu-empty {
+  margin: 0;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.72rem;
+  color: var(--ds-text-muted);
+}
+
+.lang-menu-foot {
+  flex: none;
+  margin: 0;
+  border-block-start: 1px solid color-mix(in srgb, #fff 8%, transparent);
+  padding: 0.55rem 0.9rem 0.65rem;
+  font-size: 0.68rem;
+  color: var(--ds-text-muted);
+}
