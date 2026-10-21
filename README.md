@@ -47,7 +47,7 @@ One-shot (no watch):
 npm test -- --watch=false
 ```
 
-Browser BDD (playwright-bdd; starts `ng serve` on port 4173):
+Browser BDD (playwright-bdd; starts `ng serve` on port 4173, override inline, e.g. `BDD_PORT=4199 npm run test:bdd`):
 
 ```bash
 npm run test:bdd
@@ -104,3 +104,7 @@ Product concepts: `docs/concepts/` (file management, email colors, block editing
 - Design system snackbar (full-width bar above footer, 3s auto-dismiss, pause on hover)
 - Tests: Vitest + playwright-bdd
 - Hosting: GitHub Actions → GitHub Pages (**tag releases only**)
+
+## How this project is built
+
+Built with AI assistance. Every change is reviewed and tested by the maintainer.

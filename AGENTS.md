@@ -11,12 +11,6 @@ Newsletter Template Editor for Listmonk with an example CloudLib.EU template.
 
 **No env files in this repo. Ever.** Not `.env`, not `.env.example`, not “gitignored local” files.
 
-## Absolute rule — English only
-
-**All project documents are written in English only** — including `AGENTS.md`, README, docs under `docs/`, session notes, comments in docs, and any new markdown you create.
-
-Exception only when the user explicitly names another language for a specific artifact. Chat with the user may follow their language; repo documents do not.
-
 ## Absolute rule — release gate
 
 **Before every release (version bump, tag, or deploy trigger): run the full local test suite and only proceed if it is green.**
@@ -61,6 +55,30 @@ When touching `src/core/render/`, prefer classes in `email-css.ts` / shared emai
 - One task, one fresh session. Start each new independent task in a fresh thread/session with small context; never keep feeding a long session. Decisions live in project memory and repo docs, not chat history.
 
 If a session starts burning many steps on something that should be a two-edit change, you are doing it wrong — simplify and finish.
+
+
+## Task size and workflow
+
+State the size in your first reply; the maintainer may override it.
+
+| Size | Scope | Before building | Tests |
+| --- | --- | --- | --- |
+| S | text, label, color, spacing, removing an element, bug in one file | nothing; state the key assumption in one line; no mockups | affected tests only |
+| M | new element in an existing style | assumptions plus at most 5 numbered questions, each with a recommendation; ask once "mockups or build directly?" (default: build directly) | affected and new tests; harden the new ones |
+| L | new pattern or feature | numbered questions, concept doc, then 3 mockup variants; build only after explicit OK | affected and new tests; full hardening |
+
+- UI work: read `docs/guidelines/ui-principles.md` first.
+- Hardening = `--repeat-each 40` plus a negative check against a deliberately broken app, only for tests new or changed in the task.
+- Run affected tests with a quiet reporter (failures only). CI/CD runs the full suite before every deployment.
+- BDD port: env var `BDD_PORT` (default 4173), set inline. Use another free port when another BDD run may be active.
+- Threads: a new task or area gets a new thread; follow-ups in the same area stay in the existing one. Say when a fresh context would be better.
+
+## Commits and branches
+
+- Commit freely on your own branch named `YYYY-MM-DD--HH-MM--short-task-slug` (local time), e.g. `2026-10-21--14-20--bdd-port`. Rename an auto-created worktree branch with `git branch -m`.
+- Never commit on `main`. Never push. No pull requests before v1.0.
+- When the task is done, name the branch and say it is ready to merge; the maintainer merges.
+- Git-ignored files (`docs/sessions/`, `.claude/settings.local.json`) do not travel with a branch; write them in the main checkout.
 
 ## Documentation
 
