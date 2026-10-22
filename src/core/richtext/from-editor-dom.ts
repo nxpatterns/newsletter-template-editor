@@ -70,6 +70,15 @@ function walk(node: Node, marks: RichMarks, into: RichInline[]): void {
     return;
   }
   if (tag === 'script' || tag === 'style') return;
+  if (el.hasAttribute('data-rt-name')) {
+    into.push({
+      type: 'name',
+      lead: el.getAttribute('data-lead') ?? '',
+      fallback: el.getAttribute('data-fallback') ?? '',
+      marks: Object.keys(marks).length ? { ...marks } : undefined,
+    });
+    return;
+  }
   const next = marksFromClassList(el, marks);
   el.childNodes.forEach((ch) => walk(ch, next, into));
 }

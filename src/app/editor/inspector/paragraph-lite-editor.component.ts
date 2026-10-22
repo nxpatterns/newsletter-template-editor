@@ -25,6 +25,8 @@ import {
   cleanAiCharsOnDoc,
   clearMarksOnDoc,
   compactDoc,
+  insertNamePiece,
+  setNamePiece,
   EMAIL_CONTENT_WIDTH_PX,
   isRichColorToken,
   isRichSizeToken,
@@ -171,6 +173,8 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   protected readonly linkNewTab = signal(true);
   /** Popover position inside .rt-kit, right under the text it belongs to. */
   protected readonly linkPos = signal({ top: 0, left: 0, arrow: 16 });
+  /** Open "name or fallback" piece (decision 80): its index in the text and its words. */
+  protected readonly nameEdit = signal<{ index: number; lead: string; fallback: string } | null>(null);
   protected readonly linkKinds: readonly LinkKind[] = ['web', 'email', 'phone'];
   protected readonly linkPlaceholders: Record<LinkKind, string> = {
     web: 'example.com',
@@ -343,6 +347,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     root.innerHTML = richDocToHtml(d, {
       forEditor: true,
       highlightSuspicious: false,
+      nameWord: this.i18n.t('rt.nameWord'),
     });
     this.suspiciousCount.set(richDocSuspiciousCount(d));
     this.suspiciousKinds.set(richDocSuspiciousBreakdown(d));
@@ -855,9 +860,68 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     this.showLinkPopover(range.getBoundingClientRect());
   }
 
+  /** Toolbar "Name": insert the piece at the cursor (or at the end) with the greeting's words. */
+  protected insertName(): void {
+    if (this.infoMode()) return;
+    const root = this.editorHost()?.nativeElement;
+    if (!root) return;
+    const bm = this.captureSelectionBookmark() ?? this.bookmarkFromSavedRange();
+    const doc = richDocFromEditorRoot(root);
+    const at = bm ? bm.end : Number.MAX_SAFE_INTEGER;
+    const texts = this.session.blockDefaultTexts();
+    const next = insertNamePiece(doc, at, { lead: texts.greetingNameLead, fallback: texts.greetingText });
+    this.commitDoc(next.doc, true, bm ? { start: bm.end, end: bm.end } : null);
+    this.openNameEdit(next.index);
+  }
+
+  private openNameEdit(index: number): void {
+    const el = this.editorHost()?.nativeElement.querySelectorAll('[data-rt-name]')[index] as HTMLElement | undefined;
+    if (!el) return;
+    this.linkOpen.set(false);
+    this.nameEdit.set({ index, lead: el.getAttribute('data-lead') ?? '', fallback: el.getAttribute('data-fallback') ?? '' });
+    const kit = this.kitHost()?.nativeElement;
+    if (kit) {
+      const rect = el.getBoundingClientRect();
+      const box = kit.getBoundingClientRect();
+      const width = Math.min(352, box.width);
+      const left = Math.max(0, Math.min(rect.left - box.left - 16, box.width - width));
+      const arrow = Math.max(12, Math.min(rect.left - box.left - left + Math.min(rect.width, 40) / 2, width - 24));
+      this.linkPos.set({ top: rect.bottom - box.top + 10, left, arrow });
+    }
+    afterNextRender(() => this.kitHost()?.nativeElement.querySelector('.rt-name-pop')?.scrollIntoView({ block: 'nearest' }), { injector: this.injector });
+  }
+
+  /** Change the open piece's words. */
+  protected setNameField(field: 'lead' | 'fallback', value: string): void {
+    const open = this.nameEdit();
+    const root = this.editorHost()?.nativeElement;
+    if (!open || !root) return;
+    this.nameEdit.set({ ...open, [field]: value });
+    this.commitDoc(setNamePiece(richDocFromEditorRoot(root), open.index, { [field]: value }), true);
+  }
+
+  protected removeName(): void {
+    const open = this.nameEdit();
+    const root = this.editorHost()?.nativeElement;
+    if (!open || !root) return;
+    this.nameEdit.set(null);
+    this.commitDoc(setNamePiece(richDocFromEditorRoot(root), open.index, null), true);
+  }
+
+  protected closeName(): void {
+    this.nameEdit.set(null);
+    this.focusEditor();
+  }
+
   protected onEditorClick(event: MouseEvent): void {
     this.captureSelection();
     const t = event.target as HTMLElement | null;
+    const piece = t?.closest?.('[data-rt-name]');
+    if (piece && !this.infoMode()) {
+      const all = Array.from(this.editorHost()?.nativeElement.querySelectorAll('[data-rt-name]') ?? []);
+      this.openNameEdit(all.indexOf(piece));
+      return;
+    }
     if (this.infoMode()) {
       // Read-only: a link click explains the link instead of opening the link editor.
       if (t?.closest?.('a')) event.preventDefault();
@@ -1197,7 +1261,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
       this.applying = true;
       const root = this.editorHost()?.nativeElement;
       if (root) {
-        root.innerHTML = richDocToHtml(next, { forEditor: true, highlightSuspicious: false });
+        root.innerHTML = richDocToHtml(next, { forEditor: true, highlightSuspicious: false, nameWord: this.i18n.t('rt.nameWord') });
       }
       this.applying = false;
       this.savedRange = null;

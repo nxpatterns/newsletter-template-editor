@@ -84,6 +84,9 @@
       <button type="button" class="ed-btn" data-testid="rt-link" data-rt-edit [title]="i18n.t(hasCursor() ? 'rt.link' : 'rt.linkForm.needCursor')" [attr.aria-label]="i18n.t('rt.link')" [disabled]="infoMode() || !hasCursor()" (mousedown)="captureSelection($event)" (click)="openLink()">
         <svg class="rt-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M10.6 13.4a1 1 0 0 1 0-1.4l3.5-3.5a3 3 0 0 1 4.2 4.2l-2 2-1.4-1.4 2-2a1 1 0 0 0-1.4-1.4L12 13.4a1 1 0 0 1-1.4 0ZM13.4 10.6a1 1 0 0 1 0 1.4l-3.5 3.5a3 3 0 0 1-4.2-4.2l2-2 1.4 1.4-2 2a1 1 0 0 0 1.4 1.4L12 10.6a1 1 0 0 1 1.4 0Z" /></svg>
       </button>
+      <button type="button" class="ed-btn" data-testid="rt-name" data-rt-edit [title]="i18n.t('rt.name')" [attr.aria-label]="i18n.t('rt.name')" [disabled]="infoMode()" (mousedown)="captureSelection($event)" (click)="insertName()">
+        <svg class="rt-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 4a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm0 10c4.4 0 8 2.2 8 5v1H4v-1c0-2.8 3.6-5 8-5Z" /></svg>
+      </button>
       <button type="button" class="ed-btn" data-rt-edit [title]="i18n.t('rt.clear')" [attr.aria-label]="i18n.t('rt.clear')" [disabled]="infoMode()" (mousedown)="$event.preventDefault()" (click)="clearFormatting()">
         <svg class="rt-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4h14v3h-2V6h-4.1l-1.2 5.3-1.8-1.8L10.8 6H7v1H5V4Zm-1.6 2.4 1.4-1.4L20 20.2l-1.4 1.4-6.4-6.4L11 20H9l1.5-6.5-7.1-7.1Z" /></svg>
       </button>
@@ -248,6 +251,35 @@
           ></button>
         </div>
       }
+    </div>
+  }
+
+  @if (nameEdit(); as edit) {
+    <div
+      class="rt-link-pop rt-name-pop"
+      data-testid="rt-name-popover"
+      role="dialog"
+      [attr.aria-label]="i18n.t('rt.nameForm.title')"
+      [style.top.px]="linkPos().top"
+      [style.left.px]="linkPos().left"
+      [style.--rt-arrow]="linkPos().arrow + 'px'"
+      (keydown.escape)="closeName()"
+    >
+      <p class="rt-link-pop__title" [textContent]="i18n.t('rt.nameForm.title')"></p>
+      <label class="rt-link-pop__field">
+        <span [textContent]="i18n.t('rt.nameForm.lead')"></span>
+        <input class="ed-input" type="text" data-testid="rt-name-lead" [value]="edit.lead" (input)="setNameField('lead', $any($event.target).value)" />
+      </label>
+      <label class="rt-link-pop__field">
+        <span [textContent]="i18n.t('rt.nameForm.fallback')"></span>
+        <input class="ed-input" type="text" data-testid="rt-name-fallback" [value]="edit.fallback" (input)="setNameField('fallback', $any($event.target).value)" />
+      </label>
+      <p class="rt-link-pop__hint is-ok" [textContent]="i18n.t('rt.nameForm.hint')"></p>
+      <div class="rt-link-pop__row">
+        <button type="button" class="ed-btn rt-link-pop__danger" data-testid="rt-name-remove" (click)="removeName()" [textContent]="i18n.t('rt.nameForm.remove')"></button>
+        <span class="rt-spacer" aria-hidden="true"></span>
+        <button type="button" class="ed-btn rt-link-pop__primary" data-testid="rt-name-done" (click)="closeName()" [textContent]="i18n.t('rt.nameForm.done')"></button>
+      </div>
     </div>
   }
 

@@ -7,7 +7,9 @@ import {
   type ColorsConfig,
   type SlotColor,
 } from '../colors/model';
-import { colorSlotsOf } from '../colors/slots';
+import { slotsOf } from '../colors/slots';
+import { colorTargetOf } from '../parts/colors';
+import { emptyFreeData } from '../parts/operations';
 import { normalizeNewsletter } from '../persist/normalize-newsletter';
 import { CURRENT_SCHEMA_VERSION, type Block, type Globals, type Newsletter, type OwnBlockRef } from '../types';
 
@@ -21,7 +23,8 @@ import { CURRENT_SCHEMA_VERSION, type Block, type Globals, type Newsletter, type
 export const CLONE_BLOCK_ID = 'clone';
 
 export interface CloneContent {
-  kind: 'clone';
+  /** `clone`: a copy of a built-in block; `free`: a free block composed from parts (same shape). */
+  kind: 'clone' | 'free';
   /** The block as new copies of it start: starting texts and layout options of the built-in type. */
   block: Block;
   /**
@@ -34,7 +37,14 @@ export interface CloneContent {
 const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 
 export function isCloneContent(v: unknown): v is CloneContent {
-  return isObj(v) && v['kind'] === 'clone' && isObj(v['block']) && typeof v['block']['type'] === 'string';
+  return isObj(v) && (v['kind'] === 'clone' || v['kind'] === 'free') && isObj(v['block']) && typeof v['block']['type'] === 'string';
+}
+
+const kindOf = (block: Block): CloneContent['kind'] => (block.type === 'free' ? 'free' : 'clone');
+
+/** A new, empty free block (decision 48). */
+export function newFreeContent(): CloneContent {
+  return { kind: 'free', block: { id: CLONE_BLOCK_ID, type: 'free', ...emptyFreeData() }, colors: {} };
 }
 
 /** A fresh copy of a built-in block: its fields as given, its colors as the type's defaults. */
@@ -43,9 +53,9 @@ export function newCloneContent(block: Block): CloneContent {
 }
 
 /** Colors of the copy that the type knows, each a known role or a valid hex. */
-function cleanColors(type: string, raw: unknown): Record<string, SlotColor> {
+function cleanColors(block: Block, raw: unknown): Record<string, SlotColor> {
   if (!isObj(raw)) return {};
-  const keys = new Set(colorSlotsOf(type).map((s) => s.key));
+  const keys = new Set(slotsOf(colorTargetOf(block)).map((s) => s.key));
   const out: Record<string, SlotColor> = {};
   for (const [key, v] of Object.entries(raw)) {
     if (!keys.has(key) || !isObj(v)) continue;
@@ -67,9 +77,9 @@ export function normalizeCloneContent(raw: unknown): CloneContent | null {
     blocks: [{ ...(raw.block as Block), id: CLONE_BLOCK_ID }],
   });
   const block = doc.blocks[0];
-  if (!block) return null;
+  if (!block || kindOf(block) !== raw.kind) return null;
   delete block.own;
-  return { kind: 'clone', block, colors: cleanColors(block.type, raw.colors) };
+  return { kind: raw.kind, block, colors: cleanColors(block, raw.colors) };
 }
 
 /**
@@ -97,7 +107,7 @@ export function cloneWorkDocument(content: CloneContent, base: Globals): Newslet
 export function cloneContentOf(doc: Newsletter): CloneContent {
   const block = doc.blocks[0];
   const colors = doc.globals.colors[doc.globals.colors.mode].blocks[CLONE_BLOCK_ID] ?? {};
-  return { kind: 'clone', block: { ...structuredClone(block), id: CLONE_BLOCK_ID }, colors: { ...colors } };
+  return { kind: kindOf(block), block: { ...structuredClone(block), id: CLONE_BLOCK_ID }, colors: { ...colors } };
 }
 
 /** Set one color of the copy in Light and Dark; null goes back to the type's default role. */
@@ -161,6 +171,7 @@ export function placeOwnBlock(
 
 /** Placed blocks of the copy's type that are not this own block already. */
 export function replaceableBlocks(n: Newsletter, type: Block['type'], ownBlockId: string): Block[] {
+  if (type === 'free') return [];
   return n.blocks.filter((b) => b.type === type && b.own?.blockId !== ownBlockId);
 }
 

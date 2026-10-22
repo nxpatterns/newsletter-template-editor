@@ -451,3 +451,63 @@ export function applyLinkOnDoc(
     link: { href: normalized, target: target === '_self' ? '_self' : '_blank' },
   }));
 }
+
+/**
+ * Insert a name piece at a plain-text offset (text nodes only, as the editor counts); returns the
+ * document and the piece's index among the document's name pieces.
+ */
+export function insertNamePiece(doc: RichDoc, at: number, piece: Pick<RichNamePiece, 'lead' | 'fallback'>): { doc: RichDoc; index: number } {
+  const node: RichNamePiece = { type: 'name', lead: piece.lead, fallback: piece.fallback };
+  let pos = 0;
+  let before = 0;
+  let done = false;
+  const next = doc.map((p, pi) => {
+    const children: RichInline[] = [];
+    for (const ch of p.children) {
+      if (done || ch.type !== 'text') {
+        if (!done && ch.type === 'name') before++;
+        children.push(ch);
+        continue;
+      }
+      const end = pos + ch.text.length;
+      if (at >= pos && at <= end) {
+        const cut = at - pos;
+        if (cut > 0) children.push({ ...ch, text: ch.text.slice(0, cut) });
+        children.push({ ...node, marks: normalizeMarks(ch.marks) });
+        if (cut < ch.text.length) children.push({ ...ch, text: ch.text.slice(cut) });
+        done = true;
+      } else children.push(ch);
+      pos = end;
+    }
+    if (!done && pi === doc.length - 1) {
+      children.push(node);
+      done = true;
+    }
+    return { ...p, children };
+  });
+  return { doc: compactDoc(next.length ? next : [{ type: 'p', children: [node] }]), index: before };
+}
+
+export function insertNamePieceAt(doc: RichDoc, at: number, piece: Pick<RichNamePiece, 'lead' | 'fallback'>): RichDoc {
+  return insertNamePiece(doc, at, piece).doc;
+}
+
+/** Change or remove (null) the n-th name piece of a document, counted in reading order. */
+export function setNamePiece(doc: RichDoc, index: number, patch: Partial<Pick<RichNamePiece, 'lead' | 'fallback'>> | null): RichDoc {
+  let n = 0;
+  return compactDoc(
+    doc.map((p) => ({
+      ...p,
+      children: p.children.flatMap((ch): RichInline[] => {
+        if (ch.type !== 'name') return [ch];
+        if (n++ !== index) return [ch];
+        return patch ? [{ ...ch, ...patch }] : [];
+      }),
+    })),
+  );
+}
+
+/** True when a document holds a name piece. */
+export function hasNamePiece(doc: RichDoc): boolean {
+  return doc.some((p) => p.children.some((c) => c.type === 'name'));
+}

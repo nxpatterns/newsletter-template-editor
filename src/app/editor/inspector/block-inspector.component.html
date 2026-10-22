@@ -43,6 +43,20 @@
             (docChange)="onParagraphBody(block.id, $event)"
           />
         </div>
+        @if (hasName(block.body)) {
+          <div class="ed-field" data-testid="name-sample-field">
+            <label class="ed-label" for="insp-name-sample" [textContent]="i18n.t('field.greetingSampleName')"></label>
+            <input
+              id="insp-name-sample"
+              class="ed-input"
+              data-testid="insp-name-sample"
+              [value]="session.globals().personalization.samples['name'] ?? ''"
+              (input)="onSampleName($event)"
+              (blur)="onFieldBlur()"
+            />
+            <p class="ed-hint" [textContent]="i18n.t('field.greetingSampleHint')"></p>
+          </div>
+        }
       }
       @case ('cta-button') {
         <div class="ed-field">

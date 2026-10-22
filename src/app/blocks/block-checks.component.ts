@@ -77,21 +77,42 @@ export class BlockChecksComponent {
     }
     if (f.kind === 'missingAlt') {
       return {
-        id: `${f.kind}-${f.item ?? 0}-${i}`,
+        id: `${f.kind}-${f.part ?? f.item ?? 0}-${i}`,
         mode: null,
         title: this.i18n.t('blockEditor.checks.altTitle'),
         detail: this.i18n.t('blockEditor.checks.altDetail'),
-        action: this.i18n.t('blockEditor.checks.toField'),
-        run: toFields,
+        action: this.i18n.t(f.part ? 'blockEditor.checks.toPart' : 'blockEditor.checks.toField'),
+        run: f.part ? () => this.editor.selectPart(f.part!, 'props') : toFields,
       };
     }
+    if (f.kind === 'vagueLink') {
+      return {
+        id: `${f.kind}-${f.part ?? f.field}-${f.item ?? 0}`,
+        mode: null,
+        title: this.i18n.t('blockEditor.checks.linkTitle', { text: f.text }),
+        detail: this.i18n.t('blockEditor.checks.linkDetail'),
+        action: this.i18n.t(f.part ? 'blockEditor.checks.toPart' : 'blockEditor.checks.toField'),
+        run: f.part ? () => this.editor.selectPart(f.part!, 'props') : toFields,
+      };
+    }
+    return this.freeVm(f, i);
+  }
+
+  /** Findings only free blocks have; the action selects the part (decision 82). */
+  private freeVm(f: Exclude<BlockFinding, { kind: 'contrast' | 'missingAlt' | 'vagueLink' }>, i: number): FindingVm {
+    const part = 'part' in f ? f.part : null;
+    const params: Record<string, string | number> = {
+      px: 'px' in f ? f.px : 0,
+      min: 'min' in f ? f.min : 0,
+      font: f.kind === 'webFont' ? f.font : '',
+    };
     return {
-      id: `${f.kind}-${f.field}-${f.item ?? 0}`,
+      id: `${f.kind}-${part ?? ('content' in f ? f.content : '')}-${i}`,
       mode: null,
-      title: this.i18n.t('blockEditor.checks.linkTitle', { text: f.text }),
-      detail: this.i18n.t('blockEditor.checks.linkDetail'),
-      action: this.i18n.t('blockEditor.checks.toField'),
-      run: toFields,
+      title: this.i18n.t(`blockEditor.checks.${f.kind}Title`, params),
+      detail: this.i18n.t(`blockEditor.checks.${f.kind}Detail`, params),
+      action: this.i18n.t(part ? 'blockEditor.checks.toPart' : 'blockEditor.checks.toField'),
+      run: part ? () => this.editor.selectPart(part, 'props') : () => this.editor.setTab('props'),
     };
   }
 }

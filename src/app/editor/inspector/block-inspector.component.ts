@@ -12,6 +12,7 @@ import {
   signal,
 } from '@angular/core';
 import {
+  hasNamePiece,
   BENEFIT_DEFAULT_ICON,
   CTA_LINK_ICONS,
   detectLinkKind,
@@ -127,7 +128,12 @@ export class BlockInspectorComponent {
     this.session.updateBlock(id, { [key]: value } as never, 'coalesce');
   }
 
-  /** Greeting preview name (Campaign personalization sample, not sent). */
+  /** A paragraph with the name-or-fallback piece shows the sample name field (decision 80). */
+  protected hasName(doc: RichDoc): boolean {
+    return hasNamePiece(doc);
+  }
+
+  /** Greeting and name piece preview name (Campaign personalization sample, not sent). */
   protected onSampleName(event: Event): void {
     this.session.updateSample('name', (event.target as HTMLInputElement).value, 'coalesce');
   }

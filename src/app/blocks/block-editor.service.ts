@@ -1,10 +1,26 @@
 import { computed, createEnvironmentInjector, effect, EnvironmentInjector, inject, Injectable, signal } from '@angular/core';
-import { blankNewsletter, createBlock, normalizeNewsletter, type Block, type Globals } from '../../core';
+import { blankNewsletter, createBlock, normalizeNewsletter, type Block, type FreeBlock, type Globals } from '../../core';
+import { refuseInsert, type Refusal } from '../../core/parts/layout';
+import { activeDesign, findNode, isContainer, type FreeBlockData, type LayoutNode, type TextRole } from '../../core/parts/model';
+import {
+  insertEmbed,
+  insertPart,
+  locate,
+  movePart,
+  movePartBy,
+  quickStart,
+  removePart,
+  type InsertKind,
+  type PartTexts,
+  type QuickStart,
+  type Where,
+} from '../../core/parts/operations';
 import { setColorMode, type ColorMode, type SlotColor } from '../../core/colors';
 import {
   cloneContentOf,
   cloneWorkDocument,
   newCloneContent,
+  newFreeContent,
   normalizeCloneContent,
   replaceableBlocks,
   replaceBlocksWithClone,
@@ -42,6 +58,9 @@ export type BlockSaveState =
 
 const isBuiltInType = (v: string | null): v is Block['type'] => !!v && (CATALOG_TYPES as readonly string[]).includes(v);
 
+/** `?type=free` opens a new free block (decision 48). */
+export const FREE_TYPE_PARAM = 'free';
+
 /**
  * State of the block editor page (`/blocks/<id>`), shared by the page and its header. The block
  * is edited in its own one-block document (`work`), a separate session that never touches the
@@ -75,6 +94,8 @@ export class BlockEditorService {
   /** What "unchanged" means: the content as opened or last saved (JSON of `cloneContentOf`). */
   private readonly baselineSignal = signal('');
   private readonly busySignal = signal(false);
+  /** Selected part of a free block (a part id, a column id, or null for the block itself). */
+  private readonly selectedPartSignal = signal<string | null>(null);
 
   readonly status = this.statusSignal.asReadonly();
   readonly blockId = this.blockIdSignal.asReadonly();
@@ -84,10 +105,17 @@ export class BlockEditorService {
   readonly previewMode = this.previewModeSignal.asReadonly();
   readonly tab = this.tabSignal.asReadonly();
   readonly busy = this.busySignal.asReadonly();
+  readonly selectedPart = this.selectedPartSignal.asReadonly();
 
   readonly block = computed((): Block | null => this.work.newsletter().blocks[0] ?? null);
   readonly baseType = computed(() => this.block()?.type ?? null);
   readonly content = computed((): CloneContent | null => (this.block() ? cloneContentOf(this.work.newsletter()) : null));
+  /** The free block being edited; null in clone mode. */
+  readonly free = computed((): FreeBlock | null => {
+    const b = this.block();
+    return b?.type === 'free' ? b : null;
+  });
+  readonly isFree = computed(() => !!this.free());
 
   /** Unsaved: a field, color or the name differs from what was opened or saved (undo back = unchanged). */
   readonly hasChanges = computed(
@@ -133,7 +161,8 @@ export class BlockEditorService {
     if (this.blockIdSignal() !== id) return;
     this.sourceSignal.set(source.info);
     let content = record?.content ?? null;
-    if (!record && isBuiltInType(opts.type)) content = newCloneContent(createBlock(opts.type, this.template.blockDefaultTexts()));
+    if (!record && opts.type === FREE_TYPE_PARAM) content = newFreeContent();
+    else if (!record && isBuiltInType(opts.type)) content = newCloneContent(createBlock(opts.type, this.template.blockDefaultTexts()));
     if (!content) {
       this.recordSignal.set(null);
       this.statusSignal.set('missing');
@@ -141,7 +170,8 @@ export class BlockEditorService {
     }
     this.recordSignal.set(record);
     this.savedContent = record ? content : null;
-    const name = record?.block.name ?? this.i18n.t('blockEditor.cloneName', { type: this.i18n.t(`block.${content.block.type}`) });
+    this.selectedPartSignal.set(null);
+    const name = record?.block.name ?? this.defaultName(content);
     this.nameSignal.set(name);
     // A new copy under its suggested name is not a change yet.
     this.savedNameSignal.set(name);
@@ -157,6 +187,162 @@ export class BlockEditorService {
     this.blockIdSignal.set(null);
     this.recordSignal.set(null);
     this.statusSignal.set('loading');
+  }
+
+  private defaultName(content: CloneContent): string {
+    return content.kind === 'free'
+      ? this.i18n.t('blockEditor.freeName')
+      : this.i18n.t('blockEditor.cloneName', { type: this.i18n.t(`block.${content.block.type}`) });
+  }
+
+  // ---- Free blocks: every action is a pure operation from `src/core/parts` (decision 28). ----
+
+  /** Select a part (or null for the block); optionally switch the side panel tab. */
+  selectPart(id: string | null, tab?: BlockEditorTab): void {
+    this.selectedPartSignal.set(id);
+    if (tab) this.tabSignal.set(tab);
+  }
+
+  /** Change the free block in one undo step. */
+  private applyFree(fn: (data: FreeBlockData) => FreeBlockData): void {
+    const block = this.free();
+    if (!block) return;
+    this.work.applyChange((n) => {
+      const current = n.blocks[0];
+      if (!current || current.type !== 'free') return n;
+      const next = fn(current);
+      return next === current ? n : { ...n, blocks: [{ ...current, ...next, id: current.id, type: 'free' } as Block] };
+    });
+  }
+
+  /** Change the free block with a design or content operation (undoable). */
+  updateFree(fn: (data: FreeBlockData) => FreeBlockData): void {
+    this.applyFree(fn);
+  }
+
+  partTexts(): PartTexts {
+    const t = (k: string) => this.i18n.t(`blockEditor.partText.${k}`);
+    return { headline: t('headline'), body: t('body'), button: t('button'), listItems: [t('item1'), t('item2')] };
+  }
+
+  /**
+   * Where a new part goes by keyboard or click: into the selected container (at its end), after
+   * the selected part, or at the end of the block (mockup R1: Enter inserts after the marked part).
+   */
+  insertPlace(): Where {
+    const data = this.free();
+    const sel = this.selectedPartSignal();
+    if (!data) return { parent: null, index: 0 };
+    const design = activeDesign(data);
+    if (sel) {
+      const node = findNode(design.children, sel);
+      if (node && isContainer(node) && node.kind !== 'columns') {
+        const list = node.kind === 'list' ? node.item : node.children;
+        return { parent: node.id, index: list.length };
+      }
+      if (!node) {
+        // A column: at its end.
+        const at = this.columnEnd(data, sel);
+        if (at) return at;
+      }
+      const place = locate(data, sel);
+      if (place) return { parent: place.parent, index: place.index + 1 };
+    }
+    return { parent: null, index: design.children.length };
+  }
+
+  private columnEnd(data: FreeBlockData, columnId: string): Where | null {
+    let hit: Where | null = null;
+    const scan = (nodes: readonly LayoutNode[]) => {
+      for (const n of nodes) {
+        if (n.kind === 'columns') {
+          const c = n.columns.find((x) => x.id === columnId);
+          if (c) hit = { parent: c.id, index: c.children.length };
+          n.columns.forEach((x) => scan(x.children));
+        }
+        if (n.kind === 'section' || n.kind === 'box') scan(n.children);
+        if (n.kind === 'list') scan(n.item);
+      }
+    };
+    scan(activeDesign(data).children);
+    return hit;
+  }
+
+  /** Why a part cannot go to a place, worded for the user; null when it can. */
+  refusalText(r: Refusal): string {
+    return this.i18n.t(`blockEditor.refuse.${r.reason}`, { width: r.width ?? 0, min: r.min ?? 0 });
+  }
+
+  /** Add a part (decision 82: a place below the width floor is refused with a plain reason). */
+  insert(kind: InsertKind, where: Where = this.insertPlace(), role?: TextRole): boolean {
+    const data = this.free();
+    if (!data) return false;
+    const refusal = refuseInsert(data, kind, where);
+    if (refusal) {
+      this.snackbar.error(this.refusalText(refusal));
+      return false;
+    }
+    const result = insertPart(data, kind, where, this.partTexts(), role);
+    if (!result.nodeId) {
+      if (kind === 'column') this.snackbar.error(this.i18n.t('blockEditor.refuse.column'));
+      return false;
+    }
+    this.applyFree(() => result.data);
+    this.selectedPartSignal.set(result.nodeId);
+    return true;
+  }
+
+  /** Embed an own block (its newest version) or a built-in block (decisions 38, 43). */
+  insertBlock(input: { block: Block; colors?: CloneContent['colors'] }, where: Where = this.insertPlace()): boolean {
+    const data = this.free();
+    if (!data) return false;
+    const refusal = refuseInsert(data, 'block', where, { embedded: input.block });
+    if (refusal) {
+      this.snackbar.error(this.refusalText(refusal));
+      return false;
+    }
+    const result = insertEmbed(data, input, where);
+    if (!result.nodeId) return false;
+    this.applyFree(() => result.data);
+    this.selectedPartSignal.set(result.nodeId);
+    return true;
+  }
+
+  quickStart(which: QuickStart): void {
+    const data = this.free();
+    if (!data) return;
+    const result = quickStart(data, which, this.partTexts());
+    this.applyFree(() => result.data);
+    this.selectedPartSignal.set(result.nodeId);
+  }
+
+  /** Move the selected part one place up or down (Alt + arrow keys). */
+  moveSelected(delta: -1 | 1): void {
+    const id = this.selectedPartSignal();
+    if (id) this.applyFree((d) => movePartBy(d, id, delta));
+  }
+
+  /** Move a part to a place (drag and drop in the preview). */
+  move(id: string, to: Where): void {
+    this.applyFree((d) => movePart(d, id, to));
+    this.selectedPartSignal.set(id);
+  }
+
+  /** Remove the selected part (Delete); the selection goes to its neighbour or the block. */
+  removeSelected(): void {
+    const data = this.free();
+    const id = this.selectedPartSignal();
+    if (!data || !id) return;
+    const place = locate(data, id);
+    const next = removePart(data, id);
+    if (next === data) return;
+    this.applyFree(() => next);
+    let neighbour: string | null = null;
+    if (place) {
+      const list = place.parent === null ? activeDesign(next).children : null;
+      neighbour = list?.[Math.min(place.index, list.length - 1)]?.id ?? place.parent;
+    }
+    this.selectedPartSignal.set(neighbour);
   }
 
   setName(name: string): void {
@@ -183,7 +369,7 @@ export class BlockEditorService {
     this.busySignal.set(true);
     try {
       const prev = this.recordSignal();
-      const name = this.nameSignal().trim() || this.i18n.t('blockEditor.cloneName', { type: this.i18n.t(`block.${content.block.type}`) });
+      const name = this.nameSignal().trim() || this.defaultName(content);
       // Nothing changed since the stored draft: publishing uses it as it is.
       const unchanged = !!prev && !!this.savedContent && sameCloneContent(content, this.savedContent) && name === prev.block.name;
       if (!publish && unchanged && prev?.draft) return prev;

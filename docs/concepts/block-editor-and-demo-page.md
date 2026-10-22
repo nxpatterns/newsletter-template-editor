@@ -119,11 +119,11 @@ Every part has box properties: padding, background (role), border (sides, width,
 | Spacer | none | height |
 | Built-in block | an embedded built-in block | its own settings |
 
-A **Date** part (formatted month, day, weekday, time range) and a calendar link come later. Until then the event block stays a built-in block and can be embedded as a whole.
+A **Date** part (formatted month, day, weekday, time range) and a calendar link come later. Until then the event block stays a built-in block and can be embedded as a whole; so does the Greeting block (decision 80).
 
 ### Coverage and limits
 
-- With these parts and the size scale, all 18 built-in blocks can be rebuilt; only the event needs the embedded built-in block. **Gate:** before free blocks ship, every built-in block is rebuilt as a design over its own content and renders equivalent HTML.
+- With these parts and the size scale, all built-in blocks can be rebuilt except the two logic blocks, Event and Greeting (decision 80), which are embedded as a whole. **Gate:** before free blocks ship, every other built-in block is rebuilt as a design over its own content and renders equivalent HTML (its own step after step 5).
 - **Floors (decision 82, values to be checked in practice and may change).** Widths are resolved px at the 600 px canvas; the phone width is 320 px.
   - Minimum resolved width per part: Text 120, Button 120, Image 48 (content images 120), Icon its size plus padding, embedded built-in block 280. Dropping or resizing below the floor is refused with a plain explanation, because the result breaks in classic Outlook.
   - Depth: Columns inside Columns at most once; own blocks inside own blocks at most 3 levels deep (decision 38 still blocks cycles).
@@ -329,7 +329,7 @@ Numbers refer to the questions in the 2026-10-21 thread.
 | 77 | Columns on phones | Each Columns part has "stack on phones": yes (default) or no. Stacked order is natural or reversed only. The check warns when a non-stacking column is narrower than about 120 px at 320 px phone width. |
 | 78 | Missing scales | Name the scales before the first own block is stored: column ratios, image width, icon and button size, weight (normal or bold), padding (vertical and horizontal), bleed (full canvas or content width). Values: decision 81. |
 | 79 | Small export fixes | Yes: the document language follows the template language instead of a fixed "en"; the open-tracking pixel moves to the top of the body so Gmail clipping cannot cut it off; the dark-mode color block resolves its CSS variables at export. One small task in its own thread. |
-| 80 | Greeting with name or fallback (decision 4 of the email completeness review) | Option A: a "name or fallback" piece can be placed in any text, for example "Guten Tag [Name oder Werte Geschäftspartner],". The greeting is rebuilt as an ordinary text part that contains this piece, so no special greeting logic remains. A name that is an email address or a generic role mailbox counts as no name. |
+| 80 | Greeting with name or fallback (decision 4 of the email completeness review) | Amended 2026-10-22: "B plus piece". The Greeting block stays a built-in block of its own with its name switch, exactly as before; nothing is converted. In addition, a "name or fallback" piece can be placed in any text (lite kit), for example a closing line "… [Name oder Werte Geschäftspartner]". Greeting and Event are the two built-in logic blocks: embeddable as a whole, not rebuilt from parts. A name that is an email address or a generic role mailbox counts as no name. |
 | 81 | Scale values (decision 78) | Start with best-guess values (Finite scales table), measured values replace them later. Stored blocks keep token names only. |
 | 82 | Floors for nesting and accessibility | Minimum widths per part, depth limits and accessibility minimums as in Coverage and limits. Starting values, to be checked in practice; they may change. Width floors refuse the drop, accessibility findings warn. |
 

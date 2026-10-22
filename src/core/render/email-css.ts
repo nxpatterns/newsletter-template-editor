@@ -807,6 +807,21 @@ export function paragraphEditorSurfaceCss(globals: Globals, target?: ColorTarget
 .rt-editor.rt-clone .paragraph-body em { font-style: italic; }
 .rt-editor.rt-clone .paragraph-body s { text-decoration: line-through; }
 .rt-editor.rt-clone .paragraph-body code.rt-mono,
+.rt-editor.rt-clone .rt-name {
+  display: inline-block;
+  margin: 0 2px;
+  padding: 0 7px;
+  border: 1px dashed var(--email-link);
+  border-radius: 4px;
+  background: rgba(126, 207, 255, 0.12);
+  color: var(--email-text);
+  font-size: 0.85em;
+  line-height: 1.6;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+.rt-editor.rt-clone .rt-name::before { content: attr(data-label); }
 .rt-editor.rt-clone .rt-mono {
   font-family: 'Courier New', Courier, monospace;
   /* Absolute size — relative em nested on every Mono click and shrank the text. */
