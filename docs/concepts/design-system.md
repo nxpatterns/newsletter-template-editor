@@ -292,6 +292,16 @@ Production `baseHref` is `/newsletter-template-editor/`. Deploy must ship a `404
 
 ---
 
+## Reset dialog
+
+Mockup R4 variant B (`docs/mockups/block-editor/r4-reset-dialog.html`), decisions 63 to 67 in `block-editor-and-demo-page.md`.
+
+- Same glass dialog as the confirm dialog (it reuses `confirm-dialog.component.scss`): danger tone, eyebrow "Delete", close X top-end, width up to 33rem, body scrolls.
+- Order: lead sentence, save box (accent; success after saving with file name and contents; danger with `role="alert"` when saving failed; "Selected: …" line, amber line when the selection changed since saving), "What should be deleted?" with "All | None", list of kinds (checkbox, icon tile, label, one-line description, count pill red while checked), "The app language is kept.", hints, amber acknowledge box, footer Cancel and Delete.
+- Phones (≤ 40rem): sheet from the bottom, save button under its text, Delete above Cancel.
+- Start page message after the reload: success or danger box above the title, close X in the fixed top-end corner, "Open backup…" when a file was saved.
+- Implementation: `src/app/shell/reset/`, start page message in `src/app/pages/start/`.
+
 ## Future chrome (stubs only — specify before build)
 
 - Library row secondary line: date/time + app version (`createdWithAppVersion`, not stored yet; see `file-management.md`)

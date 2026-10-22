@@ -1,6 +1,6 @@
 import { IDBFactory } from 'fake-indexeddb';
 import { seedNewsletter } from '../seed';
-import { clearAllDocs, getLibraryEntry, listLibrary, loadRecovery, putLibraryEntry } from '../persist/idb-docs';
+import { getLibraryEntry, listLibrary, loadRecovery, putLibraryEntry } from '../persist/idb-docs';
 import { indexedDbBlockRepository as repo } from './block-repository';
 import { createBlock, deleteBlock, publishVersion, saveDraft, type OpContext } from './operations';
 
@@ -77,17 +77,6 @@ describe('IndexedDB block repository', () => {
     const broken = { ...change, putVersions: [{ notAnId: true } as never] };
     await expect(repo.apply(broken)).rejects.toBeTruthy();
     expect(await repo.getBlock(block.id)).toBeNull();
-  });
-
-  it('factory reset clears own blocks, versions and drafts too', async () => {
-    const c = ctx('2026-10-22T10:00:00.000Z');
-    const created = createBlock(c, { name: 'A', kind: 'free', baseType: null, content });
-    await repo.apply(created.change);
-    await repo.apply(publishVersion(c, created).change);
-    await clearAllDocs();
-    expect(await repo.listBlocks()).toEqual([]);
-    expect(await repo.listDrafts()).toEqual([]);
-    expect(await repo.listVersions(created.block.id)).toEqual([]);
   });
 
   it('upgrading a version 1 database drops templates with pre-UUIDv7 ids (beta) and unbinds the draft', async () => {

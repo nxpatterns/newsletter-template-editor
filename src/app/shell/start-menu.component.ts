@@ -3,14 +3,15 @@ import type { SeedLanguage } from '../../core';
 import type { TemplateSummary } from '../../core/persist/template-repository';
 import { NewsletterSession } from '../editor/newsletter-session.service';
 import { LocaleService } from '../i18n/locale.service';
+import { OpenFromFileService } from '../pages/start/open-from-file.service';
 import { StartActionsService } from '../pages/start/start-actions.service';
 import { ConfirmDialogService } from '../ui/confirm-dialog/confirm-dialog.service';
-import { FactoryResetService } from './factory-reset.service';
+import { FactoryResetService } from './reset/factory-reset.service';
 import { FlagComponent } from '../ui/flag/flag.component';
 import { LibraryPickerComponent } from './library-picker.component';
 import { MenuIconComponent } from './menu-icon.component';
 
-/** Header "⋮" menu on the start page: the start choices, saved templates and the reset. */
+/** Header "⋮" menu on the start page: the start choices, saved templates, open from file and the reset. */
 @Component({
   selector: 'app-start-menu',
   imports: [LibraryPickerComponent, MenuIconComponent, FlagComponent],
@@ -28,6 +29,7 @@ export class StartMenuComponent {
   private readonly actions = inject(StartActionsService);
   private readonly confirm = inject(ConfirmDialogService);
   private readonly reset = inject(FactoryResetService);
+  private readonly openFromFile = inject(OpenFromFileService);
 
   private readonly root = viewChild<ElementRef<HTMLElement>>('root');
 
@@ -84,6 +86,12 @@ export class StartMenuComponent {
     await this.session.deleteLibrary(id);
     this.libraryRows.set(await this.session.listLibraryEntries());
     await this.actions.refresh();
+  }
+
+  /** A backup from the reset dialog or a template file. */
+  protected async openFile(): Promise<void> {
+    this.closeMenu();
+    await this.openFromFile.pick();
   }
 
   protected async factoryReset(): Promise<void> {

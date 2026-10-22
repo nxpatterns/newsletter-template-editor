@@ -9,6 +9,7 @@ import { BlockEditModalComponent } from './editor/inspector/block-edit-modal.com
 import { NewsletterSession } from './editor/newsletter-session.service';
 import { LocaleService } from './i18n/locale.service';
 import { ConfirmDialogComponent } from './ui/confirm-dialog/confirm-dialog.component';
+import { ResetDialogComponent } from './shell/reset/reset-dialog.component';
 import {
   LegalModalComponent,
   type LegalModalKind,
@@ -30,6 +31,7 @@ import { SnackbarComponent } from './ui/snackbar/snackbar.component';
     LegalModalComponent,
     BlockEditModalComponent,
     ConfirmDialogComponent,
+    ResetDialogComponent,
     FileMenuComponent,
     LanguageMenuComponent,
     StartMenuComponent,

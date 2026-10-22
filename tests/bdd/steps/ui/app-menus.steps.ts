@@ -56,25 +56,24 @@ When('I pick the saved template {string}', async ({ page }, name: string) => {
   await picker.getByTestId('library-pick').filter({ hasText: name }).click();
 });
 
-Then('the reset warning can only be confirmed after ticking the acknowledgement', async ({ page }) => {
-  const dialog = page.getByTestId('confirm-dialog');
+Then('the reset can only be confirmed after ticking the acknowledgement', async ({ page }) => {
+  const dialog = page.getByTestId('reset-dialog');
   await expect(dialog.getByRole('alertdialog')).toBeVisible();
-  await expect(dialog.getByTestId('confirm-note')).toBeVisible();
-  await expect(dialog.getByTestId('confirm-ok')).toBeDisabled();
-  await dialog.getByTestId('confirm-acknowledge').check();
-  await expect(dialog.getByTestId('confirm-ok')).toBeEnabled();
+  await expect(dialog.getByTestId('reset-delete')).toBeDisabled();
+  await dialog.getByTestId('reset-acknowledge').check();
+  await expect(dialog.getByTestId('reset-delete')).toBeEnabled();
 });
 
-When('I cancel the dialog', async ({ page }) => {
-  const dialog = page.getByTestId('confirm-dialog');
-  await dialog.getByTestId('confirm-cancel').click();
+When('I cancel the reset', async ({ page }) => {
+  const dialog = page.getByTestId('reset-dialog');
+  await dialog.getByTestId('reset-cancel').click();
   await expect(dialog).toBeHidden();
 });
 
 When('I confirm the reset', async ({ page }) => {
-  const dialog = page.getByTestId('confirm-dialog');
-  await dialog.getByTestId('confirm-acknowledge').check();
-  await dialog.getByTestId('confirm-ok').click();
+  const dialog = page.getByTestId('reset-dialog');
+  await dialog.getByTestId('reset-acknowledge').check();
+  await dialog.getByTestId('reset-delete').click();
 });
 
 When('the browser remembers a panel width', async ({ page }) => {

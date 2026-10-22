@@ -1,0 +1,159 @@
+@if (dialog.pending()) {
+  <div
+    class="confirm-overlay reset-overlay"
+    data-testid="reset-dialog"
+    [class.is-open]="openVisual()"
+    [class.is-closing]="!openVisual()"
+  >
+    <div class="confirm-backdrop" (click)="onCancel()"></div>
+    <div
+      class="confirm-dialog reset-dialog"
+      data-tone="danger"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="reset-title"
+      aria-describedby="reset-lead"
+    >
+      <header class="confirm-head">
+        <span class="confirm-tone-tile" aria-hidden="true">
+          <svg class="confirm-tone-icon" viewBox="0 0 24 24">
+            <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
+          </svg>
+        </span>
+        <div class="confirm-head-text reset-head-text">
+          <span class="confirm-eyebrow" [textContent]="i18n.t('reset.eyebrow')"></span>
+          <h2 id="reset-title" class="confirm-title" [textContent]="i18n.t('reset.title')"></h2>
+        </div>
+        <button
+          type="button"
+          class="reset-x"
+          data-testid="reset-close"
+          [attr.aria-label]="i18n.t('reset.close')"
+          [attr.title]="i18n.t('reset.close')"
+          (click)="onCancel()"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+        </button>
+      </header>
+
+      <div class="confirm-body reset-body">
+        <p id="reset-lead" class="confirm-text reset-lead" [textContent]="i18n.t('reset.lead')"></p>
+
+        @let save = saveState();
+        <div
+          class="reset-save"
+          data-testid="reset-save-box"
+          [attr.data-state]="save.status"
+          [class.is-ok]="save.status === 'ok'"
+          [class.is-err]="save.status === 'err'"
+          [attr.role]="save.status === 'err' ? 'alert' : null"
+        >
+          <p class="reset-save-text">
+            @switch (save.status) {
+              @case ('ok') {
+                <b>
+                  <span class="reset-ok" aria-hidden="true">✓</span>
+                  <span [textContent]="i18n.t('reset.save.okTitle') + ' '"></span>
+                  <span class="reset-file" data-testid="reset-save-file" [textContent]="save.status === 'ok' ? save.file : ''"></span>
+                </b>
+                <span [textContent]="i18n.t('reset.save.okBody', { summary: savedSummary() })"></span>
+              }
+              @case ('err') {
+                <b [textContent]="i18n.t('reset.save.errTitle')"></b>
+                <span [textContent]="i18n.t('reset.save.errBody')"></span>
+              }
+              @default {
+                <b [textContent]="i18n.t('reset.save.title')"></b>
+                <span [textContent]="i18n.t('reset.save.body')"></span>
+              }
+            }
+          </p>
+          <button
+            type="button"
+            class="confirm-btn reset-save-btn"
+            data-testid="reset-save"
+            [class.reset-save-btn--ok]="save.status === 'ok'"
+            [disabled]="checked().length === 0 || saving()"
+            [textContent]="i18n.t(save.status === 'ok' ? 'reset.save.again' : save.status === 'err' ? 'reset.save.retry' : 'reset.save.button')"
+            (click)="saveFile()"
+          ></button>
+          <p class="reset-save-cur" data-testid="reset-selected-line" [textContent]="selectedLine()"></p>
+          @if (selectionChanged()) {
+            <p class="reset-save-cur reset-save-cur--warn" data-testid="reset-selection-changed" [textContent]="i18n.t('reset.save.changed')"></p>
+          }
+        </div>
+
+        @if (rows().length) {
+          <div class="reset-selall">
+            <span id="reset-what" [textContent]="i18n.t('reset.whatToDelete')"></span>
+            <span class="reset-selall-acts">
+              <button type="button" class="reset-link" data-testid="reset-select-all" (click)="selectAll(true)" [textContent]="i18n.t('reset.selectAll')"></button>
+              <button type="button" class="reset-link" data-testid="reset-select-none" (click)="selectAll(false)" [textContent]="i18n.t('reset.selectNone')"></button>
+            </span>
+          </div>
+          <div class="reset-kinds" role="group" aria-labelledby="reset-what">
+            @for (row of rows(); track row.kind) {
+              <label class="reset-kind" [class.is-off]="!isChecked(row.kind)" [attr.data-testid]="'reset-kind-' + row.kind">
+                <input
+                  type="checkbox"
+                  class="reset-kind-box"
+                  [checked]="isChecked(row.kind)"
+                  [attr.aria-describedby]="'reset-detail-' + row.kind"
+                  (change)="toggle(row.kind, $event)"
+                />
+                <span class="reset-kind-tile" [class.reset-kind-tile--free]="row.kind === 'ownBlocks'" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    @for (d of row.icon; track $index) {
+                      <path [attr.d]="d" />
+                    }
+                  </svg>
+                </span>
+                <span class="reset-kind-label" [textContent]="row.label"></span>
+                <small class="reset-kind-detail" [id]="'reset-detail-' + row.kind" [textContent]="row.detail"></small>
+                @if (row.count !== null) {
+                  <span class="reset-pill" data-testid="reset-kind-count" [textContent]="row.count"></span>
+                }
+              </label>
+            }
+          </div>
+        }
+
+        <p class="reset-keep" [textContent]="i18n.t('reset.keepsLanguage')"></p>
+
+        @for (hint of hints(); track hint.key) {
+          <p class="reset-hint" data-testid="reset-hint" [attr.data-hint]="hint.key" [class.reset-hint--warn]="hint.warn" [textContent]="hint.text"></p>
+        }
+
+        <label class="reset-ack">
+          <input
+            type="checkbox"
+            class="reset-ack-box"
+            data-testid="reset-acknowledge"
+            [checked]="acknowledged()"
+            (change)="onAcknowledge($event)"
+          />
+          <span [textContent]="i18n.t('reset.acknowledge')"></span>
+        </label>
+      </div>
+
+      <footer class="confirm-foot reset-foot">
+        <button
+          #cancelBtn
+          type="button"
+          class="confirm-btn confirm-btn--ghost"
+          data-testid="reset-cancel"
+          [textContent]="i18n.t('modal.cancel')"
+          (click)="onCancel()"
+        ></button>
+        <button
+          type="button"
+          class="confirm-btn confirm-btn--danger"
+          data-testid="reset-delete"
+          [disabled]="!canDelete()"
+          [textContent]="deleteLabel()"
+          (click)="onDelete()"
+        ></button>
+      </footer>
+    </div>
+  </div>
+}

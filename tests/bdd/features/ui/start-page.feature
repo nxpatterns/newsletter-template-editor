@@ -227,7 +227,7 @@ Feature: Start page
     And I reopen the app
     Then the start tiles should be in the order 'start-blank,start-demo-de'
     When I open the start page menu
-    Then the start page menu entries should be 'start-menu-blank,start-menu-demo-de,start-menu-open-saved,menu-factory-reset'
+    Then the start page menu entries should be 'start-menu-blank,start-menu-demo-de,start-menu-open-saved,start-menu-open-file,menu-factory-reset'
 
   Scenario: A pinned template is a tile after the demos and opens from there
     Given I open the editor with the German demo

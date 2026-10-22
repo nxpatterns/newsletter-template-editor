@@ -46,6 +46,45 @@
 </ng-template>
 
 <section class="start" data-testid="start-page">
+  @if (noticeView(); as n) {
+    <div class="start-notice" data-testid="start-notice" [class.start-notice--error]="n.error" [attr.role]="n.error ? 'alert' : 'status'">
+      <span class="start-notice-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          @if (n.error) {
+            <path d="M12 6.5v7M12 17.5v.01" />
+          } @else {
+            <path d="M5 12.5l4.5 4.5L19 7.5" />
+          }
+        </svg>
+      </span>
+      <div class="start-notice-body">
+        <p>
+          <b [textContent]="n.title"></b>
+          @if (n.text) {
+            <span data-testid="start-notice-text" [textContent]="' ' + n.text"></span>
+          }
+        </p>
+        @if (n.hint) {
+          <small [textContent]="n.hint"></small>
+        }
+        @if (n.backup) {
+          <div class="start-notice-acts">
+            <button type="button" class="start-notice-btn" data-testid="start-notice-open-backup" (click)="openBackup()" [textContent]="i18n.t('reset.done.openBackup')"></button>
+          </div>
+        }
+      </div>
+      <button
+        type="button"
+        class="start-notice-close"
+        data-testid="start-notice-close"
+        [attr.aria-label]="i18n.t('start.noticeClose')"
+        [attr.title]="i18n.t('start.noticeClose')"
+        (click)="closeNotice()"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18" /></svg>
+      </button>
+    </div>
+  }
   @if (overview(); as o) {
     <header class="start-hello">
       <h2 class="start-title" data-testid="start-title" [textContent]="i18n.t(returning() ? 'start.titleBack' : 'start.titleFirst')"></h2>

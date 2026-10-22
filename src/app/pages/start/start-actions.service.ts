@@ -40,6 +40,16 @@ export class StartActionsService {
     }, { id, name: this.overview()?.saved.find((s) => s.id === id)?.displayName });
   }
 
+  /** A template file chosen with "Open from file…": opens as unsaved work, after the unsaved-changes question. */
+  async openProjectText(text: string, fileName: string): Promise<void> {
+    await this.run('open', async () => {
+      const ok = this.session.loadProjectJsonText(text);
+      if (ok) this.snackbar.success(this.i18n.t('file.projectOpened'));
+      else this.snackbar.error(this.i18n.t('file.openFailed'));
+      return ok;
+    }, { name: fileName });
+  }
+
   /** One start page action at a time (double clicks, tile and menu together). */
   async exclusive(work: () => Promise<void>): Promise<void> {
     if (this.busy) return;

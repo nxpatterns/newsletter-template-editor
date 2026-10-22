@@ -13,7 +13,8 @@ import { NewsletterSession } from '../editor/newsletter-session.service';
 import { LocaleService } from '../i18n/locale.service';
 import { ConfirmDialogService } from '../ui/confirm-dialog/confirm-dialog.service';
 import { SnackbarService } from '../ui/snackbar/snackbar.service';
-import { FactoryResetService } from './factory-reset.service';
+import { isBackupFile } from '../../core/reset/backup-file';
+import { FactoryResetService } from './reset/factory-reset.service';
 import { ExportHtmlDialogComponent, type HtmlExportKind } from './export-html-dialog.component';
 import { activeColors } from '../../core/colors';
 import { LibraryPickerComponent } from './library-picker.component';
@@ -208,7 +209,7 @@ export class FileMenuComponent {
     try {
       const text = await file.text();
       if (!this.session.loadProjectJsonText(text)) {
-        this.snackbar.error(this.i18n.t('file.openFailed'));
+        this.snackbar.error(this.i18n.t(isBackupFile(text) ? 'file.isBackup' : 'file.openFailed'));
         return;
       }
       this.snackbar.success(this.i18n.t('file.projectOpened'));

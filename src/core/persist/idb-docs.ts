@@ -6,12 +6,12 @@ import { normalizeNewsletter } from './normalize-newsletter';
 const DB_NAME = 'nte-docs';
 /** v2: stores for own blocks, their versions and drafts (block editor); templates with pre-UUIDv7 ids are dropped (beta). */
 const DB_VERSION = 2;
-const STORE_LIBRARY = 'library';
-const STORE_RECOVERY = 'recovery';
+export const STORE_LIBRARY = 'library';
+export const STORE_RECOVERY = 'recovery';
 export const STORE_OWN_BLOCKS = 'ownBlocks';
 export const STORE_BLOCK_VERSIONS = 'blockVersions';
 export const STORE_BLOCK_DRAFTS = 'blockDrafts';
-const RECOVERY_KEY = 'current';
+export const RECOVERY_KEY = 'current';
 
 export interface LibraryEntry {
   id: string;
@@ -166,7 +166,7 @@ export async function deleteRecovery(): Promise<void> {
 }
 
 /** Row next to the draft that lists the demos removed from the start page (no schema change). */
-const HIDDEN_DEMOS_KEY = 'hiddenDemos';
+export const HIDDEN_DEMOS_KEY = 'hiddenDemos';
 
 export async function loadHiddenDemos(): Promise<string[]> {
   const db = await openDb();
@@ -185,15 +185,6 @@ export async function saveHiddenDemos(langs: string[]): Promise<void> {
   const db = await openDb();
   const tx = db.transaction(STORE_RECOVERY, 'readwrite');
   tx.objectStore(STORE_RECOVERY).put({ key: HIDDEN_DEMOS_KEY, langs });
-  await txDone(tx);
-}
-
-/** Factory reset: every saved template, the draft, the hidden demos and all own blocks with their versions and drafts, in one transaction. */
-export async function clearAllDocs(): Promise<void> {
-  const stores = [STORE_LIBRARY, STORE_RECOVERY, STORE_OWN_BLOCKS, STORE_BLOCK_VERSIONS, STORE_BLOCK_DRAFTS];
-  const db = await openDb();
-  const tx = db.transaction(stores, 'readwrite');
-  stores.forEach((name) => tx.objectStore(name).clear());
   await txDone(tx);
 }
 

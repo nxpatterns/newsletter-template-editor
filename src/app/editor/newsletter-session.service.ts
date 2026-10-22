@@ -328,14 +328,26 @@ export class NewsletterSession {
     };
   }
 
-  /** Factory reset: delete every saved template and the draft and bring the demos back; no document stays open. */
-  async resetAll(): Promise<void> {
+  /** Writes a pending change of the working draft now, so what is stored matches the screen. */
+  async flushRecovery(): Promise<void> {
+    this.endCoalesce();
+    if (!this.recoveryTimer) return;
+    clearTimeout(this.recoveryTimer);
+    this.recoveryTimer = null;
+    await this.persistRecovery();
+  }
+
+  /**
+   * Before the app reloads after a reset or a restore: store the working draft unless it is being
+   * deleted, then let go of it, so nothing writes it back and the browser does not ask about leaving.
+   */
+  async releaseForReload(keepWorkingDraft: boolean): Promise<void> {
+    if (keepWorkingDraft) await this.flushRecovery();
     this.endCoalesce();
     if (this.recoveryTimer) {
       clearTimeout(this.recoveryTimer);
       this.recoveryTimer = null;
     }
-    await this.repo.clearAll();
     this.libraryIdSignal.set(null);
     this.dirtySignal.set(false);
     this.hasDocumentSignal.set(false);

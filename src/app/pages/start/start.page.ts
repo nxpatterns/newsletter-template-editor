@@ -6,6 +6,9 @@ import { NewsletterSession } from '../../editor/newsletter-session.service';
 import { LocaleService } from '../../i18n/locale.service';
 import { FlagComponent, type FlagCode } from '../../ui/flag/flag.component';
 import { SnackbarService } from '../../ui/snackbar/snackbar.service';
+import { takeAppNotice } from '../../shell/reset/app-notice';
+import { describeKinds } from '../../shell/reset/kind-text';
+import { OpenFromFileService } from './open-from-file.service';
 import { StartActionsService } from './start-actions.service';
 
 /** How long "Undo" stays available after deleting a saved template or a demo. */
@@ -25,6 +28,7 @@ export class StartPage {
   private readonly actions = inject(StartActionsService);
   private readonly snackbar = inject(SnackbarService);
   private readonly router = inject(Router);
+  private readonly openFromFile = inject(OpenFromFileService);
 
   /** Regions each demo language is written for. */
   protected readonly demoDeFlags: FlagCode[] = ['de', 'at', 'ch'];
@@ -41,6 +45,32 @@ export class StartPage {
       .filter((row) => row.pinnedAt)
       .sort((a, b) => (a.pinnedAt ?? '').localeCompare(b.pinnedAt ?? '')),
   );
+  /** Message after the app reloaded itself: what the reset deleted or what an opened backup added. */
+  private readonly notice = signal(takeAppNotice());
+  protected readonly noticeView = computed(() => {
+    const n = this.notice();
+    if (!n) return null;
+    const t = (key: string, params?: Record<string, string>) => this.i18n.t(key, params);
+    if (n.kind === 'resetFailed') return { error: true, title: t('reset.done.failed'), text: '', hint: '', backup: null };
+    if (n.kind === 'reset') {
+      const list = describeKinds(this.i18n, n.deleted);
+      return {
+        error: false,
+        title: t(n.everything ? 'reset.done.all' : 'reset.done.partial'),
+        text: list ? t('reset.done.deleted', { list }) : '',
+        hint: n.backupFile ? t('reset.done.backupHint', { file: n.backupFile }) : t('reset.done.noUndo'),
+        backup: n.backupFile,
+      };
+    }
+    const list = describeKinds(this.i18n, n.restored);
+    return {
+      error: false,
+      title: t('restore.done'),
+      text: list ? t('restore.added', { list }) : t('restore.nothingNew'),
+      hint: t('restore.keptHint', { file: n.file }),
+      backup: null,
+    };
+  });
   /** Inline "really discard?" on the not-saved card. */
   protected readonly confirmDiscard = signal(false);
   /** Not-saved card shakes after Cancel in the unsaved-changes question: "this is the one". */
@@ -63,6 +93,15 @@ export class StartPage {
 
   protected onNudgeEnd(event: AnimationEvent): void {
     if (event.target === event.currentTarget) this.nudging.set(false);
+  }
+
+  protected closeNotice(): void {
+    this.notice.set(null);
+  }
+
+  /** "Open backup…" in the message after a reset with a saved file. */
+  protected openBackup(): Promise<void> {
+    return this.openFromFile.pick();
   }
 
   protected startNew(kind: 'blank' | 'demo', lang?: SeedLanguage): Promise<void> {

@@ -187,6 +187,7 @@ Never require File System Access for core workflows. FSA Save/Open may exist as 
 ☰ Start menu (start page)
 ├── Start new: Blank newsletter, demo templates
 ├── Saved templates (recent) · Open…
+├── Open from file…                    (backup from the reset dialog or template file)
 └── Reset everything to defaults…
 ```
 
@@ -194,7 +195,7 @@ Labels are the shipped EN strings (`file.*`, `startMenu.*`, `reset.*`). The temp
 
 ### Factory reset
 
-"Reset everything to defaults…" deletes templates, the working draft, own blocks with their versions and drafts, and view settings after an acknowledge step ("I understand that this cannot be undone."); the app language stays (`src/app/shell/factory-reset.service.ts`). The planned extension with one checkbox per kind of data is in `block-editor-and-demo-page.md`.
+"Reset everything to defaults…" opens the reset dialog (decisions 63 to 67 in `block-editor-and-demo-page.md`): one checkbox per kind of data with its count (templates, own blocks, block drafts, current working draft, view settings), all checked, kinds without data hidden. The user may save the checked kinds as a backup file first (`kind: 'nte-backup'`, `src/core/reset/backup-file.ts`), then ticks "I understand that this cannot be undone." and deletes. The app language stays. After the reload the start page shows what was deleted, with a close X. "Open from file…" in the start menu opens a backup again: rows that already exist and an existing working draft stay unchanged. Code: `src/app/shell/reset/`, `src/core/reset/`.
 
 ### Why two different Open entries
 

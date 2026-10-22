@@ -1,0 +1,324 @@
+/* Glass dialog base comes from confirm-dialog.component.scss; this adds the reset dialog parts (mockup R4, variant B). */
+
+.reset-dialog {
+  inline-size: min(33rem, calc(100vw - 1.5rem));
+  max-block-size: calc(100dvh - 2rem);
+}
+
+.reset-head-text {
+  flex: 1;
+}
+
+.reset-x {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 1.9rem;
+  block-size: 1.9rem;
+  border: 1px solid var(--ds-modal-close-border);
+  border-radius: var(--ds-radius);
+  padding: 0;
+  color: var(--ds-modal-head-color);
+  background: var(--ds-modal-close-bg);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--ds-modal-close-bg-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
+
+  svg {
+    display: block;
+    inline-size: 1rem;
+    block-size: 1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+  }
+}
+
+.reset-body {
+  display: grid;
+  gap: 0.8rem;
+  min-block-size: 0;
+  overflow: auto;
+  font-size: 0.8125rem;
+}
+
+.reset-body p {
+  margin: 0;
+}
+
+/* Save box on top: saves only the checked kinds (decision 67). */
+.reset-save {
+  --reset-save: var(--ds-accent);
+
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.35rem 0.8rem;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--reset-save) 45%, var(--ds-border));
+  border-radius: calc(var(--ds-radius) * 2);
+  padding: 0.65rem 0.75rem;
+  background: color-mix(in srgb, var(--reset-save) 8%, transparent);
+}
+
+.reset-save.is-ok {
+  --reset-save: var(--ds-success);
+}
+
+.reset-save.is-err {
+  --reset-save: var(--ds-danger);
+}
+
+.reset-save-text {
+  display: grid;
+  gap: 0.1rem;
+  font-size: 0.75rem;
+  color: var(--ds-text-muted);
+
+  b {
+    font-size: 0.8125rem;
+    color: var(--ds-text);
+  }
+}
+
+.reset-ok {
+  color: var(--ds-success);
+}
+
+.reset-file {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 0.7rem;
+  overflow-wrap: anywhere;
+}
+
+.reset-save-btn {
+  min-block-size: 2rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8125rem;
+  border: 1px solid color-mix(in srgb, var(--reset-save) 55%, transparent);
+  color: var(--ds-text);
+  background: color-mix(in srgb, var(--reset-save) 14%, transparent);
+}
+
+.reset-save-cur {
+  grid-column: 1 / -1;
+  font-size: 0.75rem;
+  color: var(--ds-text);
+}
+
+.reset-save-cur--warn {
+  color: var(--ds-warning);
+}
+
+/* List of data kinds. */
+.reset-selall {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-size: 0.75rem;
+  color: var(--ds-text-muted);
+}
+
+.reset-selall-acts {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.reset-link {
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--ds-accent);
+  background: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:focus-visible {
+    outline: 2px solid var(--ds-accent);
+    outline-offset: 2px;
+  }
+}
+
+.reset-kinds {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--ds-border);
+  border-radius: calc(var(--ds-radius) * 2);
+  background: color-mix(in srgb, var(--ds-bg-page) 45%, transparent);
+}
+
+.reset-kind {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  gap: 0.15rem 0.7rem;
+  align-items: center;
+  padding: 0.6rem 0.75rem;
+  border-block-start: 1px solid var(--ds-border);
+  cursor: pointer;
+
+  &:first-child {
+    border-block-start: 0;
+  }
+
+  &:focus-within {
+    background: color-mix(in srgb, var(--ds-accent) 6%, transparent);
+  }
+}
+
+.reset-kind-box {
+  grid-row: 1 / span 2;
+  inline-size: 1.05rem;
+  block-size: 1.05rem;
+  margin: 0;
+  accent-color: var(--ds-danger);
+  cursor: pointer;
+}
+
+.reset-kind-tile {
+  display: inline-grid;
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  place-items: center;
+  inline-size: 1.9rem;
+  block-size: 1.9rem;
+  border-radius: calc(var(--ds-radius) * 1.6);
+  color: var(--ds-accent);
+  background: color-mix(in srgb, var(--ds-accent) 14%, transparent);
+}
+
+.reset-kind-tile svg {
+  display: block;
+  inline-size: 1.05rem;
+  block-size: 1.05rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Own blocks: the striped icon of free blocks (decision 54). */
+.reset-kind-tile--free {
+  color: #0b1220;
+  background: repeating-linear-gradient(135deg, #a3b8cc 0 4px, #52677d 4px 8px);
+}
+
+.reset-kind-label {
+  grid-column: 3;
+  font-weight: 600;
+}
+
+.reset-kind-detail {
+  grid-column: 3;
+  font-size: 0.75rem;
+  color: var(--ds-text-muted);
+}
+
+.reset-kind.is-off .reset-kind-label {
+  color: var(--ds-text-muted);
+}
+
+/* Count pill: red while the kind is checked (it goes), muted when it stays. */
+.reset-pill {
+  --reset-pill: var(--ds-danger);
+
+  grid-row: 1 / span 2;
+  grid-column: 4;
+  border: 1px solid color-mix(in srgb, var(--reset-pill) 55%, var(--ds-border));
+  border-radius: 999px;
+  padding: 0.05rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--reset-pill);
+  background: color-mix(in srgb, var(--reset-pill) 12%, transparent);
+}
+
+.reset-kind.is-off .reset-pill {
+  --reset-pill: var(--ds-text-muted);
+}
+
+.reset-keep {
+  font-size: 0.75rem;
+  color: var(--ds-text-muted);
+}
+
+.reset-hint {
+  --reset-hint: var(--ds-accent);
+
+  border: 1px solid color-mix(in srgb, var(--reset-hint) 40%, var(--ds-border));
+  border-radius: calc(var(--ds-radius) * 1.8);
+  padding: 0.5rem 0.65rem;
+  font-size: 0.75rem;
+  background: color-mix(in srgb, var(--reset-hint) 8%, transparent);
+}
+
+.reset-hint--warn {
+  --reset-hint: var(--ds-warning);
+}
+
+.reset-ack {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--ds-warning) 40%, var(--ds-border));
+  border-radius: calc(var(--ds-radius) * 1.8);
+  padding: 0.6rem 0.7rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--ds-warning) 7%, transparent);
+  cursor: pointer;
+}
+
+.reset-ack-box {
+  flex: none;
+  inline-size: 1.05rem;
+  block-size: 1.05rem;
+  margin: 0.1rem 0 0;
+  accent-color: var(--ds-warning);
+  cursor: pointer;
+}
+
+/* Narrow app: a sheet from the bottom, buttons stacked with "Delete" on top. */
+@media (max-width: 40rem) {
+  .reset-overlay {
+    place-items: end stretch;
+    padding: 0;
+  }
+
+  .reset-dialog {
+    inline-size: 100%;
+    max-block-size: 92dvh;
+    border-block-end: 0;
+    border-radius: 1rem 1rem 0 0;
+  }
+
+  .reset-body {
+    padding: 0.9rem;
+  }
+
+  .reset-save {
+    grid-template-columns: 1fr;
+  }
+
+  .reset-save-btn {
+    justify-self: start;
+  }
+
+  .reset-foot {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    padding-block-end: max(1rem, var(--ds-safe-bottom));
+  }
+}

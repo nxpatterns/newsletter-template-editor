@@ -521,3 +521,120 @@
   .start-recent-delete,
   .start-pin { display: inline-flex; }
 }
+
+/* Message after a reset or an opened backup (mockup R4, scene "Danach"). */
+.start-notice {
+  --start-notice: var(--ds-success);
+
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.3rem 0.7rem;
+  align-items: start;
+  border: 1px solid color-mix(in srgb, var(--start-notice) 45%, var(--ds-border));
+  border-radius: calc(var(--ds-radius) * 2);
+  /* Gutter for the close button in the fixed top-end corner (design system: stable dismiss controls). */
+  padding: 0.7rem 3rem 0.7rem 0.8rem;
+  font-size: 0.8125rem;
+  background: color-mix(in srgb, var(--start-notice) 8%, transparent);
+
+  p {
+    margin: 0;
+  }
+
+  small {
+    display: block;
+    margin-block-start: 0.15rem;
+    font-size: 0.75rem;
+    color: var(--ds-text-muted);
+  }
+}
+
+.start-notice--error {
+  --start-notice: var(--ds-danger);
+}
+
+.start-notice-icon {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 1.7rem;
+  block-size: 1.7rem;
+  border-radius: calc(var(--ds-radius) * 1.6);
+  color: var(--start-notice);
+  background: color-mix(in srgb, var(--start-notice) 22%, transparent);
+
+  svg {
+    display: block;
+    inline-size: 1rem;
+    block-size: 1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.start-notice-close {
+  position: absolute;
+  inset-block-start: 0.55rem;
+  inset-inline-end: 0.55rem;
+  display: inline-grid;
+  place-items: center;
+  inline-size: 1.9rem;
+  block-size: 1.9rem;
+  border: 1px solid var(--ds-modal-close-border);
+  border-radius: var(--ds-radius);
+  padding: 0;
+  color: var(--ds-text);
+  background: var(--ds-modal-close-bg);
+  cursor: pointer;
+
+  svg {
+    display: block;
+    inline-size: 1rem;
+    block-size: 1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+  }
+
+  &:hover {
+    background: var(--ds-modal-close-bg-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ds-accent);
+    outline-offset: 2px;
+  }
+}
+
+.start-notice-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-block-start: 0.4rem;
+}
+
+.start-notice-btn {
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius);
+  padding: 0.3rem 0.7rem;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ds-text);
+  background: transparent;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--ds-accent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ds-accent);
+    outline-offset: 2px;
+  }
+}

@@ -64,6 +64,13 @@
             }
           </span>
         </button>
+        <button type="button" class="file-menu-item" role="menuitem" data-testid="start-menu-open-file" (click)="openFile()">
+          <span class="file-menu-tile"><app-menu-icon name="upload" /></span>
+          <span class="file-menu-text">
+            <span [textContent]="i18n.t('startMenu.openFile')"></span>
+            <span class="file-menu-hint" [textContent]="i18n.t('startMenu.openFileHint')"></span>
+          </span>
+        </button>
 
         <div class="file-menu-danger">
           <button type="button" class="file-menu-item file-menu-item--danger" role="menuitem" data-testid="menu-factory-reset" (click)="factoryReset()">
