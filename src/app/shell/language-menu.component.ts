@@ -69,7 +69,7 @@ export class LanguageMenuComponent {
   }
 
   protected choose(code: string): void {
-    this.i18n.setLocale(code as Locale);
+    void this.i18n.setLocale(code as Locale);
     this.close(true);
   }
 

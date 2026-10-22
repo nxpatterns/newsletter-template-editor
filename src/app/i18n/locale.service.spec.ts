@@ -28,9 +28,9 @@ describe('LocaleService', () => {
     expect(i18n.t('shell.title')).toContain('Newsletter');
   });
 
-  it('switches to German and persists', () => {
+  it('switches to German and persists', async () => {
     const i18n = TestBed.inject(LocaleService);
-    i18n.setLocale('de');
+    await i18n.setLocale('de');
     expect(i18n.locale()).toBe('de');
     expect(i18n.t('action.save')).toBe('Speichern');
     expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe('de');

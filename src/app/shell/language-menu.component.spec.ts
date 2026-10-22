@@ -79,12 +79,12 @@ describe('LanguageMenuComponent', () => {
     expect(el('[data-testid="locale-soon-fr"] [lang="fr"]')?.getAttribute('dir')).toBe('ltr');
   });
 
-  it('switches the language and closes', () => {
+  it('switches the language and closes', async () => {
     setup(PLANNED_LOCALES);
     openMenu();
     el<HTMLButtonElement>('[data-testid="locale-de"]')!.click();
+    await vi.waitFor(() => expect(TestBed.inject(LocaleService).locale()).toBe('de'));
     fixture.detectChanges();
-    expect(TestBed.inject(LocaleService).locale()).toBe('de');
     expect(el('[data-testid="locale-menu-panel"]')).toBeNull();
     openMenu();
     expect(el('[data-testid="locale-de"]')?.getAttribute('aria-checked')).toBe('true');
