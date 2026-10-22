@@ -72,6 +72,8 @@ export class BlockEditorService {
   private readonly tabSignal = signal<BlockEditorTab>('props');
   /** Content as last stored (draft or version); null for a block never saved. */
   private savedContent: CloneContent | null = null;
+  /** What "unchanged" means: the content as opened or last saved (JSON of `cloneContentOf`). */
+  private readonly baselineSignal = signal('');
   private readonly busySignal = signal(false);
 
   readonly status = this.statusSignal.asReadonly();
@@ -87,9 +89,10 @@ export class BlockEditorService {
   readonly baseType = computed(() => this.block()?.type ?? null);
   readonly content = computed((): CloneContent | null => (this.block() ? cloneContentOf(this.work.newsletter()) : null));
 
-  /** Unsaved: a changed field or color, or a new name. */
+  /** Unsaved: a field, color or the name differs from what was opened or saved (undo back = unchanged). */
   readonly hasChanges = computed(
-    () => this.work.dirty() || this.nameSignal().trim() !== this.savedNameSignal().trim(),
+    () =>
+      JSON.stringify(this.content()) !== this.baselineSignal() || this.nameSignal().trim() !== this.savedNameSignal().trim(),
   );
 
   readonly saveState = computed((): BlockSaveState => {
@@ -145,6 +148,7 @@ export class BlockEditorService {
     const doc = cloneWorkDocument(content, source.globals);
     this.work.loadWorkDocument({ ...doc, globals: { ...doc.globals, colors: setColorMode(doc.globals.colors, this.previewModeSignal()) } }, name);
     this.work.selectBlock(doc.blocks[0].id, { revealInPanel: false, scrollPreview: false });
+    this.baselineSignal.set(JSON.stringify(this.content()));
     this.statusSignal.set('ready');
   }
 
@@ -186,6 +190,7 @@ export class BlockEditorService {
       const record = await this.library.save(prev, { id: this.blockIdSignal()!, name, content, publish });
       this.recordSignal.set(record);
       this.savedContent = content;
+      this.baselineSignal.set(JSON.stringify(content));
       this.nameSignal.set(record.block.name);
       this.savedNameSignal.set(record.block.name);
       this.work.markSaved();

@@ -57,6 +57,7 @@ Feature: Block editor, clone mode
     Given I open the editor with the German demo
     And I adjust the built-in block 'hero'
     And I save the block as own block
+    And I close the replace offer
     And I go back from the block editor
     When I show the own blocks
     Then the own block list should show 'Hero (copy)' with 'version 1'
