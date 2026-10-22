@@ -114,8 +114,9 @@ Do **not** give the preview host `overflow: auto` and a tall iframe (`min(80vh)`
 Inspired by image2colors header bar (brand left, actions right), editor-specific content:
 
 ```text
-Editor:      [ ⌂ title · template name · save state ]  [ Undo / Redo ]  [ Save ⌘S ] [ Export HTML ] [ ☰ menu ]  [ 🌐 language ]
-Start page:  [ title ]                                                   [ ☰ start menu ]                     [ 🌐 language ]
+Editor:       [ ⌂ title · template name · save state ]  [ Undo / Redo ]  [ Save ⌘S ] [ Export HTML ] [ ☰ menu ]  [ 🌐 language ]
+Block editor: [ ⌂ title · ← back to template · name field · "Copy of …" OWN · save state ]  [ Undo / Redo ]  [ Save draft ⌘S ] [ Save as own block ]  [ 🌐 language ]
+Start page:   [ title ]                                                   [ ☰ start menu ]                     [ 🌐 language ]
 ```
 
 - One bar on iPad/desktop when space allows; toolbar **flex-wrap**s on narrow widths (not a second permanent toolbar row unless wrap requires it).
@@ -302,7 +303,17 @@ Mockup R4 variant B (`docs/mockups/block-editor/r4-reset-dialog.html`), decision
 - Start page message after the reload: success or danger box above the title, close X in the fixed top-end corner, "Open backup…" when a file was saved.
 - Implementation: `src/app/shell/reset/`, start page message in `src/app/pages/start/`.
 
+## Block editor page
+
+Mockup R1 layout B and R2 variant A / B (`docs/mockups/block-editor/`), clone mode in `block-editor-and-demo-page.md`.
+
+- Header part (`src/app/blocks/block-editor-header.component.*`, loaded deferred): back link like About, name field (`ed-input`, clear X), kind pill in the tint of the original type with a neutral "own" mark, save state pill (warning dot while unsaved, success check when saved). Buttons share `src/styles/_header-buttons.scss` with the editor: Save draft outline with its shortcut, Save as own block primary.
+- Work area: preview left (bar with the Dark | Light pill switch and "Preview in the colors of …"), side panel right (`clamp(22rem, 34vw, 30rem)`) with three text tabs: Parts, Properties, Check (warning badge with the number of findings).
+- Pill switch (`src/styles/_pill-switch.scss`): one rounded track, selected pill in the dialog-head blue. Used by Current blocks list | tree, Built-in | Own, Dark | Light and Role | Fixed.
+- Colors group: swatch, name, "follows “role”" or "fixed color #HEX" with a neutral FIXED pill (decision 55), "Change" opens the glass picker below the row; contrast warnings per set in the warning color with an SVG triangle.
+- Check rows: warning (amber round icon) or fine (green round icon), set pill Dark / Light, one action link.
+
 ## Future chrome (stubs only — specify before build)
 
 - Library row secondary line: date/time + app version (`createdWithAppVersion`, not stored yet; see `file-management.md`)
-- Block editor page and demo page (`block-editor-and-demo-page.md`)
+- Demo page (`block-editor-and-demo-page.md`)

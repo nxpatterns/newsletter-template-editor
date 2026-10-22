@@ -1,7 +1,7 @@
 # Block editor and demo page
 
 Concept for two new product areas: a **block editor** (users change or create their own blocks) and a **demo page** (users publish their own newsletters for others to see).
-Status: concept accepted (decisions 1 to 82), mockups R1 to R5 done. Implementation started 2026-10-22 in this order: storage base (built), reset dialog (built), available width in the render context (built), clone mode, free blocks, overview of own blocks, renaming the start tiles (done early), demo page last.
+Status: concept accepted (decisions 1 to 82), mockups R1 to R5 done. Implementation started 2026-10-22 in this order: storage base (built), reset dialog (built), available width in the render context (built), clone mode (built), free blocks, overview of own blocks, renaming the start tiles (done early), demo page last.
 Audience: non-technical sellers and marketing people first, designers second. English only.
 
 Related: `src/core/colors/model.ts` (implemented color levels), `email-colors.md` (color product rules), `block-content-editing.md` (edit modal, lite kit, render pipeline), `file-management.md` (storage, start page, menus), `design-system.md` (app look), `AGENTS.md` (email CSS rule).
@@ -170,6 +170,19 @@ Checks run while editing and again when an own block is inserted into another te
   - Persistent storage is requested once, on the first save, never at app start, because Firefox asks the user (`StoragePersistence`).
 - Reset dialog (built 2026-10-22): `src/app/shell/reset/` (dialog, service, start page message) and `src/core/reset/` (kinds, backup file, `AppDataStore` that counts, reads, deletes and restores all stores in one transaction each). Deleted demos come back with "Templates". A backup opens again through "Open from file…" in the start menu; existing rows and an existing working draft are kept. The dialog cannot tell a cancelled browser download from a finished one, so "Not saved" appears only when writing the file fails.
 - Factory reset and cleared browser data also delete all own blocks and drafts. The reset dialog must say so. The reset dialog lists one checkbox per kind of data, each with a count: templates, own blocks, block drafts, current working draft, view settings. Kinds without data are hidden. All are checked by default, since the entry means "reset everything"; the rows are independent, and whatever the user unchecks stays. The existing acknowledge step stays, plus a button "Save selected as a file" that saves only the checked kinds, with a line "Selected: everything" (or the checked kinds) under it. The delete button reads "Delete everything" while everything is checked, otherwise "Delete selected", and stays disabled until the acknowledge box is ticked. The app language is not part of the list and stays. Design: decisions 63 to 67, mockup `docs/mockups/block-editor/r4-reset-dialog.html`.
+
+## Clone mode (built 2026-10-22)
+
+Decisions 31, 32, 40, 49 to 55, 68; mockups R1 (layout B, "Kopie") and R2.
+
+- Content: `src/core/own-blocks/clone.ts`. A clone is `{ kind: 'clone', block, colors }`: the built-in block with its starting texts and layout options, plus the colors set in the copy as `{ role }` or `{ hex }`, one choice for Light and Dark (decision 51). Pure operations: new copy, working document, set a color, place an own block (records `own: { blockId, version }` on the placed block, decision 2), replace the placed blocks of the type (texts and images stay, layout fields of `LAYOUT_FIELDS` and the colors come from the copy, decision 49).
+- Saving: `saveBlockWork` in `operations.ts` stores a draft ("Save draft", ⌘S) or the next version ("Save as own block", later "Save new version") in one transaction; the block is created on its first save under the id its address already has.
+- Editing: the block editor edits a one-block document in its own `NewsletterSession` (`SESSION_KEEPS_WORKING_DRAFT` false), so the shared block fields work unchanged and the template's working draft and undo stay untouched. The copy's colors sit on the block level of both sets, where a placed block keeps its own colors.
+- Page: `/blocks/<id>?from=<template id>` (`src/app/blocks/`). "Adjust" opens `/blocks/<new id>?from=…&type=<type>`; nothing is stored before the first save, then `type` leaves the address. Header part in the app header: way back, name, "Copy of …" pill in the type's tint with the "own" mark, save state, undo, redo, the two save buttons. Preview with Dark | Light and "… block before / after …", tags for name and type, badge "Structure locked". Tabs: Parts (locked in clone mode), Properties (starting texts and layout = the shared block fields; colors with the glass picker "Role | Fixed"), Check (contrast in Light and Dark, image descriptions, link texts; `src/core/checks/block-checks.ts`).
+- Unsaved means the content or name differs from what was opened or saved; leaving asks "Save draft / Discard / Cancel"; a reload asks the browser.
+- After the first version, when the editor's open template has placed blocks of the type, the dialog offers to replace them, off by default (decision 49).
+- Block panel: "Built-in | Own" toggle in "All blocks", "Adjust" on built-in cards, own cards with name, "own" mark, "Copy of … · version n" and "Edit"; own cards without a version cannot be dragged yet. Current blocks shows an own block's name and the "own" mark.
+- Not in this step: "Save as own block" from a placed row and the newer-version notice (R2), the Colors tab entry (decision 33), "New block" and free blocks (step 5), the overview (step 6).
 
 ## Cost model
 
