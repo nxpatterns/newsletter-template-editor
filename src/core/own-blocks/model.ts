@@ -1,4 +1,5 @@
 import type { Block } from '../types';
+import type { CloneContent } from './clone';
 
 /**
  * Fields for the later cloud sync: empty (null) locally, filled from the account at the first
@@ -13,10 +14,10 @@ export interface SyncFields {
 export type OwnBlockKind = 'clone' | 'free';
 
 /**
- * What a block holds. Placeholder until clone mode and the parts model (build steps 4 and 5)
- * give it a shape; storage only needs it to be plain JSON.
+ * What a block holds: a clone (`clone.ts`), or plain JSON until the parts model of free blocks
+ * (build step 5) gives it a shape.
  */
-export type OwnBlockContent = Readonly<Record<string, unknown>>;
+export type OwnBlockContent = CloneContent | Readonly<Record<string, unknown>>;
 
 /** One own block in the library. Its content lives in versions and in at most one draft. */
 export interface OwnBlock extends SyncFields {

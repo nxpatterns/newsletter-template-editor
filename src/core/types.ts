@@ -131,9 +131,17 @@ export interface Globals {
   language?: string;
 }
 
+/** Own block a placed block was inserted from, and the version it has (decision 2). */
+export interface OwnBlockRef {
+  blockId: string;
+  version: number;
+}
+
 export interface BlockBase {
   id: string;
   type: string;
+  /** Set when the block came from an own block; absent for a built-in block. */
+  own?: OwnBlockRef;
 }
 
 export const DIVIDER_STYLES = ['thin', 'two-tone', 'ornament', 'glow', 'spacer-only'] as const;

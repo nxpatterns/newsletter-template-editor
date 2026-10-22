@@ -527,61 +527,81 @@ function normalizeEventBlock(raw: Record<string, unknown>, id: string): EventBlo
   };
 }
 
+/** A valid own block reference, or undefined. */
+function normalizeOwnRef(raw: unknown): Block['own'] {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const { blockId, version } = raw as Record<string, unknown>;
+  if (typeof blockId !== 'string' || !blockId || typeof version !== 'number' || !Number.isInteger(version) || version < 1) {
+    return undefined;
+  }
+  return { blockId, version };
+}
+
+/** Per type; the own block reference is kept on top. */
 function normalizeBlocks(blocks: Block[]): Block[] {
   return blocks.map((block) => {
-    if (block.type === 'contact') {
-      return normalizeContactBlock(block as unknown as Record<string, unknown>, block.id);
-    }
-    if (block.type === 'teasers') {
-      return normalizeTeasersBlock(block as unknown as Record<string, unknown>, block.id);
-    }
-    if (block.type === 'event') {
-      return normalizeEventBlock(block as unknown as Record<string, unknown>, block.id);
-    }
-    if (block.type === 'video') {
-      return normalizeVideoBlock(block as unknown as Record<string, unknown>, block.id);
-    }
-    if (block.type === 'greeting') {
-      return normalizeGreetingBlock(block as unknown as Record<string, unknown>, block.id);
-    }
-    if (block.type === 'image-text') {
-      return normalizeImageTextBlock(block as unknown as Record<string, unknown>, block.id);
-    }
-    if (block.type === 'image') {
-      return normalizeImageBlock(block as unknown as Record<string, unknown>, block.id);
-    }
-    if (block.type === 'divider') {
-      return normalizeDividerBlock(block as unknown as Record<string, unknown>, block.id);
-    }
-    if (block.type === 'paragraph') {
-      return normalizeParagraphBlock(block as unknown as Record<string, unknown>, block.id);
-    }
-    if (block.type === 'hero') {
-      return normalizeHeroBlock(block as unknown as Record<string, unknown>, block.id);
-    }
-    if (block.type === 'chapter-band') {
-      return normalizeChapterBandBlock(block as unknown as Record<string, unknown>, block.id);
-    }
-    if (block.type === 'pull-quote') {
-      return normalizePullQuoteBlock(block as unknown as Record<string, unknown>, block.id);
-    }
-    if (block.type === 'testimonial') {
-      return normalizeTestimonialBlock(block as unknown as Record<string, unknown>, block.id);
-    }
-    if (block.type === 'stat-box') {
-      return normalizeStatBoxBlock(block as unknown as Record<string, unknown>, block.id);
-    }
-    if (block.type === 'price-box') {
-      return normalizePriceBoxBlock(block as unknown as LegacyPriceRaw, block.id);
-    }
-    if (block.type === 'cta-link-list') {
-      return normalizeCtaLinkListBlock(block as unknown as Record<string, unknown>, block.id);
-    }
-    if (block.type === 'benefits-list') {
-      return normalizeBenefitsListBlock(block as unknown as Record<string, unknown>, block.id);
-    }
-    return block;
+    const next = normalizeBlockFields(block);
+    const own = normalizeOwnRef(block.own);
+    if (own) return { ...next, own };
+    if (!('own' in next)) return next;
+    const { own: _bad, ...rest } = next;
+    return rest as Block;
   });
+}
+
+function normalizeBlockFields(block: Block): Block {
+  if (block.type === 'contact') {
+    return normalizeContactBlock(block as unknown as Record<string, unknown>, block.id);
+  }
+  if (block.type === 'teasers') {
+    return normalizeTeasersBlock(block as unknown as Record<string, unknown>, block.id);
+  }
+  if (block.type === 'event') {
+    return normalizeEventBlock(block as unknown as Record<string, unknown>, block.id);
+  }
+  if (block.type === 'video') {
+    return normalizeVideoBlock(block as unknown as Record<string, unknown>, block.id);
+  }
+  if (block.type === 'greeting') {
+    return normalizeGreetingBlock(block as unknown as Record<string, unknown>, block.id);
+  }
+  if (block.type === 'image-text') {
+    return normalizeImageTextBlock(block as unknown as Record<string, unknown>, block.id);
+  }
+  if (block.type === 'image') {
+    return normalizeImageBlock(block as unknown as Record<string, unknown>, block.id);
+  }
+  if (block.type === 'divider') {
+    return normalizeDividerBlock(block as unknown as Record<string, unknown>, block.id);
+  }
+  if (block.type === 'paragraph') {
+    return normalizeParagraphBlock(block as unknown as Record<string, unknown>, block.id);
+  }
+  if (block.type === 'hero') {
+    return normalizeHeroBlock(block as unknown as Record<string, unknown>, block.id);
+  }
+  if (block.type === 'chapter-band') {
+    return normalizeChapterBandBlock(block as unknown as Record<string, unknown>, block.id);
+  }
+  if (block.type === 'pull-quote') {
+    return normalizePullQuoteBlock(block as unknown as Record<string, unknown>, block.id);
+  }
+  if (block.type === 'testimonial') {
+    return normalizeTestimonialBlock(block as unknown as Record<string, unknown>, block.id);
+  }
+  if (block.type === 'stat-box') {
+    return normalizeStatBoxBlock(block as unknown as Record<string, unknown>, block.id);
+  }
+  if (block.type === 'price-box') {
+    return normalizePriceBoxBlock(block as unknown as LegacyPriceRaw, block.id);
+  }
+  if (block.type === 'cta-link-list') {
+    return normalizeCtaLinkListBlock(block as unknown as Record<string, unknown>, block.id);
+  }
+  if (block.type === 'benefits-list') {
+    return normalizeBenefitsListBlock(block as unknown as Record<string, unknown>, block.id);
+  }
+  return block;
 }
 
 /** Back-compat normalizer for drafts loaded from storage / project files. */
