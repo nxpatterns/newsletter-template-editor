@@ -290,6 +290,11 @@ Numbers refer to the questions in the 2026-10-21 thread.
 | 72 | Search and filter | Search, language, sort "Newest \| Most popular" (DE "Neueste \| Beliebteste"); topics or industries later |
 | 73 | Publishing | "Show on demo page" in the editor ⋮ menu opens a dialog: title, description, language, note "public for everyone", checkbox "I am responsible for the content"; without login, login comes first. Shown in mockup R5 |
 | 74 | Demo page design (mockup R5, step 7) | Variant A: grid of equal cards, search, language and sort in a glass bar above; a click on a card opens `/demos/<id>` |
+| 75 | Content with lists (extends decision 41) | Content holds flat parts and collections. A collection has items, and each item is a set of parts keyed by role. A List part places a collection and sets the item design once. The "nothing lost" check counts every item of a placed collection as placed. |
+| 76 | Width in nested layouts | The render context carries the available width in px. Columns pass each child its share (ratio, gap, padding). Images and fixed cells take their px from it, so the fixed 600, 504, 252 and 88 px values in the renderers go. Width choices are a fixed list (full, 3/4, 2/3, 1/2, 1/3, 1/4 of the available width); percent of column is removed. |
+| 77 | Columns on phones | Each Columns part has "stack on phones": yes (default) or no. Stacked order is natural or reversed only. The check warns when a non-stacking column is narrower than about 120 px at 320 px phone width. |
+| 78 | Missing scales | Name the scales before the first own block is stored: column ratios, image width, icon and button size, weight (normal or bold), padding (vertical and horizontal), bleed (full canvas or content width). Proposed values come as a separate step for approval. |
+| 79 | Small export fixes | Yes: the document language follows the template language instead of a fixed "en"; the open-tracking pixel moves to the top of the body so Gmail clipping cannot cut it off; the dark-mode color block resolves its CSS variables at export. One small task in its own thread. |
 
 ## Mockup scope
 
@@ -319,4 +324,6 @@ Reset dialog wording (EN; DE in the mockup):
 
 ## Open questions
 
-None. Decisions 30 to 74 were accepted on 2026-10-21; mockups may still change them.
+Open from the email completeness review of 2026-10-22: how the greeting with name or fallback is built (a placeholder inside the text editor, or a separate embedded block).
+
+Decisions 30 to 74 were accepted on 2026-10-21, decisions 75 to 79 on 2026-10-22. Mockups may still change them.
