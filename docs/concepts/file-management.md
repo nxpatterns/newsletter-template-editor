@@ -159,7 +159,7 @@ Never require File System Access for core workflows. FSA Save/Open may exist as 
 
 ## Start page and editor addresses
 
-- `/` is the start page on every app launch: tiles **Blank newsletter** (first), **Demo template German**, **Demo template English** (to be renamed "Example template", `block-editor-and-demo-page.md`); a **Continue** card for unsaved work (never saved, or unsaved changes); **Recently used** = saved library entries, pinned first, then newest first; pin, unpin and delete with Undo.
+- `/` is the start page on every app launch: tiles **Blank newsletter** (first), **Example template German**, **Example template English** (DE "Beispielvorlage"; renamed from "Demo template" so "Demos" means the demo page, `block-editor-and-demo-page.md`); a **Continue** card for unsaved work (never saved, or unsaved changes); **Recently used** = saved library entries, pinned first, then newest first; pin, unpin and delete with Undo.
 - Blank = no blocks, house style (brand, logo, colors, legal footer) and texts in the app language. Demos always open as a fresh copy; the originals are never changed.
 - `/edit/:id` is the editor for library entry `id` (UUID); `/edit/draft` is a newsletter not saved yet. Reload reopens exactly that newsletter. Save as / Open… replace the address. Unknown id → start page with a short notice.
 - Leaving the editor for the start page with unsaved changes asks **Save / Discard / Cancel**. Discard returns a saved newsletter to its saved version and drops a never-saved draft.
@@ -194,7 +194,7 @@ Labels are the shipped EN strings (`file.*`, `startMenu.*`, `reset.*`). The temp
 
 ### Factory reset
 
-"Reset everything to defaults…" deletes templates, the working draft and view settings after an acknowledge step ("I understand that this cannot be undone."); the app language stays (`src/app/shell/factory-reset.service.ts`). The planned extension with one checkbox per kind of data is in `block-editor-and-demo-page.md`.
+"Reset everything to defaults…" deletes templates, the working draft, own blocks with their versions and drafts, and view settings after an acknowledge step ("I understand that this cannot be undone."); the app language stays (`src/app/shell/factory-reset.service.ts`). The planned extension with one checkbox per kind of data is in `block-editor-and-demo-page.md`.
 
 ### Why two different Open entries
 
