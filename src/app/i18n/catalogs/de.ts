@@ -704,7 +704,6 @@ export const DE: MessageCatalog = {
   'start.newSection': 'Neu anfangen',
   'start.blank': 'Leerer Newsletter',
   'start.blankHint': 'Ohne Vorlage starten, Texte auf Deutsch',
-  'start.newBlockPhone': '„Neuer Baustein“ erscheint ab Tablet-Breite.',
   'start.newBlockHint': 'Eigenen Baustein aus Teilen bauen, für jede Vorlage',
   'start.newBlock': 'Neuer Baustein',
   'start.demoDe': 'Beispielvorlage Deutsch',

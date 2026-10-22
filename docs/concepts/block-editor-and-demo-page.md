@@ -184,6 +184,15 @@ Decisions 31, 32, 40, 49 to 55, 68; mockups R1 (layout B, "Kopie") and R2.
 - Block panel: "Built-in | Own" toggle in "All blocks", "Adjust" on built-in cards, own cards with name, "own" mark, "Copy of … · version n" and "Edit"; own cards without a version cannot be dragged yet. Current blocks shows an own block's name and the "own" mark.
 - Not in this step: "Save as own block" from a placed row and the newer-version notice (R2), the Colors tab entry (decision 33), "New block" and free blocks (step 5), the overview (step 6).
 
+## New block entry points (built 2026-10-22)
+
+Decisions 15, 48, 54, 83; mockups R2 (Own list) and R3 variant C (start page, start menu).
+
+- "All blocks" tab, "Own" list: dashed tile "New block" first, also in the empty state; it opens `/blocks/<new id>?from=<template id>&type=free`. Free own blocks are draggable like copies, with the striped icon and "Free block · version n".
+- Start page: tile "New block" fourth under "Start new"; start menu: section "Blocks" with the entry "New block". Both open `/blocks/<new id>?type=free` without a template.
+- Inserting places the newest version (`placeOwnBlock`); preview and export render the free block at the available width of the render context.
+- Left out until their feature exists: the link "Open from file …" in the empty Own list comes with the file export of own blocks; the start menu entry "Manage own blocks" and the link "Manage all" in the Own list come with the overview page.
+
 ## Cost model
 
 | Feature | Price | Reason |
@@ -310,7 +319,7 @@ Numbers refer to the questions in the 2026-10-21 thread.
 | 58 | Deleting an own block that templates use | Templates keep their copy and get no more newer-version notices; 8 second undo |
 | 59 | Import of a block that already exists in another version | Keep both; the imported one gets " (2)" appended to its name |
 | 60 | "Delete drafts older than ..." | Choices 30 days, 90 days, 6 months, 1 year; default 90 days; saved versions stay; 8 second undo |
-| 61 | Phones (extends decision 37) | "New block" and "Edit" are hidden, not greyed out |
+| 61 | Phones (extends decision 37) | Replaced by decision 83 |
 | 62 | Duplicate an own block | Yes, in the row menu ⋯; added to the editor operations |
 | 63 | Reset dialog design (mockup R4, step 6) | Variant B: each kind of data with icon, a one-line description and its count; "All \| None" above the list; the save box at the top |
 | 64 | Delete button label | "Delete everything" (DE "Alles löschen") only while everything is checked (the default), otherwise "Delete selected"; enabled only after "I understand ..." is ticked |
@@ -332,6 +341,7 @@ Numbers refer to the questions in the 2026-10-21 thread.
 | 80 | Greeting with name or fallback (decision 4 of the email completeness review) | Amended 2026-10-22: "B plus piece". The Greeting block stays a built-in block of its own with its name switch, exactly as before; nothing is converted. In addition, a "name or fallback" piece can be placed in any text (lite kit), for example a closing line "… [Name oder Werte Geschäftspartner]". Greeting and Event are the two built-in logic blocks: embeddable as a whole, not rebuilt from parts. A name that is an email address or a generic role mailbox counts as no name. |
 | 81 | Scale values (decision 78) | Start with best-guess values (Finite scales table), measured values replace them later. Stored blocks keep token names only. |
 | 82 | Floors for nesting and accessibility | Minimum widths per part, depth limits and accessibility minimums as in Coverage and limits. Starting values, to be checked in practice; they may change. Width floors refuse the drop, accessibility findings warn. |
+| 83 | Phones (replaces decision 61) | Nothing is left out on phones: "New block" and "Edit" are shown there as well. Phone optimizations follow later as their own topic |
 
 ## Mockups and states
 
@@ -351,4 +361,4 @@ Reset dialog wording (EN; DE in the mockup):
 
 ## Open questions
 
-None. Decisions 30 to 74 were accepted on 2026-10-21, decisions 75 to 82 on 2026-10-22.
+None. Decisions 30 to 74 were accepted on 2026-10-21, decisions 75 to 83 on 2026-10-22.

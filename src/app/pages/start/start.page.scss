@@ -144,24 +144,6 @@
   }
 }
 
-.start-phone-note {
-  display: none;
-  margin: 0.6rem 0 0;
-  font-size: 0.75rem;
-  color: var(--ds-text-muted);
-}
-
-/* Phones view and manage only: the tile is hidden, not greyed out (decisions 37, 61). */
-@media (max-width: 47.99rem) {
-  .start-tile.start-block {
-    display: none;
-  }
-
-  .start-phone-note {
-    display: block;
-  }
-}
-
 .start-lang-icon {
   position: relative;
   inline-size: 3.5rem;

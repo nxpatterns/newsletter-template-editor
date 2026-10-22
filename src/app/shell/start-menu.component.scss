@@ -24,9 +24,3 @@
   fill: currentColor;
 }
 
-/* Phones view and manage only: "New block" is hidden, not greyed out (decision 61). */
-@media (max-width: 47.99rem) {
-  .start-menu-blocks {
-    display: none;
-  }
-}

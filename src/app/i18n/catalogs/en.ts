@@ -698,7 +698,6 @@ export const EN: MessageCatalog = {
   'start.newSection': 'Start new',
   'start.blank': 'Blank newsletter',
   'start.blankHint': 'Start from scratch, texts in English',
-  'start.newBlockPhone': '“New block” appears from tablet width up.',
   'start.newBlockHint': 'Build your own block from parts, for every template',
   'start.newBlock': 'New block',
   'start.demoDe': 'Example template German',
