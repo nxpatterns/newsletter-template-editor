@@ -1,6 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import type { SeedLanguage } from '../../../core';
+import { ID_SOURCE } from '../../editor/id-source.token';
 import { NewsletterSession, type RecentOverview } from '../../editor/newsletter-session.service';
 import { LocaleService } from '../../i18n/locale.service';
 import { type LeaveTarget, type LeaveTargetInfo, UnsavedGuardService } from '../../shell/unsaved-guard.service';
@@ -14,6 +15,7 @@ export class StartActionsService {
   private readonly unsaved = inject(UnsavedGuardService);
   private readonly snackbar = inject(SnackbarService);
   private readonly router = inject(Router);
+  private readonly newId = inject(ID_SOURCE);
 
   /** Draft in progress and saved templates; null until loaded. */
   readonly overview = signal<RecentOverview | null>(null);
@@ -29,6 +31,13 @@ export class StartActionsService {
     await this.run('new', async () => {
       await this.session.startNew(kind, lang ?? this.i18n.locale());
       return true;
+    });
+  }
+
+  /** "New block" (decisions 7, 15): a new free block in the block editor, without a template. */
+  async newBlock(): Promise<void> {
+    await this.exclusive(async () => {
+      await this.router.navigate(['/blocks', this.newId()], { queryParams: { type: 'free' } });
     });
   }
 

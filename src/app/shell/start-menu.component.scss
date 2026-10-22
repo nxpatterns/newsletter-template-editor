@@ -9,3 +9,24 @@
   position: relative;
   order: 1;
 }
+
+/* "New block": striped tile of free blocks (decision 54) with a solid diamond. */
+.start-menu-tile--free {
+  border-color: transparent;
+  color: #0b1220;
+  background: repeating-linear-gradient(135deg, #a3b8cc 0 4px, #52677d 4px 8px);
+}
+
+.start-menu-tile--free svg {
+  display: block;
+  width: 0.95rem;
+  height: 0.95rem;
+  fill: currentColor;
+}
+
+/* Phones view and manage only: "New block" is hidden, not greyed out (decision 61). */
+@media (max-width: 47.99rem) {
+  .start-menu-blocks {
+    display: none;
+  }
+}

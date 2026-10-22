@@ -130,6 +130,38 @@
   --lang-stripe: linear-gradient(90deg, #012169 0 25%, #fff 0 33%, #c8102e 0 58%, #fff 0 66%, #012169 0);
 }
 
+/* "New block" (decision 15): neutral tint and stripes of free blocks (decision 54). */
+.start-tile.start-block {
+  border-color: color-mix(in srgb, #a3b8cc 40%, var(--ds-border));
+  background:
+    radial-gradient(120% 90% at 0% 0%, rgb(163 184 204 / 14%), transparent 60%),
+    repeating-linear-gradient(135deg, rgb(163 184 204 / 3.5%) 0 8px, transparent 8px 16px),
+    var(--ds-bg-panel);
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--ds-accent);
+  }
+}
+
+.start-phone-note {
+  display: none;
+  margin: 0.6rem 0 0;
+  font-size: 0.75rem;
+  color: var(--ds-text-muted);
+}
+
+/* Phones view and manage only: the tile is hidden, not greyed out (decisions 37, 61). */
+@media (max-width: 47.99rem) {
+  .start-tile.start-block {
+    display: none;
+  }
+
+  .start-phone-note {
+    display: block;
+  }
+}
+
 .start-lang-icon {
   position: relative;
   inline-size: 3.5rem;
@@ -374,6 +406,8 @@
 .ic-back { fill: color-mix(in srgb, var(--ds-accent) 22%, var(--ds-bg-panel)); stroke: var(--ds-border); }
 .ic-mid { fill: color-mix(in srgb, var(--ds-accent) 12%, var(--ds-bg-panel)); stroke: var(--ds-border); }
 .ic-clock { fill: var(--ds-bg-panel); stroke: var(--ds-accent); stroke-width: 1.5; }
+.ic-free-a { fill: #a3b8cc; }
+.ic-free-b { fill: #52677d; }
 .ic-hand { stroke: var(--ds-accent); stroke-width: 1.8; fill: none; stroke-linecap: round; }
 
 @media (max-width: 40rem) {

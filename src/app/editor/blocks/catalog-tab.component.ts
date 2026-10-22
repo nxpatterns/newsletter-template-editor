@@ -74,10 +74,20 @@ export class CatalogTabComponent {
     return key ? this.i18n.t(key) : '';
   }
 
-  /** "Copy of Price box · version 3", or "no version yet" while it only has a draft. */
+  /** Block type an own card shows and drags: the copied type, or `free` for a free block. */
+  protected ownType(entry: OwnBlockEntry): Block['type'] | null {
+    return entry.block.kind === 'free' ? 'free' : entry.block.baseType;
+  }
+
+  /** "Copy of Price box · version 3", "Free block · version 1", or "no version yet" while it only has a draft. */
   protected ownLine(entry: OwnBlockEntry): string {
     const type = entry.block.baseType;
-    const from = type ? this.i18n.t('catalog.own.copyOf', { type: this.label(type) }) : '';
+    const from =
+      entry.block.kind === 'free'
+        ? this.i18n.t('catalog.own.free')
+        : type
+          ? this.i18n.t('catalog.own.copyOf', { type: this.label(type) })
+          : '';
     const version = entry.latest
       ? this.i18n.t('catalog.own.version', { n: entry.block.versionCount })
       : this.i18n.t('catalog.own.noVersion');
@@ -87,6 +97,13 @@ export class CatalogTabComponent {
   /** "Adjust" (decision 6): a new copy of the built-in type opens in the block editor. */
   protected adjust(type: Block['type']): void {
     void this.router.navigate(['/blocks', this.newId()], { queryParams: { from: this.session.routeId(), type } });
+  }
+
+  /** "New block" (decision 48): a new free block opens in the block editor. */
+  protected newBlock(): void {
+    void this.router.navigate(['/blocks', this.newId()], {
+      queryParams: { from: this.session.routeId(), type: 'free' },
+    });
   }
 
   protected editOwn(entry: OwnBlockEntry): void {

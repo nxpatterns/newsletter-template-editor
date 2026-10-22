@@ -47,6 +47,19 @@
           </button>
         }
 
+        <div class="start-menu-blocks">
+          <div class="file-menu-section-label" [textContent]="i18n.t('startMenu.sectionBlocks')"></div>
+          <button type="button" class="file-menu-item" role="menuitem" data-testid="start-menu-new-block" (click)="newBlock()">
+            <span class="file-menu-tile start-menu-tile--free">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5.5 18.5 12 12 18.5 5.5 12Z" /></svg>
+            </span>
+            <span class="file-menu-text">
+              <span [textContent]="i18n.t('start.newBlock')"></span>
+              <span class="file-menu-hint" [textContent]="i18n.t('startMenu.newBlockHint')"></span>
+            </span>
+          </button>
+        </div>
+
         <div class="file-menu-section-label" [textContent]="i18n.t('startMenu.sectionSaved')"></div>
         <button
           type="button"

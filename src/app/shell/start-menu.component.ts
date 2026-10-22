@@ -62,6 +62,11 @@ export class StartMenuComponent {
     await this.actions.startNew(kind, lang);
   }
 
+  protected async newBlock(): Promise<void> {
+    this.closeMenu();
+    await this.actions.newBlock();
+  }
+
   protected async openLibrary(): Promise<void> {
     this.closeMenu();
     this.libraryRows.set(await this.session.listLibraryEntries());

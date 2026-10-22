@@ -48,49 +48,60 @@
   } @else {
     @if (ownBlocks.entries().length) {
       <p class="catalog-sort" [textContent]="i18n.t('catalog.own.sort')"></p>
-      <div class="catalog-grid" role="list" data-testid="own-block-catalog">
-        @for (entry of ownBlocks.entries(); track entry.block.id) {
-          @let type = entry.block.baseType;
-          <div
-            class="catalog-card catalog-card--own"
-            [class.catalog-card--cancelled]="cancelledKey() === entry.block.id"
-            [class.catalog-card--dragging]="catalogDrag.activeOwnId() === entry.block.id"
-            [class.catalog-card--no-version]="!entry.latest"
-            role="listitem"
-            [attr.draggable]="entry.latest && type ? 'true' : 'false'"
-            [attr.data-testid]="'own-block-' + entry.block.id"
-            [attr.aria-label]="entry.block.name"
-            [attr.title]="i18n.t(entry.latest ? 'catalog.dragHint' : 'catalog.own.noVersionHint')"
-            [style.--cat-a]="hue(type).a"
-            [style.--cat-b]="hue(type).b"
-            [style.--cat-ink]="hue(type).ink"
-            (dragstart)="type && entry.latest ? onDragStart(type, $event, entry.block.id) : $event.preventDefault()"
-            (dragend)="onDragEnd(entry.block.id, $event)"
-          >
-            <span class="catalog-card__icon" aria-hidden="true" [textContent]="type ? icon(type) : ''"></span>
-            <span class="catalog-card__label" [textContent]="entry.block.name"></span>
-            <span class="catalog-card__own" [textContent]="i18n.t('blockEditor.own')"></span>
-            <span class="catalog-card__hint" [textContent]="ownLine(entry)"></span>
-            @if (entry.latest) {
-              <span class="catalog-card__drag" aria-hidden="true">⋮⋮</span>
-            }
-            <button
-              type="button"
-              class="catalog-card__act"
-              draggable="false"
-              [attr.data-testid]="'edit-own-block-' + entry.block.id"
-              [attr.aria-label]="i18n.t('catalog.own.editNamed', { name: entry.block.name })"
-              [textContent]="i18n.t('catalog.own.edit')"
-              (click)="editOwn(entry)"
-            ></button>
-          </div>
-        }
-      </div>
-    } @else {
-      <div class="catalog-empty" data-testid="own-block-empty">
-        <p [textContent]="i18n.t('catalog.own.empty')"></p>
-        <button type="button" class="catalog-empty__link" (click)="setList('built')" [textContent]="i18n.t('catalog.own.toBuilt')"></button>
-      </div>
     }
+    <div class="catalog-grid" role="list" data-testid="own-block-catalog">
+      <div class="catalog-new" role="listitem">
+        <button type="button" class="catalog-card catalog-card--new" data-testid="new-free-block" (click)="newBlock()">
+          <span class="catalog-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14M5 12h14" /></svg>
+          </span>
+          <span class="catalog-card__label" [textContent]="i18n.t('catalog.own.new')"></span>
+          <span class="catalog-card__hint" [textContent]="i18n.t('catalog.own.newHint')"></span>
+        </button>
+      </div>
+      @for (entry of ownBlocks.entries(); track entry.block.id) {
+        @let type = ownType(entry);
+        <div
+          class="catalog-card catalog-card--own"
+          [class.catalog-card--free]="type === 'free'"
+          [class.catalog-card--cancelled]="cancelledKey() === entry.block.id"
+          [class.catalog-card--dragging]="catalogDrag.activeOwnId() === entry.block.id"
+          [class.catalog-card--no-version]="!entry.latest"
+          role="listitem"
+          [attr.draggable]="entry.latest && type ? 'true' : 'false'"
+          [attr.data-testid]="'own-block-' + entry.block.id"
+          [attr.aria-label]="entry.block.name"
+          [attr.title]="i18n.t(entry.latest ? 'catalog.dragHint' : 'catalog.own.noVersionHint')"
+          [style.--cat-a]="hue(type).a"
+          [style.--cat-b]="hue(type).b"
+          [style.--cat-ink]="hue(type).ink"
+          (dragstart)="type && entry.latest ? onDragStart(type, $event, entry.block.id) : $event.preventDefault()"
+          (dragend)="onDragEnd(entry.block.id, $event)"
+        >
+          <span class="catalog-card__icon" aria-hidden="true" [textContent]="type ? icon(type) : ''"></span>
+          <span class="catalog-card__label" [textContent]="entry.block.name"></span>
+          <span class="catalog-card__own" [textContent]="i18n.t('blockEditor.own')"></span>
+          <span class="catalog-card__hint" [textContent]="ownLine(entry)"></span>
+          @if (entry.latest) {
+            <span class="catalog-card__drag" aria-hidden="true">⋮⋮</span>
+          }
+          <button
+            type="button"
+            class="catalog-card__act catalog-card__edit"
+            draggable="false"
+            [attr.data-testid]="'edit-own-block-' + entry.block.id"
+            [attr.aria-label]="i18n.t('catalog.own.editNamed', { name: entry.block.name })"
+            [textContent]="i18n.t('catalog.own.edit')"
+            (click)="editOwn(entry)"
+          ></button>
+        </div>
+      } @empty {
+        <div class="catalog-empty" role="listitem" data-testid="own-block-empty">
+          <b [textContent]="i18n.t('catalog.own.empty')"></b>
+          <span [textContent]="i18n.t('catalog.own.emptyHint')"></span>
+          <button type="button" class="catalog-empty__link" (click)="setList('built')" [textContent]="i18n.t('catalog.own.toBuilt')"></button>
+        </div>
+      }
+    </div>
   }
 </section>

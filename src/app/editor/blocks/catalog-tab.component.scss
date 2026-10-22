@@ -218,19 +218,79 @@
   cursor: default;
 }
 
-.catalog-empty {
+/* "New block" first in the Own list (decision 48): dashed tile, no tint, click instead of drag. */
+.catalog-new {
   display: grid;
-  gap: 0.4rem;
-  margin-block-start: 0.75rem;
-  padding: 0.75rem;
+}
+
+.catalog-card--new {
+  --cat-a: #9fb3c8;
+
+  align-items: center;
+  justify-content: center;
+  border-style: dashed;
+  text-align: center;
+  cursor: pointer;
+  background: color-mix(in srgb, var(--ds-text) 2%, transparent);
+}
+
+.catalog-card--new:hover {
+  background: color-mix(in srgb, var(--cat-a) 10%, var(--ds-bg-panel));
+}
+
+.catalog-card--new:active {
+  cursor: pointer;
+}
+
+.catalog-card--new .catalog-card__icon {
+  color: var(--ds-text);
+  background: color-mix(in srgb, var(--ds-text) 8%, transparent);
+}
+
+.catalog-card__icon svg {
+  display: block;
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+.catalog-card--new .catalog-card__label {
+  color: var(--ds-text);
+}
+
+.catalog-card--new .catalog-card__hint {
+  padding: 0;
+}
+
+/* Free blocks: one shared neutral tint with a striped icon (decision 54). */
+.catalog-card--free .catalog-card__icon {
+  background: repeating-linear-gradient(135deg, var(--cat-a) 0 5px, var(--cat-b) 5px 10px);
+}
+
+/* Phones view and manage only: "New block" and "Edit" are hidden, not greyed out (decision 61). */
+@media (max-width: 47.99rem) {
+  .catalog-new,
+  .catalog-card__edit {
+    display: none;
+  }
+}
+
+.catalog-empty {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.8rem;
   border: 1px dashed var(--ds-border);
   border-radius: 0.5rem;
   font-size: 0.8rem;
   color: var(--ds-text-muted);
 }
 
-.catalog-empty p {
-  margin: 0;
+.catalog-empty b {
+  color: var(--ds-text);
 }
 
 .catalog-empty__link {
@@ -238,6 +298,7 @@
   border: 0;
   padding: 0;
   font: inherit;
+  font-size: 0.75rem;
   color: var(--ds-accent);
   text-decoration: underline;
   text-underline-offset: 2px;

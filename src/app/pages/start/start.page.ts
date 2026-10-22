@@ -108,6 +108,10 @@ export class StartPage {
     return this.actions.startNew(kind, lang);
   }
 
+  protected newBlock(): Promise<void> {
+    return this.actions.newBlock();
+  }
+
   protected openSaved(id: string): Promise<void> {
     return this.actions.openSaved(id);
   }

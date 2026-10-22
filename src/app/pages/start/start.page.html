@@ -6,6 +6,22 @@
     <path d="M40 37v10M35 42h10" class="ic-plus" />
   </svg>
 </ng-template>
+<ng-template #iconBlock>
+  <svg class="start-icon" viewBox="0 0 56 56" aria-hidden="true" focusable="false">
+    <defs>
+      <pattern id="start-free-stripes" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <rect width="3" height="6" class="ic-free-a" />
+        <rect x="3" width="3" height="6" class="ic-free-b" />
+      </pattern>
+    </defs>
+    <rect x="6" y="8" width="34" height="11" rx="2.5" fill="url(#start-free-stripes)" />
+    <rect x="6" y="22" width="16" height="15" rx="2.5" class="ic-paper" />
+    <rect x="24" y="22" width="16" height="15" rx="2.5" class="ic-paper" opacity="0.55" />
+    <rect x="6" y="40" width="20" height="6" rx="2" class="ic-brand" />
+    <circle cx="42" cy="42" r="10" class="ic-accent" />
+    <path d="M42 37v10M37 42h10" class="ic-plus" />
+  </svg>
+</ng-template>
 <ng-template #iconDoc>
   <svg class="start-icon" viewBox="0 0 56 56" aria-hidden="true" focusable="false">
     <rect x="15" y="9" width="30" height="40" rx="3" class="ic-shadow" />
@@ -179,6 +195,11 @@
             >×</button>
           </div>
         }
+        <button type="button" class="start-tile start-block" data-testid="start-new-block" (click)="newBlock()">
+          <ng-container [ngTemplateOutlet]="iconBlock" />
+          <b [textContent]="i18n.t('start.newBlock')"></b>
+          <span [textContent]="i18n.t('start.newBlockHint')"></span>
+        </button>
         @for (row of pinned(); track row.id) {
           <div class="start-tile-item">
             <button type="button" class="start-tile start-pinned" data-testid="start-pinned" (click)="openSaved(row.id)">
@@ -205,6 +226,7 @@
           </div>
         }
       </div>
+      <p class="start-phone-note" [textContent]="i18n.t('start.newBlockPhone')"></p>
     </div>
 
     <div>
