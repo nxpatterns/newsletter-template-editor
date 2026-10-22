@@ -1,7 +1,7 @@
 # Block editor and demo page
 
 Concept for two new product areas: a **block editor** (users change or create their own blocks) and a **demo page** (users publish their own newsletters for others to see).
-Status: concept accepted (decisions 1 to 81), mockups R1 to R5 done. Implementation started 2026-10-22 in this order: storage base, reset dialog, available width in the render context, clone mode, free blocks, overview of own blocks, renaming the start tiles, demo page last.
+Status: concept accepted (decisions 1 to 82), mockups R1 to R5 done. Implementation started 2026-10-22 in this order: storage base, reset dialog, available width in the render context, clone mode, free blocks, overview of own blocks, renaming the start tiles, demo page last.
 Audience: non-technical sellers and marketing people first, designers second. English only.
 
 Related: `src/core/colors/model.ts` (implemented color levels), `email-colors.md` (color product rules), `block-content-editing.md` (edit modal, lite kit, render pipeline), `file-management.md` (storage, start page, menus), `design-system.md` (app look), `AGENTS.md` (email CSS rule).
@@ -124,6 +124,10 @@ A **Date** part (formatted month, day, weekday, time range) and a calendar link 
 ### Coverage and limits
 
 - With these parts and the size scale, all 18 built-in blocks can be rebuilt; only the event needs the embedded built-in block. **Gate:** before free blocks ship, every built-in block is rebuilt as a design over its own content and renders equivalent HTML.
+- **Floors (decision 82, values to be checked in practice and may change).** Widths are resolved px at the 600 px canvas; the phone width is 320 px.
+  - Minimum resolved width per part: Text 120, Button 120, Image 48 (content images 120), Icon its size plus padding, embedded built-in block 280. Dropping or resizing below the floor is refused with a plain explanation, because the result breaks in classic Outlook.
+  - Depth: Columns inside Columns at most once; own blocks inside own blocks at most 3 levels deep (decision 38 still blocks cycles).
+  - Accessibility: body text at least `s` 14 px, small print (captions, footer, legal) at least `xs` 12 px; tap targets for buttons at least 44 px high, icon links at least 24 × 24 px (WCAG 2.2 target size); body text not `tight`; contrast WCAG AA as in Quality checks. These checks warn, they do not block saving.
 - Email limits for every design: tables, `bgcolor`, padding and borders; width up to 600 px; up to 4 columns (3 recommended); radius degrades to square in classic Outlook; stacking below 600 px by media query (classic Outlook keeps columns). Not in v1: background images (Outlook needs VML), visibility only on mobile or desktop. Never: scripts, forms, video.
 
 ## Color model for own blocks
@@ -307,6 +311,7 @@ Numbers refer to the questions in the 2026-10-21 thread.
 | 79 | Small export fixes | Yes: the document language follows the template language instead of a fixed "en"; the open-tracking pixel moves to the top of the body so Gmail clipping cannot cut it off; the dark-mode color block resolves its CSS variables at export. One small task in its own thread. |
 | 80 | Greeting with name or fallback (decision 4 of the email completeness review) | Option A: a "name or fallback" piece can be placed in any text, for example "Guten Tag [Name oder Werte Geschäftspartner],". The greeting is rebuilt as an ordinary text part that contains this piece, so no special greeting logic remains. A name that is an email address or a generic role mailbox counts as no name. |
 | 81 | Scale values (decision 78) | Start with best-guess values (Finite scales table), measured values replace them later. Stored blocks keep token names only. |
+| 82 | Floors for nesting and accessibility | Minimum widths per part, depth limits and accessibility minimums as in Coverage and limits. Starting values, to be checked in practice; they may change. Width floors refuse the drop, accessibility findings warn. |
 
 ## Mockups and states
 
@@ -326,4 +331,4 @@ Reset dialog wording (EN; DE in the mockup):
 
 ## Open questions
 
-None. Decisions 30 to 74 were accepted on 2026-10-21, decisions 75 to 81 on 2026-10-22.
+None. Decisions 30 to 74 were accepted on 2026-10-21, decisions 75 to 82 on 2026-10-22.
