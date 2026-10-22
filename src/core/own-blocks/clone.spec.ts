@@ -1,6 +1,8 @@
 import { resolveSlot, setColorMode } from '../colors/edit';
 import { STANDARD_SETS } from '../colors/model';
 import { normalizeNewsletter } from '../persist/normalize-newsletter';
+import { emptyFreeData, quickStart } from '../parts/operations';
+import { renderExport, renderPreview } from '../render';
 import { blankNewsletter } from '../seed';
 import { createBlock, type PriceBoxBlock } from '../types';
 import {
@@ -8,6 +10,7 @@ import {
   cloneContentOf,
   cloneWorkDocument,
   newCloneContent,
+  newFreeContent,
   normalizeCloneContent,
   placeOwnBlock,
   replaceableBlocks,
@@ -95,6 +98,18 @@ describe('placing an own block', () => {
       // A role follows the template it is used in.
       expect(resolveSlot(colors, mode, target, 'badge').hex).toBe(STANDARD_SETS[mode].link);
     }
+  });
+
+  it('places a free block that renders in preview and export at the template width, with its fixed colors', () => {
+    const base = newFreeContent();
+    const block = { ...base.block, ...quickStart(emptyFreeData(), 'twoColumns').data };
+    const content = { ...base, block, colors: { 'n3.text': { hex: '#ff0000' } } };
+    const n = placeOwnBlock(blankNewsletter('de'), { content, ref, id: 'b-free', index: 0 });
+    expect(n.blocks[0]).toMatchObject({ id: 'b-free', type: 'free', own: ref });
+    const html = renderExport(n).body;
+    expect(html).toContain('width="244"');
+    expect(html).toMatch(/color: #ff0000/);
+    expect(renderPreview(n)).toContain('data-block-id="b-free"');
   });
 
   it('keeps the own block reference through storage', () => {
