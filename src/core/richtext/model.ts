@@ -40,7 +40,25 @@ export interface RichBreak {
   type: 'br';
 }
 
-export type RichInline = RichTextSpan | RichBreak;
+/**
+ * "Name or fallback" piece (decision 80): with a real name it reads "{lead} {name}", otherwise the
+ * fallback, e.g. "Guten Tag Alex Berger" or "Werte Geschäftspartner". A name that is an email
+ * address or a role mailbox counts as no name. Zero length for text offsets: the editor shows it
+ * as a chip whose label is no text node.
+ */
+export interface RichNamePiece {
+  type: 'name';
+  /** Words before the name, only shown with a name. */
+  lead: string;
+  fallback: string;
+  marks?: RichMarks;
+}
+
+export type RichInline = RichTextSpan | RichBreak | RichNamePiece;
+
+export function isNamePiece(n: RichInline): n is RichNamePiece {
+  return n.type === 'name';
+}
 
 export interface RichParagraphNode {
   type: 'p';
@@ -93,7 +111,7 @@ export function normalizeMarks(m?: RichMarks): RichMarks | undefined {
 }
 
 function paragraphHasVisibleText(p: RichParagraphNode): boolean {
-  return p.children.some((c) => c.type === 'text' && c.text.trim().length > 0);
+  return p.children.some((c) => (c.type === 'text' && c.text.trim().length > 0) || c.type === 'name');
 }
 
 /** Merge adjacent equal marks; collapse br runs; drop empty paragraphs. */
@@ -107,6 +125,12 @@ export function compactDoc(doc: RichDoc): RichDoc {
         if (!children.length) continue;
         if (children[children.length - 1]?.type === 'br') continue;
         children.push({ type: 'br' });
+        continue;
+      }
+      if (node.type === 'name') {
+        const lead = typeof node.lead === 'string' ? node.lead : '';
+        const fallback = typeof node.fallback === 'string' ? node.fallback : '';
+        children.push({ type: 'name', lead, fallback, marks: normalizeMarks(node.marks) });
         continue;
       }
       const text = node.text;
@@ -169,6 +193,7 @@ export function clearMarksOnDoc(doc: RichDoc): RichDoc {
       type: 'p' as const,
       children: p.children.map((c) => {
         if (c.type === 'br') return c;
+        if (c.type === 'name') return { ...c, marks: undefined };
         const link = c.marks?.link;
         return {
           type: 'text' as const,
@@ -187,7 +212,7 @@ export function cleanAiCharsOnDoc(doc: RichDoc): RichDoc {
       type: 'p' as const,
       color: p.color,
       children: p.children.map((c) =>
-        c.type === 'br'
+        c.type !== 'text'
           ? c
           : { type: 'text' as const, text: cleanPlainText(c.text), marks: normalizeMarks(c.marks) },
       ),
@@ -213,7 +238,7 @@ function resolveTextRange(
   let pos = 0;
   for (const p of doc) {
     for (const ch of p.children) {
-      if (ch.type === 'br') continue;
+      if (ch.type !== 'text') continue;
       const spanStart = pos;
       const spanEnd = pos + ch.text.length;
       hits.push({ spanStart, spanEnd, has: hasMark(ch.marks) });
@@ -244,7 +269,7 @@ function mapRangeSpans(
     type: 'p' as const,
     color: p.color,
     children: p.children.map((ch) =>
-      ch.type === 'br' ? ch : { type: 'text' as const, text: ch.text, marks: normalizeMarks(ch.marks) },
+      ch.type !== 'text' ? ch : { type: 'text' as const, text: ch.text, marks: normalizeMarks(ch.marks) },
     ),
   }));
 
@@ -252,7 +277,7 @@ function mapRangeSpans(
   for (const p of next) {
     const newChildren: RichInline[] = [];
     for (const ch of p.children) {
-      if (ch.type === 'br') {
+      if (ch.type !== 'text') {
         newChildren.push(ch);
         continue;
       }
@@ -379,7 +404,7 @@ export function applyParagraphBaseColorOnDoc(
     const p = doc[pi];
     const start = pos;
     for (const ch of p.children) {
-      if (ch.type === 'br') continue;
+      if (ch.type !== 'text') continue;
       pos += ch.text.length;
     }
     const end = pos;

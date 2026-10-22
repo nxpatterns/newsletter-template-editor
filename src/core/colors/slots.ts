@@ -159,3 +159,11 @@ export const BLOCK_COLOR_SLOTS: Readonly<Record<string, readonly ColorSlotDef[]>
 export function colorSlotsOf(type: string): readonly ColorSlotDef[] {
   return BLOCK_COLOR_SLOTS[type] ?? [];
 }
+
+/**
+ * Colors of one block: a free block brings its own slots (one per colored part), every other
+ * block has the slots of its type.
+ */
+export function slotsOf(target: { type: string; slots?: readonly ColorSlotDef[] }): readonly ColorSlotDef[] {
+  return target.slots ?? colorSlotsOf(target.type);
+}

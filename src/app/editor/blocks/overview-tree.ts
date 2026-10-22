@@ -206,6 +206,10 @@ export function blockSnippet(block: Block): string {
         return block.items[0]?.title ?? '';
       case 'divider':
         return '';
+      case 'free': {
+        const text = block.content.parts.find((p) => p.kind === 'text');
+        return text?.kind === 'text' ? richDocPlainText(text.doc) : '';
+      }
     }
   })();
   const text = raw.replace(/\s+/g, ' ').trim();

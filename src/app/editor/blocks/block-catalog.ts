@@ -1,7 +1,7 @@
-import type { Block } from '../../../core';
+import type { Block, BuiltInType } from '../../../core';
 
 /** Implemented types available in the catalog (expand as core grows). */
-export const CATALOG_TYPES: readonly Block['type'][] = [
+export const CATALOG_TYPES: readonly BuiltInType[] = [
   'hero',
   'greeting',
   'chapter-band',
@@ -41,6 +41,7 @@ const ICONS: Record<Block['type'], string> = {
   video: '▶',
   teasers: '▦',
   event: '📅',
+  free: '◆',
 };
 
 export function blockTypeIcon(type: Block['type']): string {
@@ -86,6 +87,8 @@ const HUES: Record<Block['type'], BlockTypeHue> = {
   video: { a: '#fca5a5', b: '#be123c', ink: INK_LIGHT },
   teasers: { a: '#93c5fd', b: '#1e40af', ink: INK_LIGHT },
   event: { a: '#fdba74', b: '#c2410c', ink: INK_DARK },
+  // One shared neutral tint for every free block; its icon is striped (decision 54).
+  free: { a: '#a3b8cc', b: '#52677d', ink: INK_DARK },
 };
 
 const FALLBACK_HUE: BlockTypeHue = { a: '#94a3b8', b: '#475569', ink: INK_LIGHT };

@@ -1,6 +1,8 @@
 import type { Block, Globals } from '../types';
 import { effectiveSlotColors, type ColorTarget } from '../colors/edit';
 import { blockColorCss, renderPalette } from './colors';
+import { freeBlockCss, freeBlockFontCss, freeBlockMobileCss } from '../parts/css';
+import { embeddedBlocks } from '../parts/embed';
 import { EMAIL_CONTENT_WIDTH_PX, EMAIL_TEXT_WIDTH_PX, escapeAttr, fontStack } from './utils';
 
 /**
@@ -35,6 +37,10 @@ export function emailDocumentCss(globals: Globals, blocks: readonly Block[] = []
   };
   /** Literal values for the dark block: clients that honour the media query do not all support var(). */
   const literal = (css: string) => css.replace(/var\(--email-([a-z-]+)\)/g, (m, k: string) => vars[k] ?? m);
+  const free = [...blocks, ...blocks.flatMap((b) => embeddedBlocks(b).map((e) => e.block))].filter((b) => b.type === 'free');
+  const freeCss = free.length
+    ? [freeBlockCss(), ...free.flatMap((b) => freeBlockFontCss(`cb-${b.id.replace(/[^a-zA-Z0-9_-]/g, '_')}`, b))].join('\n  ')
+    : '';
 
   return `
   :root {
@@ -658,6 +664,8 @@ ${Object.entries(vars).map(([k, v]) => `    --email-${k}: ${v};`).join('\n')}
   .text-benefit-icon { color: var(--email-link); }
   .text-geo { color: var(--email-body); }
 
+  ${freeCss}
+
   ${blockColorCss(globals, blocks)}
 
   @media (prefers-color-scheme: dark) {${literal(`
@@ -709,6 +717,7 @@ ${Object.entries(vars).map(([k, v]) => `    --email-${k}: ${v};`).join('\n')}
     .event-act { display: block !important; }
     .event-act-gap { display: none !important; }
     .event-cal-cell { padding-top: 10px !important; }
+    ${free.length ? freeBlockMobileCss() : ''}
   }
   `;
 }

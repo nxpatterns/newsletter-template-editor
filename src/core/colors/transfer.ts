@@ -54,7 +54,7 @@ export function copyBlockColors(colors: ColorsConfig, source: ColorTarget, targe
 /** The general color a fixed block value can become, or null when the slot has no fixed value. */
 export function promotableRole(colors: ColorsConfig, mode: ColorMode, target: ColorTarget, key: string): ColorRole | null {
   const o = slotOverride(colors, mode, target.id, key);
-  return o && 'hex' in o ? (slotDef(target.type, key)?.role ?? null) : null;
+  return o && 'hex' in o ? (slotDef(target, key)?.role ?? null) : null;
 }
 
 /**

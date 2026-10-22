@@ -22,6 +22,9 @@ import type {
 } from '../types';
 import type { ColorTarget } from '../colors/edit';
 import { colorScopeClass, renderPalette, slotHex } from './colors';
+import { colorTargetOf } from '../parts/colors';
+import { renderFreeBlock } from '../parts/render';
+import { nameRendering } from './names';
 import { eventPlace, eventSheet, eventTimeRange, googleCalendarHref } from './event';
 import { buildLinkHref } from '../richtext/link-target';
 import { richDocToHtml } from '../richtext/to-html';
@@ -50,6 +53,11 @@ export interface RenderContext {
    * Outlook obeys `width` strictly and ignores max-width and percent on images.
    */
   widthPx?: number;
+  /**
+   * Block editor chrome for free blocks: every part gets `data-part`, the selected one is
+   * marked, and an empty block shows `empty` (preview only, never in an export).
+   */
+  parts?: { selected: string | null; empty?: string };
 }
 
 /** Width of the block's row in px. */
@@ -194,7 +202,7 @@ const IMAGE_TEXT_SHARE: Record<ImageTextBlock['imageWidth'], number> = { third: 
  */
 function renderImageText(b: ImageTextBlock, ctx: RenderContext): string {
   const src = b.src.trim();
-  const text = richDocToHtml(b.body, { dataField: 'body' });
+  const text = richDocToHtml(b.body, { dataField: 'body', names: nameRendering(ctx) });
   // Export without a picture keeps the copy as a plain paragraph.
   if (!src && !ctx.annotate) return rowWrap(b, ctx, contentTd(ctx, 'block-pad-md paragraph-block', text));
   const w = Math.round(textPx(ctx) * (IMAGE_TEXT_SHARE[b.imageWidth] ?? IMAGE_TEXT_SHARE.third));
@@ -486,7 +494,7 @@ function renderHero(b: HeroBlock, ctx: RenderContext): string {
 }
 
 function renderParagraph(b: ParagraphBlock, ctx: RenderContext): string {
-  const inner = richDocToHtml(b.body, { dataField: 'body' });
+  const inner = richDocToHtml(b.body, { dataField: 'body', names: nameRendering(ctx) });
   return rowWrap(b, ctx, contentTd(ctx, 'block-pad-md paragraph-block', inner));
 }
 
@@ -806,6 +814,8 @@ export function renderBlock(block: Block, ctx: RenderContext): string {
       return renderEvent(block, ctx);
     case 'video':
       return renderVideo(block, ctx);
+    case 'free':
+      return renderFreeBlock(block, ctx, renderBlock);
     default: {
       const _exhaustive: never = block;
       throw new Error(`Unknown block: ${JSON.stringify(_exhaustive)}`);
@@ -814,5 +824,5 @@ export function renderBlock(block: Block, ctx: RenderContext): string {
 }
 
 export function renderBlocks(blocks: Block[], ctx: RenderContext): string {
-  return blocks.map((b) => renderBlock(b, { ...ctx, target: { id: b.id, type: b.type } })).join('\n');
+  return blocks.map((b) => renderBlock(b, { ...ctx, target: colorTargetOf(b) })).join('\n');
 }

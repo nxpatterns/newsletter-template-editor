@@ -1,5 +1,6 @@
 import { escapeHtml } from '../render/utils';
-import type { RichDoc, RichInline, RichMarks, RichParagraphNode } from './model';
+import type { RichDoc, RichInline, RichMarks, RichNamePiece, RichParagraphNode } from './model';
+import { namePieceText, nameTemplate } from './name-piece';
 import { normalizeMarks } from './model';
 import { cleanPlainText, highlightSuspiciousHtml, isSuspiciousChar, suspiciousBreakdown } from './sanitize-text';
 
@@ -54,13 +55,44 @@ function openMarks(
   return { open, close };
 }
 
-function renderInlines(
+/**
+ * How a "name or fallback" piece renders: as the Listmonk template (export), for a sample name
+ * (preview; empty sample = the fallback), or as an editor chip.
+ */
+export type NameRendering = 'listmonk' | { sample: string };
+
+/** Label of the piece's editor chip, e.g. "Guten Tag + Name | Werte Geschäftspartner". */
+export function namePieceLabel(piece: Pick<RichNamePiece, 'lead' | 'fallback'>, nameWord: string): string {
+  const lead = piece.lead.trim();
+  return `${lead ? `${lead} + ` : ''}${nameWord} | ${piece.fallback}`;
+}
+
+function renderNamePiece(
+  n: RichNamePiece,
+  opts: { forEditor?: boolean; names?: NameRendering; nameWord?: string },
+): string {
+  const { open, close } = openMarks(n.marks, { forEditor: !!opts.forEditor });
+  if (opts.forEditor) {
+    // The label is generated content, never a text node, so text offsets skip the piece.
+    const label = namePieceLabel(n, opts.nameWord ?? 'Name');
+    return `${open}<span class="rt-name" contenteditable="false" data-rt-name="1" data-lead="${escapeHtml(n.lead)}" data-fallback="${escapeHtml(n.fallback)}" data-label="${escapeHtml(label)}"></span>${close}`;
+  }
+  const body =
+    opts.names === 'listmonk'
+      ? nameTemplate(escapeHtml(n.lead.trim()), escapeHtml(n.fallback))
+      : escapeHtml(namePieceText(n, opts.names?.sample ?? ''));
+  return `${open}${body}${close}`;
+}
+
+/** Inline content of one paragraph as classed HTML (marks, links, breaks, name pieces). */
+export function renderInlines(
   children: RichInline[],
-  opts: { highlightSuspicious?: boolean; forEditor?: boolean; cleanExport?: boolean },
+  opts: { highlightSuspicious?: boolean; forEditor?: boolean; cleanExport?: boolean; names?: NameRendering; nameWord?: string },
 ): string {
   return children
     .map((n) => {
       if (n.type === 'br') return '<br>';
+      if (n.type === 'name') return renderNamePiece(n, opts);
       // Editor keeps raw (incl. watermarks); export/preview email cleans.
       const text = opts.forEditor
         ? n.text
@@ -84,6 +116,10 @@ export interface RichHtmlOptions {
   forEditor?: boolean;
   /** When false, skip cleanPlainText (default true for mail render). */
   cleanExport?: boolean;
+  /** Name pieces: Listmonk template or a sample name; absent = the fallback. */
+  names?: NameRendering;
+  /** Word for "name" on the editor chip. */
+  nameWord?: string;
 }
 
 /** Render rich doc to classed HTML fragment (one or more `<p class="paragraph-body">`). */
@@ -107,6 +143,8 @@ function renderParagraph(p: RichParagraphNode, index: number, opts: RichHtmlOpti
     highlightSuspicious: !!opts.highlightSuspicious,
     forEditor: !!opts.forEditor,
     cleanExport: opts.cleanExport,
+    names: opts.names,
+    nameWord: opts.nameWord,
   });
   return `<p class="${cls}"${dataField}${dataP}${colorAttr}>${inner || '<br>'}</p>`;
 }
@@ -116,7 +154,7 @@ export function richDocPlainText(doc: RichDoc): string {
   return (doc || [])
     .map((p) =>
       p.children
-        .map((c) => (c.type === 'br' ? '\n' : c.text))
+        .map((c) => (c.type === 'br' ? '\n' : c.type === 'name' ? c.fallback : c.text))
         .join(''),
     )
     .join('\n\n');

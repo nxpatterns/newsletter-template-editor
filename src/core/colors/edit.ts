@@ -8,12 +8,14 @@ import {
   type ColorsConfig,
   type SlotColor,
 } from './model';
-import { colorSlotsOf, type ColorSlotDef } from './slots';
+import { slotsOf, type ColorSlotDef } from './slots';
 
 /** A block of the newsletter as far as colors are concerned (`header` / `footer` for the frame). */
 export interface ColorTarget {
   id: string;
   type: string;
+  /** Slots of a free block, which differ per block (`parts/colors.ts`). */
+  slots?: readonly ColorSlotDef[];
 }
 
 export const FRAME_TARGETS: readonly ColorTarget[] = [
@@ -29,8 +31,8 @@ export interface ResolvedSlot {
   role?: ColorRole;
 }
 
-export function slotDef(type: string, key: string): ColorSlotDef | undefined {
-  return colorSlotsOf(type).find((s) => s.key === key);
+export function slotDef(target: ColorTarget | string, key: string): ColorSlotDef | undefined {
+  return slotsOf(typeof target === 'string' ? { type: target } : target).find((s) => s.key === key);
 }
 
 export function slotOverride(colors: ColorsConfig, mode: ColorMode, id: string, key: string): SlotColor | undefined {
@@ -39,7 +41,7 @@ export function slotOverride(colors: ColorsConfig, mode: ColorMode, id: string, 
 
 /** Level 3 over 2 over 1 for one color of one block. */
 export function resolveSlot(colors: ColorsConfig, mode: ColorMode, target: ColorTarget, key: string): ResolvedSlot {
-  const def = slotDef(target.type, key);
+  const def = slotDef(target, key);
   const general = resolveGeneralColors(colors, mode);
   const o = slotOverride(colors, mode, target.id, key);
   if (o && 'hex' in o) return { hex: o.hex, source: 'own' };
@@ -57,7 +59,7 @@ export function effectiveSlotColors(
   mode: ColorMode = colors.mode,
 ): Record<string, string> {
   const out: Record<string, string> = {};
-  for (const def of colorSlotsOf(target.type)) out[def.key] = resolveSlot(colors, mode, target, def.key).hex;
+  for (const def of slotsOf(target)) out[def.key] = resolveSlot(colors, mode, target, def.key).hex;
   return out;
 }
 
@@ -73,7 +75,7 @@ export function blockOverrideCount(colors: ColorsConfig, mode: ColorMode, id: st
 /** Fixed value set in the block while its general color is something else now. */
 export function isOutdatedOverride(colors: ColorsConfig, mode: ColorMode, target: ColorTarget, key: string): boolean {
   const o = slotOverride(colors, mode, target.id, key);
-  const def = slotDef(target.type, key);
+  const def = slotDef(target, key);
   if (!o || !('hex' in o) || !def) return false;
   return o.hex !== resolveGeneralColors(colors, mode)[def.role];
 }
@@ -88,7 +90,7 @@ export function overridesOfRole(colors: ColorsConfig, mode: ColorMode, targets: 
   const out: SlotRef[] = [];
   for (const target of targets) {
     for (const key of blockOverrideKeys(colors, mode, target.id)) {
-      const def = slotDef(target.type, key);
+      const def = slotDef(target, key);
       const o = slotOverride(colors, mode, target.id, key);
       if (def && def.role === role && o && 'hex' in o) out.push({ target, key });
     }
@@ -193,7 +195,7 @@ export function slotContrastIssue(
   target: ColorTarget,
   key: string,
 ): ContrastIssue | null {
-  const def = slotDef(target.type, key);
+  const def = slotDef(target, key);
   if (!def || def.kind !== 'text') return null;
   const onKey = def.on ?? 'background';
   const fg = resolveSlot(colors, mode, target, key);

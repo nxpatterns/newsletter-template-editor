@@ -38,6 +38,7 @@ import {
   type TestimonialImageMode,
   TESTIMONIAL_IMAGE_MODES,
   BLOCK_DEFAULT_TEXTS_EN,
+  BLOCK_LABELS,
   type ImageWidth,
   type Newsletter,
   type ParagraphBlock,
@@ -57,6 +58,7 @@ import { hasSharedStarsColor, migrateNewsletterV5ToV6 } from './migrate-v6';
 import { normalizeColors } from '../colors/model';
 import { defaultBrand, FALLBACK_BRAND_PART_COLOR } from '../brand/defaults';
 import { normalizeSocialLinks } from '../brand/social';
+import { normalizeFreeData } from '../parts/normalize';
 
 /** Strip tags / collapse whitespace for legacy HTML price blobs. */
 export function plainFromHtml(html: string): string {
@@ -549,7 +551,19 @@ function normalizeBlocks(blocks: Block[]): Block[] {
   });
 }
 
+/** An embedded block of a free block, or null when it is no known block. */
+function normalizeEmbeddedBlock(raw: unknown): Block | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const r = raw as Record<string, unknown>;
+  if (typeof r['type'] !== 'string' || !(r['type'] in BLOCK_LABELS)) return null;
+  const id = typeof r['id'] === 'string' && r['id'] ? r['id'] : 'embed';
+  return normalizeBlocks([{ ...(r as unknown as Block), id }])[0] ?? null;
+}
+
 function normalizeBlockFields(block: Block): Block {
+  if (block.type === 'free') {
+    return { id: block.id, type: 'free', ...normalizeFreeData(block, normalizeEmbeddedBlock) };
+  }
   if (block.type === 'contact') {
     return normalizeContactBlock(block as unknown as Record<string, unknown>, block.id);
   }

@@ -2,6 +2,7 @@ import type { SocialLinks } from './brand/social';
 /** Newsletter document model — JSON is source of truth; HTML is generated. */
 
 import type { ColorsConfig } from './colors/model';
+import type { FreeBlockData } from './parts/model';
 import { emptyRichDoc, type RichColorToken, type RichDoc, type RichSizeToken } from './richtext/model';
 
 export type {
@@ -441,6 +442,11 @@ export interface EventBlock extends BlockBase {
   locale: EventLocale;
 }
 
+/** Free block: composed from parts in the block editor (`parts/`), one shared renderer. */
+export interface FreeBlock extends BlockBase, FreeBlockData {
+  type: 'free';
+}
+
 /** Block union — expand slice by slice */
 export type Block =
   | DividerBlock
@@ -460,7 +466,12 @@ export type Block =
   | ContactBlock
   | VideoBlock
   | TeasersBlock
-  | EventBlock;
+  | EventBlock
+  | FreeBlock;
+
+/** Built-in block types; a free block is no type of its own in the block catalog. */
+export type BuiltInBlock = Exclude<Block, FreeBlock>;
+export type BuiltInType = BuiltInBlock['type'];
 
 export interface Newsletter {
   schemaVersion: number;
@@ -705,6 +716,14 @@ export function createBlock(type: Block['type'], texts: BlockDefaultTexts = BLOC
         calendarLabel: t.eventCalendar,
         locale: t.eventLocale,
       };
+    case 'free':
+      return {
+        id,
+        type,
+        content: { parts: [], collections: [] },
+        designs: [{ id: 'd1', name: '', style: {}, children: [] }],
+        active: 'd1',
+      };
     default: {
       const _exhaustive: never = type;
       throw new Error(`Unknown block type: ${_exhaustive}`);
@@ -731,6 +750,7 @@ export const BLOCK_LABELS: Record<Block['type'], string> = {
   video: 'Video preview',
   teasers: 'Teasers',
   event: 'Event',
+  free: 'Free block',
 };
 
 /** True when a header/footer part should appear in the mail. */
