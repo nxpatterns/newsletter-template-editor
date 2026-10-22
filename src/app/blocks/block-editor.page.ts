@@ -5,6 +5,7 @@ import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
 import { COLOR_MODES, renderBlockPreview, type ColorMode } from '../../core';
+import { LAYOUT_FIELDS } from '../../core/own-blocks/clone';
 import { BlockInspectorComponent } from '../editor/inspector/block-inspector.component';
 import { NewsletterSession } from '../editor/newsletter-session.service';
 import { LocaleService } from '../i18n/locale.service';
@@ -55,6 +56,13 @@ export class BlockEditorPage {
   );
 
   protected readonly findingCount = computed(() => countFindings(this.editor));
+
+  /** Properties split like mockup R1: starting texts, then the layout options of the type (decision 31). */
+  protected readonly hasTexts = computed(() => this.editor.baseType() !== 'divider');
+  protected readonly hasLayout = computed(() => {
+    const type = this.editor.baseType();
+    return !!type && !!LAYOUT_FIELDS[type]?.length;
+  });
 
   protected readonly typeLabel = computed(() => {
     const type = this.editor.baseType();

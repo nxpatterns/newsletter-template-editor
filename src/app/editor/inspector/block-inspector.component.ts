@@ -8,6 +8,7 @@ import {
   HostListener,
   inject,
   Injector,
+  input,
   signal,
 } from '@angular/core';
 import {
@@ -51,6 +52,9 @@ import { ClearableInputDirective } from '../../ui/clearable-input.directive';
 type IconPickerKind = 'cta' | 'benefit' | 'benefit-all';
 type RowKind = 'cta' | 'benefit' | 'teaser';
 
+/** Which fields to show: all, or (block editor) only the starting texts or only the layout options of the type. */
+export type InspectorPart = 'all' | 'texts' | 'layout';
+
 @Component({
   selector: 'app-block-inspector',
   imports: [ClearableInputDirective, ParagraphLiteEditorComponent, ImagePickerComponent, CdkDropList, CdkDrag, CdkDragHandle],
@@ -72,6 +76,7 @@ type RowKind = 'cta' | 'benefit' | 'teaser';
 export class BlockInspectorComponent {
   protected readonly i18n = inject(LocaleService);
   protected readonly session = inject(NewsletterSession);
+  readonly part = input<InspectorPart>('all');
   protected readonly listIcons = CTA_LINK_ICONS;
   protected readonly dividerStyles = DIVIDER_STYLES;
   protected readonly dividerBackgrounds: readonly DividerBackground[] = ['content', 'page'];
@@ -102,6 +107,12 @@ export class BlockInspectorComponent {
 
   /** Which row icon grid is open (null = closed). */
   protected iconPicker: { kind: IconPickerKind; index: number } | null = null;
+
+  /** Layout fields are those of `LAYOUT_FIELDS` (clone.ts); every other field is a starting text. */
+  protected shows(kind: Exclude<InspectorPart, 'all'>): boolean {
+    const part = this.part();
+    return part === 'all' || part === kind;
+  }
 
   @HostListener('document:click', ['$event'])
   protected onDocumentClick(event: MouseEvent): void {

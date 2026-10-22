@@ -14,6 +14,7 @@ Feature: Block editor, clone mode
     And the block preview should say it uses the colors of the template
     When I open the block tab 'parts'
     Then the parts should be locked
+    And the starting texts and the layout should be separate groups
 
   Scenario: Starting texts and colors change, the copy is saved and opens again after a reload
     Given I open the editor with the German demo

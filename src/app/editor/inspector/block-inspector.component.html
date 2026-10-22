@@ -79,188 +79,107 @@
         </div>
       }
       @case ('divider') {
-        <div class="ed-field">
-          <span class="ed-label" id="insp-div-style" [textContent]="i18n.t('field.dividerStyle')"></span>
-          <div class="ed-tiles" role="radiogroup" aria-labelledby="insp-div-style" data-testid="insp-divider-style">
-            @for (style of dividerStyles; track style) {
-              <button
-                type="button"
-                class="ed-tile"
-                role="radio"
-                [class.is-on]="block.style === style"
-                [attr.aria-checked]="block.style === style"
-                [attr.data-testid]="'divider-style-' + style"
-                (click)="setDividerStyle(block.id, style)"
-              >
-                <span class="ed-tile-art" aria-hidden="true">
-                  @switch (style) {
-                    @case ('thin') { <span class="divider-art-thin"></span> }
-                    @case ('two-tone') { <span class="divider-art-gap"></span><span class="divider-art-mid"></span><span class="divider-art-end"></span> }
-                    @case ('ornament') { <span class="divider-art-hair"></span><span class="divider-art-diamond">◆</span><span class="divider-art-hair"></span> }
-                    @case ('glow') { <span class="divider-art-glow"></span> }
-                    @case ('spacer-only') { <span class="divider-art-space"></span> }
-                  }
-                </span>
-                <span class="ed-tile-title" [textContent]="i18n.t('divider.' + style)"></span>
-                <span class="ed-tile-hint" [textContent]="i18n.t('divider.' + style + '.hint')"></span>
-              </button>
-            }
-          </div>
-        </div>
-        <div class="ed-field" [class.is-disabled]="block.style === 'thin'">
-          <span class="ed-label" id="insp-div-bg" [textContent]="i18n.t('field.dividerBackground')"></span>
-          <div class="ed-seg" role="radiogroup" aria-labelledby="insp-div-bg" data-testid="insp-divider-background">
-            @for (bg of dividerBackgrounds; track bg) {
-              <button
-                type="button"
-                class="ed-seg-opt"
-                role="radio"
-                [class.is-on]="block.background === bg"
-                [attr.aria-checked]="block.background === bg"
-                [attr.data-testid]="'divider-bg-' + bg"
-                [disabled]="block.style === 'thin'"
-                (click)="setDividerBackground(block.id, bg)"
-              >
-                <span
-                  class="ed-swatch"
-                  aria-hidden="true"
-                  [style.background]="bg === 'page' ? session.palette().page : session.palette().content"
-                ></span>
-                <span [textContent]="i18n.t('divider.background.' + bg)"></span>
-              </button>
-            }
-          </div>
-          <p
-            class="ed-hint"
-            [textContent]="i18n.t(block.style === 'thin' ? 'field.dividerBackgroundThin' : 'field.dividerBackgroundHint')"
-          ></p>
-        </div>
-        <div class="ed-field" [class.is-disabled]="block.style !== 'spacer-only'">
-          <div class="ed-label-row">
-            <label class="ed-label" for="insp-div-h" [textContent]="i18n.t('field.dividerHeight')"></label>
-            <span class="ed-count" [textContent]="(block.heightPx ?? 24) + ' px'"></span>
-          </div>
-          <input
-            id="insp-div-h"
-            class="ed-range"
-            type="range"
-            min="8"
-            max="120"
-            step="4"
-            data-testid="insp-divider-height"
-            [disabled]="block.style !== 'spacer-only'"
-            [value]="block.heightPx ?? 24"
-            (input)="onDividerHeight(block.id, $event)"
-            (change)="onFieldBlur()"
-          />
-          @if (block.style !== 'spacer-only') {
-            <p class="ed-hint" [textContent]="i18n.t('field.dividerHeightOnlySpace')"></p>
-          }
-        </div>
-      }
-      @case ('image') {
-        <app-image-picker
-          class="ed-field"
-          idPrefix="insp-image"
-          [src]="block.src"
-          [busy]="imageBusy()"
-          (fileChosen)="onImageFile(block.id, $event)"
-          (urlCommitted)="setImageSrc(block.id, $event)"
-          (removed)="setImageSrc(block.id, '')"
-        />
-        <div class="ed-field" [class.is-invalid]="!block.alt.trim()">
-          <div class="ed-label-row">
-            <label class="ed-label" for="insp-image-description" [textContent]="i18n.t('field.imageDescription')"></label>
-            <span class="ed-count" [class.is-over]="block.alt.length > 120" [textContent]="block.alt.length + ' / 120'"></span>
-          </div>
-          <input
-            id="insp-image-description"
-            class="ed-input"
-            data-testid="insp-image-description"
-            [placeholder]="i18n.t('field.imageDescriptionPlaceholder')"
-            required
-            [attr.aria-invalid]="!block.alt.trim()"
-            [value]="block.alt"
-            (input)="onText(block.id, 'alt', $event)"
-            (blur)="onFieldBlur()"
-          />
-          @if (!block.alt.trim()) {
-            <p class="ed-hint is-error" data-testid="insp-image-description-required" [textContent]="i18n.t('field.imageDescriptionRequired')"></p>
-          }
-        </div>
-        <div class="image-grid">
+        @if (shows('layout')) {
           <div class="ed-field">
-            <div class="ed-label-row">
-              <label class="ed-label" for="insp-image-link-target" [textContent]="i18n.t('field.imageLinkTarget')"></label>
-              @if (linkKindKey(block.href); as kindKey) {
-                <span class="link-kind-chip" data-testid="insp-image-kind" [textContent]="i18n.t(kindKey)"></span>
+            <span class="ed-label" id="insp-div-style" [textContent]="i18n.t('field.dividerStyle')"></span>
+            <div class="ed-tiles" role="radiogroup" aria-labelledby="insp-div-style" data-testid="insp-divider-style">
+              @for (style of dividerStyles; track style) {
+                <button
+                  type="button"
+                  class="ed-tile"
+                  role="radio"
+                  [class.is-on]="block.style === style"
+                  [attr.aria-checked]="block.style === style"
+                  [attr.data-testid]="'divider-style-' + style"
+                  (click)="setDividerStyle(block.id, style)"
+                >
+                  <span class="ed-tile-art" aria-hidden="true">
+                    @switch (style) {
+                      @case ('thin') { <span class="divider-art-thin"></span> }
+                      @case ('two-tone') { <span class="divider-art-gap"></span><span class="divider-art-mid"></span><span class="divider-art-end"></span> }
+                      @case ('ornament') { <span class="divider-art-hair"></span><span class="divider-art-diamond">◆</span><span class="divider-art-hair"></span> }
+                      @case ('glow') { <span class="divider-art-glow"></span> }
+                      @case ('spacer-only') { <span class="divider-art-space"></span> }
+                    }
+                  </span>
+                  <span class="ed-tile-title" [textContent]="i18n.t('divider.' + style)"></span>
+                  <span class="ed-tile-hint" [textContent]="i18n.t('divider.' + style + '.hint')"></span>
+                </button>
               }
             </div>
-            <input
-              id="insp-image-link-target"
-              class="ed-input"
-              data-testid="insp-image-link-target"
-              [placeholder]="i18n.t('link.targetPlaceholder')"
-              [value]="block.href"
-              (input)="onText(block.id, 'href', $event)"
-              (blur)="onLinkTargetBlur(block.id)"
-            />
-            <p class="ed-hint" [textContent]="i18n.t('link.targetHint')"></p>
           </div>
-          <div class="ed-field">
-            <label class="ed-label" for="insp-image-caption" [textContent]="i18n.t('field.imageCaption')"></label>
-            <input
-              id="insp-image-caption"
-              class="ed-input"
-              data-testid="insp-image-caption"
-              [placeholder]="i18n.t('field.imageCaptionPlaceholder')"
-              [value]="block.caption"
-              (input)="onText(block.id, 'caption', $event)"
-              (blur)="onFieldBlur()"
-            />
+          <div class="ed-field" [class.is-disabled]="block.style === 'thin'">
+            <span class="ed-label" id="insp-div-bg" [textContent]="i18n.t('field.dividerBackground')"></span>
+            <div class="ed-seg" role="radiogroup" aria-labelledby="insp-div-bg" data-testid="insp-divider-background">
+              @for (bg of dividerBackgrounds; track bg) {
+                <button
+                  type="button"
+                  class="ed-seg-opt"
+                  role="radio"
+                  [class.is-on]="block.background === bg"
+                  [attr.aria-checked]="block.background === bg"
+                  [attr.data-testid]="'divider-bg-' + bg"
+                  [disabled]="block.style === 'thin'"
+                  (click)="setDividerBackground(block.id, bg)"
+                >
+                  <span
+                    class="ed-swatch"
+                    aria-hidden="true"
+                    [style.background]="bg === 'page' ? session.palette().page : session.palette().content"
+                  ></span>
+                  <span [textContent]="i18n.t('divider.background.' + bg)"></span>
+                </button>
+              }
+            </div>
+            <p
+              class="ed-hint"
+              [textContent]="i18n.t(block.style === 'thin' ? 'field.dividerBackgroundThin' : 'field.dividerBackgroundHint')"
+            ></p>
           </div>
-        </div>
-        <div class="ed-field">
-          <span class="ed-label" id="insp-image-width" [textContent]="i18n.t('field.imageWidth')"></span>
-          <div class="ed-tiles ed-tiles--3" role="radiogroup" aria-labelledby="insp-image-width">
-            @for (w of imageWidths; track w) {
-              <button
-                type="button"
-                class="ed-tile"
-                role="radio"
-                [class.is-on]="block.width === w"
-                [attr.aria-checked]="block.width === w"
-                [attr.data-testid]="'image-width-' + w"
-                (click)="session.updateBlock(block.id, { width: w }, 'immediate')"
-              >
-                <span class="ed-tile-art" aria-hidden="true"><span class="image-art" [class]="'image-art image-art--' + w"></span></span>
-                <span class="ed-tile-title" [textContent]="i18n.t('image.width.' + w)"></span>
-              </button>
+          <div class="ed-field" [class.is-disabled]="block.style !== 'spacer-only'">
+            <div class="ed-label-row">
+              <label class="ed-label" for="insp-div-h" [textContent]="i18n.t('field.dividerHeight')"></label>
+              <span class="ed-count" [textContent]="(block.heightPx ?? 24) + ' px'"></span>
+            </div>
+            <input
+              id="insp-div-h"
+              class="ed-range"
+              type="range"
+              min="8"
+              max="120"
+              step="4"
+              data-testid="insp-divider-height"
+              [disabled]="block.style !== 'spacer-only'"
+              [value]="block.heightPx ?? 24"
+              (input)="onDividerHeight(block.id, $event)"
+              (change)="onFieldBlur()"
+            />
+            @if (block.style !== 'spacer-only') {
+              <p class="ed-hint" [textContent]="i18n.t('field.dividerHeightOnlySpace')"></p>
             }
           </div>
-        </div>
+        }
       }
-      @case ('image-text') {
-        <app-image-picker
-          class="ed-field"
-          idPrefix="insp-it-image"
-          [compact]="true"
-          [src]="block.src"
-          [busy]="imageBusy()"
-          (fileChosen)="onImageFile(block.id, $event)"
-          (urlCommitted)="setImageSrc(block.id, $event)"
-          (removed)="setImageSrc(block.id, '')"
-        />
-        <div class="image-grid">
+      @case ('image') {
+        @if (shows('texts')) {
+          <app-image-picker
+            class="ed-field"
+            idPrefix="insp-image"
+            [src]="block.src"
+            [busy]="imageBusy()"
+            (fileChosen)="onImageFile(block.id, $event)"
+            (urlCommitted)="setImageSrc(block.id, $event)"
+            (removed)="setImageSrc(block.id, '')"
+          />
           <div class="ed-field" [class.is-invalid]="!block.alt.trim()">
             <div class="ed-label-row">
-              <label class="ed-label" for="insp-it-description" [textContent]="i18n.t('field.imageDescription')"></label>
+              <label class="ed-label" for="insp-image-description" [textContent]="i18n.t('field.imageDescription')"></label>
               <span class="ed-count" [class.is-over]="block.alt.length > 120" [textContent]="block.alt.length + ' / 120'"></span>
             </div>
             <input
-              id="insp-it-description"
+              id="insp-image-description"
               class="ed-input"
-              data-testid="insp-image-text-description"
+              data-testid="insp-image-description"
               [placeholder]="i18n.t('field.imageDescriptionPlaceholder')"
               required
               [attr.aria-invalid]="!block.alt.trim()"
@@ -269,179 +188,280 @@
               (blur)="onFieldBlur()"
             />
             @if (!block.alt.trim()) {
-              <p class="ed-hint is-error" data-testid="insp-image-text-description-required" [textContent]="i18n.t('field.imageDescriptionRequired')"></p>
+              <p class="ed-hint is-error" data-testid="insp-image-description-required" [textContent]="i18n.t('field.imageDescriptionRequired')"></p>
             }
           </div>
-          <div class="ed-field">
-            <div class="ed-label-row">
-              <label class="ed-label" for="insp-it-link-target" [textContent]="i18n.t('field.imageTextLinkTarget')"></label>
-              @if (linkKindKey(block.href); as kindKey) {
-                <span class="link-kind-chip" data-testid="insp-image-text-kind" [textContent]="i18n.t(kindKey)"></span>
-              }
+          <div class="image-grid">
+            <div class="ed-field">
+              <div class="ed-label-row">
+                <label class="ed-label" for="insp-image-link-target" [textContent]="i18n.t('field.imageLinkTarget')"></label>
+                @if (linkKindKey(block.href); as kindKey) {
+                  <span class="link-kind-chip" data-testid="insp-image-kind" [textContent]="i18n.t(kindKey)"></span>
+                }
+              </div>
+              <input
+                id="insp-image-link-target"
+                class="ed-input"
+                data-testid="insp-image-link-target"
+                [placeholder]="i18n.t('link.targetPlaceholder')"
+                [value]="block.href"
+                (input)="onText(block.id, 'href', $event)"
+                (blur)="onLinkTargetBlur(block.id)"
+              />
+              <p class="ed-hint" [textContent]="i18n.t('link.targetHint')"></p>
             </div>
-            <input
-              id="insp-it-link-target"
-              class="ed-input"
-              data-testid="insp-image-text-link-target"
-              [placeholder]="i18n.t('link.targetPlaceholder')"
-              [value]="block.href"
-              (input)="onText(block.id, 'href', $event)"
-              (blur)="onLinkTargetBlur(block.id)"
-            />
-            <p class="ed-hint" [textContent]="i18n.t('link.targetHint')"></p>
+            <div class="ed-field">
+              <label class="ed-label" for="insp-image-caption" [textContent]="i18n.t('field.imageCaption')"></label>
+              <input
+                id="insp-image-caption"
+                class="ed-input"
+                data-testid="insp-image-caption"
+                [placeholder]="i18n.t('field.imageCaptionPlaceholder')"
+                [value]="block.caption"
+                (input)="onText(block.id, 'caption', $event)"
+                (blur)="onFieldBlur()"
+              />
+            </div>
           </div>
-        </div>
-        <div class="image-text-layout">
+        }
+        @if (shows('layout')) {
           <div class="ed-field">
-            <span class="ed-label" id="insp-it-side" [textContent]="i18n.t('field.imageTextSide')"></span>
-            <div class="ed-seg" role="radiogroup" aria-labelledby="insp-it-side">
-              @for (v of imageTextSides; track v) {
+            <span class="ed-label" id="insp-image-width" [textContent]="i18n.t('field.imageWidth')"></span>
+            <div class="ed-tiles ed-tiles--3" role="radiogroup" aria-labelledby="insp-image-width">
+              @for (w of imageWidths; track w) {
                 <button
                   type="button"
-                  class="ed-seg-opt"
+                  class="ed-tile"
                   role="radio"
-                  [class.is-on]="block.side === v"
-                  [attr.aria-checked]="block.side === v"
-                  [attr.data-testid]="'image-text-side-' + v"
-                  (click)="session.updateBlock(block.id, { side: v }, 'immediate')"
-                  [textContent]="i18n.t('imageText.side.' + v)"
-                ></button>
+                  [class.is-on]="block.width === w"
+                  [attr.aria-checked]="block.width === w"
+                  [attr.data-testid]="'image-width-' + w"
+                  (click)="session.updateBlock(block.id, { width: w }, 'immediate')"
+                >
+                  <span class="ed-tile-art" aria-hidden="true"><span class="image-art" [class]="'image-art image-art--' + w"></span></span>
+                  <span class="ed-tile-title" [textContent]="i18n.t('image.width.' + w)"></span>
+                </button>
               }
             </div>
           </div>
-          <div class="ed-field">
-            <span class="ed-label" id="insp-it-width" [textContent]="i18n.t('field.imageTextWidth')"></span>
-            <div class="ed-seg" role="radiogroup" aria-labelledby="insp-it-width">
-              @for (v of imageTextWidths; track v) {
-                <button
-                  type="button"
-                  class="ed-seg-opt"
-                  role="radio"
-                  [class.is-on]="block.imageWidth === v"
-                  [attr.aria-checked]="block.imageWidth === v"
-                  [attr.data-testid]="'image-text-width-' + v"
-                  (click)="session.updateBlock(block.id, { imageWidth: v }, 'immediate')"
-                  [textContent]="i18n.t('imageText.width.' + v)"
-                ></button>
-              }
-            </div>
-          </div>
-          <div class="ed-field">
-            <span class="ed-label" id="insp-it-valign" [textContent]="i18n.t('field.imageTextValign')"></span>
-            <div class="ed-seg" role="radiogroup" aria-labelledby="insp-it-valign">
-              @for (v of imageTextValigns; track v) {
-                <button
-                  type="button"
-                  class="ed-seg-opt"
-                  role="radio"
-                  [class.is-on]="block.valign === v"
-                  [attr.aria-checked]="block.valign === v"
-                  [attr.data-testid]="'image-text-valign-' + v"
-                  (click)="session.updateBlock(block.id, { valign: v }, 'immediate')"
-                  [textContent]="i18n.t('imageText.valign.' + v)"
-                ></button>
-              }
-            </div>
-          </div>
-        </div>
-        <div class="ed-field">
-          <span class="ed-label" [textContent]="i18n.t('field.imageTextBody')"></span>
-          <app-paragraph-lite-editor
-            [doc]="block.body"
-            (docChange)="onParagraphBody(block.id, $event)"
+        }
+      }
+      @case ('image-text') {
+        @if (shows('texts')) {
+          <app-image-picker
+            class="ed-field"
+            idPrefix="insp-it-image"
+            [compact]="true"
+            [src]="block.src"
+            [busy]="imageBusy()"
+            (fileChosen)="onImageFile(block.id, $event)"
+            (urlCommitted)="setImageSrc(block.id, $event)"
+            (removed)="setImageSrc(block.id, '')"
           />
-        </div>
+          <div class="image-grid">
+            <div class="ed-field" [class.is-invalid]="!block.alt.trim()">
+              <div class="ed-label-row">
+                <label class="ed-label" for="insp-it-description" [textContent]="i18n.t('field.imageDescription')"></label>
+                <span class="ed-count" [class.is-over]="block.alt.length > 120" [textContent]="block.alt.length + ' / 120'"></span>
+              </div>
+              <input
+                id="insp-it-description"
+                class="ed-input"
+                data-testid="insp-image-text-description"
+                [placeholder]="i18n.t('field.imageDescriptionPlaceholder')"
+                required
+                [attr.aria-invalid]="!block.alt.trim()"
+                [value]="block.alt"
+                (input)="onText(block.id, 'alt', $event)"
+                (blur)="onFieldBlur()"
+              />
+              @if (!block.alt.trim()) {
+                <p class="ed-hint is-error" data-testid="insp-image-text-description-required" [textContent]="i18n.t('field.imageDescriptionRequired')"></p>
+              }
+            </div>
+            <div class="ed-field">
+              <div class="ed-label-row">
+                <label class="ed-label" for="insp-it-link-target" [textContent]="i18n.t('field.imageTextLinkTarget')"></label>
+                @if (linkKindKey(block.href); as kindKey) {
+                  <span class="link-kind-chip" data-testid="insp-image-text-kind" [textContent]="i18n.t(kindKey)"></span>
+                }
+              </div>
+              <input
+                id="insp-it-link-target"
+                class="ed-input"
+                data-testid="insp-image-text-link-target"
+                [placeholder]="i18n.t('link.targetPlaceholder')"
+                [value]="block.href"
+                (input)="onText(block.id, 'href', $event)"
+                (blur)="onLinkTargetBlur(block.id)"
+              />
+              <p class="ed-hint" [textContent]="i18n.t('link.targetHint')"></p>
+            </div>
+          </div>
+        }
+        @if (shows('layout')) {
+          <div class="image-text-layout">
+            <div class="ed-field">
+              <span class="ed-label" id="insp-it-side" [textContent]="i18n.t('field.imageTextSide')"></span>
+              <div class="ed-seg" role="radiogroup" aria-labelledby="insp-it-side">
+                @for (v of imageTextSides; track v) {
+                  <button
+                    type="button"
+                    class="ed-seg-opt"
+                    role="radio"
+                    [class.is-on]="block.side === v"
+                    [attr.aria-checked]="block.side === v"
+                    [attr.data-testid]="'image-text-side-' + v"
+                    (click)="session.updateBlock(block.id, { side: v }, 'immediate')"
+                    [textContent]="i18n.t('imageText.side.' + v)"
+                  ></button>
+                }
+              </div>
+            </div>
+            <div class="ed-field">
+              <span class="ed-label" id="insp-it-width" [textContent]="i18n.t('field.imageTextWidth')"></span>
+              <div class="ed-seg" role="radiogroup" aria-labelledby="insp-it-width">
+                @for (v of imageTextWidths; track v) {
+                  <button
+                    type="button"
+                    class="ed-seg-opt"
+                    role="radio"
+                    [class.is-on]="block.imageWidth === v"
+                    [attr.aria-checked]="block.imageWidth === v"
+                    [attr.data-testid]="'image-text-width-' + v"
+                    (click)="session.updateBlock(block.id, { imageWidth: v }, 'immediate')"
+                    [textContent]="i18n.t('imageText.width.' + v)"
+                  ></button>
+                }
+              </div>
+            </div>
+            <div class="ed-field">
+              <span class="ed-label" id="insp-it-valign" [textContent]="i18n.t('field.imageTextValign')"></span>
+              <div class="ed-seg" role="radiogroup" aria-labelledby="insp-it-valign">
+                @for (v of imageTextValigns; track v) {
+                  <button
+                    type="button"
+                    class="ed-seg-opt"
+                    role="radio"
+                    [class.is-on]="block.valign === v"
+                    [attr.aria-checked]="block.valign === v"
+                    [attr.data-testid]="'image-text-valign-' + v"
+                    (click)="session.updateBlock(block.id, { valign: v }, 'immediate')"
+                    [textContent]="i18n.t('imageText.valign.' + v)"
+                  ></button>
+                }
+              </div>
+            </div>
+          </div>
+        }
+        @if (shows('texts')) {
+          <div class="ed-field">
+            <span class="ed-label" [textContent]="i18n.t('field.imageTextBody')"></span>
+            <app-paragraph-lite-editor
+              [doc]="block.body"
+              (docChange)="onParagraphBody(block.id, $event)"
+            />
+          </div>
+        }
       }
       @case ('greeting') {
-        <div class="ed-field">
-          <label class="ed-label" for="insp-greeting-text" [textContent]="i18n.t('field.greetingText')"></label>
-          <input
-            id="insp-greeting-text"
-            class="ed-input em-field em-greeting"
-            data-testid="insp-greeting-text"
-            [value]="block.text"
-            (input)="onText(block.id, 'text', $event)"
-            (blur)="onFieldBlur()"
-          />
-          <p class="ed-hint" [textContent]="i18n.t(block.useName ? 'field.greetingTextFallbackHint' : 'field.greetingTextHint')"></p>
-        </div>
-        <div class="image-text-layout">
+        @if (shows('texts')) {
           <div class="ed-field">
-            <span class="ed-label" id="insp-greeting-size" [textContent]="i18n.t('rt.size')"></span>
-            <div class="ed-seg" role="radiogroup" aria-labelledby="insp-greeting-size">
-              @for (v of richSizes; track v) {
-                <button
-                  type="button"
-                  class="ed-seg-opt"
-                  role="radio"
-                  [class.is-on]="block.size === v"
-                  [attr.aria-checked]="block.size === v"
-                  [attr.data-testid]="'greeting-size-' + v"
-                  (click)="session.updateBlock(block.id, { size: v }, 'immediate')"
-                  [textContent]="i18n.t('rt.size.' + v)"
-                ></button>
-              }
-            </div>
+            <label class="ed-label" for="insp-greeting-text" [textContent]="i18n.t('field.greetingText')"></label>
+            <input
+              id="insp-greeting-text"
+              class="ed-input em-field em-greeting"
+              data-testid="insp-greeting-text"
+              [value]="block.text"
+              (input)="onText(block.id, 'text', $event)"
+              (blur)="onFieldBlur()"
+            />
+            <p class="ed-hint" [textContent]="i18n.t(block.useName ? 'field.greetingTextFallbackHint' : 'field.greetingTextHint')"></p>
           </div>
-          <div class="ed-field">
-            <span class="ed-label" id="insp-greeting-color" [textContent]="i18n.t('rt.color')"></span>
-            <div class="ed-seg" role="radiogroup" aria-labelledby="insp-greeting-color">
-              @for (v of richColors; track v) {
-                <button
-                  type="button"
-                  class="ed-seg-opt"
-                  role="radio"
-                  [class.is-on]="block.color === v"
-                  [attr.aria-checked]="block.color === v"
-                  [attr.data-testid]="'greeting-color-' + v"
-                  (click)="session.updateBlock(block.id, { color: v }, 'immediate')"
-                  [textContent]="i18n.t('rt.color.' + v)"
-                ></button>
-              }
-            </div>
-          </div>
-        </div>
-        <section class="ed-group" data-testid="greeting-group-name">
-          <h3 class="ed-group-title">
-            <label class="ed-switch ed-switch--start">
-              <span [textContent]="i18n.t('field.greetingUseName')"></span>
-              <input
-                type="checkbox"
-                role="switch"
-                data-testid="greeting-use-name"
-                [checked]="block.useName"
-                (change)="onBool(block.id, 'useName', $event)"
-              />
-              <span class="ed-switch-track" aria-hidden="true"></span>
-            </label>
-          </h3>
-          @if (block.useName) {
+        }
+        @if (shows('layout')) {
+          <div class="image-text-layout">
             <div class="ed-field">
-              <label class="ed-label" for="insp-greeting-lead" [textContent]="i18n.t('field.greetingNameLead')"></label>
-              <input
-                id="insp-greeting-lead"
-                class="ed-input em-field em-greeting"
-                data-testid="insp-greeting-lead"
-                [value]="block.nameLead"
-                (input)="onText(block.id, 'nameLead', $event)"
-                (blur)="onFieldBlur()"
-              />
-              <p class="ed-hint" [textContent]="i18n.t('field.greetingNameLeadHint')"></p>
+              <span class="ed-label" id="insp-greeting-size" [textContent]="i18n.t('rt.size')"></span>
+              <div class="ed-seg" role="radiogroup" aria-labelledby="insp-greeting-size">
+                @for (v of richSizes; track v) {
+                  <button
+                    type="button"
+                    class="ed-seg-opt"
+                    role="radio"
+                    [class.is-on]="block.size === v"
+                    [attr.aria-checked]="block.size === v"
+                    [attr.data-testid]="'greeting-size-' + v"
+                    (click)="session.updateBlock(block.id, { size: v }, 'immediate')"
+                    [textContent]="i18n.t('rt.size.' + v)"
+                  ></button>
+                }
+              </div>
             </div>
             <div class="ed-field">
-              <label class="ed-label" for="insp-greeting-sample" [textContent]="i18n.t('field.greetingSampleName')"></label>
-              <input
-                id="insp-greeting-sample"
-                class="ed-input"
-                data-testid="insp-greeting-sample"
-                [value]="session.globals().personalization.samples['name'] ?? ''"
-                (input)="onSampleName($event)"
-                (blur)="onFieldBlur()"
-              />
-              <p class="ed-hint" [textContent]="i18n.t('field.greetingSampleHint')"></p>
+              <span class="ed-label" id="insp-greeting-color" [textContent]="i18n.t('rt.color')"></span>
+              <div class="ed-seg" role="radiogroup" aria-labelledby="insp-greeting-color">
+                @for (v of richColors; track v) {
+                  <button
+                    type="button"
+                    class="ed-seg-opt"
+                    role="radio"
+                    [class.is-on]="block.color === v"
+                    [attr.aria-checked]="block.color === v"
+                    [attr.data-testid]="'greeting-color-' + v"
+                    (click)="session.updateBlock(block.id, { color: v }, 'immediate')"
+                    [textContent]="i18n.t('rt.color.' + v)"
+                  ></button>
+                }
+              </div>
             </div>
-          }
-        </section>
+          </div>
+        }
+        @if (shows('layout') || block.useName) {
+          <section class="ed-group" data-testid="greeting-group-name">
+            @if (shows('layout')) {
+              <h3 class="ed-group-title">
+                <label class="ed-switch ed-switch--start">
+                  <span [textContent]="i18n.t('field.greetingUseName')"></span>
+                  <input
+                    type="checkbox"
+                    role="switch"
+                    data-testid="greeting-use-name"
+                    [checked]="block.useName"
+                    (change)="onBool(block.id, 'useName', $event)"
+                  />
+                  <span class="ed-switch-track" aria-hidden="true"></span>
+                </label>
+              </h3>
+            }
+            @if (block.useName && shows('texts')) {
+              <div class="ed-field">
+                <label class="ed-label" for="insp-greeting-lead" [textContent]="i18n.t('field.greetingNameLead')"></label>
+                <input
+                  id="insp-greeting-lead"
+                  class="ed-input em-field em-greeting"
+                  data-testid="insp-greeting-lead"
+                  [value]="block.nameLead"
+                  (input)="onText(block.id, 'nameLead', $event)"
+                  (blur)="onFieldBlur()"
+                />
+                <p class="ed-hint" [textContent]="i18n.t('field.greetingNameLeadHint')"></p>
+              </div>
+              <div class="ed-field">
+                <label class="ed-label" for="insp-greeting-sample" [textContent]="i18n.t('field.greetingSampleName')"></label>
+                <input
+                  id="insp-greeting-sample"
+                  class="ed-input"
+                  data-testid="insp-greeting-sample"
+                  [value]="session.globals().personalization.samples['name'] ?? ''"
+                  (input)="onSampleName($event)"
+                  (blur)="onFieldBlur()"
+                />
+                <p class="ed-hint" [textContent]="i18n.t('field.greetingSampleHint')"></p>
+              </div>
+            }
+          </section>
+        }
       }
       @case ('contact') {
         <app-image-picker
@@ -627,312 +647,326 @@
         </div>
       }
       @case ('teasers') {
-        <div class="ed-field">
-          <span class="ed-label" id="insp-teaser-columns" [textContent]="i18n.t('field.teaserColumns')"></span>
-          <div class="ed-seg" role="radiogroup" aria-labelledby="insp-teaser-columns">
-            @for (n of teaserColumns; track n) {
-              <button
-                type="button"
-                class="ed-seg-opt"
-                role="radio"
-                [class.is-on]="block.columns === n"
-                [attr.aria-checked]="block.columns === n"
-                [attr.data-testid]="'teaser-columns-' + n"
-                (click)="session.updateBlock(block.id, { columns: n }, 'immediate')"
-                [textContent]="n"
-              ></button>
-            }
+        @if (shows('layout')) {
+          <div class="ed-field">
+            <span class="ed-label" id="insp-teaser-columns" [textContent]="i18n.t('field.teaserColumns')"></span>
+            <div class="ed-seg" role="radiogroup" aria-labelledby="insp-teaser-columns">
+              @for (n of teaserColumns; track n) {
+                <button
+                  type="button"
+                  class="ed-seg-opt"
+                  role="radio"
+                  [class.is-on]="block.columns === n"
+                  [attr.aria-checked]="block.columns === n"
+                  [attr.data-testid]="'teaser-columns-' + n"
+                  (click)="session.updateBlock(block.id, { columns: n }, 'immediate')"
+                  [textContent]="n"
+                ></button>
+              }
+            </div>
           </div>
-        </div>
-        <div class="list-rows" data-testid="teaser-rows" cdkDropList (cdkDropListDropped)="dropTeaserItem(block.id, $event)">
-          @for (item of block.items; track $index; let i = $index) {
-            <article
-              class="link-row"
-              cdkDrag
-              cdkDragLockAxis="y"
-              [class.is-open]="openTeaserRow === i"
-              [attr.data-testid]="'teaser-row-' + i"
-            >
-              <header class="link-row-head">
-                <button
-                  type="button"
-                  class="row-drag"
-                  cdkDragHandle
-                  [attr.aria-label]="i18n.t('field.rowDrag')"
-                  [title]="i18n.t('field.rowDrag')"
-                  (keydown)="onRowHandleKey('teaser', block.id, i, $event)"
-                >⋮⋮</button>
-                <button
-                  type="button"
-                  class="link-row-summary"
-                  [attr.data-testid]="'teaser-toggle-' + i"
-                  [attr.aria-expanded]="openTeaserRow === i"
-                  (click)="toggleTeaserRow(i)"
-                >
-                  <span class="link-row-title" [class.is-empty]="!item.title" [textContent]="item.title || i18n.t('field.teaserUntitled')"></span>
-                  @if (item.linkText) {
-                    <span class="link-row-link" [textContent]="item.linkText + ' ↗'"></span>
-                  }
-                  <span class="link-row-chev" aria-hidden="true" [textContent]="openTeaserRow === i ? '▾' : '▸'"></span>
-                </button>
-                <button
-                  type="button"
-                  class="ed-btn ed-btn--danger row-remove"
-                  [disabled]="block.items.length <= 1"
-                  [attr.aria-label]="i18n.t('field.teaserRemove')"
-                  [title]="i18n.t('field.teaserRemove')"
-                  (click)="removeTeaserItem(block.id, i)"
-                >✕</button>
-              </header>
-
-              @if (openTeaserRow === i) {
-                <div class="link-row-body">
-                  <app-image-picker
-                    class="ed-field"
-                    [idPrefix]="'insp-teaser-' + i"
-                    [compact]="true"
-                    [src]="item.src"
-                    [busy]="imageBusy()"
-                    (fileChosen)="onTeaserImageFile(block.id, i, $event)"
-                    (urlCommitted)="patchTeaser(block.id, i, { src: $event })"
-                    (removed)="patchTeaser(block.id, i, { src: '' })"
-                  />
-                  <div class="ed-field" [class.is-invalid]="!!item.src.trim() && !item.alt.trim()">
-                    <label class="ed-label" [attr.for]="'insp-teaser-description-' + i" [textContent]="i18n.t('field.imageDescription')"></label>
-                    <input
-                      class="ed-input"
-                      [id]="'insp-teaser-description-' + i"
-                      [attr.data-testid]="'insp-teaser-description-' + i"
-                      [placeholder]="i18n.t('field.imageDescriptionPlaceholder')"
-                      [attr.aria-invalid]="!!item.src.trim() && !item.alt.trim()"
-                      [value]="item.alt"
-                      (input)="onTeaserText(block.id, i, 'alt', $event)"
-                      (blur)="onFieldBlur()"
-                    />
-                    @if (!!item.src.trim() && !item.alt.trim()) {
-                      <p class="ed-hint is-error" [attr.data-testid]="'insp-teaser-description-required-' + i" [textContent]="i18n.t('field.imageDescriptionRequired')"></p>
+        }
+        @if (shows('texts')) {
+          <div class="list-rows" data-testid="teaser-rows" cdkDropList (cdkDropListDropped)="dropTeaserItem(block.id, $event)">
+            @for (item of block.items; track $index; let i = $index) {
+              <article
+                class="link-row"
+                cdkDrag
+                cdkDragLockAxis="y"
+                [class.is-open]="openTeaserRow === i"
+                [attr.data-testid]="'teaser-row-' + i"
+              >
+                <header class="link-row-head">
+                  <button
+                    type="button"
+                    class="row-drag"
+                    cdkDragHandle
+                    [attr.aria-label]="i18n.t('field.rowDrag')"
+                    [title]="i18n.t('field.rowDrag')"
+                    (keydown)="onRowHandleKey('teaser', block.id, i, $event)"
+                  >⋮⋮</button>
+                  <button
+                    type="button"
+                    class="link-row-summary"
+                    [attr.data-testid]="'teaser-toggle-' + i"
+                    [attr.aria-expanded]="openTeaserRow === i"
+                    (click)="toggleTeaserRow(i)"
+                  >
+                    <span class="link-row-title" [class.is-empty]="!item.title" [textContent]="item.title || i18n.t('field.teaserUntitled')"></span>
+                    @if (item.linkText) {
+                      <span class="link-row-link" [textContent]="item.linkText + ' ↗'"></span>
                     }
-                  </div>
-                  <div class="ed-field">
-                    <label class="ed-label" [attr.for]="'insp-teaser-title-' + i" [textContent]="i18n.t('field.teaserTitle')"></label>
-                    <input
-                      class="ed-input"
-                      [id]="'insp-teaser-title-' + i"
-                      [attr.data-testid]="'insp-teaser-title-' + i"
-                      [value]="item.title"
-                      (input)="onTeaserText(block.id, i, 'title', $event)"
-                      (blur)="onFieldBlur()"
+                    <span class="link-row-chev" aria-hidden="true" [textContent]="openTeaserRow === i ? '▾' : '▸'"></span>
+                  </button>
+                  <button
+                    type="button"
+                    class="ed-btn ed-btn--danger row-remove"
+                    [disabled]="block.items.length <= 1"
+                    [attr.aria-label]="i18n.t('field.teaserRemove')"
+                    [title]="i18n.t('field.teaserRemove')"
+                    (click)="removeTeaserItem(block.id, i)"
+                  >✕</button>
+                </header>
+
+                @if (openTeaserRow === i) {
+                  <div class="link-row-body">
+                    <app-image-picker
+                      class="ed-field"
+                      [idPrefix]="'insp-teaser-' + i"
+                      [compact]="true"
+                      [src]="item.src"
+                      [busy]="imageBusy()"
+                      (fileChosen)="onTeaserImageFile(block.id, i, $event)"
+                      (urlCommitted)="patchTeaser(block.id, i, { src: $event })"
+                      (removed)="patchTeaser(block.id, i, { src: '' })"
                     />
-                  </div>
-                  <div class="ed-field">
-                    <label class="ed-label" [attr.for]="'insp-teaser-text-' + i" [textContent]="i18n.t('field.teaserText')"></label>
-                    <textarea
-                      class="ed-textarea"
-                      rows="3"
-                      [id]="'insp-teaser-text-' + i"
-                      [attr.data-testid]="'insp-teaser-text-' + i"
-                      [value]="item.text"
-                      (input)="onTeaserText(block.id, i, 'text', $event)"
-                      (blur)="onFieldBlur()"
-                    ></textarea>
-                  </div>
-                  <div class="ed-field-row">
-                    <div class="ed-field">
-                      <label class="ed-label" [attr.for]="'insp-teaser-link-text-' + i" [textContent]="i18n.t('field.teaserLinkText')"></label>
+                    <div class="ed-field" [class.is-invalid]="!!item.src.trim() && !item.alt.trim()">
+                      <label class="ed-label" [attr.for]="'insp-teaser-description-' + i" [textContent]="i18n.t('field.imageDescription')"></label>
                       <input
                         class="ed-input"
-                        [id]="'insp-teaser-link-text-' + i"
-                        [attr.data-testid]="'insp-teaser-link-text-' + i"
-                        [value]="item.linkText"
-                        (input)="onTeaserText(block.id, i, 'linkText', $event)"
+                        [id]="'insp-teaser-description-' + i"
+                        [attr.data-testid]="'insp-teaser-description-' + i"
+                        [placeholder]="i18n.t('field.imageDescriptionPlaceholder')"
+                        [attr.aria-invalid]="!!item.src.trim() && !item.alt.trim()"
+                        [value]="item.alt"
+                        (input)="onTeaserText(block.id, i, 'alt', $event)"
+                        (blur)="onFieldBlur()"
+                      />
+                      @if (!!item.src.trim() && !item.alt.trim()) {
+                        <p class="ed-hint is-error" [attr.data-testid]="'insp-teaser-description-required-' + i" [textContent]="i18n.t('field.imageDescriptionRequired')"></p>
+                      }
+                    </div>
+                    <div class="ed-field">
+                      <label class="ed-label" [attr.for]="'insp-teaser-title-' + i" [textContent]="i18n.t('field.teaserTitle')"></label>
+                      <input
+                        class="ed-input"
+                        [id]="'insp-teaser-title-' + i"
+                        [attr.data-testid]="'insp-teaser-title-' + i"
+                        [value]="item.title"
+                        (input)="onTeaserText(block.id, i, 'title', $event)"
                         (blur)="onFieldBlur()"
                       />
                     </div>
                     <div class="ed-field">
-                      <label class="ed-label" [attr.for]="'insp-teaser-link-target-' + i" [textContent]="i18n.t('field.teaserLinkTarget')"></label>
-                      <input
-                        class="ed-input"
-                        [id]="'insp-teaser-link-target-' + i"
-                        [attr.data-testid]="'insp-teaser-link-target-' + i"
-                        [placeholder]="i18n.t('link.targetPlaceholder')"
-                        [value]="item.href"
-                        (input)="onTeaserText(block.id, i, 'href', $event)"
-                        (blur)="onTeaserLinkBlur(block.id, i)"
-                      />
-                      @if (linkKindKey(item.href); as kindKey) {
-                        <p class="link-kind"><span class="link-kind-chip" [textContent]="i18n.t(kindKey)"></span></p>
-                      }
+                      <label class="ed-label" [attr.for]="'insp-teaser-text-' + i" [textContent]="i18n.t('field.teaserText')"></label>
+                      <textarea
+                        class="ed-textarea"
+                        rows="3"
+                        [id]="'insp-teaser-text-' + i"
+                        [attr.data-testid]="'insp-teaser-text-' + i"
+                        [value]="item.text"
+                        (input)="onTeaserText(block.id, i, 'text', $event)"
+                        (blur)="onFieldBlur()"
+                      ></textarea>
+                    </div>
+                    <div class="ed-field-row">
+                      <div class="ed-field">
+                        <label class="ed-label" [attr.for]="'insp-teaser-link-text-' + i" [textContent]="i18n.t('field.teaserLinkText')"></label>
+                        <input
+                          class="ed-input"
+                          [id]="'insp-teaser-link-text-' + i"
+                          [attr.data-testid]="'insp-teaser-link-text-' + i"
+                          [value]="item.linkText"
+                          (input)="onTeaserText(block.id, i, 'linkText', $event)"
+                          (blur)="onFieldBlur()"
+                        />
+                      </div>
+                      <div class="ed-field">
+                        <label class="ed-label" [attr.for]="'insp-teaser-link-target-' + i" [textContent]="i18n.t('field.teaserLinkTarget')"></label>
+                        <input
+                          class="ed-input"
+                          [id]="'insp-teaser-link-target-' + i"
+                          [attr.data-testid]="'insp-teaser-link-target-' + i"
+                          [placeholder]="i18n.t('link.targetPlaceholder')"
+                          [value]="item.href"
+                          (input)="onTeaserText(block.id, i, 'href', $event)"
+                          (blur)="onTeaserLinkBlur(block.id, i)"
+                        />
+                        @if (linkKindKey(item.href); as kindKey) {
+                          <p class="link-kind"><span class="link-kind-chip" [textContent]="i18n.t(kindKey)"></span></p>
+                        }
+                      </div>
                     </div>
                   </div>
-                </div>
-              }
-            </article>
-          }
-        </div>
-        <div class="ed-actions">
-          <button
-            type="button"
-            class="ed-btn ed-btn--add"
-            data-testid="teaser-add"
-            [textContent]="'+ ' + i18n.t('field.teaserAdd')"
-            (click)="addTeaserItem(block.id)"
-          ></button>
-        </div>
+                }
+              </article>
+            }
+          </div>
+          <div class="ed-actions">
+            <button
+              type="button"
+              class="ed-btn ed-btn--add"
+              data-testid="teaser-add"
+              [textContent]="'+ ' + i18n.t('field.teaserAdd')"
+              (click)="addTeaserItem(block.id)"
+            ></button>
+          </div>
+        }
       }
       @case ('event') {
-        <div class="ed-field">
-          <label class="ed-label" for="insp-event-title" [textContent]="i18n.t('field.eventTitle')"></label>
-          <input
-            id="insp-event-title"
-            class="ed-input"
-            type="text"
-            data-testid="insp-event-title"
-            [value]="block.title"
-            (input)="onText(block.id, 'title', $event)"
-            (blur)="onFieldBlur()"
-          />
-        </div>
-        <div class="ed-field">
-          <label class="ed-label" for="insp-event-date" [textContent]="i18n.t('field.eventDate')"></label>
-          <input
-            id="insp-event-date"
-            class="ed-input"
-            type="date"
-            data-testid="insp-event-date"
-            [value]="block.date"
-            (input)="onText(block.id, 'date', $event)"
-            (blur)="onFieldBlur()"
-          />
-        </div>
-        <div class="ed-field-row">
+        @if (shows('texts')) {
           <div class="ed-field">
-            <label class="ed-label" for="insp-event-start" [textContent]="i18n.t('field.eventStart')"></label>
+            <label class="ed-label" for="insp-event-title" [textContent]="i18n.t('field.eventTitle')"></label>
             <input
-              id="insp-event-start"
-              class="ed-input"
-              type="time"
-              data-testid="insp-event-start"
-              [value]="block.start"
-              (input)="onText(block.id, 'start', $event)"
-              (blur)="onFieldBlur()"
-            />
-          </div>
-          <div class="ed-field">
-            <label class="ed-label" for="insp-event-end" [textContent]="i18n.t('field.eventEnd')"></label>
-            <input
-              id="insp-event-end"
-              class="ed-input"
-              type="time"
-              data-testid="insp-event-end"
-              [value]="block.end"
-              (input)="onText(block.id, 'end', $event)"
-              (blur)="onFieldBlur()"
-            />
-          </div>
-        </div>
-        <div class="ed-field">
-          <label class="ed-label" for="insp-event-timezone" [textContent]="i18n.t('field.eventTimezone')"></label>
-          <input
-            id="insp-event-timezone"
-            class="ed-input"
-            data-testid="insp-event-timezone"
-            list="insp-event-timezones"
-            [value]="block.timezone"
-            (input)="onText(block.id, 'timezone', $event)"
-            (blur)="onFieldBlur()"
-          />
-          <datalist id="insp-event-timezones">
-            @for (tz of timeZones; track tz) {
-              <option [value]="tz"></option>
-            }
-          </datalist>
-          <p class="ed-hint" [textContent]="i18n.t('field.eventTimezoneHint')"></p>
-        </div>
-        <div class="ed-field">
-          <span class="ed-label" id="insp-event-location" [textContent]="i18n.t('field.eventLocation')"></span>
-          <div class="ed-seg" role="radiogroup" aria-labelledby="insp-event-location">
-            @for (m of eventLocationModes; track m) {
-              <button
-                type="button"
-                class="ed-seg-opt"
-                role="radio"
-                [class.is-on]="block.locationMode === m"
-                [attr.aria-checked]="block.locationMode === m"
-                [attr.data-testid]="'event-location-' + m"
-                (click)="session.updateBlock(block.id, { locationMode: m }, 'immediate')"
-                [textContent]="i18n.t('event.location.' + m)"
-              ></button>
-            }
-          </div>
-        </div>
-        <div class="ed-field">
-          <label class="ed-label" for="insp-event-location-detail" [textContent]="i18n.t('field.eventLocationDetail')"></label>
-          <input
-            id="insp-event-location-detail"
-            class="ed-input"
-            type="text"
-            data-testid="insp-event-location-detail"
-            [value]="block.location"
-            (input)="onText(block.id, 'location', $event)"
-            (blur)="onFieldBlur()"
-          />
-        </div>
-        <div class="ed-field-row">
-          <div class="ed-field">
-            <label class="ed-label" for="insp-event-button" [textContent]="i18n.t('field.eventButtonLabel')"></label>
-            <input
-              id="insp-event-button"
+              id="insp-event-title"
               class="ed-input"
               type="text"
-              data-testid="insp-event-button"
-              [value]="block.buttonLabel"
-              (input)="onText(block.id, 'buttonLabel', $event)"
+              data-testid="insp-event-title"
+              [value]="block.title"
+              (input)="onText(block.id, 'title', $event)"
               (blur)="onFieldBlur()"
             />
           </div>
           <div class="ed-field">
-            <label class="ed-label" for="insp-event-button-target" [textContent]="i18n.t('field.eventButtonTarget')"></label>
+            <label class="ed-label" for="insp-event-date" [textContent]="i18n.t('field.eventDate')"></label>
             <input
-              id="insp-event-button-target"
+              id="insp-event-date"
               class="ed-input"
-              data-testid="insp-event-button-target"
-              [placeholder]="i18n.t('link.targetPlaceholder')"
-              [value]="block.href"
-              (input)="onText(block.id, 'href', $event)"
-              (blur)="onLinkTargetBlur(block.id)"
+              type="date"
+              data-testid="insp-event-date"
+              [value]="block.date"
+              (input)="onText(block.id, 'date', $event)"
+              (blur)="onFieldBlur()"
             />
           </div>
-        </div>
-        <section class="ed-group">
-          <h3 class="ed-group-title">
-            <label class="ed-switch ed-switch--start">
-              <span [textContent]="i18n.t('field.eventCalendar')"></span>
-              <input
-                type="checkbox"
-                role="switch"
-                data-testid="event-calendar"
-                [checked]="block.calendar"
-                (change)="onBool(block.id, 'calendar', $event)"
-              />
-              <span class="ed-switch-track" aria-hidden="true"></span>
-            </label>
-          </h3>
-          @if (block.calendar) {
+          <div class="ed-field-row">
             <div class="ed-field">
-              <label class="ed-label" for="insp-event-calendar-label" [textContent]="i18n.t('field.eventCalendarLabel')"></label>
+              <label class="ed-label" for="insp-event-start" [textContent]="i18n.t('field.eventStart')"></label>
               <input
-                id="insp-event-calendar-label"
+                id="insp-event-start"
                 class="ed-input"
-                type="text"
-                data-testid="insp-event-calendar-label"
-                [value]="block.calendarLabel"
-                (input)="onText(block.id, 'calendarLabel', $event)"
+                type="time"
+                data-testid="insp-event-start"
+                [value]="block.start"
+                (input)="onText(block.id, 'start', $event)"
                 (blur)="onFieldBlur()"
               />
             </div>
-            <p class="ed-hint" [textContent]="i18n.t('field.eventCalendarHint')"></p>
-          }
-        </section>
+            <div class="ed-field">
+              <label class="ed-label" for="insp-event-end" [textContent]="i18n.t('field.eventEnd')"></label>
+              <input
+                id="insp-event-end"
+                class="ed-input"
+                type="time"
+                data-testid="insp-event-end"
+                [value]="block.end"
+                (input)="onText(block.id, 'end', $event)"
+                (blur)="onFieldBlur()"
+              />
+            </div>
+          </div>
+          <div class="ed-field">
+            <label class="ed-label" for="insp-event-timezone" [textContent]="i18n.t('field.eventTimezone')"></label>
+            <input
+              id="insp-event-timezone"
+              class="ed-input"
+              data-testid="insp-event-timezone"
+              list="insp-event-timezones"
+              [value]="block.timezone"
+              (input)="onText(block.id, 'timezone', $event)"
+              (blur)="onFieldBlur()"
+            />
+            <datalist id="insp-event-timezones">
+              @for (tz of timeZones; track tz) {
+                <option [value]="tz"></option>
+              }
+            </datalist>
+            <p class="ed-hint" [textContent]="i18n.t('field.eventTimezoneHint')"></p>
+          </div>
+        }
+        @if (shows('layout')) {
+          <div class="ed-field">
+            <span class="ed-label" id="insp-event-location" [textContent]="i18n.t('field.eventLocation')"></span>
+            <div class="ed-seg" role="radiogroup" aria-labelledby="insp-event-location">
+              @for (m of eventLocationModes; track m) {
+                <button
+                  type="button"
+                  class="ed-seg-opt"
+                  role="radio"
+                  [class.is-on]="block.locationMode === m"
+                  [attr.aria-checked]="block.locationMode === m"
+                  [attr.data-testid]="'event-location-' + m"
+                  (click)="session.updateBlock(block.id, { locationMode: m }, 'immediate')"
+                  [textContent]="i18n.t('event.location.' + m)"
+                ></button>
+              }
+            </div>
+          </div>
+        }
+        @if (shows('texts')) {
+          <div class="ed-field">
+            <label class="ed-label" for="insp-event-location-detail" [textContent]="i18n.t('field.eventLocationDetail')"></label>
+            <input
+              id="insp-event-location-detail"
+              class="ed-input"
+              type="text"
+              data-testid="insp-event-location-detail"
+              [value]="block.location"
+              (input)="onText(block.id, 'location', $event)"
+              (blur)="onFieldBlur()"
+            />
+          </div>
+          <div class="ed-field-row">
+            <div class="ed-field">
+              <label class="ed-label" for="insp-event-button" [textContent]="i18n.t('field.eventButtonLabel')"></label>
+              <input
+                id="insp-event-button"
+                class="ed-input"
+                type="text"
+                data-testid="insp-event-button"
+                [value]="block.buttonLabel"
+                (input)="onText(block.id, 'buttonLabel', $event)"
+                (blur)="onFieldBlur()"
+              />
+            </div>
+            <div class="ed-field">
+              <label class="ed-label" for="insp-event-button-target" [textContent]="i18n.t('field.eventButtonTarget')"></label>
+              <input
+                id="insp-event-button-target"
+                class="ed-input"
+                data-testid="insp-event-button-target"
+                [placeholder]="i18n.t('link.targetPlaceholder')"
+                [value]="block.href"
+                (input)="onText(block.id, 'href', $event)"
+                (blur)="onLinkTargetBlur(block.id)"
+              />
+            </div>
+          </div>
+        }
+        @if (shows('layout') || block.calendar) {
+          <section class="ed-group">
+            @if (shows('layout')) {
+              <h3 class="ed-group-title">
+                <label class="ed-switch ed-switch--start">
+                  <span [textContent]="i18n.t('field.eventCalendar')"></span>
+                  <input
+                    type="checkbox"
+                    role="switch"
+                    data-testid="event-calendar"
+                    [checked]="block.calendar"
+                    (change)="onBool(block.id, 'calendar', $event)"
+                  />
+                  <span class="ed-switch-track" aria-hidden="true"></span>
+                </label>
+              </h3>
+            }
+            @if (block.calendar && shows('texts')) {
+              <div class="ed-field">
+                <label class="ed-label" for="insp-event-calendar-label" [textContent]="i18n.t('field.eventCalendarLabel')"></label>
+                <input
+                  id="insp-event-calendar-label"
+                  class="ed-input"
+                  type="text"
+                  data-testid="insp-event-calendar-label"
+                  [value]="block.calendarLabel"
+                  (input)="onText(block.id, 'calendarLabel', $event)"
+                  (blur)="onFieldBlur()"
+                />
+              </div>
+              <p class="ed-hint" [textContent]="i18n.t('field.eventCalendarHint')"></p>
+            }
+          </section>
+        }
       }
       @case ('chapter-band') {
         <div class="ed-field">
@@ -971,90 +1005,96 @@
         </div>
       }
       @case ('testimonial') {
-        <div class="ed-field">
-          <div class="ed-label-row">
-            <label class="ed-label" for="insp-testimonial-quote" [textContent]="i18n.t('field.quoteHtml')"></label>
-            <span class="ed-count" [class.is-over]="(block.quote).length > 140" [textContent]="(block.quote).length + ' / 140'"></span>
+        @if (shows('texts')) {
+          <div class="ed-field">
+            <div class="ed-label-row">
+              <label class="ed-label" for="insp-testimonial-quote" [textContent]="i18n.t('field.quoteHtml')"></label>
+              <span class="ed-count" [class.is-over]="(block.quote).length > 140" [textContent]="(block.quote).length + ' / 140'"></span>
+            </div>
+            <div class="em-quote-wrap">
+              <textarea
+                id="insp-testimonial-quote"
+                class="ed-textarea em-field em-quote"
+                data-testid="insp-testimonial-quote"
+                rows="2"
+                [value]="block.quote"
+                (input)="onText(block.id, 'quote', $event)"
+                (blur)="onFieldBlur()"
+              ></textarea>
+            </div>
           </div>
-          <div class="em-quote-wrap">
-            <textarea
-              id="insp-testimonial-quote"
-              class="ed-textarea em-field em-quote"
-              data-testid="insp-testimonial-quote"
-              rows="2"
-              [value]="block.quote"
-              (input)="onText(block.id, 'quote', $event)"
-              (blur)="onFieldBlur()"
-            ></textarea>
-          </div>
-        </div>
-        <div class="ed-field">
-          <label class="ed-label" for="insp-testimonial-name" [textContent]="i18n.t('field.testimonialName')"></label>
-          <input
-            id="insp-testimonial-name"
-            class="ed-input"
-            data-testid="insp-testimonial-name"
-            [value]="block.name"
-            (input)="onText(block.id, 'name', $event)"
-            (blur)="onFieldBlur()"
-          />
-        </div>
-        <div class="ed-field">
-          <label class="ed-label" for="insp-testimonial-role" [textContent]="i18n.t('field.testimonialRole')"></label>
-          <input
-            id="insp-testimonial-role"
-            class="ed-input"
-            data-testid="insp-testimonial-role"
-            [placeholder]="i18n.t('field.testimonialRolePlaceholder')"
-            [value]="block.role"
-            (input)="onText(block.id, 'role', $event)"
-            (blur)="onFieldBlur()"
-          />
-        </div>
-        <div class="ed-field">
-          <span class="ed-label" id="insp-testimonial-image" [textContent]="i18n.t('field.testimonialImage')"></span>
-          <div class="ed-seg" role="radiogroup" aria-labelledby="insp-testimonial-image">
-            @for (v of testimonialImageModes; track v) {
-              <button
-                type="button"
-                class="ed-seg-opt"
-                role="radio"
-                [class.is-on]="block.imageMode === v"
-                [attr.aria-checked]="block.imageMode === v"
-                [attr.data-testid]="'testimonial-image-' + v"
-                (click)="session.updateBlock(block.id, { imageMode: v }, 'immediate')"
-                [textContent]="i18n.t('testimonial.image.' + v)"
-              ></button>
-            }
-          </div>
-        </div>
-        @if (block.imageMode !== 'none') {
-          <app-image-picker
-            class="ed-field"
-            idPrefix="insp-testimonial"
-            [compact]="true"
-            [src]="block.src"
-            [busy]="imageBusy()"
-            (fileChosen)="onImageFile(block.id, $event)"
-            (urlCommitted)="setImageSrc(block.id, $event)"
-            (removed)="setImageSrc(block.id, '')"
-          />
-          <div class="ed-field" [class.is-invalid]="!!block.src.trim() && !block.alt.trim()">
-            <label class="ed-label" for="insp-testimonial-description" [textContent]="i18n.t('field.imageDescription')"></label>
+          <div class="ed-field">
+            <label class="ed-label" for="insp-testimonial-name" [textContent]="i18n.t('field.testimonialName')"></label>
             <input
-              id="insp-testimonial-description"
+              id="insp-testimonial-name"
               class="ed-input"
-              data-testid="insp-testimonial-description"
-              [placeholder]="i18n.t('field.imageDescriptionPlaceholder')"
-              [attr.aria-invalid]="!!block.src.trim() && !block.alt.trim()"
-              [value]="block.alt"
-              (input)="onText(block.id, 'alt', $event)"
+              data-testid="insp-testimonial-name"
+              [value]="block.name"
+              (input)="onText(block.id, 'name', $event)"
               (blur)="onFieldBlur()"
             />
-            @if (!!block.src.trim() && !block.alt.trim()) {
-              <p class="ed-hint is-error" data-testid="insp-testimonial-description-required" [textContent]="i18n.t('field.imageDescriptionRequired')"></p>
-            }
           </div>
+          <div class="ed-field">
+            <label class="ed-label" for="insp-testimonial-role" [textContent]="i18n.t('field.testimonialRole')"></label>
+            <input
+              id="insp-testimonial-role"
+              class="ed-input"
+              data-testid="insp-testimonial-role"
+              [placeholder]="i18n.t('field.testimonialRolePlaceholder')"
+              [value]="block.role"
+              (input)="onText(block.id, 'role', $event)"
+              (blur)="onFieldBlur()"
+            />
+          </div>
+        }
+        @if (shows('layout')) {
+          <div class="ed-field">
+            <span class="ed-label" id="insp-testimonial-image" [textContent]="i18n.t('field.testimonialImage')"></span>
+            <div class="ed-seg" role="radiogroup" aria-labelledby="insp-testimonial-image">
+              @for (v of testimonialImageModes; track v) {
+                <button
+                  type="button"
+                  class="ed-seg-opt"
+                  role="radio"
+                  [class.is-on]="block.imageMode === v"
+                  [attr.aria-checked]="block.imageMode === v"
+                  [attr.data-testid]="'testimonial-image-' + v"
+                  (click)="session.updateBlock(block.id, { imageMode: v }, 'immediate')"
+                  [textContent]="i18n.t('testimonial.image.' + v)"
+                ></button>
+              }
+            </div>
+          </div>
+        }
+        @if (shows('texts')) {
+          @if (block.imageMode !== 'none') {
+            <app-image-picker
+              class="ed-field"
+              idPrefix="insp-testimonial"
+              [compact]="true"
+              [src]="block.src"
+              [busy]="imageBusy()"
+              (fileChosen)="onImageFile(block.id, $event)"
+              (urlCommitted)="setImageSrc(block.id, $event)"
+              (removed)="setImageSrc(block.id, '')"
+            />
+            <div class="ed-field" [class.is-invalid]="!!block.src.trim() && !block.alt.trim()">
+              <label class="ed-label" for="insp-testimonial-description" [textContent]="i18n.t('field.imageDescription')"></label>
+              <input
+                id="insp-testimonial-description"
+                class="ed-input"
+                data-testid="insp-testimonial-description"
+                [placeholder]="i18n.t('field.imageDescriptionPlaceholder')"
+                [attr.aria-invalid]="!!block.src.trim() && !block.alt.trim()"
+                [value]="block.alt"
+                (input)="onText(block.id, 'alt', $event)"
+                (blur)="onFieldBlur()"
+              />
+              @if (!!block.src.trim() && !block.alt.trim()) {
+                <p class="ed-hint is-error" data-testid="insp-testimonial-description-required" [textContent]="i18n.t('field.imageDescriptionRequired')"></p>
+              }
+            </div>
+          }
         }
       }
       @case ('stat-box') {
@@ -1215,117 +1255,127 @@
       @case ('price-box') {
         <section class="ed-group" data-testid="price-group-price">
           <h3 class="ed-group-title"><span class="ed-group-n">1</span><span [textContent]="i18n.t('field.priceGroupPrice')"></span></h3>
-          <div class="ed-price-row">
-            <div class="ed-field">
-              <label class="ed-label" for="insp-p-currency" [textContent]="i18n.t('field.priceCurrency')"></label>
-              <input
-                id="insp-p-currency"
-                class="ed-input"
-                [value]="block.currency"
-                (input)="onText(block.id, 'currency', $event)"
-                (blur)="onFieldBlur()"
-              />
-            </div>
-            <div class="ed-field">
-              <label class="ed-label" for="insp-p-amount" [textContent]="i18n.t('field.priceAmount')"></label>
-              <input
-                id="insp-p-amount"
-                class="ed-input"
-                [value]="block.amount"
-                (input)="onText(block.id, 'amount', $event)"
-                (blur)="onFieldBlur()"
-              />
-            </div>
-            <div class="ed-field">
-              <label class="ed-label" for="insp-p-period" [textContent]="i18n.t('field.pricePeriod')"></label>
-              <input
-                id="insp-p-period"
-                class="ed-input"
-                [value]="block.periodLabel"
-                (input)="onText(block.id, 'periodLabel', $event)"
-                (blur)="onFieldBlur()"
-              />
-            </div>
+          <div class="ed-price-row" [class.ed-price-row--texts]="part() === 'texts'">
+            @if (shows('layout')) {
+              <div class="ed-field">
+                <label class="ed-label" for="insp-p-currency" [textContent]="i18n.t('field.priceCurrency')"></label>
+                <input
+                  id="insp-p-currency"
+                  class="ed-input"
+                  [value]="block.currency"
+                  (input)="onText(block.id, 'currency', $event)"
+                  (blur)="onFieldBlur()"
+                />
+              </div>
+            }
+            @if (shows('texts')) {
+              <div class="ed-field">
+                <label class="ed-label" for="insp-p-amount" [textContent]="i18n.t('field.priceAmount')"></label>
+                <input
+                  id="insp-p-amount"
+                  class="ed-input"
+                  [value]="block.amount"
+                  (input)="onText(block.id, 'amount', $event)"
+                  (blur)="onFieldBlur()"
+                />
+              </div>
+              <div class="ed-field">
+                <label class="ed-label" for="insp-p-period" [textContent]="i18n.t('field.pricePeriod')"></label>
+                <input
+                  id="insp-p-period"
+                  class="ed-input"
+                  [value]="block.periodLabel"
+                  (input)="onText(block.id, 'periodLabel', $event)"
+                  (blur)="onFieldBlur()"
+                />
+              </div>
+            }
           </div>
         </section>
 
         <section class="ed-group" data-testid="price-group-previous">
           <h3 class="ed-group-title">
             <span class="ed-group-n">2</span><span [textContent]="i18n.t('field.priceGroupPrevious')"></span>
-            <label class="ed-switch">
-              <span [textContent]="i18n.t('field.priceStrikeEnabled')"></span>
-              <input
-                type="checkbox"
-                role="switch"
-                data-testid="price-strike-toggle"
-                [checked]="block.strikeEnabled"
-                (change)="onBool(block.id, 'strikeEnabled', $event)"
-              />
-              <span class="ed-switch-track" aria-hidden="true"></span>
-            </label>
+            @if (shows('layout')) {
+              <label class="ed-switch">
+                <span [textContent]="i18n.t('field.priceStrikeEnabled')"></span>
+                <input
+                  type="checkbox"
+                  role="switch"
+                  data-testid="price-strike-toggle"
+                  [checked]="block.strikeEnabled"
+                  (change)="onBool(block.id, 'strikeEnabled', $event)"
+                />
+                <span class="ed-switch-track" aria-hidden="true"></span>
+              </label>
+            }
           </h3>
-          @if (block.strikeEnabled) {
-            <div class="ed-field-row">
-              <div class="ed-field">
-                <label class="ed-label" for="insp-p-strike-label" [textContent]="i18n.t('field.priceStrikeLabel')"></label>
-                <input
-                  id="insp-p-strike-label"
-                  class="ed-input"
-                  [value]="block.strikeLabel"
-                  (input)="onText(block.id, 'strikeLabel', $event)"
-                  (blur)="onFieldBlur()"
-                />
+          @if (shows('texts')) {
+            @if (block.strikeEnabled) {
+              <div class="ed-field-row">
+                <div class="ed-field">
+                  <label class="ed-label" for="insp-p-strike-label" [textContent]="i18n.t('field.priceStrikeLabel')"></label>
+                  <input
+                    id="insp-p-strike-label"
+                    class="ed-input"
+                    [value]="block.strikeLabel"
+                    (input)="onText(block.id, 'strikeLabel', $event)"
+                    (blur)="onFieldBlur()"
+                  />
+                </div>
+                <div class="ed-field">
+                  <label class="ed-label" for="insp-p-strike-amount" [textContent]="i18n.t('field.priceStrikeAmount')"></label>
+                  <input
+                    id="insp-p-strike-amount"
+                    class="ed-input"
+                    [value]="block.strikeAmount"
+                    (input)="onText(block.id, 'strikeAmount', $event)"
+                    (blur)="onFieldBlur()"
+                  />
+                </div>
               </div>
-              <div class="ed-field">
-                <label class="ed-label" for="insp-p-strike-amount" [textContent]="i18n.t('field.priceStrikeAmount')"></label>
-                <input
-                  id="insp-p-strike-amount"
-                  class="ed-input"
-                  [value]="block.strikeAmount"
-                  (input)="onText(block.id, 'strikeAmount', $event)"
-                  (blur)="onFieldBlur()"
-                />
-              </div>
-            </div>
-          } @else {
-            <p class="ed-group-off" [textContent]="i18n.t('field.priceStrikeOff')"></p>
+            } @else {
+              <p class="ed-group-off" [textContent]="i18n.t('field.priceStrikeOff')"></p>
+            }
           }
         </section>
 
-        <section class="ed-group" data-testid="price-group-text">
-          <h3 class="ed-group-title"><span class="ed-group-n">3</span><span [textContent]="i18n.t('field.priceGroupText')"></span></h3>
-          <div class="ed-field">
-            <label class="ed-label" for="insp-p-badge" [textContent]="i18n.t('field.priceBadge')"></label>
-            <input
-              id="insp-p-badge"
-              class="ed-input"
-              [value]="block.badge"
-              (input)="onText(block.id, 'badge', $event)"
-              (blur)="onFieldBlur()"
-            />
-          </div>
-          <div class="ed-field">
-            <label class="ed-label" for="insp-p-det" [textContent]="i18n.t('field.priceDetails')"></label>
-            <input
-              id="insp-p-det"
-              class="ed-input"
-              [value]="block.details"
-              (input)="onText(block.id, 'details', $event)"
-              (blur)="onFieldBlur()"
-            />
-          </div>
-          <div class="ed-field">
-            <label class="ed-label" for="insp-p-fine" [textContent]="i18n.t('field.priceFine')"></label>
-            <textarea
-              id="insp-p-fine"
-              class="ed-textarea"
-              rows="2"
-              [value]="block.fine"
-              (input)="onText(block.id, 'fine', $event)"
-              (blur)="onFieldBlur()"
-            ></textarea>
-          </div>
-        </section>
+        @if (shows('texts')) {
+          <section class="ed-group" data-testid="price-group-text">
+            <h3 class="ed-group-title"><span class="ed-group-n">3</span><span [textContent]="i18n.t('field.priceGroupText')"></span></h3>
+            <div class="ed-field">
+              <label class="ed-label" for="insp-p-badge" [textContent]="i18n.t('field.priceBadge')"></label>
+              <input
+                id="insp-p-badge"
+                class="ed-input"
+                [value]="block.badge"
+                (input)="onText(block.id, 'badge', $event)"
+                (blur)="onFieldBlur()"
+              />
+            </div>
+            <div class="ed-field">
+              <label class="ed-label" for="insp-p-det" [textContent]="i18n.t('field.priceDetails')"></label>
+              <input
+                id="insp-p-det"
+                class="ed-input"
+                [value]="block.details"
+                (input)="onText(block.id, 'details', $event)"
+                (blur)="onFieldBlur()"
+              />
+            </div>
+            <div class="ed-field">
+              <label class="ed-label" for="insp-p-fine" [textContent]="i18n.t('field.priceFine')"></label>
+              <textarea
+                id="insp-p-fine"
+                class="ed-textarea"
+                rows="2"
+                [value]="block.fine"
+                (input)="onText(block.id, 'fine', $event)"
+                (blur)="onFieldBlur()"
+              ></textarea>
+            </div>
+          </section>
+        }
       }
       @case ('cta-link-list') {
         <div class="list-rows" data-testid="cta-link-rows" cdkDropList (cdkDropListDropped)="dropCtaItem(block.id, $event)">

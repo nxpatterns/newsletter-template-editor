@@ -75,13 +75,23 @@
 
           <div class="be-tab-panel" ngTabPanel value="props">
             <ng-template ngTabContent>
-              <section class="be-group" data-testid="block-props-fields">
-                <h3 class="be-group-title">
-                  <span [textContent]="i18n.t('blockEditor.group.fields')"></span>
-                  <small [textContent]="i18n.t('blockEditor.group.fieldsHint', { type: typeLabel() })"></small>
-                </h3>
-                <app-block-inspector />
-              </section>
+              @if (hasTexts()) {
+                <section class="be-group" data-testid="block-props-texts">
+                  <h3 class="be-group-title">
+                    <span [textContent]="i18n.t('blockEditor.group.texts')"></span>
+                    <small [textContent]="i18n.t('blockEditor.group.textsHint')"></small>
+                  </h3>
+                  <app-block-inspector part="texts" />
+                </section>
+              }
+              @if (hasLayout()) {
+                <section class="be-group" data-testid="block-props-layout">
+                  <h3 class="be-group-title">
+                    <span [textContent]="i18n.t('blockEditor.group.layout')"></span>
+                  </h3>
+                  <app-block-inspector part="layout" />
+                </section>
+              }
               <section class="be-group" data-testid="block-props-colors">
                 <h3 class="be-group-title">
                   <span [textContent]="i18n.t('blockEditor.group.colors')"></span>

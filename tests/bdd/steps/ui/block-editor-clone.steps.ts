@@ -52,11 +52,23 @@ Then('the parts should be locked', async ({ page }) => {
 
 When('I change the block field {string} to {string}', async ({ page }, label: string, value: string) => {
   await page.getByTestId('block-tab-props').click();
-  await page.getByTestId('block-props-fields').getByLabel(label, { exact: true }).fill(value);
+  await page.getByTestId('block-props-texts').getByLabel(label, { exact: true }).fill(value);
 });
 
 Then('the block preview should show {string}', async ({ page }, text: string) => {
   await expect(blockFrame(page).locator('tr.nte-block')).toContainText(text);
+});
+
+Then('the starting texts and the layout should be separate groups', async ({ page }) => {
+  await page.getByTestId('block-tab-props').click();
+  const texts = page.getByTestId('block-props-texts');
+  const layout = page.getByTestId('block-props-layout');
+  await expect(texts.getByLabel('Amount', { exact: true })).toBeVisible();
+  await expect(texts.getByText('Currency', { exact: true })).toHaveCount(0);
+  await expect(texts.getByTestId('price-strike-toggle')).toHaveCount(0);
+  await expect(layout.getByLabel('Currency', { exact: true })).toBeVisible();
+  await expect(layout.getByTestId('price-strike-toggle')).toBeVisible();
+  await expect(layout.getByText('Amount', { exact: true })).toHaveCount(0);
 });
 
 When('I fix the block color {string} to {string}', async ({ page }, key: string, hex: string) => {
