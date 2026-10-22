@@ -472,9 +472,12 @@ export function insertNamePiece(doc: RichDoc, at: number, piece: Pick<RichNamePi
       const end = pos + ch.text.length;
       if (at >= pos && at <= end) {
         const cut = at - pos;
-        if (cut > 0) children.push({ ...ch, text: ch.text.slice(0, cut) });
+        // A word right next to the piece gets a space, so "Hello Maria" never glues to it.
+        const head = ch.text.slice(0, cut);
+        const tail = ch.text.slice(cut);
+        if (head) children.push({ ...ch, text: /[\p{L}\p{N}]$/u.test(head) ? `${head} ` : head });
         children.push({ ...node, marks: normalizeMarks(ch.marks) });
-        if (cut < ch.text.length) children.push({ ...ch, text: ch.text.slice(cut) });
+        if (tail) children.push({ ...ch, text: /^[\p{L}\p{N}]/u.test(tail) ? ` ${tail}` : tail });
         done = true;
       } else children.push(ch);
       pos = end;

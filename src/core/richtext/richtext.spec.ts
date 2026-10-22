@@ -10,6 +10,7 @@ import {
   cleanAiCharsOnDoc,
   clearMarksOnDoc,
   compactDoc,
+  insertNamePiece,
   plainTextToRichDoc,
   toggleMarkOnDoc,
   toggleMonoOnDoc,
@@ -426,5 +427,18 @@ describe('suspiciousBreakdown', () => {
 
   it('is empty for clean text', () => {
     expect(suspiciousBreakdown('Über 22.000 Unternehmen')).toEqual([]);
+  });
+});
+
+describe('insertNamePiece', () => {
+  const piece = { lead: 'Hello', fallback: 'Dear business partner' };
+  const texts = (doc: RichDoc) => doc[0]!.children.map((c) => (c.type === 'text' ? c.text : `[${c.type}]`));
+
+  it('keeps a space between the piece and an adjacent word', () => {
+    expect(texts(insertNamePiece(plainTextToRichDoc('New headline'), 3, piece).doc)).toEqual(['New ', '[name]', ' headline']);
+  });
+
+  it('adds nothing next to spaces or punctuation', () => {
+    expect(texts(insertNamePiece(plainTextToRichDoc('Hi , there'), 3, piece).doc)).toEqual(['Hi ', '[name]', ', there']);
   });
 });
