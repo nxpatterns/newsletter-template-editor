@@ -5,6 +5,12 @@ export type RenderMode = 'preview' | 'export';
 /** Mail content column width (px) — matches `.email-container` in email CSS. */
 export const EMAIL_CONTENT_WIDTH_PX = 600;
 
+/** Left and right padding (px) of content cells (`.block-pad-md`, `.image-cell`). */
+export const CONTENT_SIDE_PAD_PX = 48;
+
+/** Text column of the full canvas: 600 minus both side pads. */
+export const EMAIL_TEXT_WIDTH_PX = EMAIL_CONTENT_WIDTH_PX - 2 * CONTENT_SIDE_PAD_PX;
+
 export const FONT_PRESETS: Record<
   Exclude<FontFamilyPreset, 'Custom'>,
   { label: string; stack: string }

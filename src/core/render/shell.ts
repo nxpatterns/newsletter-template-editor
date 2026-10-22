@@ -2,7 +2,7 @@ import { isFramePartShown, type Block, type BrandName, type BrandStars, type Fra
 import { filledSocialNetworks, SOCIAL_ICON_PX, type SocialIconSources } from '../brand/social';
 import { colorScopeClass, FOOTER_TARGET, HEADER_TARGET, renderPalette, slotHex } from './colors';
 import { emailDocumentCss } from './email-css';
-import { attrHref, escapeAttr, escapeHtml, fontStack, resolveHref, type RenderMode } from './utils';
+import { attrHref, EMAIL_CONTENT_WIDTH_PX, EMAIL_TEXT_WIDTH_PX, escapeAttr, escapeHtml, fontStack, resolveHref, type RenderMode } from './utils';
 
 export { emailDocumentCss, darkModeCss } from './email-css';
 
@@ -135,7 +135,7 @@ export function renderHeader(
     <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" bgcolor="${pageBg}" class="email-bg">
       <tr>
         <td align="center" bgcolor="${pageBg}" class="email-bg email-outer-pad">
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="email-container">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="${EMAIL_CONTENT_WIDTH_PX}" class="email-container">
             <tr>
               <td bgcolor="${headerBg}" class="mobile-padding header-bg ${headerScope}">
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
@@ -247,7 +247,7 @@ const PREVIEW_EDITOR_CHROME = `
     display: grid;
     place-items: center;
     width: 100%;
-    max-width: var(--image-w, 504px);
+    max-width: var(--image-w, ${EMAIL_TEXT_WIDTH_PX}px);
     height: 140px;
     margin: 0 auto;
     box-sizing: border-box;

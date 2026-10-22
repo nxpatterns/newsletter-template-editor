@@ -1,7 +1,7 @@
 import type { Block, Globals } from '../types';
 import { effectiveSlotColors, type ColorTarget } from '../colors/edit';
 import { blockColorCss, renderPalette } from './colors';
-import { EMAIL_CONTENT_WIDTH_PX, escapeAttr, fontStack } from './utils';
+import { EMAIL_CONTENT_WIDTH_PX, EMAIL_TEXT_WIDTH_PX, escapeAttr, fontStack } from './utils';
 
 /**
  * Shared email document stylesheet (preview + export head).
@@ -55,7 +55,7 @@ ${Object.entries(vars).map(([k, v]) => `    --email-${k}: ${v};`).join('\n')}
 
   .email-bg { background-color: var(--email-page); }
   .email-outer-pad { padding: 28px 16px; background-color: var(--email-page); }
-  .email-container { max-width: 600px; width: 600px; }
+  .email-container { max-width: ${EMAIL_CONTENT_WIDTH_PX}px; width: ${EMAIL_CONTENT_WIDTH_PX}px; }
   .content-bg { background-color: var(--email-content); }
   .header-bg { background-color: var(--email-content); padding: 32px 48px 28px 48px; }
   .footer-bg { background-color: var(--email-page); }
@@ -221,7 +221,7 @@ ${Object.entries(vars).map(([k, v]) => `    --email-${k}: ${v};`).join('\n')}
   .email-image {
     display: block;
     width: 100%;
-    max-width: var(--image-w, 504px);
+    max-width: var(--image-w, ${EMAIL_TEXT_WIDTH_PX}px);
     height: auto;
     margin: 0 auto;
     border: 0;

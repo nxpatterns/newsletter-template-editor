@@ -1,7 +1,7 @@
 # Block editor and demo page
 
 Concept for two new product areas: a **block editor** (users change or create their own blocks) and a **demo page** (users publish their own newsletters for others to see).
-Status: concept accepted (decisions 1 to 82), mockups R1 to R5 done. Implementation started 2026-10-22 in this order: storage base (built), reset dialog, available width in the render context, clone mode, free blocks, overview of own blocks, renaming the start tiles (done early), demo page last.
+Status: concept accepted (decisions 1 to 82), mockups R1 to R5 done. Implementation started 2026-10-22 in this order: storage base (built), reset dialog (built), available width in the render context (built), clone mode, free blocks, overview of own blocks, renaming the start tiles (done early), demo page last.
 Audience: non-technical sellers and marketing people first, designers second. English only.
 
 Related: `src/core/colors/model.ts` (implemented color levels), `email-colors.md` (color product rules), `block-content-editing.md` (edit modal, lite kit, render pipeline), `file-management.md` (storage, start page, menus), `design-system.md` (app look), `AGENTS.md` (email CSS rule).

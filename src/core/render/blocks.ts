@@ -31,7 +31,9 @@ import {
   escapeHtml,
   mixHex,
   plainTextToHtml,
+  CONTENT_SIDE_PAD_PX,
   EMAIL_CONTENT_WIDTH_PX,
+  EMAIL_TEXT_WIDTH_PX,
   resolveHref,
   type RenderMode,
 } from './utils';
@@ -42,6 +44,22 @@ export interface RenderContext {
   annotate?: boolean;
   /** The block being rendered; set by renderBlocks, used for the block's own colors. */
   target?: ColorTarget;
+  /**
+   * Width in px the block's row may fill (decision 76): the full canvas, or the share a
+   * column passes its child. Images and fixed cells take their px from it, because classic
+   * Outlook obeys `width` strictly and ignores max-width and percent on images.
+   */
+  widthPx?: number;
+}
+
+/** Width of the block's row in px. */
+function rowPx(ctx: RenderContext): number {
+  return ctx.widthPx ?? EMAIL_CONTENT_WIDTH_PX;
+}
+
+/** Width inside the content side pads in px. */
+function textPx(ctx: RenderContext): number {
+  return Math.max(0, rowPx(ctx) - 2 * CONTENT_SIDE_PAD_PX);
 }
 
 /** Effective color of a color of the block being rendered. */
@@ -139,14 +157,18 @@ function renderDivider(b: DividerBlock, ctx: RenderContext): string {
   return rowWrap(b, ctx, inner);
 }
 
-/** Image display width per choice; text width = content column minus the 48px side pads. */
-const IMAGE_PX: Record<ImageBlock['width'], number> = { full: EMAIL_CONTENT_WIDTH_PX, text: 504, small: 252 };
+/** Image display width per choice: full row (no pads), text column, or half of it. */
+function imagePx(width: ImageBlock['width'], ctx: RenderContext): number {
+  if (width === 'full') return rowPx(ctx);
+  if (width === 'small') return Math.round(textPx(ctx) / 2);
+  return textPx(ctx);
+}
 
 function renderImage(b: ImageBlock, ctx: RenderContext): string {
   const src = b.src.trim();
   // Nothing to send without a picture; the editor preview still needs a selectable row.
   if (!src && !ctx.annotate) return '';
-  const w = IMAGE_PX[b.width] ?? IMAGE_PX.text;
+  const w = imagePx(b.width, ctx);
   const padClass = b.width === 'full' ? 'image-cell-full' : 'mobile-padding image-cell';
   const caption = b.caption.trim()
     ? `<p class="image-caption${b.width === 'full' ? ' image-caption-full' : ''}" data-field="caption">${plainTextToHtml(b.caption)}</p>`
@@ -163,8 +185,8 @@ function renderImage(b: ImageBlock, ctx: RenderContext): string {
   );
 }
 
-/** Image column width: the 504px text column minus a 20px gutter, split ⅓ or ½. */
-const IMAGE_TEXT_PX: Record<ImageTextBlock['imageWidth'], number> = { third: 160, half: 242 };
+/** Image column as a share of the text column; at the 504px text column ⅓ is 160px and ½ is 242px (½ of 504 minus the 20px gutter). */
+const IMAGE_TEXT_SHARE: Record<ImageTextBlock['imageWidth'], number> = { third: 160 / EMAIL_TEXT_WIDTH_PX, half: 242 / EMAIL_TEXT_WIDTH_PX };
 
 /**
  * Two columns that stack on phones. For an image on the right the table runs
@@ -175,7 +197,7 @@ function renderImageText(b: ImageTextBlock, ctx: RenderContext): string {
   const text = richDocToHtml(b.body, { dataField: 'body' });
   // Export without a picture keeps the copy as a plain paragraph.
   if (!src && !ctx.annotate) return rowWrap(b, ctx, contentTd(ctx, 'block-pad-md paragraph-block', text));
-  const w = IMAGE_TEXT_PX[b.imageWidth] ?? IMAGE_TEXT_PX.third;
+  const w = Math.round(textPx(ctx) * (IMAGE_TEXT_SHARE[b.imageWidth] ?? IMAGE_TEXT_SHARE.third));
   let pic = src
     ? `<img src="${escapeAttr(src)}" alt="${escapeAttr(b.alt)}" width="${w}" class="email-image image-text-img" style="--image-w:${w}px">`
     : `<span class="nte-image-empty" style="--image-w:${w}px">&nbsp;</span>`;
@@ -246,6 +268,10 @@ function renderGreeting(b: GreetingBlock, ctx: RenderContext): string {
   );
 }
 
+/** Contact photo size and the gap to the details (px); fixed by the photo, not by the canvas. */
+const CONTACT_PHOTO_PX = 72;
+const CONTACT_PHOTO_GAP_PX = 20;
+
 /** Contact person: round photo left (stacks above on phones), details right, optional button. */
 function renderContact(b: ContactBlock, ctx: RenderContext): string {
   const src = b.src.trim();
@@ -269,8 +295,9 @@ function renderContact(b: ContactBlock, ctx: RenderContext): string {
               </tr>
             </table>`
       : '';
+  const cell = Math.min(CONTACT_PHOTO_PX + CONTACT_PHOTO_GAP_PX, textPx(ctx));
   const photo = src
-    ? `<td class="contact-col contact-photo-cell" width="92" valign="middle"><img src="${escapeAttr(src)}" alt="${escapeAttr(b.alt)}" width="72" height="72" class="contact-photo"></td>`
+    ? `<td class="contact-col contact-photo-cell" width="${cell}" valign="middle"><img src="${escapeAttr(src)}" alt="${escapeAttr(b.alt)}" width="${CONTACT_PHOTO_PX}" height="${CONTACT_PHOTO_PX}" class="contact-photo"></td>`
     : '';
   return rowWrap(
     b,
@@ -303,7 +330,7 @@ function renderVideo(b: VideoBlock, ctx: RenderContext): string {
   const href = b.href.trim() ? resolveHref(b.href, ctx.mode) : '';
   const wrap = (inner: string, cls: string) =>
     href ? `<a href="${attrHref(href, ctx.mode)}" target="_blank" class="${cls}">${inner}</a>` : inner;
-  const w = IMAGE_PX.text;
+  const w = textPx(ctx);
   let pic = '';
   if (src) pic = wrap(`<img src="${escapeAttr(src)}" alt="${escapeAttr(b.alt)}" width="${w}" class="email-image" style="--image-w:${w}px">`, 'email-image-link');
   else if (ctx.annotate) pic = `<span class="nte-image-empty" style="--image-w:${w}px">&nbsp;</span>`;
@@ -328,11 +355,8 @@ function renderVideo(b: VideoBlock, ctx: RenderContext): string {
   );
 }
 
-/** Column width and gutter per column count, inside the 504px text width. */
-const TEASER_LAYOUT: Record<TeasersBlock['columns'], { col: number; gap: number }> = {
-  2: { col: 242, gap: 20 },
-  3: { col: 157, gap: 16 },
-};
+/** Gutter per column count; the columns share the rest of the text column. */
+const TEASER_GAP_PX: Record<TeasersBlock['columns'], number> = { 2: 20, 3: 16 };
 
 function renderTeaserCell(item: TeasersBlock['items'][number], index: number, w: number, ctx: RenderContext): string {
   const src = item.src.trim();
@@ -356,7 +380,8 @@ function renderTeaserCell(item: TeasersBlock['items'][number], index: number, w:
 
 /** Teasers in 2 or 3 columns; rows of `columns`, stacked into one column on phones. */
 function renderTeasers(b: TeasersBlock, ctx: RenderContext): string {
-  const { col, gap } = TEASER_LAYOUT[b.columns] ?? TEASER_LAYOUT[2];
+  const gap = TEASER_GAP_PX[b.columns] ?? TEASER_GAP_PX[2];
+  const col = Math.floor((textPx(ctx) - gap * (b.columns - 1)) / b.columns);
   const rows: string[] = [];
   for (let start = 0; start < b.items.length; start += b.columns) {
     const cells: string[] = [];
@@ -387,6 +412,9 @@ function renderTeasers(b: TeasersBlock, ctx: RenderContext): string {
   );
 }
 
+/** Calendar sheet width (px); fixed by its month, day and weekday lines, not by the canvas. */
+const EVENT_SHEET_PX = 88;
+
 /** Event: calendar sheet (month in the brand color, day, weekday), then title, time, place and buttons. */
 function renderEvent(b: EventBlock, ctx: RenderContext): string {
   const sheet = eventSheet(b);
@@ -404,11 +432,12 @@ function renderEvent(b: EventBlock, ctx: RenderContext): string {
     calHref && b.calendarLabel.trim()
       ? `<td class="event-act event-cal-cell"><a href="${attrHref(resolveHref(calHref, ctx.mode), ctx.mode)}" target="_blank" class="event-cal-link" data-field="calendarLabel">${escapeHtml(b.calendarLabel)}</a></td>`
       : '';
+  const sheetPx = Math.min(EVENT_SHEET_PX, textPx(ctx));
   const acts = [button, calendar].filter(Boolean).join('<td class="event-act-gap" width="10">&nbsp;</td>');
   const date = sheet.day
     ? `
-            <td class="event-col event-date-col" width="88" valign="top">
-              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="88" class="event-sheet">
+            <td class="event-col event-date-col" width="${sheetPx}" valign="top">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="${sheetPx}" class="event-sheet">
                 <tr><td class="event-month" align="center" bgcolor="${brand}">${escapeHtml(sheet.month)}</td></tr>
                 <tr><td class="event-day" align="center">${escapeHtml(sheet.day)}</td></tr>
                 <tr><td class="event-weekday" align="center">${escapeHtml(sheet.weekday)}</td></tr>

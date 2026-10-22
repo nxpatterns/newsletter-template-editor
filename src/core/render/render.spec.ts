@@ -2,8 +2,8 @@ import { emptySocialLinks } from '../brand/social';
 import { defaultGlobals } from '../brand/defaults';
 import { activeColors, defaultColors } from '../colors';
 import { seedNewsletter } from '../seed';
-import { createBlock, type Newsletter } from '../types';
-import { renderExport, renderPreview } from './index';
+import { createBlock, type Block, type Newsletter } from '../types';
+import { renderBlocks, renderExport, renderPreview } from './index';
 import { escapeAttr, trackLink } from './utils';
 
 function acmeNewsletter(): Newsletter {
@@ -437,5 +437,44 @@ describe('renderPreview', () => {
     expect(html).toContain('https://acme.example/buy');
     expect(html).not.toContain('{{ TrackLink');
     expect(html).toContain('data-block-id=');
+  });
+});
+
+describe('available width in the render context', () => {
+  const ctx = { globals: defaultGlobals(), mode: 'export' as const, widthPx: 300 };
+  const img = 'https://example.com/pic.png';
+  const widths = (html: string) => [...html.matchAll(/width="(\d+)"/g)].map((m) => Number(m[1]));
+
+  it('sizes images from the row width: full row, text column (minus 2 × 48 px pads), half of it', () => {
+    const image = createBlock('image') as Extract<Block, { type: 'image' }>;
+    expect(renderBlocks([{ ...image, src: img, width: 'full' }], ctx)).toContain('width="300"');
+    expect(renderBlocks([{ ...image, src: img, width: 'text' }], ctx)).toContain('width="204"');
+    expect(renderBlocks([{ ...image, src: img, width: 'small' }], ctx)).toContain('width="102"');
+    const video = createBlock('video') as Extract<Block, { type: 'video' }>;
+    expect(renderBlocks([{ ...video, src: img }], ctx)).toMatch(/<img[^>]*width="204"/);
+  });
+
+  it('splits image and text and the teaser columns inside the text column', () => {
+    const it2 = createBlock('image-text') as Extract<Block, { type: 'image-text' }>;
+    expect(renderBlocks([{ ...it2, src: img, imageWidth: 'third' }], ctx)).toMatch(/<img[^>]*width="65"/);
+    expect(renderBlocks([{ ...it2, src: img, imageWidth: 'half' }], ctx)).toMatch(/<img[^>]*width="98"/);
+    const teasers = createBlock('teasers') as Extract<Block, { type: 'teasers' }>;
+    const three = renderBlocks([{ ...teasers, columns: 3, items: [...teasers.items, teasers.items[0]] }], ctx);
+    // (204 - 2 × 16) / 3 = 57.3, rounded down so the row never overflows
+    expect(widths(three).filter((w) => w > 16)).toEqual([57, 57, 57]);
+  });
+
+  it('keeps fixed cells inside a row narrower than their content size', () => {
+    const narrow = { ...ctx, widthPx: 150 };
+    const contact = createBlock('contact') as Extract<Block, { type: 'contact' }>;
+    expect(renderBlocks([{ ...contact, src: img }], narrow)).toMatch(/contact-photo-cell" width="54"/);
+    expect(renderBlocks([createBlock('event')], narrow)).toMatch(/event-date-col" width="54"/);
+    expect(renderBlocks([createBlock('event')], ctx)).toMatch(/event-date-col" width="88"/);
+  });
+
+  it('defaults to the 600 px canvas', () => {
+    const image = createBlock('image') as Extract<Block, { type: 'image' }>;
+    const { widthPx: _, ...full } = ctx;
+    expect(renderBlocks([{ ...image, src: img, width: 'text' }], full)).toContain('width="504"');
   });
 });
