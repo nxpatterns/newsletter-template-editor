@@ -16,24 +16,30 @@ export function emailDocumentCss(globals: Globals, blocks: readonly Block[] = []
   const font = fontStack(globals);
   const sans = 'Helvetica, Arial, sans-serif';
 
+  const vars: Record<string, string> = {
+    page: c('page'),
+    content: c('content'),
+    surface: c('surface'),
+    body: c('body'),
+    head: c('head'),
+    dim: c('dim'),
+    link: c('link'),
+    accent: c('accent'),
+    btn: c('btn'),
+    'btn-text': c('btnText'),
+    line: c('line'),
+    'stars-top': c('starsTop'),
+    'stars-bottom': c('starsBottom'),
+    font,
+    sans,
+  };
+  /** Literal values for the dark block: clients that honour the media query do not all support var(). */
+  const literal = (css: string) => css.replace(/var\(--email-([a-z-]+)\)/g, (m, k: string) => vars[k] ?? m);
+
   return `
   :root {
     color-scheme: ${globals.colors.mode === 'light' ? 'light only' : 'light dark'};
-    --email-page: ${c('page')};
-    --email-content: ${c('content')};
-    --email-surface: ${c('surface')};
-    --email-body: ${c('body')};
-    --email-head: ${c('head')};
-    --email-dim: ${c('dim')};
-    --email-link: ${c('link')};
-    --email-accent: ${c('accent')};
-    --email-btn: ${c('btn')};
-    --email-btn-text: ${c('btnText')};
-    --email-line: ${c('line')};
-    --email-stars-top: ${c('starsTop')};
-    --email-stars-bottom: ${c('starsBottom')};
-    --email-font: ${font};
-    --email-sans: ${sans};
+${Object.entries(vars).map(([k, v]) => `    --email-${k}: ${v};`).join('\n')}
   }
   body, table, td, a { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
   table, td { mso-table-lspace:0pt; mso-table-rspace:0pt; }
@@ -654,7 +660,7 @@ export function emailDocumentCss(globals: Globals, blocks: readonly Block[] = []
 
   ${blockColorCss(globals, blocks)}
 
-  @media (prefers-color-scheme: dark) {
+  @media (prefers-color-scheme: dark) {${literal(`
     body, .email-bg, .footer-bg { background-color: var(--email-page) !important; }
     .header-bg, .content-bg,
     .block-pad-hero, .block-pad-md, .block-pad-sm,
@@ -680,7 +686,7 @@ export function emailDocumentCss(globals: Globals, blocks: readonly Block[] = []
     .text-cta-body, .cta-link-body { color: var(--email-dim) !important; }
     .benefit-icon, .text-benefit-icon { color: var(--email-link) !important; }
     .benefit-text, .text-benefit { color: var(--email-head) !important; }
-    ${blockColorCss(globals, blocks, true)}
+    ${blockColorCss(globals, blocks, true)}`)}
   }
   @media screen and (max-width: 600px) {
     .email-container { width: 100% !important; max-width: 100% !important; }

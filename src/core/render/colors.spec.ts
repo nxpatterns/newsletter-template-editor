@@ -15,7 +15,8 @@ function withStats(): Newsletter {
 describe('rendering the color sets', () => {
   it('uses no fixed CloudLib hex values in the stylesheet', () => {
     const css = renderExport(seedNewsletter()).full.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? '';
-    const rules = css.replace(/:root\s*\{[^}]*\}/, '');
+    // The dark block carries the set's values as literals on purpose (decision 79).
+    const rules = css.replace(/:root\s*\{[^}]*\}/, '').replace(/@media \(prefers-color-scheme: dark\)[\s\S]*?\n  }\n/, '');
     expect(rules).not.toMatch(/#[0-9a-f]{6}\b/i);
   });
 

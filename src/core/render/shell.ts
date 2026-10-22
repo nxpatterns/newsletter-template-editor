@@ -191,8 +191,9 @@ export function renderExportShell(
   const header = renderHeader(globals, 'export', bodyInner, socialIcons, blocks);
   const schemes = colorSchemes(globals);
   const pageBg = escapeAttr(renderPalette(globals).page);
+  const lang = escapeAttr(globals.language || 'de');
   return `<!doctype html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<html lang="${lang}" xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -203,8 +204,8 @@ export function renderExportShell(
 </head>
 <body bgcolor="${pageBg}" class="email-body" style="--email-page:${pageBg};font-family:${font}">
   <div class="preheader-hide">${preheader}&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌</div>
-  ${header}
   {{ TrackView }}
+  ${header}
 </body>
 </html>`;
 }
@@ -545,7 +546,7 @@ export function renderPreviewDoc(
   const pageBg = escapeAttr(renderPalette(globals).page);
   const schemes = colorSchemes(globals);
   return `<!doctype html>
-<html lang="en">
+<html lang="${escapeAttr(globals.language || 'de')}">
 <head>
   <meta charset="UTF-8" />
   <meta name="color-scheme" content="${schemes}" />

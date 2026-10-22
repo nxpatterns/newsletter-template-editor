@@ -17,7 +17,7 @@ export function seedNewsletter(lang: SeedLanguage = 'de'): Newsletter {
   const raw = (lang === 'en' ? cloudlibCampaignEn() : structuredClone(CLOUDLIB_CAMPAIGN_V1)) as Newsletter;
   return normalizeNewsletter({
     schemaVersion: CURRENT_SCHEMA_VERSION,
-    globals: raw.globals,
+    globals: { ...raw.globals, language: lang },
     blocks: raw.blocks,
   });
 }
@@ -65,6 +65,7 @@ export function blankNewsletter(lang: SeedLanguage): Newsletter {
     schemaVersion: CURRENT_SCHEMA_VERSION,
     globals: {
       ...g,
+      language: lang,
       brand: {
         ...g.brand,
         name: { ...g.brand.name, parts: g.brand.name.parts.map((p, i) => ({ ...p, text: t.name[i] })) },
