@@ -344,3 +344,23 @@
     transition: none;
   }
 }
+
+/* Free choice above the consequences box (e.g. replace placed blocks); not a danger acknowledge. */
+.confirm-option {
+  margin-block: 0.25rem 0.85rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius);
+}
+
+.confirm-option .confirm-ack-box {
+  accent-color: var(--ds-accent);
+}
+
+/* Info dialogs state consequences in a neutral box. */
+.confirm-dialog[data-tone='info'] .confirm-note {
+  border-inline-start-color: var(--ds-accent);
+  background: color-mix(in srgb, var(--ds-accent) 9%, transparent);
+  font-weight: 500;
+  white-space: pre-line;
+}

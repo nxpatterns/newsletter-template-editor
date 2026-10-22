@@ -1,8 +1,9 @@
 import { isPlatformBrowser } from '@angular/common';
-import { computed, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
+import { computed, inject, Injectable, InjectionToken, PLATFORM_ID, signal } from '@angular/core';
 import {
   blankNewsletter,
   createBlock,
+  newId as newBlockId,
   DEMO_DISPLAY_NAMES,
   normalizeNewsletter,
   seedNewsletter,
@@ -14,7 +15,9 @@ import {
   type RichDoc,
   type SeedLanguage,
 } from '../../core';
-import { activeColors, effectiveSlotColors, type ColorsConfig } from '../../core/colors';
+import { activeColors, effectiveSlotColors, setColorMode, type ColorMode, type ColorsConfig } from '../../core/colors';
+import { placeOwnBlock, type CloneContent } from '../../core/own-blocks/clone';
+import type { OwnBlockRef } from '../../core/types';
 import { clearParagraphStash } from './paragraph-draft-stash';
 import { buildProjectEnvelope, parseProjectFile, type LibraryEntry } from '../../core/persist/idb-docs';
 import type { TemplateSummary } from '../../core/persist/template-repository';
@@ -45,6 +48,15 @@ export type HistoryMode = 'immediate' | 'coalesce';
 
 const HISTORY_CAP = 50;
 
+/**
+ * False for a session that edits something other than the template, such as the block editor's
+ * one-block document: it never stores or reloads the working draft and never asks on page unload.
+ */
+export const SESSION_KEEPS_WORKING_DRAFT = new InjectionToken<boolean>('SessionKeepsWorkingDraft', {
+  providedIn: 'root',
+  factory: () => true,
+});
+
 function cloneNewsletter(n: Newsletter): Newsletter {
   return structuredClone(n);
 }
@@ -57,6 +69,7 @@ export class NewsletterSession {
   private readonly repo = inject(TEMPLATE_REPOSITORY);
   private readonly newId = inject(ID_SOURCE);
   private readonly persistence = inject(StoragePersistence);
+  private readonly keepsWorkingDraft = inject(SESSION_KEEPS_WORKING_DRAFT);
 
   private readonly newsletterSignal = signal<Newsletter>(seedNewsletter());
   private readonly selectedBlockIdSignal = signal<string | null>(null);
@@ -156,7 +169,7 @@ export class NewsletterSession {
   }
 
   private async hydrate(): Promise<boolean> {
-    if (!isPlatformBrowser(this.platformId)) return false;
+    if (!isPlatformBrowser(this.platformId) || !this.keepsWorkingDraft) return this.hasDocumentSignal();
     this.bindBeforeUnload();
     try {
       const recovered = await this.repo.loadDraft();
@@ -454,6 +467,11 @@ export class NewsletterSession {
    * open snapshot until Save. Other block fields still use updateBlock live.
    */
   setParagraphEditDraft(blockId: string, body: RichDoc): void {
+    // Without the edit modal (block editor) there is no Save to wait for: the text applies live.
+    if (!this.editingBlockIdSignal()) {
+      this.updateBlock(blockId, { body: structuredClone(body) }, 'coalesce');
+      return;
+    }
     this.paragraphEditDraft = { blockId, body: structuredClone(body) };
   }
 
@@ -553,7 +571,7 @@ export class NewsletterSession {
    * Catalog drag-and-drop should pass revealInPanel: false so the All-blocks tab stays put.
    */
   /** Starting texts for new blocks in the active UI language; placed blocks never change. */
-  private blockDefaultTexts(): BlockDefaultTexts {
+  blockDefaultTexts(): BlockDefaultTexts {
     const t = (k: string) => this.i18n.t(`blockDefaults.${k}`);
     return {
       heroLabel: t('heroLabel'),
@@ -616,6 +634,40 @@ export class NewsletterSession {
       return { ...n, blocks };
     });
     return createdId;
+  }
+
+  /** Insert an own block at index (0 = top); it records its version. Returns the new block id. */
+  insertOwnBlockAt(content: CloneContent, ref: OwnBlockRef, index: number): string {
+    const id = newBlockId();
+    this.mutateImmediate((n) => {
+      this.selectedBlockIdSignal.set(id);
+      return placeOwnBlock(n, { content, ref, id, index });
+    });
+    return id;
+  }
+
+  /**
+   * Block editor: show a document that is edited here but stored elsewhere. No undo history,
+   * nothing unsaved. `markSaved` later clears the unsaved state without touching the document.
+   */
+  loadWorkDocument(doc: Newsletter, displayName: string): void {
+    this.endCoalesce();
+    this.applyDocument(doc, { displayName, libraryId: null, dirty: false, clearHistory: true });
+  }
+
+  /** Change the whole document in one undo step (pure operation from `src/core`). */
+  applyChange(fn: (n: Newsletter) => Newsletter, history: HistoryMode = 'immediate'): void {
+    this.mutate(history, fn);
+  }
+
+  /** Switch the previewed color set without an undo step or an unsaved change (block editor). */
+  setColorModeQuiet(mode: ColorMode): void {
+    this.newsletterSignal.update((n) => ({ ...n, globals: { ...n.globals, colors: setColorMode(n.globals.colors, mode) } }));
+  }
+
+  markSaved(): void {
+    this.endCoalesce();
+    this.dirtySignal.set(false);
   }
 
   removeBlock(id: string): void {
@@ -795,7 +847,7 @@ export class NewsletterSession {
   }
 
   private scheduleRecovery(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
+    if (!isPlatformBrowser(this.platformId) || !this.keepsWorkingDraft) return;
     if (this.recoveryTimer) clearTimeout(this.recoveryTimer);
     this.recoveryTimer = setTimeout(() => {
       this.recoveryTimer = null;
@@ -804,7 +856,7 @@ export class NewsletterSession {
   }
 
   private async persistRecovery(): Promise<void> {
-    if (!isPlatformBrowser(this.platformId)) return;
+    if (!isPlatformBrowser(this.platformId) || !this.keepsWorkingDraft) return;
     try {
       await this.repo.saveDraft({
         displayName: this.displayNameSignal(),

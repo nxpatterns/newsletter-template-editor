@@ -54,6 +54,8 @@
             <span class="app-header-doc-name" data-testid="doc-name" [textContent]="session.displayName()"></span>
             <ng-container [ngTemplateOutlet]="saveState" />
           </div>
+        } @else if (onBlocks()) {
+          <app-block-editor-header part="lead" />
         } @else if (onAbout() && session.hasDocument()) {
           <div class="app-header-doc">
             <a class="app-header-back" [routerLink]="session.panelPath()" data-testid="action-back-to-doc">
@@ -126,6 +128,8 @@
             </button>
           </div>
           <app-file-menu />
+        } @else if (onBlocks()) {
+          <app-block-editor-header part="actions" />
         } @else if (onStart()) {
           <app-start-menu />
         }

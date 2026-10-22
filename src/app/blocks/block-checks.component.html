@@ -1,0 +1,28 @@
+<section class="bchk" data-testid="block-checks">
+  <p class="ed-hint" [textContent]="i18n.t('blockEditor.checks.summary', { name: editor.source()?.name ?? i18n.t('blockEditor.neutralColors') })"></p>
+  @for (item of items(); track item.id) {
+    <div class="bchk-row bchk-row--warn" data-testid="block-check-warning">
+      <span class="bchk-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false"><path d="M12 6.5v7M12 17.3v.1" /></svg>
+      </span>
+      <span class="bchk-text">
+        <span class="bchk-title">
+          @if (item.mode) {
+            <span class="bchk-set" [attr.data-set]="item.mode" [textContent]="setName(item.mode)"></span>
+          }
+          <span [textContent]="item.title"></span>
+        </span>
+        <small [textContent]="item.detail"></small>
+        <button type="button" class="bchk-action" data-testid="block-check-action" [textContent]="item.action" (click)="item.run()"></button>
+      </span>
+    </div>
+  }
+  @for (text of fine(); track text) {
+    <div class="bchk-row bchk-row--ok" data-testid="block-check-ok">
+      <span class="bchk-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false"><path d="m6.5 12.5 3.8 3.8 7.2-8" /></svg>
+      </span>
+      <span class="bchk-text"><span class="bchk-title" [textContent]="text"></span></span>
+    </div>
+  }
+</section>

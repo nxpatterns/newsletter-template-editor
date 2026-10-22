@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { LocaleService } from '../../i18n/locale.service';
 
-/** What was not found: any address, or a template that no longer exists. */
-export type NotFoundKind = 'page' | 'template';
+/** What was not found: any address, or a template or own block that no longer exists. */
+export type NotFoundKind = 'page' | 'template' | 'block';
 
 @Component({
   selector: 'app-not-found-page',

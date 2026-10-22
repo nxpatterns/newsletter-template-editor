@@ -5,7 +5,7 @@ import { renderBlocks } from './blocks';
 import { renderPalette } from './colors';
 import { emailDocumentCss } from './email-css';
 import { inlineEmailCss, inlineEmailCssFragment } from './inline-email-css';
-import { renderExportShell, renderPreviewDoc } from './shell';
+import { renderBlockPreviewDoc, renderExportShell, renderPreviewDoc, type BlockPreviewLabels } from './shell';
 import { escapeAttr, escapeHtml, resolveListMonkForPreview } from './utils';
 
 export interface ExportArtifacts {
@@ -43,6 +43,14 @@ export function renderPreview(newsletter: Newsletter, opts: PreviewOptions = {})
   // Preview keeps classes + stylesheet (no export inliner).
   return resolveListMonkForPreview(doc, newsletter.globals.campaignSubject || 'Newsletter preview');
 }
+
+/** Block editor: the document's blocks alone, framed, with stand-ins for the neighbours. */
+export function renderBlockPreview(newsletter: Newsletter, labels: BlockPreviewLabels): string {
+  const rows = renderBlocks(newsletter.blocks, { globals: newsletter.globals, mode: 'preview', annotate: true });
+  return renderBlockPreviewDoc(newsletter.globals, newsletter.blocks, rows, labels);
+}
+
+export type { BlockPreviewLabels } from './shell';
 
 /** Drop target for the first block; never part of an export. */
 function renderEmptySlot(newsletter: Newsletter, label: string): string {

@@ -560,3 +560,70 @@ export function renderPreviewDoc(
 </body>
 </html>`;
 }
+
+/** Words around the block in the block editor preview. */
+export interface BlockPreviewLabels {
+  /** Stand-ins for the neighbours in a template, e.g. "… block before …". */
+  before: string;
+  after: string;
+  /** Tag on the block's top left (its name) and top right (its type). */
+  name: string;
+  type: string;
+  /** Badge at the bottom right when the structure cannot change (clone mode). */
+  locked?: string;
+}
+
+const LOCK_ICON =
+  '<svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M7 11V8a5 5 0 0 1 10 0v3M6 11h12v9H6z"/></svg>';
+
+const BLOCK_PREVIEW_CHROME = `
+  html, body { margin: 0 !important; padding: 0 !important; overflow-x: hidden !important; }
+  table.email-bg > tbody > tr > td.email-bg { padding: 28px 16px !important; }
+  tr.nte-block > td { position: relative; outline: 2px solid #20d4c8; outline-offset: -2px; }
+  .nte-ctx { padding: 14px 16px; text-align: center; font: italic 13px/1.4 Georgia, serif; opacity: 0.7; }
+  .nte-tag { position: absolute; z-index: 5; display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 3px; font: 600 11px/1.35 system-ui, -apple-system, sans-serif; letter-spacing: 0.01em; color: #04201e; background: #20d4c8; white-space: nowrap; pointer-events: none; }
+  .nte-tag--name { top: -10px; left: -2px; }
+  .nte-tag--type { top: -10px; right: -2px; }
+  .nte-tag--lock { bottom: 6px; right: 6px; color: #ffffff; background: rgba(8, 16, 30, 0.82); }
+  .nte-tag--lock svg { display: block; }
+  .nte-image-empty { display: inline-block; width: var(--image-w, 100%); max-width: 100%; height: 120px; border-radius: 4px; background: repeating-linear-gradient(135deg, rgba(126, 207, 255, 0.14) 0 10px, rgba(126, 207, 255, 0.06) 10px 20px); }
+`;
+
+/**
+ * Block editor preview: one block in the 600 px column with stand-ins for its neighbours, in the
+ * template's colors. Preview only; never part of an export.
+ */
+export function renderBlockPreviewDoc(globals: Globals, blocks: readonly Block[], rows: string, labels: BlockPreviewLabels): string {
+  const palette = renderPalette(globals);
+  const pageBg = escapeAttr(palette.page);
+  const contentBg = escapeAttr(palette.content);
+  const ctx = (text: string) =>
+    `<tr><td bgcolor="${contentBg}" class="content-bg"><div class="nte-ctx" style="color:${escapeAttr(palette.dim)}">${escapeHtml(text)}</div></td></tr>`;
+  const tags =
+    `<span class="nte-tag nte-tag--name">${escapeHtml(labels.name)}</span>` +
+    `<span class="nte-tag nte-tag--type">${escapeHtml(labels.type)}</span>` +
+    (labels.locked ? `<span class="nte-tag nte-tag--lock" data-testid="block-preview-locked">${LOCK_ICON}${escapeHtml(labels.locked)}</span>` : '');
+  const framed = rows.replace(/(<tr class="nte-block[^"]*"[^>]*>\s*<td[^>]*>)/, `$1${tags}`);
+  return `<!doctype html>
+<html lang="${escapeAttr(globals.language || 'de')}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="color-scheme" content="${colorSchemes(globals)}" />
+  <title>${escapeHtml(labels.name)}</title>
+  <style>${emailDocumentCss(globals, blocks)}${BLOCK_PREVIEW_CHROME}</style>
+</head>
+<body bgcolor="${pageBg}" class="email-body" style="--email-page:${pageBg};font-family:${fontStack(globals)}">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" bgcolor="${pageBg}" class="email-bg">
+    <tr>
+      <td align="center" bgcolor="${pageBg}" class="email-bg email-outer-pad">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="${EMAIL_CONTENT_WIDTH_PX}" class="email-container">
+          ${ctx(labels.before)}
+          ${framed}
+          ${ctx(labels.after)}
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}

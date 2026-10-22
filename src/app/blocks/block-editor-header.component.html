@@ -1,0 +1,90 @@
+@if (part() === 'lead') {
+  <div class="beh-lead" data-testid="block-editor-head">
+    <a class="beh-back" [routerLink]="backPath()" data-testid="block-editor-back">
+      <svg class="beh-back-icon" aria-hidden="true" focusable="false"><use href="#icon-back"></use></svg>
+      @if (editor.source(); as src) {
+        <span [textContent]="i18n.t('blockEditor.backTo')"></span>
+        <span class="beh-back-name" [textContent]="'„' + src.name + '“'"></span>
+      } @else {
+        <span [textContent]="i18n.t('about.back')"></span>
+      }
+    </a>
+    @if (editor.status() === 'ready') {
+      <input
+        type="text"
+        class="ed-input beh-name"
+        data-testid="block-editor-name"
+        [value]="editor.name()"
+        [attr.aria-label]="i18n.t('blockEditor.nameLabel')"
+        (input)="onName($event)"
+        (keydown.enter)="onNameEnter($event)"
+      />
+      <span class="beh-kind" data-testid="block-editor-kind" [style.--beh-hue]="hue()">
+        <span [textContent]="i18n.t('blockEditor.cloneOf', { type: typeLabel() })"></span>
+        <span class="beh-own" [textContent]="i18n.t('blockEditor.own')"></span>
+      </span>
+      <span
+        class="beh-state"
+        role="status"
+        data-testid="block-editor-state"
+        [class.beh-state--dirty]="editor.saveState().kind === 'unsaved'"
+        [class.beh-state--saved]="editor.saveState().kind === 'draft' || editor.saveState().kind === 'version'"
+      >
+        @switch (editor.saveState().kind) {
+          @case ('unsaved') {
+            <span class="beh-state-dot" aria-hidden="true"></span>
+          }
+          @case ('new') {}
+          @default {
+            <svg class="beh-state-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5.5 12.5 4 4 9-9.5" /></svg>
+          }
+        }
+        <span [textContent]="stateText()"></span>
+      </span>
+    }
+  </div>
+} @else if (editor.status() === 'ready') {
+  <div class="beh-actions" role="toolbar" [attr.aria-label]="i18n.t('blockEditor.actions')">
+    <button
+      type="button"
+      class="toolbar-btn"
+      data-testid="block-editor-undo"
+      [disabled]="!editor.work.canUndo()"
+      [attr.aria-label]="i18n.t('action.undo')"
+      [attr.title]="i18n.t('action.undo')"
+      (click)="editor.work.undo()"
+    >
+      <svg class="toolbar-icon" aria-hidden="true" focusable="false"><use href="#icon-undo"></use></svg>
+    </button>
+    <button
+      type="button"
+      class="toolbar-btn"
+      data-testid="block-editor-redo"
+      [disabled]="!editor.work.canRedo()"
+      [attr.aria-label]="i18n.t('action.redo')"
+      [attr.title]="i18n.t('action.redo')"
+      (click)="editor.work.redo()"
+    >
+      <svg class="toolbar-icon" aria-hidden="true" focusable="false"><use href="#icon-redo"></use></svg>
+    </button>
+    <button
+      type="button"
+      class="header-btn header-btn--outline"
+      data-testid="block-editor-save-draft"
+      [disabled]="!editor.canSaveDraft() || editor.busy()"
+      [attr.title]="i18n.t('blockEditor.saveDraft') + ' (' + saveShortcut + ')'"
+      (click)="flow.saveDraft()"
+    >
+      <span [textContent]="i18n.t('blockEditor.saveDraft')"></span>
+      <kbd class="header-btn-kbd" [textContent]="saveShortcut"></kbd>
+    </button>
+    <button
+      type="button"
+      class="header-btn header-btn--primary"
+      data-testid="block-editor-publish"
+      [disabled]="!editor.canPublish() || editor.busy()"
+      [textContent]="i18n.t(editor.hasVersion() ? 'blockEditor.publishNew' : 'blockEditor.publish')"
+      (click)="flow.publish()"
+    ></button>
+  </div>
+}

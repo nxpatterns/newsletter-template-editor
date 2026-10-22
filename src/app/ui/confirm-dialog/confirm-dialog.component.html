@@ -66,6 +66,18 @@
             </li>
           </ul>
         }
+        @if (p.mode === 'confirm' && p.option; as option) {
+          <label class="confirm-ack confirm-option">
+            <input
+              type="checkbox"
+              class="confirm-ack-box"
+              data-testid="confirm-option"
+              [checked]="option.checked"
+              (change)="option.onChange($any($event.target).checked)"
+            />
+            <span [textContent]="option.label"></span>
+          </label>
+        }
         @if (p.mode === 'confirm' && p.note) {
           <p class="confirm-note" data-testid="confirm-note" [textContent]="p.note"></p>
         }

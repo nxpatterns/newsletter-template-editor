@@ -5,6 +5,7 @@ import {
   duplicateBlock,
   publishVersion,
   renameBlock,
+  saveBlockWork,
   saveDraft,
   type OpContext,
 } from './operations';
@@ -104,5 +105,44 @@ describe('own block operations', () => {
     const fresh = createBlock(ctx('2026-10-01T00:00:00.000Z'), { name: 'New', kind: 'free', baseType: null, content }).draft;
     expect(deleteDraftsOlderThan([old, fresh], '2026-07-24T00:00:00.000Z')).toEqual({ deleteDraftIds: [old.id] });
     expect(deleteDraftsOlderThan([fresh], '2026-07-24T00:00:00.000Z')).toEqual({});
+  });
+
+  describe('saving work from the block editor', () => {
+    const base = { kind: 'clone' as const, baseType: 'hero' as const, content };
+
+    it('creates a new block with its draft on the first "save draft"', () => {
+      const r = saveBlockWork(ctx(), { ...base, block: null, draft: null, name: 'Hero spring', publish: false });
+      expect(r.block).toMatchObject({ name: 'Hero spring', kind: 'clone', baseType: 'hero', versionCount: 0 });
+      expect(r.draft).toMatchObject({ blockId: r.block.id, name: 'Hero spring', content });
+      expect(r.version).toBeNull();
+      expect(r.change).toEqual({ putBlocks: [r.block], putDrafts: [r.draft] });
+    });
+
+    it('creates the block under the id its address already has', () => {
+      const r = saveBlockWork(ctx(), { ...base, block: null, draft: null, id: 'from-address', name: 'A', publish: false });
+      expect(r.block.id).toBe('from-address');
+      expect(r.draft?.blockId).toBe('from-address');
+    });
+
+    it('publishes a new block straight away without leaving a draft behind', () => {
+      const r = saveBlockWork(ctx(), { ...base, block: null, draft: null, name: 'Hero', publish: true });
+      expect(r.version).toMatchObject({ blockId: r.block.id, number: 1, content });
+      expect(r.block).toMatchObject({ latestVersionId: r.version!.id, versionCount: 1 });
+      expect(r.draft).toBeNull();
+      expect(r.change.putDrafts).toBeUndefined();
+      expect(r.change.deleteDraftIds).toHaveLength(1);
+    });
+
+    it('renames and saves into the existing draft, then publishes the next version from it', () => {
+      const first = saveBlockWork(ctx(), { ...base, block: null, draft: null, name: 'A', publish: true });
+      const later = ctx('2026-10-22T12:00:00.000Z');
+      const drafted = saveBlockWork(later, { ...base, block: first.block, draft: null, name: ' B ', publish: false, content: { title: 'v2' } });
+      expect(drafted.block).toMatchObject({ name: 'B', updatedAt: later.now, versionCount: 1 });
+      expect(drafted.draft).toMatchObject({ name: 'B', content: { title: 'v2' } });
+      const published = saveBlockWork(later, { ...base, block: drafted.block, draft: drafted.draft, name: '', publish: true, content: { title: 'v2' } });
+      expect(published.block).toMatchObject({ name: 'B', versionCount: 2 });
+      expect(published.version).toMatchObject({ number: 2, content: { title: 'v2' } });
+      expect(published.change.deleteDraftIds).toEqual([drafted.draft!.id]);
+    });
   });
 });

@@ -6,6 +6,6 @@
     @if (docId) {
       <a [routerLink]="['/edit', docId]" data-testid="not-found-back-to-doc" [textContent]="i18n.t('notFound.page.toTemplate')"></a>
     }
-    <a routerLink="/" data-testid="not-found-home" [textContent]="i18n.t(kind === 'template' ? 'notFound.template.offer' : 'about.back')"></a>
+    <a routerLink="/" data-testid="not-found-home" [textContent]="i18n.t(kind === 'page' ? 'about.back' : 'notFound.' + kind + '.offer')"></a>
   </p>
 </article>

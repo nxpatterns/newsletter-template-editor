@@ -23,6 +23,8 @@ export interface ConfirmDialogRequest {
   tone?: DialogTone;
   /** Highlighted hint under the text, e.g. "export your files first". */
   note?: string;
+  /** A free choice the caller reads through `onChange`, e.g. "also replace the placed blocks". */
+  option?: { label: string; checked: boolean; onChange: (checked: boolean) => void };
 }
 
 export interface PromptDialogRequest {

@@ -1,0 +1,152 @@
+@use '../../styles/editor-forms';
+@use '../../styles/header-buttons';
+
+:host {
+  display: contents;
+}
+
+.beh-lead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  min-width: 0;
+  margin-block-start: 0.25rem;
+  font-size: 0.8125rem;
+  line-height: 1.2;
+}
+
+.beh-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  color: var(--ds-text);
+  text-decoration: none;
+}
+
+.beh-back:hover .beh-back-name {
+  text-decoration: underline;
+}
+
+.beh-back:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 2px;
+}
+
+.beh-back-icon {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor;
+}
+
+.beh-back-name {
+  max-width: min(18rem, 30vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ds-accent);
+  font-weight: 600;
+}
+
+.beh-name.ed-input {
+  width: 14rem;
+  min-height: 2rem;
+  padding-block: 0.25rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+/* Tint of the original type plus the fixed "own" mark (decision 4). */
+.beh-kind {
+  --beh-hue: var(--ds-accent);
+
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.15rem 0.3rem 0.15rem 0.6rem;
+  border: 1px solid color-mix(in srgb, var(--beh-hue) 55%, var(--ds-border));
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--ds-text);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--beh-hue) 22%, var(--ds-bg-panel)), var(--ds-bg-panel));
+}
+
+.beh-own {
+  padding: 0.05rem 0.35rem;
+  border-radius: 999px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-text);
+  background: rgb(255 255 255 / 12%);
+}
+
+/* Status colours, as the template's save state. */
+.beh-state {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--ds-text-muted);
+}
+
+.beh-state--dirty {
+  color: var(--ds-warning);
+  border-color: color-mix(in srgb, var(--ds-warning) 45%, transparent);
+  background: color-mix(in srgb, var(--ds-warning) 14%, transparent);
+}
+
+.beh-state--saved {
+  color: var(--ds-success);
+  border-color: color-mix(in srgb, var(--ds-success) 35%, transparent);
+  background: color-mix(in srgb, var(--ds-success) 10%, transparent);
+}
+
+.beh-state-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: currentColor;
+  animation: beh-pulse 1.6s ease-in-out infinite;
+}
+
+.beh-state-icon {
+  width: 0.8rem;
+  height: 0.8rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@keyframes beh-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .beh-state-dot {
+    animation: none;
+  }
+}
+
+.beh-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}

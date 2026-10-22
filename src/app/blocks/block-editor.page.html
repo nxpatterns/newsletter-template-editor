@@ -1,0 +1,104 @@
+<div class="be-work" data-testid="block-editor-page" [attr.data-status]="editor.status()">
+  <section class="be-stage" [attr.aria-label]="i18n.t('blockEditor.preview.label')">
+    <div class="be-stage-bar">
+      <span class="be-switch" role="group" [attr.aria-label]="i18n.t('blockEditor.preview.colors')">
+        @for (m of modes; track m) {
+          <button
+            type="button"
+            [attr.data-testid]="'block-preview-mode-' + m"
+            [attr.aria-pressed]="editor.previewMode() === m"
+            [textContent]="modeLabel(m)"
+            (click)="setMode(m)"
+          ></button>
+        }
+      </span>
+      <span class="be-stage-hint" data-testid="block-preview-source">
+        @if (editor.source(); as src) {
+          <span [textContent]="i18n.t('blockEditor.preview.colorsOf', { name: src.name })"></span>
+        } @else {
+          <span [textContent]="i18n.t('blockEditor.preview.neutral')"></span>
+        }
+      </span>
+    </div>
+    @if (previewSrcdoc(); as doc) {
+      <iframe class="be-frame" data-testid="block-preview-frame" [attr.title]="i18n.t('blockEditor.preview.label')" [srcdoc]="doc"></iframe>
+    }
+  </section>
+
+  <aside class="be-side" [attr.aria-label]="i18n.t('blockEditor.panel')">
+    @if (editor.status() === 'ready') {
+      <div class="be-panel" ngTabs>
+        <div
+          class="be-tabs"
+          ngTabList
+          selectionMode="follow"
+          [selectedTab]="editor.tab()"
+          (selectedTabChange)="setTab($event)"
+          [attr.aria-label]="i18n.t('blockEditor.panel')"
+        >
+          <button type="button" class="be-tab" ngTab value="parts" data-testid="block-tab-parts">
+            <span [textContent]="i18n.t('blockEditor.tab.parts')"></span>
+          </button>
+          <button type="button" class="be-tab" ngTab value="props" data-testid="block-tab-props">
+            <span [textContent]="i18n.t('blockEditor.tab.props')"></span>
+          </button>
+          <button type="button" class="be-tab" ngTab value="checks" data-testid="block-tab-checks">
+            <span [textContent]="i18n.t('blockEditor.tab.checks')"></span>
+            @if (findingCount()) {
+              <span class="be-badge" data-testid="block-tab-checks-count" [textContent]="findingCount()"></span>
+            }
+          </button>
+        </div>
+
+        <div class="be-panel-body">
+          <div class="be-tab-panel" ngTabPanel value="parts">
+            <ng-template ngTabContent>
+              <div class="be-lock" role="note" data-testid="block-parts-locked">
+                <svg class="be-lock-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7.5 11V8a4.5 4.5 0 0 1 9 0v3M6 11h12v9H6z" /></svg>
+                <span [textContent]="i18n.t('blockEditor.lockedNote')"></span>
+              </div>
+              <div class="be-parts" role="list">
+                @for (p of parts; track p.key) {
+                  <div class="be-part" role="listitem" aria-disabled="true">
+                    <span class="be-part-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" focusable="false"><path [attr.d]="p.icon" /></svg>
+                    </span>
+                    <span class="be-part-text">
+                      <span [textContent]="i18n.t('blockEditor.part.' + p.key)"></span>
+                      <small [textContent]="i18n.t('blockEditor.part.' + p.key + '.hint')"></small>
+                    </span>
+                  </div>
+                }
+              </div>
+            </ng-template>
+          </div>
+
+          <div class="be-tab-panel" ngTabPanel value="props">
+            <ng-template ngTabContent>
+              <section class="be-group" data-testid="block-props-fields">
+                <h3 class="be-group-title">
+                  <span [textContent]="i18n.t('blockEditor.group.fields')"></span>
+                  <small [textContent]="i18n.t('blockEditor.group.fieldsHint', { type: typeLabel() })"></small>
+                </h3>
+                <app-block-inspector />
+              </section>
+              <section class="be-group" data-testid="block-props-colors">
+                <h3 class="be-group-title">
+                  <span [textContent]="i18n.t('blockEditor.group.colors')"></span>
+                  <small [textContent]="i18n.t('blockEditor.group.colorsHint')"></small>
+                </h3>
+                <app-clone-colors />
+              </section>
+            </ng-template>
+          </div>
+
+          <div class="be-tab-panel" ngTabPanel value="checks">
+            <ng-template ngTabContent>
+              <app-block-checks />
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    }
+  </aside>
+</div>

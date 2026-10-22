@@ -1,0 +1,107 @@
+<div class="ccol" data-testid="clone-colors">
+  @for (row of rows(); track row.key) {
+    <div class="ccol-row" [class.is-open]="open() === row.key" [attr.data-testid]="'clone-color-' + row.key">
+      <span class="ccol-swatch" [style.background]="row.hex" aria-hidden="true"></span>
+      <span class="ccol-name">
+        <span class="ccol-label">
+          <span [textContent]="row.label"></span>
+          @if (row.fixed) {
+            <span class="ccol-fixed" data-testid="clone-color-fixed" [textContent]="i18n.t('blockEditor.colors.fixed')"></span>
+          }
+        </span>
+        <small [textContent]="follows(row)"></small>
+      </span>
+      <button
+        type="button"
+        class="ccol-link"
+        [attr.data-testid]="'clone-color-toggle-' + row.key"
+        [attr.aria-expanded]="open() === row.key"
+        [textContent]="i18n.t(open() === row.key ? 'blockEditor.colors.done' : 'blockEditor.colors.change')"
+        (click)="toggle(row.key)"
+      ></button>
+    </div>
+    @for (w of row.warnings; track $index) {
+      <p class="ccol-warn" data-testid="clone-color-warning">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3.5 2.8 19.5h18.4z" /><path d="M12 10v4.2M12 16.9v.1" /></svg>
+        <span [textContent]="w"></span>
+      </p>
+    }
+    @if (open() === row.key) {
+      <div class="ccol-pop" role="dialog" [attr.aria-label]="i18n.t('blockEditor.colors.pickTitle', { name: row.label })" data-testid="clone-color-picker">
+        <div class="ccol-pop-head">
+          <span [textContent]="i18n.t('blockEditor.colors.pickTitle', { name: row.label })"></span>
+          <span class="ccol-seg" role="group" [attr.aria-label]="i18n.t('blockEditor.colors.source')">
+            <button type="button" data-testid="clone-color-mode-role" [attr.aria-pressed]="!row.fixed" (click)="makeRole(row)" [textContent]="i18n.t('blockEditor.colors.role')"></button>
+            <button type="button" data-testid="clone-color-mode-fixed" [attr.aria-pressed]="!!row.fixed" (click)="makeFixed(row)" [textContent]="i18n.t('blockEditor.colors.fixedTab')"></button>
+          </span>
+        </div>
+        <div class="ccol-pop-body">
+          @if (row.fixed) {
+            <div class="ccol-hex">
+              <input
+                type="color"
+                class="ccol-hex-swatch"
+                data-testid="clone-color-native"
+                [value]="row.fixed"
+                [attr.aria-label]="i18n.t('blockEditor.colors.hexLabel')"
+                (input)="onHex(row.key, $event)"
+              />
+              <input
+                type="text"
+                class="ed-input ccol-hex-input"
+                data-testid="clone-color-hex"
+                spellcheck="false"
+                maxlength="7"
+                [value]="row.fixed"
+                [attr.aria-label]="i18n.t('blockEditor.colors.hexLabel')"
+                (input)="onHex(row.key, $event)"
+              />
+            </div>
+            @if (isText(row.key)) {
+              <div class="ccol-sample">
+                @for (p of preview(); track p.mode) {
+                  <div class="ccol-sample-cell" [style.background]="p.bg" [style.color]="row.fixed" [attr.data-testid]="'clone-color-sample-' + p.mode">
+                    <span [textContent]="i18n.t('blockEditor.colors.sample')"></span>
+                    <small [class.is-ok]="p.ok" [class.is-bad]="!p.ok">
+                      <span [textContent]="i18n.t('blockEditor.colors.onSet', { set: setName(p.mode), ratio: formatRatio(p.ratio) })"></span>
+                      @if (p.ok) {
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+                      } @else {
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" /></svg>
+                      }
+                    </small>
+                  </div>
+                }
+              </div>
+            }
+            <p class="ed-hint" [textContent]="i18n.t('blockEditor.colors.fixedHelp')"></p>
+          } @else {
+            <p class="ed-hint" [textContent]="i18n.t('blockEditor.colors.roleHelp', { name: editor.source()?.name ?? i18n.t('blockEditor.neutralColors') })"></p>
+            <div class="ccol-grid" role="radiogroup" [attr.aria-label]="i18n.t('blockEditor.colors.role')">
+              @for (role of roles; track role) {
+                <button
+                  type="button"
+                  class="ccol-cell"
+                  role="radio"
+                  [attr.aria-checked]="row.role === role"
+                  [attr.data-testid]="'clone-color-role-' + role"
+                  (click)="pickRole(row.key, role)"
+                >
+                  <span class="ccol-pair" aria-hidden="true">
+                    <span class="ccol-mini" [style.background]="sets().dark[role]"></span>
+                    <span class="ccol-mini" [style.background]="sets().light[role]"></span>
+                  </span>
+                  <span class="ccol-cell-name" [textContent]="roleName(role)"></span>
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+  }
+  <div class="ccol-legend">
+    <span [textContent]="i18n.t('blockEditor.colors.legendFollows')"></span>
+    <span><span class="ccol-fixed" [textContent]="i18n.t('blockEditor.colors.fixed')"></span> <span [textContent]="i18n.t('blockEditor.colors.legendFixed')"></span></span>
+  </div>
+</div>

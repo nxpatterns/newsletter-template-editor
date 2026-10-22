@@ -24,14 +24,17 @@ function cleanName(name: string, fallback: string): string {
   return name.trim() || fallback;
 }
 
-/** New own block without a version yet, plus its first draft. */
+/**
+ * New own block without a version yet, plus its first draft. `id` is set when the block already
+ * has an address (the block editor opens a new copy at `/blocks/<id>` before its first save).
+ */
 export function createBlock(
   ctx: OpContext,
-  input: { name: string; kind: OwnBlockKind; baseType: OwnBlock['baseType']; content: OwnBlockContent },
+  input: { id?: string; name: string; kind: OwnBlockKind; baseType: OwnBlock['baseType']; content: OwnBlockContent },
 ): { block: OwnBlock; draft: BlockDraft; change: BlockLibraryChange } {
   const block: OwnBlock = {
     ...LOCAL,
-    id: ctx.newId(),
+    id: input.id ?? ctx.newId(),
     name: cleanName(input.name, input.kind === 'free' ? 'Block' : (input.baseType ?? 'Block')),
     kind: input.kind,
     baseType: input.kind === 'free' ? null : input.baseType,
@@ -83,6 +86,41 @@ export function publishVersion(
     version,
     change: { putBlocks: [updated], putVersions: [version], deleteDraftIds: [draft.id] },
   };
+}
+
+/**
+ * The block editor's two save buttons in one step: store the work as the draft ("Save draft"),
+ * or straight as the next version ("Save as own block" / "Save new version"). A block that does
+ * not exist yet is created first; the name given wins unless it is empty.
+ */
+export function saveBlockWork(
+  ctx: OpContext,
+  input: {
+    block: OwnBlock | null;
+    draft: BlockDraft | null;
+    /** Id for a block that does not exist yet. */
+    id?: string;
+    name: string;
+    kind: OwnBlockKind;
+    baseType: OwnBlock['baseType'];
+    content: OwnBlockContent;
+    publish: boolean;
+  },
+): { block: OwnBlock; draft: BlockDraft | null; version: OwnBlockVersion | null; change: BlockLibraryChange } {
+  let block = input.block;
+  let draft = input.draft;
+  if (!block) {
+    const created = createBlock(ctx, input);
+    block = created.block;
+    draft = created.draft;
+  }
+  block = { ...block, name: cleanName(input.name, block.name), updatedAt: ctx.now };
+  draft = draft
+    ? { ...draft, name: block.name, content: input.content, updatedAt: ctx.now }
+    : newDraft(ctx, block, input.content);
+  if (!input.publish) return { block, draft, version: null, change: { putBlocks: [block], putDrafts: [draft] } };
+  const published = publishVersion(ctx, { block, draft });
+  return { block: published.change.putBlocks![0], draft: null, version: published.version, change: published.change };
 }
 
 /** New name for the block and its draft; an empty name changes nothing. */
