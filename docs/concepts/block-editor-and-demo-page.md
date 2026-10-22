@@ -1,7 +1,7 @@
 # Block editor and demo page
 
 Concept for two new product areas: a **block editor** (users change or create their own blocks) and a **demo page** (users publish their own newsletters for others to see).
-Status: concept only, agreed in discussion on 2026-10-21. Nothing implemented. Mockups come after review.
+Status: concept accepted (decisions 1 to 81), mockups R1 to R5 done. Implementation started 2026-10-22 in this order: storage base, reset dialog, available width in the render context, clone mode, free blocks, overview of own blocks, renaming the start tiles, demo page last.
 Audience: non-technical sellers and marketing people first, designers second. English only.
 
 Related: `src/core/colors/model.ts` (implemented color levels), `email-colors.md` (color product rules), `block-content-editing.md` (edit modal, lite kit, render pipeline), `file-management.md` (storage, start page, menus), `design-system.md` (app look), `AGENTS.md` (email CSS rule).
@@ -16,7 +16,6 @@ Related: `src/core/colors/model.ts` (implemented color levels), `email-colors.md
 
 ## Non-goals (now)
 
-- Implementation of either area. This document only fixes entry points, model and decisions.
 - What exactly the block editor can edit, field by field. Separate chapter. The coarse scope for clones that mockups need is decision 31.
 - Backend, login, accounts, moderation, cloud sync. Required for the demo page and paid sync, planned later.
 - Marketplace and payments.
@@ -68,7 +67,7 @@ Decisions 40 to 47. Goal: every sensible email block can be built from parts, in
 
 ### Content and design are separate
 
-- **Content**: a flat list of content parts. Each has a stable id, a kind (text, image, button, …) and a **role** (headline, body, call to action, image, price, badge, name, …). Only words, addresses, numbers and dates.
+- **Content**: flat content parts plus collections (decision 75). Each part has a stable id, a kind (text, image, button, …) and a **role** (headline, body, call to action, image, price, badge, name, …). Only words, addresses, numbers and dates. A collection has items, each item a set of parts keyed by role; a List part places a whole collection.
 - **Design**: a layout tree (sections, columns, boxes, lists) that **places** content parts by id, plus every style property: sizes, colors as roles, spacing, alignment, order, column ratios.
 - A block has one content and one or more designs, one of them active. A new design over the same content is a **design proposal**; the user picks one. A check fails when a content part is neither placed nor deliberately hidden, so a redesign cannot lose content.
 - Built-in blocks fit the same shape: their fields are content parts with roles, their current look is their default design.
@@ -90,6 +89,17 @@ Every style property picks from a small scale, so every design stays email-safe 
 | Line height | tight, normal, loose |
 | Font | inherit, presets, custom stack |
 | Colors | roles, or fixed (decisions 19, 35) |
+| Font weight | normal, bold |
+| Letter spacing | none, wide 1, wider 2 (px) |
+| Width | full, 3/4, 2/3, 1/2, 1/3, 1/4 of the available width (decision 76) |
+| Column ratios | 2 columns: 1:1, 1:2, 2:1, 1:3, 3:1; 3 columns: 1:1:1, 2:1:1, 1:2:1, 1:1:2; 4 columns: 1:1:1:1 |
+| Column gap | spacing scale, default 16 |
+| Padding | vertical and horizontal, each from the spacing scale |
+| Icon size | s 16, m 24, l 32, xl 48 (px) |
+| Button size | s: text `s`, padding 12 / 16; m: text `m`, padding 12 / 24; l: text `l`, padding 16 / 32 (vertical / horizontal, px) |
+| Bleed | full canvas (600) or content width (504) |
+
+Values beyond the first seven rows are best-guess starting values (decision 81) and are replaced by measured ones; stored blocks keep token names, never px, so changing a value later needs no migration.
 
 ### Parts
 
@@ -98,11 +108,11 @@ Every part has box properties: padding, background (role), border (sides, width,
 | Part | Content | Design |
 | --- | --- | --- |
 | Section | parts | box properties |
-| Columns | 1 to 4 columns | ratio from a fixed list, gap, vertical alignment, order, order when stacked below 600 px |
+| Columns | 1 to 4 columns | ratio from the ratio list, gap, vertical alignment, order, stack on phones yes or no, stacked order natural or reversed (decision 77) |
 | Box | parts | box properties |
-| List | items, each with the same small set of parts | stacked or grid of 2 or 3, gap; at least one item |
-| Text | rich text (lite kit), placeholders | font, size, weight, italic, uppercase, letter spacing, line height, alignment, color role |
-| Image | image address, image description, link target | width, radius, alignment, border |
+| List | one collection; items share one item design | stacked or grid of 2 or 3, gap; at least one item |
+| Text | rich text (lite kit), placeholders, name-or-fallback piece (decision 80) | font, size, weight, italic, uppercase, letter spacing, line height, alignment, color role |
+| Image | image address, image description, link target | width from the width list (decision 76), radius, alignment, border |
 | Button | link text, link target (web, mail, phone) | filled, outline or text link; size, full width, radius, colors |
 | Icon | one glyph from the fixed email-safe set | size, color role, optional circle |
 | Divider | none | style, thickness, width, color roles |
@@ -293,25 +303,16 @@ Numbers refer to the questions in the 2026-10-21 thread.
 | 75 | Content with lists (extends decision 41) | Content holds flat parts and collections. A collection has items, and each item is a set of parts keyed by role. A List part places a collection and sets the item design once. The "nothing lost" check counts every item of a placed collection as placed. |
 | 76 | Width in nested layouts | The render context carries the available width in px. Columns pass each child its share (ratio, gap, padding). Images and fixed cells take their px from it, so the fixed 600, 504, 252 and 88 px values in the renderers go. Width choices are a fixed list (full, 3/4, 2/3, 1/2, 1/3, 1/4 of the available width); percent of column is removed. |
 | 77 | Columns on phones | Each Columns part has "stack on phones": yes (default) or no. Stacked order is natural or reversed only. The check warns when a non-stacking column is narrower than about 120 px at 320 px phone width. |
-| 78 | Missing scales | Name the scales before the first own block is stored: column ratios, image width, icon and button size, weight (normal or bold), padding (vertical and horizontal), bleed (full canvas or content width). Proposed values come as a separate step for approval. |
+| 78 | Missing scales | Name the scales before the first own block is stored: column ratios, image width, icon and button size, weight (normal or bold), padding (vertical and horizontal), bleed (full canvas or content width). Values: decision 81. |
 | 79 | Small export fixes | Yes: the document language follows the template language instead of a fixed "en"; the open-tracking pixel moves to the top of the body so Gmail clipping cannot cut it off; the dark-mode color block resolves its CSS variables at export. One small task in its own thread. |
 | 80 | Greeting with name or fallback (decision 4 of the email completeness review) | Option A: a "name or fallback" piece can be placed in any text, for example "Guten Tag [Name oder Werte Geschäftspartner],". The greeting is rebuilt as an ordinary text part that contains this piece, so no special greeting logic remains. A name that is an email address or a generic role mailbox counts as no name. |
+| 81 | Scale values (decision 78) | Start with best-guess values (Finite scales table), measured values replace them later. Stored blocks keep token names only. |
 
-## Mockup scope
+## Mockups and states
 
-Every screen in Light and Dark, German first, in the existing glass and gradient look of the editor and the About page (`design-system.md`), block tints as in the "All blocks" tab.
+Mockups R1 to R5 are in `docs/mockups/block-editor/`, Light and Dark, German first.
 
-States each screen must show where they apply: empty, in progress, unsaved change when leaving, draft saved, version published, check warnings in Light and Dark, finding marked as intended ("accepted"), error (storage full, invalid import file, persistent storage refused, Safari storage notice).
-
-Order:
-
-1. Block editor page, free block: layout with parts palette, canvas, properties, preview Light / Dark, check list, name and version, "Save draft" and "Publish". Adding parts by drag and drop and by keyboard. Undo and redo.
-2. Clone mode: entry through "Adjust" on a tile in "All blocks", same page with locked areas.
-3. Block panel: toggle built-in / own, tint plus "own" mark, empty state, "newer version" hint and update action in "Current blocks", "Save as own block".
-4. Colors: role picker with the "fixed" mark, check finding with "mark as intended".
-5. Overview of own blocks and drafts (sort, search, rename, delete, export, "delete drafts older than ..."), plus the "New block" tile on the start page and the start menu entry.
-6. Reset dialog.
-7. Demo page: entry points and a gallery skeleton, last.
+States the implementation must cover where they apply: empty, in progress, unsaved change when leaving, draft saved, version published, check warnings in Light and Dark, finding marked as intended ("accepted"), error (storage full, invalid import file, persistent storage refused, Safari storage notice).
 
 Reset dialog wording (EN; DE in the mockup):
 
@@ -325,4 +326,4 @@ Reset dialog wording (EN; DE in the mockup):
 
 ## Open questions
 
-None. Decisions 30 to 74 were accepted on 2026-10-21, decisions 75 to 80 on 2026-10-22. Mockups may still change them.
+None. Decisions 30 to 74 were accepted on 2026-10-21, decisions 75 to 81 on 2026-10-22.
