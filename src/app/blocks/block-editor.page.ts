@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, signal, untracked, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Tab, TabContent, TabList, TabPanel, Tabs } from '@angular/aria/tabs';
 import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
@@ -315,7 +315,8 @@ export class BlockEditorPage {
       const id = this.params();
       if (!id) return;
       const query = this.route.snapshot.queryParamMap;
-      void this.editor.open(id, { from: query.get('from'), type: query.get('type') }).then(() => {
+      // Untracked: open() reads the language, and a language switch must not reopen (and wipe) the block.
+      void untracked(() => this.editor.open(id, { from: query.get('from'), type: query.get('type') })).then(() => {
         if (this.params() !== id || this.editor.status() !== 'missing') return;
         void this.router.navigateByUrl('/missing-block', { skipLocationChange: true });
       });
