@@ -1,9 +1,10 @@
+import { isUuidV7 } from '../id/uuid-v7';
 import { CURRENT_SCHEMA_VERSION, type Newsletter } from '../types';
 import { STORAGE_KEY, type StoredEnvelope, loadNewsletter } from './storage';
 import { normalizeNewsletter } from './normalize-newsletter';
 
 const DB_NAME = 'nte-docs';
-/** v2: stores for own blocks, their versions and drafts (block editor). */
+/** v2: stores for own blocks, their versions and drafts (block editor); templates with pre-UUIDv7 ids are dropped (beta). */
 const DB_VERSION = 2;
 const STORE_LIBRARY = 'library';
 const STORE_RECOVERY = 'recovery';
@@ -46,7 +47,7 @@ export interface ProjectFileEnvelope {
 export function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = () => {
+    req.onupgradeneeded = (event) => {
       const db = req.result;
       if (!db.objectStoreNames.contains(STORE_LIBRARY)) {
         db.createObjectStore(STORE_LIBRARY, { keyPath: 'id' });
@@ -63,10 +64,29 @@ export function openDb(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(STORE_BLOCK_DRAFTS)) {
         db.createObjectStore(STORE_BLOCK_DRAFTS, { keyPath: 'id' }).createIndex('blockId', 'blockId');
       }
+      if (event.oldVersion === 1 && req.transaction) dropPreUuidV7Templates(req.transaction);
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error ?? new Error('idb open failed'));
   });
+}
+
+/**
+ * Beta clean-up on the way to v2: saved templates whose id is not a UUIDv7 are deleted. The working
+ * draft stays, but no longer points to a deleted template, so it shows as unsaved work.
+ */
+function dropPreUuidV7Templates(tx: IDBTransaction): void {
+  const library = tx.objectStore(STORE_LIBRARY);
+  const keys = library.getAllKeys();
+  keys.onsuccess = () => {
+    (keys.result as string[]).filter((id) => !isUuidV7(id)).forEach((id) => library.delete(id));
+  };
+  const recovery = tx.objectStore(STORE_RECOVERY);
+  const draft = recovery.get(RECOVERY_KEY);
+  draft.onsuccess = () => {
+    const doc = draft.result as RecoveryDoc | undefined;
+    if (doc?.libraryId && !isUuidV7(doc.libraryId)) recovery.put({ ...doc, libraryId: null, dirty: true });
+  };
 }
 
 export function txDone(tx: IDBTransaction): Promise<void> {

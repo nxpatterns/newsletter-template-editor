@@ -1,6 +1,6 @@
 import { IDBFactory } from 'fake-indexeddb';
 import { seedNewsletter } from '../seed';
-import { clearAllDocs, getLibraryEntry, listLibrary, putLibraryEntry } from '../persist/idb-docs';
+import { clearAllDocs, getLibraryEntry, listLibrary, loadRecovery, putLibraryEntry } from '../persist/idb-docs';
 import { indexedDbBlockRepository as repo } from './block-repository';
 import { createBlock, deleteBlock, publishVersion, saveDraft, type OpContext } from './operations';
 
@@ -90,18 +90,24 @@ describe('IndexedDB block repository', () => {
     expect(await repo.listVersions(created.block.id)).toEqual([]);
   });
 
-  it('upgrading a version 1 database keeps the saved templates', async () => {
+  it('upgrading a version 1 database drops templates with pre-UUIDv7 ids (beta) and unbinds the draft', async () => {
+    const v7 = '019a0c4e-8f00-7000-8000-000000000001';
+    const entry = (id: string) => ({ id, displayName: id, updatedAt: '2026-01-01T00:00:00.000Z', newsletter: seedNewsletter('de') });
     await new Promise<void>((resolve, reject) => {
       const req = indexedDB.open('nte-docs', 1);
       req.onupgradeneeded = () => {
         const db = req.result;
-        db.createObjectStore('library', { keyPath: 'id' }).put({
-          id: 'lib-old',
-          displayName: 'Old template',
-          updatedAt: '2026-01-01T00:00:00.000Z',
+        const library = db.createObjectStore('library', { keyPath: 'id' });
+        ['lib-old', '0f8fad5b-d9cb-469f-a165-70867728950e', v7].forEach((id) => library.put(entry(id)));
+        db.createObjectStore('recovery', { keyPath: 'key' }).put({
+          key: 'current',
+          displayName: 'lib-old',
+          libraryId: 'lib-old',
+          dirty: false,
           newsletter: seedNewsletter('de'),
+          savedAt: '2026-01-01T00:00:00.000Z',
+          schemaVersion: 6,
         });
-        db.createObjectStore('recovery', { keyPath: 'key' });
       };
       req.onsuccess = () => {
         req.result.close();
@@ -110,9 +116,13 @@ describe('IndexedDB block repository', () => {
       req.onerror = () => reject(req.error);
     });
 
-    expect((await listLibrary()).map((e) => e.id)).toEqual(['lib-old']);
+    expect((await listLibrary()).map((e) => e.id)).toEqual([v7]);
+    expect(await loadRecovery()).toMatchObject({ displayName: 'lib-old', libraryId: null, dirty: true });
     expect(await repo.listBlocks()).toEqual([]);
-    await putLibraryEntry({ id: 'new', displayName: 'New', updatedAt: '2026-10-22T00:00:00.000Z', newsletter: seedNewsletter('en') });
-    expect((await getLibraryEntry('lib-old'))?.displayName).toBe('Old template');
+  });
+
+  it('a fresh database deletes nothing', async () => {
+    await putLibraryEntry({ id: 'lib-new', displayName: 'New', updatedAt: '2026-10-22T00:00:00.000Z', newsletter: seedNewsletter('en') });
+    expect((await getLibraryEntry('lib-new'))?.displayName).toBe('New');
   });
 });
