@@ -17,6 +17,7 @@ import {
 import type { Block } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
 import { NewsletterSession } from '../newsletter-session.service';
+import { OwnBlockLibrary } from '../own-block-library.service';
 import type { PlacedView } from '../panel/panel-routes';
 import { blockTypeHue, blockTypeIcon, type BlockTypeHue } from './block-catalog';
 import { PlacedTreeComponent } from './placed-tree.component';
@@ -31,6 +32,7 @@ import { PlacedTreeComponent } from './placed-tree.component';
 export class PlacedBlocksTabComponent {
   protected readonly i18n = inject(LocaleService);
   protected readonly session = inject(NewsletterSession);
+  private readonly ownBlocks = inject(OwnBlockLibrary);
 
   private readonly rootEl = viewChild<ElementRef<HTMLElement>>('placedRoot');
 
@@ -40,6 +42,7 @@ export class PlacedBlocksTabComponent {
   protected readonly listData = computed((): Block[] => [...this.session.blocks()]);
 
   constructor() {
+    void this.ownBlocks.refresh();
     effect(() => {
       const id = this.session.selectedBlockId();
       if (!id) return;
@@ -55,6 +58,12 @@ export class PlacedBlocksTabComponent {
   protected openInList(id: string | null): void {
     this.setView('list');
     if (id) this.session.selectBlock(id);
+  }
+
+  /** An own block shows its own name; one deleted from the library keeps the type name. */
+  protected label(block: Block): string {
+    const own = block.own ? this.ownBlocks.entry(block.own.blockId) : undefined;
+    return own?.block.name ?? this.blockLabel(block.type);
   }
 
   protected blockLabel(type: Block['type']): string {

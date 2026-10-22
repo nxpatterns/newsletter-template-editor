@@ -55,7 +55,9 @@
             <ng-container [ngTemplateOutlet]="saveState" />
           </div>
         } @else if (onBlocks()) {
-          <app-block-editor-header part="lead" />
+          @defer (on immediate) {
+            <app-block-editor-header part="lead" />
+          }
         } @else if (onAbout() && session.hasDocument()) {
           <div class="app-header-doc">
             <a class="app-header-back" [routerLink]="session.panelPath()" data-testid="action-back-to-doc">
@@ -129,7 +131,9 @@
           </div>
           <app-file-menu />
         } @else if (onBlocks()) {
-          <app-block-editor-header part="actions" />
+          @defer (on immediate) {
+            <app-block-editor-header part="actions" />
+          }
         } @else if (onStart()) {
           <app-start-menu />
         }

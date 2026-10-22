@@ -1,9 +1,20 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject, PLATFORM_ID, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import type { Block } from '../../../core';
 import { LocaleService } from '../../i18n/locale.service';
 import { CatalogDragService } from '../../pages/editor/catalog-drag.service';
 import { NTE_CATALOG_MIME } from '../../pages/editor/preview-dnd';
+import { ID_SOURCE } from '../id-source.token';
+import { NewsletterSession } from '../newsletter-session.service';
+import { OwnBlockLibrary, type OwnBlockEntry } from '../own-block-library.service';
 import { blockTypeBadgeKey, blockTypeHue, blockTypeIcon, CATALOG_TYPES, type BlockTypeHue } from './block-catalog';
+
+/** Which list the All blocks tab shows (decision 32): built-in blocks or own blocks. */
+export type CatalogList = 'built' | 'own';
+
+/** UI-only choice (localStorage), never part of a template. */
+const LIST_KEY = 'newsletter-template-editor.catalog-list.v1';
 
 @Component({
   selector: 'app-catalog-tab',
@@ -14,11 +25,32 @@ import { blockTypeBadgeKey, blockTypeHue, blockTypeIcon, CATALOG_TYPES, type Blo
 export class CatalogTabComponent {
   protected readonly i18n = inject(LocaleService);
   protected readonly catalogDrag = inject(CatalogDragService);
+  protected readonly ownBlocks = inject(OwnBlockLibrary);
+  private readonly session = inject(NewsletterSession);
+  private readonly router = inject(Router);
+  private readonly newId = inject(ID_SOURCE);
+  private readonly platformId = inject(PLATFORM_ID);
   protected readonly types = CATALOG_TYPES;
 
-  /** Type that just cancelled — drives return pulse on that card. */
-  protected readonly cancelledType = signal<Block['type'] | null>(null);
+  protected readonly list = signal<CatalogList>(this.readList());
+
+  /** Card that just cancelled (type, or own block id) — drives the return pulse on that card. */
+  protected readonly cancelledKey = signal<string | null>(null);
   private cancelPulseTimer: ReturnType<typeof setTimeout> | null = null;
+
+  constructor() {
+    void this.ownBlocks.refresh();
+  }
+
+  protected setList(list: CatalogList): void {
+    this.list.set(list);
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      localStorage.setItem(LIST_KEY, list);
+    } catch {
+      // quota / private mode
+    }
+  }
 
   protected label(type: Block['type']): string {
     return this.i18n.t(`block.${type}`);
@@ -32,8 +64,8 @@ export class CatalogTabComponent {
     return blockTypeIcon(type);
   }
 
-  protected hue(type: Block['type']): BlockTypeHue {
-    return blockTypeHue(type);
+  protected hue(type: Block['type'] | null): BlockTypeHue {
+    return blockTypeHue(type ?? 'divider');
   }
 
   /** Optional footer badge (e.g. Paragraph: "Lite WYSIWYG"); empty for most types. */
@@ -42,32 +74,60 @@ export class CatalogTabComponent {
     return key ? this.i18n.t(key) : '';
   }
 
+  /** "Copy of Price box · version 3", or "no version yet" while it only has a draft. */
+  protected ownLine(entry: OwnBlockEntry): string {
+    const type = entry.block.baseType;
+    const from = type ? this.i18n.t('catalog.own.copyOf', { type: this.label(type) }) : '';
+    const version = entry.latest
+      ? this.i18n.t('catalog.own.version', { n: entry.block.versionCount })
+      : this.i18n.t('catalog.own.noVersion');
+    return from ? `${from} · ${version}` : version;
+  }
+
+  /** "Adjust" (decision 6): a new copy of the built-in type opens in the block editor. */
+  protected adjust(type: Block['type']): void {
+    void this.router.navigate(['/blocks', this.newId()], { queryParams: { from: this.session.routeId(), type } });
+  }
+
+  protected editOwn(entry: OwnBlockEntry): void {
+    void this.router.navigate(['/blocks', entry.block.id], { queryParams: { from: this.session.routeId() } });
+  }
+
   /** Catalog cards are palette items: drag into the preview. Click is intentionally inert. */
-  protected onDragStart(type: Block['type'], event: DragEvent): void {
+  protected onDragStart(type: Block['type'], event: DragEvent, ownBlockId: string | null = null): void {
     const dt = event.dataTransfer;
     if (!dt) return;
     // Custom MIME only — text/plain would leak into Chrome address bar / new-tab search.
     dt.setData(NTE_CATALOG_MIME, type);
     dt.effectAllowed = 'copy';
-    this.catalogDrag.begin(type);
-    this.cancelledType.set(null);
+    this.catalogDrag.begin(type, ownBlockId);
+    this.cancelledKey.set(null);
   }
 
-  protected onDragEnd(type: Block['type'], event: DragEvent): void {
+  protected onDragEnd(key: string, event: DragEvent): void {
     const result = this.catalogDrag.end();
     // Escape, drop outside the app, or drop on browser chrome → cancelled.
     const dropEffect = event.dataTransfer?.dropEffect ?? 'none';
     if (result === 'cancelled' || dropEffect === 'none') {
-      this.pulseCancel(type);
+      this.pulseCancel(key);
     }
   }
 
-  private pulseCancel(type: Block['type']): void {
+  private pulseCancel(key: string): void {
     if (this.cancelPulseTimer) clearTimeout(this.cancelPulseTimer);
-    this.cancelledType.set(type);
+    this.cancelledKey.set(key);
     this.cancelPulseTimer = setTimeout(() => {
-      this.cancelledType.set(null);
+      this.cancelledKey.set(null);
       this.cancelPulseTimer = null;
     }, 420);
+  }
+
+  private readList(): CatalogList {
+    if (!isPlatformBrowser(this.platformId)) return 'built';
+    try {
+      return localStorage.getItem(LIST_KEY) === 'own' ? 'own' : 'built';
+    } catch {
+      return 'built';
+    }
   }
 }

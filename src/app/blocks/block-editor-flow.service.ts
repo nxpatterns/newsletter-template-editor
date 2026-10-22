@@ -77,7 +77,7 @@ export class BlockEditorFlow {
       body: this.i18n.t('blockEditor.replaceBody'),
       tone: 'info',
       option: {
-        label: this.i18n.t('blockEditor.replaceOption', { n: count, type: typeLabel, template: source.name, name: this.editor.name() }),
+        label: this.i18n.t(count === 1 ? 'blockEditor.replaceOptionOne' : 'blockEditor.replaceOption', { n: count, type: typeLabel, template: source.name, name: this.editor.name() }),
         checked: false,
         onChange: (on) => (replace = on),
       },

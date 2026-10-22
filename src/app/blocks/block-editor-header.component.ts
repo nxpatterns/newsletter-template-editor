@@ -16,6 +16,7 @@ import { BlockEditorFlow } from './block-editor-flow.service';
   templateUrl: './block-editor-header.component.html',
   styleUrl: './block-editor-header.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '(document:keydown)': 'onKeydown($event)' },
 })
 export class BlockEditorHeaderComponent {
   readonly part = input.required<'lead' | 'actions'>();
@@ -43,6 +44,29 @@ export class BlockEditorHeaderComponent {
     if (s.kind === 'version') return this.i18n.t('blockEditor.state.version', { n: s.number });
     return this.i18n.t(`blockEditor.state.${s.kind}`);
   });
+
+  /** ⌘S saves the draft; undo and redo act on the block, never the template. One part listens. */
+  protected onKeydown(event: KeyboardEvent): void {
+    if (this.part() !== 'actions' || !(event.metaKey || event.ctrlKey)) return;
+    const key = event.key.toLowerCase();
+    const work = this.editor.work;
+    if (key === 's') {
+      event.preventDefault();
+      void this.flow.saveDraft();
+      return;
+    }
+    if (key === 'z' && !event.shiftKey) {
+      if (!work.canUndo()) return;
+      event.preventDefault();
+      work.undo();
+      return;
+    }
+    if ((key === 'z' && event.shiftKey) || key === 'y') {
+      if (!work.canRedo()) return;
+      event.preventDefault();
+      work.redo();
+    }
+  }
 
   protected onName(event: Event): void {
     this.editor.setName((event.target as HTMLInputElement).value);

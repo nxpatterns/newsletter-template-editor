@@ -1,33 +1,96 @@
 <section class="catalog-tab" data-testid="catalog-tab">
-  <p class="ed-hint" [textContent]="i18n.t('catalog.hint')"></p>
-  <div class="catalog-grid" role="list" data-testid="block-catalog">
-    @for (type of types; track type) {
-      <div
-        class="catalog-card"
-        [class.catalog-card--cancelled]="cancelledType() === type"
-        [class.catalog-card--dragging]="catalogDrag.activeType() === type"
-        role="listitem"
-        draggable="true"
-        [attr.data-testid]="'add-block-' + type"
-        [attr.aria-label]="label(type)"
-        [attr.title]="i18n.t('catalog.dragHint')"
-        [style.--cat-a]="hue(type).a"
-        [style.--cat-b]="hue(type).b"
-        [style.--cat-ink]="hue(type).ink"
-        (dragstart)="onDragStart(type, $event)"
-        (dragend)="onDragEnd(type, $event)"
-      >
-        <span class="catalog-card__icon" aria-hidden="true" [textContent]="icon(type)"></span>
-        <span class="catalog-card__label" [textContent]="label(type)"></span>
-        <span class="catalog-card__hint" [textContent]="hint(type)"></span>
-        <span class="catalog-card__drag" aria-hidden="true">⋮⋮</span>
-        @if (badge(type); as badgeText) {
-          <span class="catalog-card__foot" [attr.data-testid]="'catalog-badge-' + type">
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25ZM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z" /></svg>
-            <span [textContent]="badgeText"></span>
-          </span>
+  <p class="ed-hint" [textContent]="i18n.t(list() === 'own' ? 'catalog.own.hint' : 'catalog.hint')"></p>
+  <div class="catalog-switch" role="group" [attr.aria-label]="i18n.t('catalog.list')" data-testid="catalog-list-switch">
+    <button type="button" data-testid="catalog-list-built" [attr.aria-pressed]="list() === 'built'" (click)="setList('built')" [textContent]="i18n.t('catalog.list.built')"></button>
+    <button type="button" data-testid="catalog-list-own" [attr.aria-pressed]="list() === 'own'" (click)="setList('own')" [textContent]="i18n.t('catalog.list.own')"></button>
+  </div>
+
+  @if (list() === 'built') {
+    <div class="catalog-grid" role="list" data-testid="block-catalog">
+      @for (type of types; track type) {
+        <div
+          class="catalog-card"
+          [class.catalog-card--cancelled]="cancelledKey() === type"
+          [class.catalog-card--dragging]="catalogDrag.activeType() === type && !catalogDrag.activeOwnId()"
+          role="listitem"
+          draggable="true"
+          [attr.data-testid]="'add-block-' + type"
+          [attr.aria-label]="label(type)"
+          [attr.title]="i18n.t('catalog.dragHint')"
+          [style.--cat-a]="hue(type).a"
+          [style.--cat-b]="hue(type).b"
+          [style.--cat-ink]="hue(type).ink"
+          (dragstart)="onDragStart(type, $event)"
+          (dragend)="onDragEnd(type, $event)"
+        >
+          <span class="catalog-card__icon" aria-hidden="true" [textContent]="icon(type)"></span>
+          <span class="catalog-card__label" [textContent]="label(type)"></span>
+          <span class="catalog-card__hint" [textContent]="hint(type)"></span>
+          <span class="catalog-card__drag" aria-hidden="true">⋮⋮</span>
+          <button
+            type="button"
+            class="catalog-card__act"
+            draggable="false"
+            [attr.data-testid]="'adjust-block-' + type"
+            [attr.aria-label]="i18n.t('catalog.adjustNamed', { type: label(type) })"
+            [textContent]="i18n.t('catalog.adjust')"
+            (click)="adjust(type)"
+          ></button>
+          @if (badge(type); as badgeText) {
+            <span class="catalog-card__foot" [attr.data-testid]="'catalog-badge-' + type">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25ZM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z" /></svg>
+              <span [textContent]="badgeText"></span>
+            </span>
+          }
+        </div>
+      }
+    </div>
+  } @else {
+    @if (ownBlocks.entries().length) {
+      <p class="catalog-sort" [textContent]="i18n.t('catalog.own.sort')"></p>
+      <div class="catalog-grid" role="list" data-testid="own-block-catalog">
+        @for (entry of ownBlocks.entries(); track entry.block.id) {
+          @let type = entry.block.baseType;
+          <div
+            class="catalog-card catalog-card--own"
+            [class.catalog-card--cancelled]="cancelledKey() === entry.block.id"
+            [class.catalog-card--dragging]="catalogDrag.activeOwnId() === entry.block.id"
+            [class.catalog-card--no-version]="!entry.latest"
+            role="listitem"
+            [attr.draggable]="entry.latest && type ? 'true' : 'false'"
+            [attr.data-testid]="'own-block-' + entry.block.id"
+            [attr.aria-label]="entry.block.name"
+            [attr.title]="i18n.t(entry.latest ? 'catalog.dragHint' : 'catalog.own.noVersionHint')"
+            [style.--cat-a]="hue(type).a"
+            [style.--cat-b]="hue(type).b"
+            [style.--cat-ink]="hue(type).ink"
+            (dragstart)="type && entry.latest ? onDragStart(type, $event, entry.block.id) : $event.preventDefault()"
+            (dragend)="onDragEnd(entry.block.id, $event)"
+          >
+            <span class="catalog-card__icon" aria-hidden="true" [textContent]="type ? icon(type) : ''"></span>
+            <span class="catalog-card__label" [textContent]="entry.block.name"></span>
+            <span class="catalog-card__own" [textContent]="i18n.t('blockEditor.own')"></span>
+            <span class="catalog-card__hint" [textContent]="ownLine(entry)"></span>
+            @if (entry.latest) {
+              <span class="catalog-card__drag" aria-hidden="true">⋮⋮</span>
+            }
+            <button
+              type="button"
+              class="catalog-card__act"
+              draggable="false"
+              [attr.data-testid]="'edit-own-block-' + entry.block.id"
+              [attr.aria-label]="i18n.t('catalog.own.editNamed', { name: entry.block.name })"
+              [textContent]="i18n.t('catalog.own.edit')"
+              (click)="editOwn(entry)"
+            ></button>
+          </div>
         }
       </div>
+    } @else {
+      <div class="catalog-empty" data-testid="own-block-empty">
+        <p [textContent]="i18n.t('catalog.own.empty')"></p>
+        <button type="button" class="catalog-empty__link" (click)="setList('built')" [textContent]="i18n.t('catalog.own.toBuilt')"></button>
+      </div>
     }
-  </div>
+  }
 </section>

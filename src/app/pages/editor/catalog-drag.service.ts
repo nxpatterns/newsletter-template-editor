@@ -9,14 +9,18 @@ import type { Block } from '../../../core';
 @Injectable({ providedIn: 'root' })
 export class CatalogDragService {
   private readonly typeSignal = signal<Block['type'] | null>(null);
+  private readonly ownSignal = signal<string | null>(null);
   private accepted = false;
 
   /** Active catalog type while dragging, else null. */
   readonly activeType = this.typeSignal.asReadonly();
+  /** Own block being dragged (its type is `activeType`), else null for a built-in card. */
+  readonly activeOwnId = this.ownSignal.asReadonly();
 
-  begin(type: Block['type']): void {
+  begin(type: Block['type'], ownBlockId: string | null = null): void {
     this.accepted = false;
     this.typeSignal.set(type);
+    this.ownSignal.set(ownBlockId);
   }
 
   /** Call when the preview successfully inserts the block. */
@@ -32,6 +36,7 @@ export class CatalogDragService {
     const result = this.accepted && this.typeSignal() ? 'accepted' : 'cancelled';
     this.accepted = false;
     this.typeSignal.set(null);
+    this.ownSignal.set(null);
     return result;
   }
 

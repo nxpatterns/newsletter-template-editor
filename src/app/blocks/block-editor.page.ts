@@ -9,6 +9,7 @@ import { BlockInspectorComponent } from '../editor/inspector/block-inspector.com
 import { NewsletterSession } from '../editor/newsletter-session.service';
 import { LocaleService } from '../i18n/locale.service';
 import { BlockChecksComponent, countFindings } from './block-checks.component';
+import { BlockEditorFlow } from './block-editor-flow.service';
 import { BlockEditorService } from './block-editor.service';
 import { CloneColorsComponent } from './clone-colors.component';
 
@@ -40,6 +41,7 @@ const PARTS: readonly { key: string; icon: string }[] = [
 export class BlockEditorPage {
   protected readonly i18n = inject(LocaleService);
   protected readonly editor = inject(BlockEditorService);
+  private readonly flow = inject(BlockEditorFlow);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -83,6 +85,11 @@ export class BlockEditorPage {
         void this.router.navigateByUrl('/missing-block', { skipLocationChange: true });
       });
     });
+  }
+
+  /** Route guard: unsaved changes ask "save draft, discard or stay". */
+  allowLeave(): Promise<boolean> {
+    return this.flow.allowLeave();
   }
 
   /** Reload or closing the tab with unsaved block changes: the browser asks first. */

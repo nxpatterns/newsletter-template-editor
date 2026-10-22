@@ -13,13 +13,14 @@ import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
-import { filledSocialNetworks, renderPreview, type SocialIconSources } from '../../../core';
+import { filledSocialNetworks, renderPreview, type Block, type SocialIconSources } from '../../../core';
 import { EditorPanelComponent } from '../../editor/panel/editor-panel.component';
 import { parsePanelPlace } from '../../editor/panel/panel-routes';
 import { NewsletterSession } from '../../editor/newsletter-session.service';
 import { LocaleService } from '../../i18n/locale.service';
 import { SocialIconsService } from '../../editor/social-icons.service';
 import { ShellUiService } from '../../shell/shell-ui.service';
+import { OwnBlockLibrary } from '../../editor/own-block-library.service';
 import { CatalogDragService } from './catalog-drag.service';
 import {
   insertIndexForDrop,
@@ -49,6 +50,7 @@ export class EditorPage {
   protected readonly i18n = inject(LocaleService);
   private readonly socialIcons = inject(SocialIconsService);
   private readonly catalogDrag = inject(CatalogDragService);
+  private readonly ownBlocks = inject(OwnBlockLibrary);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   /** `/edit/:id/…`: library id, or `draft` before the first save. */
@@ -464,7 +466,7 @@ export class EditorPage {
       if (this.dropTargetId && this.dropPlace) {
         index = insertIndexForDrop(ids, this.dropTargetId, this.dropPlace);
       }
-      const createdId = this.session.insertBlockAt(type, index, { revealInPanel: false });
+      const createdId = this.insertFromCatalog(type, index);
       this.catalogDrag.accept();
       this.pendingScrollToBlockId = createdId;
       this.suppressClickUntil = Date.now() + 400;
@@ -600,6 +602,16 @@ export class EditorPage {
     apply();
     queueMicrotask(apply);
     requestAnimationFrame(apply);
+  }
+
+  /** A built-in card inserts a new block; an own block card inserts its newest version. */
+  private insertFromCatalog(type: Block['type'], index: number): string {
+    const ownId = this.catalogDrag.activeOwnId();
+    const own = ownId ? this.ownBlocks.entry(ownId) : undefined;
+    if (own?.latest) {
+      return this.session.insertOwnBlockAt(own.latest, { blockId: own.block.id, version: own.block.versionCount }, index);
+    }
+    return this.session.insertBlockAt(type, index, { revealInPanel: false });
   }
 
   private finishDrag(doc: Document): void {

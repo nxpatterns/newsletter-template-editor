@@ -4,7 +4,7 @@
       <svg class="beh-back-icon" aria-hidden="true" focusable="false"><use href="#icon-back"></use></svg>
       @if (editor.source(); as src) {
         <span [textContent]="i18n.t('blockEditor.backTo')"></span>
-        <span class="beh-back-name" [textContent]="'„' + src.name + '“'"></span>
+        <span class="beh-back-name" [textContent]="i18n.t('blockEditor.quoted', { name: src.name })"></span>
       } @else {
         <span [textContent]="i18n.t('about.back')"></span>
       }

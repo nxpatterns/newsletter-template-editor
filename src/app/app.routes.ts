@@ -2,7 +2,6 @@ import { inject } from '@angular/core';
 import { Router, Routes } from '@angular/router';
 import { NewsletterSession } from './editor/newsletter-session.service';
 import { editorDocMatcher, editorPanelPath, editorPlaceMatcher } from './editor/panel/panel-routes';
-import { BlockEditorFlow } from './blocks/block-editor-flow.service';
 import { AboutPage } from './pages/about/about.page';
 import { EditorPage } from './pages/editor/editor.page';
 import { NotFoundPage } from './pages/not-found/not-found.page';
@@ -40,7 +39,8 @@ export const routes: Routes = [
     // Block editor; `?from=<template id>` names the template it was opened from (decision 40).
     path: 'blocks/:id',
     loadComponent: () => import('./blocks/block-editor.page').then((m) => m.BlockEditorPage),
-    canDeactivate: [() => inject(BlockEditorFlow).allowLeave()],
+    // Leaving with unsaved block changes asks first (the flow loads with the page).
+    canDeactivate: [(page: { allowLeave(): Promise<boolean> }) => page.allowLeave()],
   },
   // Shown (without changing the address) when the block behind `/blocks/<id>` does not exist (decision 68).
   { path: 'missing-block', component: NotFoundPage, data: { kind: 'block' } },

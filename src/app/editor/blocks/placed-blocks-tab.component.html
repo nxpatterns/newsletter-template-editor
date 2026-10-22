@@ -81,7 +81,10 @@
                   [textContent]="icon(block.type)"
                 ></span>
                 <span class="placed-index">{{ i + 1 }}</span>
-                <span class="placed-label" [textContent]="blockLabel(block.type)"></span>
+                <span class="placed-label" [textContent]="label(block)"></span>
+                @if (block.own) {
+                  <span class="placed-own" data-testid="placed-own" [textContent]="i18n.t('blockEditor.own')"></span>
+                }
               </button>
               <div class="placed-actions">
                 <button
