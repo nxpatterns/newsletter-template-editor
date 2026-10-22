@@ -1,0 +1,162 @@
+.be-parts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.be-part {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 3.4rem;
+  padding: 0.5rem 0.55rem;
+  border: 1px solid var(--ds-border);
+  border-radius: 0.5rem;
+  color: var(--ds-text);
+  background: rgb(255 255 255 / 2%);
+}
+
+.be-part-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 0.4rem;
+  background: rgb(255 255 255 / 8%);
+}
+
+.be-part-icon svg {
+  display: block;
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.be-part-text {
+  display: grid;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.be-part-text small {
+  font-size: 0.68rem;
+  font-weight: 400;
+  color: var(--ds-text-muted);
+}
+
+
+:host {
+  display: block;
+}
+
+.fpal {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.fpal-head {
+  margin: 0.35rem 0 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-text-muted);
+}
+
+.be-part {
+  font: inherit;
+  text-align: start;
+  background: rgb(255 255 255 / 2%);
+  cursor: pointer;
+}
+
+.be-part:hover,
+.be-part:focus-visible {
+  border-color: color-mix(in srgb, var(--ds-accent) 60%, var(--ds-border));
+  outline: none;
+}
+
+.fpal-builtins {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem;
+  padding: 0.5rem;
+  border: 1px solid var(--ds-border);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--ds-bg-page) 50%, var(--ds-bg-panel));
+}
+
+.fpal-builtin {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.45rem;
+  border: 1px solid transparent;
+  border-radius: 0.35rem;
+  font: inherit;
+  font-size: 0.78rem;
+  color: var(--ds-text);
+  background: none;
+  text-align: start;
+  cursor: pointer;
+}
+
+.fpal-builtin:hover,
+.fpal-builtin:focus-visible {
+  border-color: var(--ds-border);
+  background: rgb(255 255 255 / 4%);
+  outline: none;
+}
+
+.fpal-builtin-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.fpal-own {
+  --fpal-hue: var(--ds-accent);
+
+  border-color: color-mix(in srgb, var(--fpal-hue) 45%, var(--ds-border));
+}
+
+.fpal-own-icon {
+  color: #0b1220;
+  background: var(--fpal-hue);
+}
+
+.fpal-own--free .fpal-own-icon {
+  background: repeating-linear-gradient(135deg, #a3b8cc 0 4px, #52677d 4px 8px);
+}
+
+.fpal-keys {
+  margin: 0.35rem 0 0;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--ds-border);
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--ds-text-muted);
+}
+
+.fpal-keys strong {
+  margin-inline-end: 0.3rem;
+  color: var(--ds-text);
+}
+
+.fpal-keys ::ng-deep kbd {
+  padding: 0.05rem 0.3rem;
+  border: 1px solid var(--ds-border);
+  border-radius: 0.25rem;
+  font: 600 0.68rem/1.4 ui-monospace, monospace;
+  color: var(--ds-text);
+  background: rgb(255 255 255 / 5%);
+}

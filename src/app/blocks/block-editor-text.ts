@@ -11,3 +11,9 @@ export function slotLabel(i18n: LocaleService, type: string, key: string): strin
   const label = i18n.t(specific);
   return label === specific ? i18n.t(`colors.slot.${key}`) : label;
 }
+
+/** Name of a free block color: what it colors, e.g. "Text", "Fläche", "Rahmen". */
+export function freeSlotLabel(i18n: LocaleService, key: string): string {
+  if (key === 'background') return i18n.t('colors.slot.background');
+  return i18n.t(`blockEditor.slot.${key.split('.').pop()}`);
+}

@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import {
   COLOR_MODES,
   COLOR_ROLES,
-  colorSlotsOf,
+  slotsOf,
   contrastRatio,
   isBrandColorRole,
   parseHexColor,
@@ -15,10 +15,11 @@ import {
   type ColorRole,
 } from '../../core/colors';
 import { CLONE_BLOCK_ID } from '../../core/own-blocks/clone';
+import { colorTargetOf } from '../../core/parts/colors';
 import { LocaleService } from '../i18n/locale.service';
 import { ClearableInputDirective } from '../ui/clearable-input.directive';
 import { BlockEditorService } from './block-editor.service';
-import { formatRatio, slotLabel } from './block-editor-text';
+import { formatRatio, freeSlotLabel, slotLabel } from './block-editor-text';
 
 /** General colors a block color can follow; the brand star colors belong to the Brand tab. */
 const PICKABLE_ROLES: readonly ColorRole[] = COLOR_ROLES.filter((r) => !isBrandColorRole(r));
@@ -57,10 +58,25 @@ export class CloneColorsComponent {
   protected readonly editor = inject(BlockEditorService);
   protected readonly modes = COLOR_MODES;
 
+  /**
+   * Free blocks: only the colors of one part (`<part id>.…`) or `background` for the block itself.
+   * Null shows every color (clone mode).
+   */
+  readonly prefix = input<string | null>(null);
+
   /** Slot whose picker is open. */
   protected readonly open = signal<string | null>(null);
 
-  private readonly target = computed(() => ({ id: CLONE_BLOCK_ID, type: this.editor.baseType() ?? '' }));
+  private readonly target = computed(() => {
+    const block = this.editor.block();
+    return block ? colorTargetOf(block) : { id: CLONE_BLOCK_ID, type: '' };
+  });
+
+  private readonly defs = computed(() => {
+    const prefix = this.prefix();
+    const all = slotsOf(this.target());
+    return prefix === null ? all : all.filter((d) => d.key === prefix || d.key.startsWith(`${prefix}.`));
+  });
   private readonly colors = computed(() => this.editor.work.newsletter().globals.colors);
 
   /** Both sets of the source template, for the role swatches. */
@@ -75,7 +91,7 @@ export class CloneColorsComponent {
     const colors = this.colors();
     const target = this.target();
     const mode = this.editor.previewMode();
-    return colorSlotsOf(target.type).map((def) => {
+    return this.defs().map((def) => {
       const o = slotOverride(colors, mode, CLONE_BLOCK_ID, def.key);
       const fixed = o && 'hex' in o ? o.hex : null;
       const warnings = COLOR_MODES.flatMap((m) => {
@@ -86,7 +102,7 @@ export class CloneColorsComponent {
       });
       return {
         key: def.key,
-        label: slotLabel(this.i18n, target.type, def.key),
+        label: target.slots ? freeSlotLabel(this.i18n, def.key) : slotLabel(this.i18n, target.type, def.key),
         hex: resolveSlot(colors, mode, target, def.key).hex,
         role: fixed ? null : (o && 'role' in o ? o.role : def.role),
         fixed,
@@ -99,7 +115,7 @@ export class CloneColorsComponent {
   protected readonly preview = computed((): PickerPreview[] => {
     const key = this.open();
     const row = this.rows().find((r) => r.key === key);
-    const def = colorSlotsOf(this.target().type).find((s) => s.key === key);
+    const def = this.defs().find((s) => s.key === key);
     if (!row?.fixed || !def) return [];
     return COLOR_MODES.map((mode) => {
       const bg = resolveSlot(this.colors(), mode, this.target(), def.on ?? 'background').hex;
@@ -111,7 +127,7 @@ export class CloneColorsComponent {
   protected openRow = computed(() => this.rows().find((r) => r.key === this.open()) ?? null);
 
   protected isText(key: string): boolean {
-    return colorSlotsOf(this.target().type).find((s) => s.key === key)?.kind === 'text';
+    return this.defs().find((s) => s.key === key)?.kind === 'text';
   }
 
   protected toggle(key: string): void {
@@ -138,7 +154,7 @@ export class CloneColorsComponent {
 
   /** Following the type's own default role is stored as "nothing set". */
   protected pickRole(key: string, role: ColorRole): void {
-    const def = colorSlotsOf(this.target().type).find((s) => s.key === key);
+    const def = this.defs().find((s) => s.key === key);
     this.editor.setColor(key, def?.role === role ? null : { role });
   }
 

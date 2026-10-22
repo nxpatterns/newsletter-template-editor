@@ -587,6 +587,20 @@ const BLOCK_PREVIEW_CHROME = `
   .nte-tag--lock { bottom: 6px; right: 6px; color: #ffffff; background: rgba(8, 16, 30, 0.82); }
   .nte-tag--lock svg { display: block; }
   .nte-image-empty { display: inline-block; width: var(--image-w, 100%); max-width: 100%; height: 120px; border-radius: 4px; background: repeating-linear-gradient(135deg, rgba(126, 207, 255, 0.14) 0 10px, rgba(126, 207, 255, 0.06) 10px 20px); }
+  [data-part] { position: relative; }
+  [data-part]:not([data-part="root"]) { cursor: pointer; }
+  body.nte-show-parts [data-part]:not([data-part="root"]), body.nte-show-parts [data-column] { outline: 1px dashed rgba(32, 212, 200, 0.55); outline-offset: -1px; }
+  [data-part]:not([data-part="root"]):hover { outline: 1px solid rgba(32, 212, 200, 0.75); outline-offset: -1px; }
+  [data-part][data-part-selected], [data-column][data-part-selected] { outline: 2px solid #20d4c8 !important; outline-offset: -2px; }
+  .nte-tag--part { top: -9px; right: -2px; left: auto; }
+  .nte-drop { position: absolute; z-index: 6; height: 3px; border-radius: 2px; background: #f5c518; box-shadow: 0 0 8px rgba(245, 197, 24, 0.8); pointer-events: none; }
+  .nte-drop span { position: absolute; left: 50%; top: -9px; transform: translateX(-50%); padding: 1px 8px; border-radius: 999px; font: 600 11px/1.4 system-ui, -apple-system, sans-serif; color: #1a1300; background: #f5c518; white-space: nowrap; }
+  .nte-empty { margin: 4px 0; padding: 28px 20px; border: 1.5px dashed rgba(32, 212, 200, 0.6); border-radius: 8px; text-align: center; font: 15px/1.5 system-ui, -apple-system, sans-serif; }
+  .nte-empty h2 { margin: 0 0 6px; font-size: 17px; font-weight: 700; }
+  .nte-empty p { margin: 0 0 14px; opacity: 0.85; }
+  .nte-empty small { display: block; margin-bottom: 8px; opacity: 0.7; }
+  .nte-empty button { margin: 3px; padding: 6px 12px; border: 1px solid currentColor; border-radius: 999px; font: 600 13px/1.2 system-ui, -apple-system, sans-serif; color: inherit; background: transparent; cursor: pointer; }
+  .nte-empty button:hover, .nte-empty button:focus-visible { border-color: #20d4c8; color: #20d4c8; outline: none; }
 `;
 
 /**

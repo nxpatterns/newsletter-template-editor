@@ -5,7 +5,7 @@ import { CLONE_BLOCK_ID } from '../../core/own-blocks/clone';
 import type { Block } from '../../core/types';
 import { LocaleService } from '../i18n/locale.service';
 import { BlockEditorService } from './block-editor.service';
-import { formatRatio, slotLabel } from './block-editor-text';
+import { formatRatio, freeSlotLabel, slotLabel } from './block-editor-text';
 
 /** Types with image fields and with link texts: only those get the matching "fine" line. */
 const IMAGE_TYPES: ReadonlySet<Block['type']> = new Set(['image', 'image-text', 'contact', 'video', 'testimonial', 'teasers']);
@@ -49,6 +49,12 @@ export class BlockChecksComponent {
     if (!f.some((x) => x.kind === 'contrast')) out.push(this.i18n.t('blockEditor.checks.okContrast'));
     if (type && IMAGE_TYPES.has(type) && !f.some((x) => x.kind === 'missingAlt')) out.push(this.i18n.t('blockEditor.checks.okAlt'));
     if (type && LINK_TYPES.has(type) && !f.some((x) => x.kind === 'vagueLink')) out.push(this.i18n.t('blockEditor.checks.okLinks'));
+    if (type === 'free') {
+      if (!f.some((x) => x.kind === 'missingAlt')) out.push(this.i18n.t('blockEditor.checks.okAlt'));
+      if (!f.some((x) => x.kind === 'vagueLink')) out.push(this.i18n.t('blockEditor.checks.okLinks'));
+      if (!f.some((x) => x.kind === 'smallText' || x.kind === 'tightText')) out.push(this.i18n.t('blockEditor.checks.okText'));
+      if (!f.some((x) => x.kind === 'tooNarrow' || x.kind === 'narrowOnPhone')) out.push(this.i18n.t('blockEditor.checks.okWidths'));
+    }
     return out;
   });
 
@@ -64,7 +70,7 @@ export class BlockChecksComponent {
       return {
         id: `${f.kind}-${f.mode}-${f.slot}`,
         mode: f.mode,
-        title: this.i18n.t('blockEditor.checks.contrastTitle', { name: slotLabel(this.i18n, type, f.slot) }),
+        title: this.i18n.t('blockEditor.checks.contrastTitle', { name: type === 'free' ? freeSlotLabel(this.i18n, f.slot) : slotLabel(this.i18n, type, f.slot) }),
         detail: this.i18n.t('blockEditor.checks.contrastDetail', {
           fg: f.fg.toUpperCase(),
           bg: f.bg.toUpperCase(),

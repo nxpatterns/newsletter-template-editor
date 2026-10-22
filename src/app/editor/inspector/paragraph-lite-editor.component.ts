@@ -161,6 +161,8 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
 
   /** Current document from parent. */
   readonly doc = input.required<RichDoc>();
+  /** Stash key part when one block has several texts (free blocks: the content part id). */
+  readonly stashPart = input<string | null>(null);
   readonly docChange = output<RichDoc>();
 
   protected readonly linkOpen = signal(false);
@@ -299,6 +301,12 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
     this.cloneStyleEl.textContent = paragraphEditorSurfaceCss(this.session.globals(), b ? { id: b.id, type: b.type } : undefined);
   }
 
+  private stashKey(): string | null {
+    const id = this.session.editingBlockId();
+    const part = this.stashPart();
+    return id && part ? `${id}:${part}` : id;
+  }
+
   /** Force pending debounce into docChange (called by session Save). */
   flushPendingEmit(): void {
     if (this.debounce) {
@@ -312,7 +320,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   }
 
   private async bootstrapFromDoc(d: RichDoc): Promise<void> {
-    const blockId = this.session.editingBlockId();
+    const blockId = this.stashKey();
     if (!this.stashPrompted && blockId) {
       this.stashPrompted = true;
       const stash = loadParagraphStash(this.session.libraryId(), blockId);
@@ -385,7 +393,7 @@ export class ParagraphLiteEditorComponent implements OnDestroy {
   protected stashDraft(): void {
     if (!this.canStash()) return;
     this.flushPendingEmit();
-    const blockId = this.session.editingBlockId();
+    const blockId = this.stashKey();
     const root = this.editorHost()?.nativeElement;
     if (!blockId || !root) return;
     const body = richDocFromEditorRoot(root);

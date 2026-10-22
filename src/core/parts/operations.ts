@@ -1,6 +1,6 @@
 import type { SlotColor } from '../colors/model';
 import { emptyRichDoc } from '../richtext/model';
-import type { Block } from '../types';
+import type { Block, Newsletter } from '../types';
 import {
   activeDesign,
   childrenOf,
@@ -496,4 +496,17 @@ export function quickStart(data: FreeBlockData, which: QuickStart, texts: PartTe
   add('text', null);
   add('button', null);
   return { data: r.data, nodeId: first };
+}
+
+/** Apply an operation to one free block of a document; other blocks stay as they are. */
+export function mapFreeBlock(n: Newsletter, id: string, fn: (data: FreeBlockData) => FreeBlockData): Newsletter {
+  let changed = false;
+  const blocks = n.blocks.map((b) => {
+    if (b.id !== id || b.type !== 'free') return b;
+    const next = fn(b);
+    if (next === b) return b;
+    changed = true;
+    return { ...b, content: next.content, designs: next.designs, active: next.active };
+  });
+  return changed ? { ...n, blocks } : n;
 }

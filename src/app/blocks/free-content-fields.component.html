@@ -1,0 +1,121 @@
+<ng-template #fieldTpl let-f>
+  @switch (f.part.kind) {
+    @case ('text') {
+      <div class="ed-field" [attr.data-testid]="'free-content-' + f.part.id">
+        <span class="ed-label" [textContent]="f.label"></span>
+        <app-paragraph-lite-editor [doc]="f.part.doc" [stashPart]="f.key" (docChange)="onDoc(f, $event)" />
+      </div>
+    }
+    @case ('image') {
+      <app-image-picker
+        class="ed-field"
+        [idPrefix]="'fc-img-' + f.key"
+        [compact]="true"
+        [src]="f.part.src"
+        [busy]="busy() === f.key"
+        (fileChosen)="onImageFile(f, $event)"
+        (urlCommitted)="set(f, { src: $event }, 'immediate')"
+        (removed)="set(f, { src: '' }, 'immediate')"
+      />
+      <div class="ed-field" [class.is-invalid]="!!f.part.src.trim() && !f.part.alt.trim()">
+        <label class="ed-label" [for]="'fc-alt-' + f.key" [textContent]="i18n.t('field.imageDescription')"></label>
+        <input
+          class="ed-input"
+          [id]="'fc-alt-' + f.key"
+          [attr.data-testid]="'free-alt-' + f.part.id"
+          [value]="f.part.alt"
+          (input)="onText(f, 'alt', $event)"
+          (blur)="endEdit()"
+        />
+      </div>
+      <div class="ed-field">
+        <label class="ed-label" [for]="'fc-href-' + f.key" [textContent]="i18n.t('blockEditor.content.imageLink')"></label>
+        <input class="ed-input" [id]="'fc-href-' + f.key" [value]="f.part.href" (input)="onText(f, 'href', $event)" (blur)="endEdit()" />
+      </div>
+    }
+    @case ('button') {
+      <div class="ed-field">
+        <label class="ed-label" [for]="'fc-btn-' + f.key" [textContent]="i18n.t('blockEditor.content.linkText')"></label>
+        <input
+          class="ed-input"
+          [id]="'fc-btn-' + f.key"
+          [attr.data-testid]="'free-button-text-' + f.part.id"
+          [value]="f.part.text"
+          (input)="onText(f, 'text', $event)"
+          (blur)="endEdit()"
+        />
+        <p class="ed-hint" [textContent]="i18n.t('blockEditor.content.linkTextHint')"></p>
+      </div>
+      <div class="ed-field">
+        <label class="ed-label" [for]="'fc-target-' + f.key" [textContent]="i18n.t('blockEditor.content.linkTarget')"></label>
+        <input
+          class="ed-input"
+          [id]="'fc-target-' + f.key"
+          [attr.data-testid]="'free-button-href-' + f.part.id"
+          [value]="f.part.href"
+          (input)="onText(f, 'href', $event)"
+          (blur)="endEdit()"
+        />
+        <p class="ed-hint" [textContent]="i18n.t('blockEditor.content.linkTargetHint')"></p>
+      </div>
+    }
+    @case ('icon') {
+      <div class="ed-field fc-icon">
+        <span class="ed-label" [textContent]="f.label"></span>
+        <div class="fc-icon-grid" role="radiogroup" [attr.aria-label]="f.label">
+          @for (g of icons; track g) {
+            <button
+              type="button"
+              class="fc-icon-opt"
+              role="radio"
+              [attr.aria-checked]="f.part.glyph === g"
+              [class.is-on]="f.part.glyph === g"
+              (click)="pickIcon(f, g)"
+              [textContent]="g"
+            ></button>
+          }
+        </div>
+      </div>
+    }
+    @case ('block') {
+      <p class="ed-hint fc-embed" [textContent]="i18n.t('blockEditor.content.embedded', { type: embedLabel(f.part) })"></p>
+    }
+  }
+</ng-template>
+
+<div class="fc" data-testid="free-content-fields">
+  @for (g of groups(); track g.kind === 'field' ? g.field.key : g.list.key) {
+    @if (g.kind === 'field') {
+      <ng-container *ngTemplateOutlet="fieldTpl; context: { $implicit: g.field }" />
+    } @else {
+      <section class="fc-list" [attr.data-testid]="'free-list-' + g.list.collection">
+        @for (item of g.list.items; track item.id; let i = $index, last = $last, first = $first) {
+          <div class="fc-item" data-testid="free-list-item">
+            <div class="fc-item-head">
+              <span class="fc-item-no" [textContent]="i18n.t('blockEditor.content.item', { n: i + 1 })"></span>
+              <span class="fc-item-acts">
+                <button type="button" class="ed-btn fc-act" [disabled]="first" [attr.aria-label]="i18n.t('blockEditor.content.itemUp')" [title]="i18n.t('blockEditor.content.itemUp')" (click)="moveItem(g.list, item.id, -1)">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m7 14 5-5 5 5" /></svg>
+                </button>
+                <button type="button" class="ed-btn fc-act" [disabled]="last" [attr.aria-label]="i18n.t('blockEditor.content.itemDown')" [title]="i18n.t('blockEditor.content.itemDown')" (click)="moveItem(g.list, item.id, 1)">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m7 10 5 5 5-5" /></svg>
+                </button>
+                <button type="button" class="ed-btn fc-act" [disabled]="g.list.items.length <= 1" [attr.aria-label]="i18n.t('blockEditor.content.itemRemove')" [title]="i18n.t('blockEditor.content.itemRemove')" data-testid="free-list-remove" (click)="removeItem(g.list, item.id)">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18" /></svg>
+                </button>
+              </span>
+            </div>
+            @for (f of item.fields; track f.key) {
+              <ng-container *ngTemplateOutlet="fieldTpl; context: { $implicit: f }" />
+            }
+            @if (last) {
+              <button type="button" class="ed-btn fc-add" data-testid="free-list-add" (click)="addItem(g.list, item.id)" [textContent]="i18n.t('blockEditor.content.itemAdd')"></button>
+            }
+          </div>
+        }
+      </section>
+    }
+  } @empty {
+    <p class="ed-hint" data-testid="free-content-empty" [textContent]="i18n.t('blockEditor.content.none')"></p>
+  }
+</div>

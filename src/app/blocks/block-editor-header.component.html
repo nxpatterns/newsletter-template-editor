@@ -20,7 +20,7 @@
         (keydown.enter)="onNameEnter($event)"
       />
       <span class="beh-kind" data-testid="block-editor-kind" [style.--beh-hue]="hue()">
-        <span [textContent]="i18n.t('blockEditor.cloneOf', { type: typeLabel() })"></span>
+        <span [textContent]="editor.isFree() ? i18n.t('blockEditor.freeKind') : i18n.t('blockEditor.cloneOf', { type: typeLabel() })"></span>
         <span class="beh-own" [textContent]="i18n.t('blockEditor.own')"></span>
       </span>
       <span

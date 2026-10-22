@@ -19,9 +19,26 @@
           <span [textContent]="i18n.t('blockEditor.preview.neutral')"></span>
         }
       </span>
+      @if (editor.isFree()) {
+        <label class="be-stage-hint be-show-parts" data-testid="block-show-parts">
+          <input
+            type="checkbox"
+            [checked]="showParts()"
+            (change)="showParts.set($any($event.target).checked)"
+          />
+          <span [textContent]="i18n.t('blockEditor.showParts')"></span>
+        </label>
+      }
     </div>
     @if (previewSrcdoc(); as doc) {
-      <iframe class="be-frame" data-testid="block-preview-frame" [attr.title]="i18n.t('blockEditor.preview.label')" [srcdoc]="doc"></iframe>
+      <iframe
+        #frame
+        class="be-frame"
+        data-testid="block-preview-frame"
+        [attr.title]="i18n.t('blockEditor.preview.label')"
+        [srcdoc]="doc"
+        (load)="onFrameLoad()"
+      ></iframe>
     }
   </section>
 
@@ -45,7 +62,11 @@
           <button type="button" class="be-tab" ngTab value="checks" data-testid="block-tab-checks">
             <span [textContent]="i18n.t('blockEditor.tab.checks')"></span>
             @if (findingCount()) {
-              <span class="be-badge" data-testid="block-tab-checks-count" [textContent]="findingCount()"></span>
+              <span
+                class="be-badge"
+                data-testid="block-tab-checks-count"
+                [textContent]="findingCount()"
+              ></span>
             }
           </button>
         </div>
@@ -53,52 +74,69 @@
         <div class="be-panel-body">
           <div class="be-tab-panel" ngTabPanel value="parts">
             <ng-template ngTabContent>
-              <div class="be-lock" role="note" data-testid="block-parts-locked">
-                <svg class="be-lock-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7.5 11V8a4.5 4.5 0 0 1 9 0v3M6 11h12v9H6z" /></svg>
-                <span [textContent]="i18n.t('blockEditor.lockedNote')"></span>
-              </div>
-              <div class="be-parts" role="list">
-                @for (p of parts; track p.key) {
-                  <div class="be-part" role="listitem" aria-disabled="true">
-                    <span class="be-part-icon" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" focusable="false"><path [attr.d]="p.icon" /></svg>
-                    </span>
-                    <span class="be-part-text">
-                      <span [textContent]="i18n.t('blockEditor.part.' + p.key)"></span>
-                      <small [textContent]="i18n.t('blockEditor.part.' + p.key + '.hint')"></small>
-                    </span>
-                  </div>
-                }
-              </div>
+              @if (editor.isFree()) {
+                <app-free-parts-palette />
+              } @else {
+                <div class="be-lock" role="note" data-testid="block-parts-locked">
+                  <svg
+                    class="be-lock-icon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    <path d="M7.5 11V8a4.5 4.5 0 0 1 9 0v3M6 11h12v9H6z" />
+                  </svg>
+                  <span [textContent]="i18n.t('blockEditor.lockedNote')"></span>
+                </div>
+                <div class="be-parts" role="list">
+                  @for (p of parts; track p.key) {
+                    <div class="be-part" role="listitem" aria-disabled="true">
+                      <span class="be-part-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" focusable="false"><path [attr.d]="p.icon" /></svg>
+                      </span>
+                      <span class="be-part-text">
+                        <span [textContent]="i18n.t('blockEditor.part.' + p.key)"></span>
+                        <small
+                          [textContent]="i18n.t('blockEditor.part.' + p.key + '.hint')"
+                        ></small>
+                      </span>
+                    </div>
+                  }
+                </div>
+              }
             </ng-template>
           </div>
 
           <div class="be-tab-panel" ngTabPanel value="props">
             <ng-template ngTabContent>
-              @if (hasTexts()) {
-                <section class="be-group" data-testid="block-props-texts">
+              @if (editor.isFree()) {
+                <app-free-part-props />
+              } @else {
+                @if (hasTexts()) {
+                  <section class="be-group" data-testid="block-props-texts">
+                    <h3 class="be-group-title">
+                      <span [textContent]="i18n.t('blockEditor.group.texts')"></span>
+                      <small [textContent]="i18n.t('blockEditor.group.textsHint')"></small>
+                    </h3>
+                    <app-block-inspector part="texts" />
+                  </section>
+                }
+                @if (hasLayout()) {
+                  <section class="be-group" data-testid="block-props-layout">
+                    <h3 class="be-group-title">
+                      <span [textContent]="i18n.t('blockEditor.group.layout')"></span>
+                    </h3>
+                    <app-block-inspector part="layout" />
+                  </section>
+                }
+                <section class="be-group" data-testid="block-props-colors">
                   <h3 class="be-group-title">
-                    <span [textContent]="i18n.t('blockEditor.group.texts')"></span>
-                    <small [textContent]="i18n.t('blockEditor.group.textsHint')"></small>
+                    <span [textContent]="i18n.t('blockEditor.group.colors')"></span>
+                    <small [textContent]="i18n.t('blockEditor.group.colorsHint')"></small>
                   </h3>
-                  <app-block-inspector part="texts" />
+                  <app-clone-colors />
                 </section>
               }
-              @if (hasLayout()) {
-                <section class="be-group" data-testid="block-props-layout">
-                  <h3 class="be-group-title">
-                    <span [textContent]="i18n.t('blockEditor.group.layout')"></span>
-                  </h3>
-                  <app-block-inspector part="layout" />
-                </section>
-              }
-              <section class="be-group" data-testid="block-props-colors">
-                <h3 class="be-group-title">
-                  <span [textContent]="i18n.t('blockEditor.group.colors')"></span>
-                  <small [textContent]="i18n.t('blockEditor.group.colorsHint')"></small>
-                </h3>
-                <app-clone-colors />
-              </section>
             </ng-template>
           </div>
 

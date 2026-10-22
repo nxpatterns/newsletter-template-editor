@@ -1,7 +1,7 @@
 import { optimizeLogoForHtmlExport } from '../logo/logo-pipeline';
 import type { SocialIconSources } from '../brand/social';
 import type { Newsletter } from '../types';
-import { renderBlocks } from './blocks';
+import { renderBlocks, type RenderContext } from './blocks';
 import { renderPalette } from './colors';
 import { emailDocumentCss } from './email-css';
 import { inlineEmailCss, inlineEmailCssFragment } from './inline-email-css';
@@ -45,8 +45,8 @@ export function renderPreview(newsletter: Newsletter, opts: PreviewOptions = {})
 }
 
 /** Block editor: the document's blocks alone, framed, with stand-ins for the neighbours. */
-export function renderBlockPreview(newsletter: Newsletter, labels: BlockPreviewLabels): string {
-  const rows = renderBlocks(newsletter.blocks, { globals: newsletter.globals, mode: 'preview', annotate: true });
+export function renderBlockPreview(newsletter: Newsletter, labels: BlockPreviewLabels, parts?: RenderContext['parts']): string {
+  const rows = renderBlocks(newsletter.blocks, { globals: newsletter.globals, mode: 'preview', annotate: true, parts });
   return renderBlockPreviewDoc(newsletter.globals, newsletter.blocks, rows, labels);
 }
 

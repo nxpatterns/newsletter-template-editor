@@ -1,0 +1,86 @@
+<ng-template #tileTpl let-kind>
+  <button
+    type="button"
+    class="be-part"
+    draggable="true"
+    [attr.data-testid]="'free-part-' + kind"
+    [attr.aria-expanded]="kind === 'block' ? builtInOpen() : null"
+    (click)="tile(kind)"
+    (dragstart)="onDragStart($event, kind)"
+  >
+    <span class="be-part-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" focusable="false"><path [attr.d]="iconOf(kind)" /></svg>
+    </span>
+    <span class="be-part-text">
+      <span [textContent]="i18n.t('blockEditor.part.' + kind)"></span>
+      <small [textContent]="i18n.t('blockEditor.part.' + kind + '.hint')"></small>
+    </span>
+  </button>
+</ng-template>
+
+<div class="fpal" data-testid="free-parts">
+  <h3 class="fpal-head" [textContent]="i18n.t('blockEditor.parts.structure')"></h3>
+  <div class="be-parts">
+    @for (k of structure; track k) {
+      <ng-container *ngTemplateOutlet="tileTpl; context: { $implicit: k }" />
+    }
+  </div>
+
+  <h3 class="fpal-head" [textContent]="i18n.t('blockEditor.parts.content')"></h3>
+  <div class="be-parts">
+    @for (k of content; track k) {
+      <ng-container *ngTemplateOutlet="tileTpl; context: { $implicit: k }" />
+    }
+  </div>
+  @if (builtInOpen()) {
+    <div class="fpal-builtins" role="list" data-testid="free-builtins" [attr.aria-label]="i18n.t('blockEditor.part.block')">
+      @for (t of builtIns; track t) {
+        <button
+          type="button"
+          role="listitem"
+          class="fpal-builtin"
+          draggable="true"
+          [attr.data-testid]="'free-builtin-' + t"
+          (click)="embedBuiltIn(t)"
+          (dragstart)="onDragStart($event, 'builtin:' + t)"
+        >
+          <span class="fpal-builtin-icon" aria-hidden="true" [textContent]="typeIcon(t)"></span>
+          <span [textContent]="label(t)"></span>
+        </button>
+      }
+    </div>
+  }
+
+  <h3 class="fpal-head" [textContent]="i18n.t('blockEditor.parts.own')"></h3>
+  @if (own().length) {
+    <div class="be-parts">
+      @for (e of own(); track e.block.id) {
+        <button
+          type="button"
+          class="be-part fpal-own"
+          draggable="true"
+          [style.--fpal-hue]="hue(e)"
+          [class.fpal-own--free]="e.block.kind === 'free'"
+          [attr.data-testid]="'free-own-' + e.block.id"
+          (click)="embedOwn(e)"
+          (dragstart)="onDragStart($event, 'own:' + e.block.id)"
+        >
+          <span class="be-part-icon fpal-own-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false"><path d="M12 4.5 19.5 12 12 19.5 4.5 12z" /></svg>
+          </span>
+          <span class="be-part-text">
+            <span [textContent]="e.block.name"></span>
+            <small [textContent]="ownHint(e)"></small>
+          </span>
+        </button>
+      }
+    </div>
+  } @else {
+    <p class="ed-hint" [textContent]="i18n.t('blockEditor.parts.ownNone')"></p>
+  }
+
+  <p class="fpal-keys" data-testid="free-parts-keys">
+    <strong [textContent]="i18n.t('blockEditor.keys.title')"></strong>
+    <span [innerHTML]="i18n.t('blockEditor.keys.text')"></span>
+  </p>
+</div>

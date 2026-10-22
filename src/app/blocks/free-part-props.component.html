@@ -1,0 +1,85 @@
+<ng-template #controlsTpl let-group>
+  @for (c of group.controls; track c.key) {
+    <div class="ed-field fpp-row" [attr.data-testid]="'free-prop-' + c.key">
+      @if (c.select) {
+        <label class="ed-label" [for]="'fpp-' + c.key" [textContent]="c.label"></label>
+        <select class="ed-select" [id]="'fpp-' + c.key" (change)="onSelect(c, $event)">
+          @for (o of c.options; track o.value) {
+            <option [value]="o.value" [selected]="o.value === c.value" [textContent]="o.label"></option>
+          }
+        </select>
+      } @else {
+        <span class="ed-label" [id]="'fpp-l-' + c.key" [textContent]="c.label"></span>
+        <div class="ed-seg fpp-seg" role="radiogroup" [attr.aria-labelledby]="'fpp-l-' + c.key">
+          @for (o of c.options; track o.value) {
+            <button
+              type="button"
+              class="ed-seg-opt"
+              role="radio"
+              [class.is-on]="o.value === c.value"
+              [attr.aria-checked]="o.value === c.value"
+              [attr.data-testid]="'free-prop-' + c.key + '-' + (o.value || 'inherit')"
+              (click)="c.set(o.value)"
+              [textContent]="o.label"
+            ></button>
+          }
+        </div>
+      }
+    </div>
+  }
+  @for (t of group.toggles; track t.key) {
+    <label class="ed-switch ed-switch--start fpp-switch" [attr.data-testid]="'free-toggle-' + t.key">
+      <span [textContent]="t.label"></span>
+      <input type="checkbox" role="switch" [checked]="t.on" (change)="onToggle(t, $event)" />
+      <span class="ed-switch-track" aria-hidden="true"></span>
+    </label>
+  }
+</ng-template>
+
+<div class="fpp" data-testid="free-part-props">
+  <p class="fpp-picked" data-testid="free-props-title">
+    <span [textContent]="i18n.t('blockEditor.props.picked')"></span>
+    <strong [textContent]="title()"></strong>
+  </p>
+
+  @if (node(); as n) {
+    @if (n.kind !== 'section' && n.kind !== 'box' && n.kind !== 'divider' && n.kind !== 'spacer') {
+      <section class="be-group" data-testid="free-props-content">
+        <h3 class="be-group-title"><span [textContent]="i18n.t('blockEditor.group.content')"></span></h3>
+        @if (block(); as b) {
+          <app-free-content-fields [block]="b" [part]="n.id" />
+        }
+      </section>
+    }
+  }
+
+  <section class="be-group" data-testid="free-props-design">
+    <h3 class="be-group-title">
+      <span [textContent]="i18n.t('blockEditor.group.design')"></span>
+      @if (!node()) {
+        <small [textContent]="i18n.t('blockEditor.group.blockDesignHint')"></small>
+      } @else {
+        <small [textContent]="i18n.t('blockEditor.group.designHint')"></small>
+      }
+    </h3>
+    <ng-container *ngTemplateOutlet="controlsTpl; context: { $implicit: design() }" />
+    @if (narrow(); as text) {
+      <p class="fpp-warn" role="status" data-testid="free-props-narrow" [textContent]="text"></p>
+    }
+  </section>
+
+  @if (box().controls.length) {
+    <section class="be-group" data-testid="free-props-box">
+      <h3 class="be-group-title"><span [textContent]="i18n.t('blockEditor.group.box')"></span></h3>
+      <ng-container *ngTemplateOutlet="controlsTpl; context: { $implicit: box() }" />
+    </section>
+  }
+
+  <section class="be-group" data-testid="free-props-colors">
+    <h3 class="be-group-title">
+      <span [textContent]="i18n.t('blockEditor.group.colors')"></span>
+      <small [textContent]="i18n.t('blockEditor.group.colorsHint')"></small>
+    </h3>
+    <app-clone-colors [prefix]="colorPrefix()" />
+  </section>
+</div>
