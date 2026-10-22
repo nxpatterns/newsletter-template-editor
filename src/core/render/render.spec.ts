@@ -101,6 +101,25 @@ describe('renderExport', () => {
     expect(html).toContain('bgcolor=');
   });
 
+  it('resolves the color variables inside the dark-mode block', () => {
+    const html = renderExport(seedNewsletter()).full;
+    const media = html.match(/@media \(prefers-color-scheme: dark\)[\s\S]*?\n  }\n/)?.[0] ?? '';
+    expect(media).toContain('!important');
+    expect(media).not.toContain('var(');
+  });
+
+  it('sets the document language from the template language', () => {
+    expect(renderExport(seedNewsletter('de')).full).toContain('<html lang="de"');
+    expect(renderExport(seedNewsletter('en')).full).toContain('<html lang="en"');
+  });
+
+  it('places the open-tracking pixel right after the preheader', () => {
+    const html = renderExport(seedNewsletter()).full;
+    const body = html.slice(html.indexOf('<body'));
+    expect(body.indexOf('{{ TrackView }}')).toBeGreaterThan(body.indexOf('preheader-hide'));
+    expect(body.indexOf('{{ TrackView }}')).toBeLessThan(body.indexOf('email-bg'));
+  });
+
   it('exports inlined styles while keeping semantic classes', () => {
     const html = renderExport(seedNewsletter()).full;
     expect(html).toContain('hero-label');

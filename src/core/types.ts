@@ -127,6 +127,8 @@ export interface Globals {
   assetBaseUrl: string;
   /** Header/footer parts switched off; absent or empty = everything shown. */
   hiddenFrameParts?: FramePart[];
+  /** Language of the template's content (BCP 47, e.g. `de`); set when the template is created. Absent = `de`. */
+  language?: string;
 }
 
 export interface BlockBase {
