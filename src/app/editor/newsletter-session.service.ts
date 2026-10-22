@@ -19,6 +19,8 @@ import { clearParagraphStash } from './paragraph-draft-stash';
 import { buildProjectEnvelope, parseProjectFile, type LibraryEntry } from '../../core/persist/idb-docs';
 import type { TemplateSummary } from '../../core/persist/template-repository';
 import { TEMPLATE_REPOSITORY } from './template-repository.token';
+import { ID_SOURCE } from './id-source.token';
+import { StoragePersistence } from './storage-persistence.service';
 import { editorPanelPath, type EditorPanelTab, type PlacedView } from './panel/panel-routes';
 import { LocaleService } from '../i18n/locale.service';
 import { SnackbarService } from '../ui/snackbar/snackbar.service';
@@ -53,6 +55,8 @@ export class NewsletterSession {
   private readonly snackbar = inject(SnackbarService);
   private readonly i18n = inject(LocaleService);
   private readonly repo = inject(TEMPLATE_REPOSITORY);
+  private readonly newId = inject(ID_SOURCE);
+  private readonly persistence = inject(StoragePersistence);
 
   private readonly newsletterSignal = signal<Newsletter>(seedNewsletter());
   private readonly selectedBlockIdSignal = signal<string | null>(null);
@@ -214,7 +218,7 @@ export class NewsletterSession {
     const name = (opts?.name ?? this.displayNameSignal()).trim() || this.unnamedDisplayName();
     let id = this.libraryIdSignal();
     if (opts?.asNew || !id) {
-      id = this.repo.newId();
+      id = this.newId();
     }
     // Overwriting keeps the pin; a new copy starts unpinned.
     const pinnedAt = (await this.repo.get(id).catch(() => null))?.pinnedAt;
@@ -226,6 +230,7 @@ export class NewsletterSession {
       ...(pinnedAt ? { pinnedAt } : {}),
     };
     await this.repo.put(entry);
+    void this.persistence.ensure();
     this.displayNameSignal.set(name);
     this.libraryIdSignal.set(id);
     this.dirtySignal.set(false);

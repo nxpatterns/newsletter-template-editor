@@ -3,9 +3,13 @@ import { STORAGE_KEY, type StoredEnvelope, loadNewsletter } from './storage';
 import { normalizeNewsletter } from './normalize-newsletter';
 
 const DB_NAME = 'nte-docs';
-const DB_VERSION = 1;
+/** v2: stores for own blocks, their versions and drafts (block editor). */
+const DB_VERSION = 2;
 const STORE_LIBRARY = 'library';
 const STORE_RECOVERY = 'recovery';
+export const STORE_OWN_BLOCKS = 'ownBlocks';
+export const STORE_BLOCK_VERSIONS = 'blockVersions';
+export const STORE_BLOCK_DRAFTS = 'blockDrafts';
 const RECOVERY_KEY = 'current';
 
 export interface LibraryEntry {
@@ -15,6 +19,9 @@ export interface LibraryEntry {
   newsletter: Newsletter;
   /** When it was pinned to the start page tiles; absent when not pinned. */
   pinnedAt?: string;
+  /** Filled from the account at the first cloud upload; absent or null locally. */
+  tenantId?: string | null;
+  ownerId?: string | null;
 }
 
 export interface RecoveryDoc {
@@ -36,7 +43,7 @@ export interface ProjectFileEnvelope {
   exportedAt: string;
 }
 
-function openDb(): Promise<IDBDatabase> {
+export function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = () => {
@@ -47,13 +54,22 @@ function openDb(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(STORE_RECOVERY)) {
         db.createObjectStore(STORE_RECOVERY, { keyPath: 'key' });
       }
+      if (!db.objectStoreNames.contains(STORE_OWN_BLOCKS)) {
+        db.createObjectStore(STORE_OWN_BLOCKS, { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains(STORE_BLOCK_VERSIONS)) {
+        db.createObjectStore(STORE_BLOCK_VERSIONS, { keyPath: 'id' }).createIndex('blockId', 'blockId');
+      }
+      if (!db.objectStoreNames.contains(STORE_BLOCK_DRAFTS)) {
+        db.createObjectStore(STORE_BLOCK_DRAFTS, { keyPath: 'id' }).createIndex('blockId', 'blockId');
+      }
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error ?? new Error('idb open failed'));
   });
 }
 
-function txDone(tx: IDBTransaction): Promise<void> {
+export function txDone(tx: IDBTransaction): Promise<void> {
   return new Promise((resolve, reject) => {
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error ?? new Error('idb tx failed'));
@@ -152,12 +168,12 @@ export async function saveHiddenDemos(langs: string[]): Promise<void> {
   await txDone(tx);
 }
 
-/** Factory reset: every saved template, the draft and the hidden demos, in one transaction. */
+/** Factory reset: every saved template, the draft, the hidden demos and all own blocks with their versions and drafts, in one transaction. */
 export async function clearAllDocs(): Promise<void> {
+  const stores = [STORE_LIBRARY, STORE_RECOVERY, STORE_OWN_BLOCKS, STORE_BLOCK_VERSIONS, STORE_BLOCK_DRAFTS];
   const db = await openDb();
-  const tx = db.transaction([STORE_LIBRARY, STORE_RECOVERY], 'readwrite');
-  tx.objectStore(STORE_LIBRARY).clear();
-  tx.objectStore(STORE_RECOVERY).clear();
+  const tx = db.transaction(stores, 'readwrite');
+  stores.forEach((name) => tx.objectStore(name).clear());
   await txDone(tx);
 }
 
@@ -233,9 +249,4 @@ export function parseProjectFile(raw: string): {
     return null;
   }
   return null;
-}
-
-/** Stable random id; older `lib-…` ids stay valid. */
-export function newLibraryId(): string {
-  return crypto.randomUUID();
 }

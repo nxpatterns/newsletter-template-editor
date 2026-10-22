@@ -45,7 +45,6 @@ function memoryRepo(): TemplateRepository & {
       repo.draft = null;
       repo.hidden = [];
     },
-    newId: () => 'new',
   };
   return repo;
 }

@@ -1,7 +1,7 @@
 # Block editor and demo page
 
 Concept for two new product areas: a **block editor** (users change or create their own blocks) and a **demo page** (users publish their own newsletters for others to see).
-Status: concept accepted (decisions 1 to 82), mockups R1 to R5 done. Implementation started 2026-10-22 in this order: storage base, reset dialog, available width in the render context, clone mode, free blocks, overview of own blocks, renaming the start tiles, demo page last.
+Status: concept accepted (decisions 1 to 82), mockups R1 to R5 done. Implementation started 2026-10-22 in this order: storage base (built), reset dialog, available width in the render context, clone mode, free blocks, overview of own blocks, renaming the start tiles (done early), demo page last.
 Audience: non-technical sellers and marketing people first, designers second. English only.
 
 Related: `src/core/colors/model.ts` (implemented color levels), `email-colors.md` (color product rules), `block-content-editing.md` (edit modal, lite kit, render pipeline), `file-management.md` (storage, start page, menus), `design-system.md` (app look), `AGENTS.md` (email CSS rule).
@@ -162,6 +162,12 @@ Checks run while editing and again when an own block is inserted into another te
 - Insertion records the block's version. Later changes to an own block reach older templates only when the user asks for it.
 - Storage today: IndexedDB, behind a repository interface like `template-repository.token.ts`, so cloud accounts can replace it later.
 - IDs: every stored object (template, own block, block version, draft) gets a UUIDv7 from one injected ID source. Timestamp plus cryptographic randomness makes IDs globally unique without a backend; the server's unique constraint is the final check at the first sync. Tenant and owner are fields, empty locally and filled at the first sync after login, never part of the ID. Block ids inside one document may stay short and local.
+- Storage base (built 2026-10-22):
+  - `src/core/id/uuid-v7.ts`: the UUIDv7 source (RFC 9562, ids sort by creation within one source); the app injects it as `ID_SOURCE`. New templates get UUIDv7 ids; older template ids stay valid.
+  - `src/core/own-blocks/model.ts`: own block, version (immutable, numbered per block) and draft (at most one per block, standalone when its block is gone). Every record carries `tenantId` and `ownerId`, null locally; templates may carry them as optional fields. Block content is a placeholder type until clone mode and the parts model give it a shape.
+  - `src/core/own-blocks/operations.ts`: create, save draft, publish version, rename, duplicate, delete, delete drafts older than. Pure functions with time and id source passed in; each returns a change set.
+  - `src/core/own-blocks/block-repository.ts`: `BlockRepository` applies a change set in one transaction; IndexedDB implementation in the `nte-docs` database (version 2 adds the stores `ownBlocks`, `blockVersions`, `blockDrafts`), injected as `BLOCK_REPOSITORY`.
+  - Persistent storage is requested once, on the first save, never at app start, because Firefox asks the user (`StoragePersistence`).
 - Factory reset and cleared browser data also delete all own blocks and drafts. The reset dialog must say so. The reset dialog lists one checkbox per kind of data, each with a count: templates, own blocks, block drafts, current working draft, view settings. Kinds without data are hidden. All are checked by default, since the entry means "reset everything"; the rows are independent, and whatever the user unchecks stays. The existing acknowledge step stays, plus a button "Save selected as a file" that saves only the checked kinds, with a line "Selected: everything" (or the checked kinds) under it. The delete button reads "Delete everything" while everything is checked, otherwise "Delete selected", and stays disabled until the acknowledge box is ticked. The app language is not part of the list and stays. Design: decisions 63 to 67, mockup `docs/mockups/block-editor/r4-reset-dialog.html`.
 
 ## Cost model
@@ -214,7 +220,7 @@ Route: its own address (for example `/blocks/:id`), plus an overview of own bloc
 
 ## Naming
 
-- The current start tiles "Demovorlage Deutsch / Englisch" are start help, not demos. Rename to **"Beispielvorlage Deutsch / Englisch"** (EN: "Example template"), so "Demos" clearly means the new page.
+- The start tiles are start help, not demos. They are named **"Beispielvorlage Deutsch / Englisch"** (EN: "Example template German / English"), formerly "Demovorlage", so "Demos" clearly means the new page. Done 2026-10-22.
 - New term in the UI: "Own blocks" (DE: "Eigene Bausteine").
 
 ## Risks and notes

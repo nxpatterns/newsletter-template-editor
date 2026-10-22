@@ -8,7 +8,6 @@ import {
   loadHiddenDemos,
   loadRecovery,
   migrateLegacyLocalStorageIfNeeded,
-  newLibraryId,
   putLibraryEntry,
   saveHiddenDemos,
   saveRecovery,
@@ -47,9 +46,8 @@ export interface TemplateRepository {
   /** Demos the user removed from the start page. */
   hiddenDemos(): Promise<SeedLanguage[]>;
   setHiddenDemos(langs: SeedLanguage[]): Promise<void>;
-  /** Remove every saved template and the draft, and bring the demos back. */
+  /** Remove every saved template, the draft and all own blocks, and bring the demos back. */
   clearAll(): Promise<void>;
-  newId(): string;
 }
 
 export const indexedDbTemplateRepository: TemplateRepository = {
@@ -73,6 +71,5 @@ export const indexedDbTemplateRepository: TemplateRepository = {
   hiddenDemos: async () => (await loadHiddenDemos()).filter((l): l is SeedLanguage => l === 'de' || l === 'en'),
   setHiddenDemos: saveHiddenDemos,
   clearAll: clearAllDocs,
-  newId: newLibraryId,
 };
 
