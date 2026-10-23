@@ -235,7 +235,6 @@ ${Object.entries(vars).map(([k, v]) => `    --email-${k}: ${v};`).join('\n')}
     text-decoration: none;
   }
   .email-image-link { display: block; }
-  .image-caption-full { margin: 8px 48px 12px 48px; }
   .image-caption {
     margin: 8px 0 0 0;
     font-family: var(--email-font);
@@ -244,6 +243,8 @@ ${Object.entries(vars).map(([k, v]) => `    --email-${k}: ${v};`).join('\n')}
     font-style: italic;
     color: var(--email-dim);
   }
+  /* After .image-caption, so its side margin and the space below win. */
+  .image-caption-full { margin: 8px 48px 12px 48px; }
 
   /* Image and text: two columns, stacked on phones (see the max-width media query) */
   .image-text-gap { width: 20px; font-size: 0; line-height: 0; }

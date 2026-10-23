@@ -84,8 +84,9 @@ export function freeBlockCss(): string {
     `.fp-ls-wide { letter-spacing: ${LETTER_SPACING_PX.wide}px; }`,
     `.fp-ls-wider { letter-spacing: ${LETTER_SPACING_PX.wider}px; }`,
     '.fp-img { display: block; max-width: 100%; height: auto; border: 0; outline: none; text-decoration: none; }',
-    '.fp-a-center .fp-img { margin: 0 auto; }',
-    '.fp-a-right .fp-img { margin: 0 0 0 auto; }',
+    // On the image itself: the export inliner drops descendant selectors.
+    '.fp-img-center { margin: 0 auto; }',
+    '.fp-img-right { margin: 0 0 0 auto; }',
     '.fp-img-link { display: block; }',
     ...BUTTON_SIZES.map((b) => `.fp-btn-${b} { padding: ${BUTTON_SIZE[b].padV}px ${BUTTON_SIZE[b].padH}px; }`),
     '.fp-btn-cell { mso-padding-alt: 0; }',
@@ -108,12 +109,13 @@ export function freeBlockCss(): string {
   ].join('\n  ');
 }
 
-/** Phone rules (inside the 600 px media query): stacking columns and their spacing. */
+/** Phone rules (inside the 600 px media query): stacking columns, their spacing and their full width images. */
 export function freeBlockMobileCss(): string {
   return [
     '.fp-col-s { display: block !important; width: 100% !important; }',
     '.fp-gap-s { display: none !important; }',
     '.fp-w { width: 100% !important; }',
+    '.fp-img-fill { width: 100% !important; max-width: 100% !important; }',
     ...SPACES.filter((s) => s !== '0').map((s) => `.fp-cn-${s} { padding-top: ${SPACE_PX[s]}px !important; }`),
   ].join('\n    ');
 }

@@ -2,6 +2,7 @@ import type { SlotColor } from '../../colors/model';
 import type { BuiltInBlock, BuiltInType, FreeBlock } from '../../types';
 import type { FreeBlockData } from '../model';
 import { chapterToParts, ctaToParts, dividerToParts, heroToParts, quoteToParts } from './blocks';
+import { imageTextToParts, imageToParts } from './images';
 import { paragraphToParts } from './paragraph';
 
 /**
@@ -24,6 +25,8 @@ export const CONVERTERS: ConverterRegistry = {
   'pull-quote': quoteToParts,
   'cta-button': ctaToParts,
   divider: dividerToParts,
+  image: imageToParts,
+  'image-text': imageTextToParts,
 };
 
 /** Built-in types that have a converter, in registry order. */

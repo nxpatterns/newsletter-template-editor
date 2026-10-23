@@ -59,6 +59,8 @@ interface Scope {
   /** Item of a collection while its item design renders. */
   item: CollectionItem | null;
   embed: EmbedRenderer;
+  /** Inside a column that stacks on phones: a full width image there fills the phone width too. */
+  stacked?: boolean;
 }
 
 const TABLE = 'role="presentation" cellspacing="0" cellpadding="0" border="0"';
@@ -185,7 +187,7 @@ function renderColumns(scope: Scope, n: ColumnsNode, avail: number): string {
   const cells = cols.map(({ c, w }, i) => {
     const cls = ['fp-col', stacks ? 'fp-col-s' : '', stacks && i > 0 ? `fp-cn-${n.gap ?? 'm'}` : ''].filter(Boolean).join(' ');
     const part = scope.ctx.parts ? ` data-column="${escapeAttr(c.id)}"` : '';
-    const col = `<td class="${cls}" width="${w}" valign="${valign}"${rtl ? ' dir="ltr"' : ''}${part}>${stack(scope, c.children, w)}</td>`;
+    const col = `<td class="${cls}" width="${w}" valign="${valign}"${rtl ? ' dir="ltr"' : ''}${part}>${stack(stacks ? { ...scope, stacked: true } : scope, c.children, w)}</td>`;
     const gapCell = i < cols.length - 1 && gap ? `<td class="fp-gap${stacks ? ' fp-gap-s' : ''}" width="${gap}">&nbsp;</td>` : '';
     return col + gapCell;
   });
@@ -282,9 +284,12 @@ function renderImage(scope: Scope, n: ImageNode, avail: number): string {
   if (!src && !scope.ctx.annotate) return '';
   const w = sharePx(avail, n);
   const radius = n.radius && n.radius !== 'none' ? ` fp-r-${n.radius}` : '';
+  const align = n.align ?? scope.style.align;
+  const place = align && align !== 'left' ? ` fp-img-${align}` : '';
+  const fill = scope.stacked && (n.width ?? 'full') === 'full' ? ' fp-img-fill' : '';
   const alt = part?.kind === 'image' ? part.alt : '';
   let pic = src
-    ? `<img src="${escapeAttr(src)}" alt="${escapeAttr(alt)}" width="${w}" class="fp-img${radius}">`
+    ? `<img src="${escapeAttr(src)}" alt="${escapeAttr(alt)}" width="${w}" class="fp-img${radius}${place}${fill}">`
     : `<span class="nte-image-empty" style="--image-w:${w}px">&nbsp;</span>`;
   const href = part?.kind === 'image' ? linkFor(part.href) : '';
   if (src && href) pic = `<a href="${attrHref(resolveHref(href, scope.ctx.mode), scope.ctx.mode)}" target="_blank" class="fp-img-link">${pic}</a>`;

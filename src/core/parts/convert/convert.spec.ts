@@ -44,6 +44,23 @@ describe('gate converters', () => {
     expect(html).not.toMatch(/class="fp-divider[^"]*" style="[^"]*border-top: /);
   });
 
+  it('centers a small image in the export and lets a stacked full width image fill the phone width', () => {
+    const small = body(toFreeBlock({ id: 'i', type: 'image', src: 'https://x.eu/a.png', alt: 'A', href: '', caption: '', width: 'small' })!);
+    expect(small).toMatch(/<img[^>]*width="252"[^>]*class="fp-img fp-img-center"[^>]*style="[^"]*margin: 0 auto/);
+    const left = body(
+      toFreeBlock({ id: 't', type: 'image-text', src: 'https://x.eu/a.png', alt: 'A', href: '', body: [], side: 'left', imageWidth: 'third', valign: 'top' })!,
+    );
+    expect(left).toMatch(/class="fp-img fp-img-fill"/);
+  });
+
+  it('puts the image first in the source for an image on the right, so it lands on top on phones', () => {
+    const html = body(
+      toFreeBlock({ id: 't', type: 'image-text', src: 'https://x.eu/a.png', alt: 'A', href: '', body: [], side: 'right', imageWidth: 'half', valign: 'middle' })!,
+    );
+    expect(html).toMatch(/class="fp-cols" dir="rtl"/);
+    expect(html.indexOf('<img')).toBeLessThan(html.lastIndexOf('fp-col'));
+  });
+
   it('snaps off-scale px to the nearest step, a tie to the smaller one', () => {
     expect([space(52), space(20), space(28), textSize(22), textSize(13), border(3)]).toEqual(['2xl', 'm', 'l', 'l', 'xs', '2']);
   });
