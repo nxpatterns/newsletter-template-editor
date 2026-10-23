@@ -3,7 +3,7 @@
  * built-in renderer and as parts, takes screenshots at 600 and 320 px in Light and Dark and
  * writes one side by side overview page. The only automatic check is equal texts and links.
  *
- *   npm run gate:compare -- [out dir]   (default: docs/sessions/cache/gate-comparison)
+ *   npm run gate:compare -- [out dir]   (default: docs/sessions/cache/screenshots/gate-comparison)
  */
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -22,7 +22,7 @@ Object.assign(globalThis, { DOMParser: dom.window.DOMParser, Node: dom.window.No
 const WIDTHS = [600, 320] as const;
 const SCHEMES = ['light', 'dark'] as const;
 
-const out = resolve(process.argv[2] ?? 'docs/sessions/cache/gate-comparison');
+const out = resolve(process.argv[2] ?? 'docs/sessions/cache/screenshots/gate-comparison');
 rmSync(out, { recursive: true, force: true });
 mkdirSync(join(out, 'shots'), { recursive: true });
 
