@@ -73,15 +73,15 @@ export function benefitsToParts(b: BenefitsListBlock): Converted {
  * CTA link list: one dim line 14 / 24 px per item: the glyph in the link color 8 px before the
  * bold label in the body color, the intro, then the underlined link. Rows 14 px apart with a
  * hairline between them, none above the first and below the last; block padding 20 / 48 px.
- * A list part repeats one item design, so every item gets its padding and its line: the block
- * padding takes 8 px, which with the item's 12 px keeps 20 px at the top, and the last item keeps
- * its line (model gap, step 11). The glyph sits one space before the label, the link is not
- * underlined and not tracked (model gaps, steps 5 and 11).
+ * The glyph is an `s` icon (16 px) in its own `1:3` column like the Benefits list, so every text
+ * starts at the same place whatever the glyph's width (maintainer, 2026-10-23); the old inline
+ * glyph moved the text by its width. A list part repeats one item design, so every item gets its
+ * padding and its line: the block padding takes 8 px, which with the item's 12 px keeps 20 px at
+ * the top, and the last item keeps its line (model gap, step 11). The link is not underlined and
+ * not tracked (model gaps, steps 5 and 11).
  */
 export function ctaLinksToParts(b: CtaLinkListBlock): Converted {
   const doc = (item: CtaLinkListBlock['items'][number]): RichInline[] => [
-    { type: 'text', text: item.icon || '→', marks: { color: 'link' } },
-    { type: 'text', text: ' ' },
     ...(item.label ? [{ type: 'text' as const, text: item.label, marks: { bold: true, color: 'body' as const } }] : []),
     { type: 'text', text: item.intro ? ` ${item.intro} ` : ' ' },
     ...(item.linkText && item.href.trim() ? [{ type: 'text' as const, text: item.linkText, marks: { link: { href: item.href } } }] : []),
@@ -94,7 +94,10 @@ export function ctaLinksToParts(b: CtaLinkListBlock): Converted {
           id: 'l1',
           items: b.items.map((item, i) => ({
             id: `it${i + 1}`,
-            parts: [{ id: 't1', kind: 'text', role: 'body', doc: [{ type: 'p', color: 'dim', children: doc(item) }] }],
+            parts: [
+              { id: 'g1', kind: 'icon', role: 'icon', glyph: item.icon || '→' },
+              { id: 't1', kind: 'text', role: 'body', doc: [{ type: 'p', color: 'dim', children: doc(item) }] },
+            ],
           })),
         },
       ],
@@ -117,7 +120,20 @@ export function ctaLinksToParts(b: CtaLinkListBlock): Converted {
                 padV: space(14),
                 border: '1',
                 borderSides: 'bottom',
-                children: [{ id: 'n3', kind: 'text', part: 't1', size: textSize(14), lineHeight: 'loose' }],
+                children: [
+                  {
+                    id: 'n3',
+                    kind: 'columns',
+                    ratio: '1:3',
+                    gap: '0',
+                    valign: 'top',
+                    stack: false,
+                    columns: [
+                      { id: 'c1', children: [{ id: 'n4', kind: 'icon', part: 'g1', size: iconSize(14) }] },
+                      { id: 'c2', children: [{ id: 'n5', kind: 'text', part: 't1', size: textSize(14), lineHeight: 'loose' }] },
+                    ],
+                  },
+                ],
               },
             ],
           },
