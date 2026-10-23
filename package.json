@@ -1,23 +1,4 @@
 {
-  "name": "newsletter-template-editor",
-  "version": "0.5.0",
-  "scripts": {
-    "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "test:coverage": "npm test -- --watch=false --coverage",
-    "test:bdd": "bddgen --config bdd.config.ts && playwright test --config bdd.config.ts",
-    "test:bdd:gen": "bddgen --config bdd.config.ts",
-    "prestart": "node scripts/write-app-version.mjs",
-    "prebuild": "node scripts/write-app-version.mjs",
-    "pretest": "node scripts/write-app-version.mjs",
-    "version:write": "node scripts/write-app-version.mjs",
-    "release:version": "node scripts/release-version.mjs"
-  },
-  "private": true,
-  "packageManager": "npm@11.13.0",
   "dependencies": {
     "@angular/aria": "^22.2.1",
     "@angular/cdk": "^22.2.1",
@@ -35,12 +16,35 @@
     "@angular/cli": "^22.2.1",
     "@angular/compiler-cli": "^22.2.0",
     "@playwright/test": "^1.63.0",
+    "@types/inquirer": "^9.0.7",
     "@vitest/coverage-v8": "^5.0.5",
     "fake-indexeddb": "^6.2.6",
+    "inquirer": "^12.0.0",
     "jsdom": "^30.0.0",
     "playwright-bdd": "^9.2.1",
     "prettier": "^3.8.1",
+    "simple-git": "^3.27.0",
     "typescript": "~6.0.2",
     "vitest": "^5.0.0"
-  }
+  },
+  "name": "newsletter-template-editor",
+  "packageManager": "npm@11.13.0",
+  "private": true,
+  "scripts": {
+    "build": "ng build",
+    "maintenance:branches": "tsx --tsconfig tsconfig.json maintenance/select-and-delete-local-branches.ts",
+    "ng": "ng",
+    "prebuild": "node scripts/write-app-version.mjs",
+    "prestart": "node scripts/write-app-version.mjs",
+    "pretest": "node scripts/write-app-version.mjs",
+    "release:version": "node scripts/release-version.mjs",
+    "start": "ng serve",
+    "test": "ng test",
+    "test:bdd": "bddgen --config bdd.config.ts && playwright test --config bdd.config.ts",
+    "test:bdd:gen": "bddgen --config bdd.config.ts",
+    "test:coverage": "npm test -- --watch=false --coverage",
+    "version:write": "node scripts/write-app-version.mjs",
+    "watch": "ng build --watch --configuration development"
+  },
+  "version": "0.5.0"
 }
