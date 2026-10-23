@@ -130,6 +130,25 @@ A **Date** part (formatted month, day, weekday, time range) and a calendar link 
   - Accessibility: body text at least `s` 14 px, small print (captions, footer, legal) at least `xs` 12 px; tap targets for buttons at least 44 px high, icon links at least 24 × 24 px (WCAG 2.2 target size); body text not `tight`; contrast WCAG AA as in Quality checks. These checks warn, they do not block saving.
 - Email limits for every design: tables, `bgcolor`, padding and borders; width up to 600 px; up to 4 columns (3 recommended); radius degrades to square in classic Outlook; stacking below 600 px by media query (classic Outlook keeps columns). Not in v1: background images (Outlook needs VML), visibility only on mobile or desktop. Never: scripts, forms, video.
 
+### Gate steps
+
+Decisions 84 to 86. Each step is its own fresh thread; step 1 comes first, steps 2 to 9 run one after another because they all touch `src/core/parts/`, step 10 comes last. Event and Greeting stay built-in.
+
+| Step | Blocks | Size |
+| --- | --- | --- |
+| 1. Comparison harness | Converter registry (built-in block to content plus default design); script renders the **export** of each block twice (old renderer, parts) at 600 and 320 px, Light and Dark, onto one side by side overview page in `docs/sessions/cache/`; automatic check only for equal texts and links; first block Paragraph | M |
+| 2. Text blocks | Hero, Chapter band, Pull quote, CTA button | M |
+| 3. Divider | All 5 styles plus page background (glow and ornament need mixed colors) | M |
+| 4. Images | Image, Image and text (widths, side, vertical alignment) | M |
+| 5. Video | Video (play field as icon with circle) | S |
+| 6. People | Testimonial (3 image modes), Contact | M |
+| 7. Numbers | Stat box, Price box (strike-through, mixed sizes in one line) | M |
+| 8. Lists | Benefits list, CTA link list (List part) | M |
+| 9. Teasers | Teasers with 2 and 3 columns | M |
+| 10. Close the gate | A test checks that every built-in type except Event and Greeting has a converter; mark the gate done here | S |
+
+Each step adds its screenshots to the overview and waits for the maintainer's OK.
+
 ## Color model for own blocks
 
 Extends the binding order of the implemented color model in `src/core/colors/model.ts` (block standard colors < general colors < per-block overrides, two sets per template: Light and Dark). A block color is either linked to a role (`{ role }`) or fixed (`{ hex }`). Product rules: `email-colors.md`.
@@ -342,6 +361,9 @@ Numbers refer to the questions in the 2026-10-21 thread.
 | 81 | Scale values (decision 78) | Start with best-guess values (Finite scales table), measured values replace them later. Stored blocks keep token names only. |
 | 82 | Floors for nesting and accessibility | Minimum widths per part, depth limits and accessibility minimums as in Coverage and limits. Starting values, to be checked in practice; they may change. Width floors refuse the drop, accessibility findings warn. |
 | 83 | Phones (replaces decision 61) | Nothing is left out on phones: "New block" and "Edit" are shown there as well. Phone optimizations follow later as their own topic |
+| 84 | Meaning of "equivalent HTML" in the gate (decision 45) | Neither byte nor pixel equal; small differences are fine. Screenshots of the export side by side, reviewed together with the maintainer; email clients have top priority, the preview iframe is not compared |
+| 85 | Built-in renderers after the gate | Stay; the gate is a proof. Switching built-in blocks to content plus default design is a later step of its own |
+| 86 | Built-in values outside the scales (for example teaser gap 20 px, video gap 10 px) | The built-in block moves to the nearest scale value; the scales are not extended for it |
 
 ## Mockups and states
 
@@ -361,4 +383,4 @@ Reset dialog wording (EN; DE in the mockup):
 
 ## Open questions
 
-None. Decisions 30 to 74 were accepted on 2026-10-21, decisions 75 to 83 on 2026-10-22.
+None. Decisions 30 to 74 were accepted on 2026-10-21, decisions 75 to 83 on 2026-10-22, decisions 84 to 86 on 2026-10-23.
