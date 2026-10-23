@@ -5,7 +5,7 @@ import { normalizeNewsletter } from '../persist/normalize-newsletter';
 import { CURRENT_SCHEMA_VERSION, createBlock, type FreeBlock, type Newsletter } from '../types';
 import { freeColorSlots } from './colors';
 import { narrowestLeaf, narrowPhoneColumns, refuseInsert, resolvedWidths } from './layout';
-import { activeDesign, findNode, type ColumnsNode, type FreeBlockData } from './model';
+import { activeDesign, findNode, type ColumnsNode, type FreeBlockData, type LayoutNode } from './model';
 import {
   addListItem,
   emptyFreeData,
@@ -117,6 +117,15 @@ describe('parts operations', () => {
 describe('parts widths and floors', () => {
   it('splits a row by ratio after the gap, the rest to the last column', () => {
     expect(columnWidths(504, { ratio: '1:2', gap: 'm', columns: [{ id: 'a', children: [] }, { id: 'b', children: [] }] })).toEqual([162, 326]);
+  });
+
+  it('gives a fitting icon column the icon box or its circle and the rest to the other columns; anything else keeps its share', () => {
+    const icon = (circle = false) => ({ id: 'i', kind: 'icon' as const, part: 'g', size: 's' as const, circle });
+    const text = { id: 't', kind: 'text' as const, part: 'x' };
+    const row = (first: LayoutNode[]) => ({ ratio: '1:3' as const, gap: 'm' as const, columns: [{ id: 'a', fit: true, children: first }, { id: 'b', children: [] }] });
+    expect(columnWidths(544, row([icon()]))).toEqual([16, 512]);
+    expect(columnWidths(544, row([icon(true)]))).toEqual([32, 496]);
+    expect(columnWidths(544, row([icon(), text]))).toEqual([132, 396]);
   });
 
   it('resolves widths through nested parts from the available width', () => {

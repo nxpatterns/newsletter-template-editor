@@ -98,6 +98,7 @@ export function freeBlockCss(): string {
       return `a.fp-btn-t-${t} { font-size: ${TEXT_SIZE_PX[t]}px; line-height: ${lineHeightPx(t, 'tight')}px; mso-line-height-rule: exactly; }`;
     }),
     ...ICON_SIZES.map((i) => `.fp-icon-${i} { display: inline-block; font-size: ${ICON_PX[i]}px; line-height: ${ICON_PX[i]}px; mso-line-height-rule: exactly; }`),
+    ...ICON_SIZES.map((i) => `.fp-icon-w-${i} { width: ${ICON_PX[i]}px; text-align: center; }`),
     // In a circle the glyph is a block, so the cell centers its box and not a line box of the inherited line height.
     '.fp-icon-c { display: block; }',
     ...ICON_SIZES.map((i) => `.fp-icon-play-${i} { padding: ${ICON_PX[i] / 8}px 0 0 ${ICON_PX[i] / 4}px; }`),

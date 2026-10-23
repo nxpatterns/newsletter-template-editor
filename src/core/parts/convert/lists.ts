@@ -6,8 +6,8 @@ import { iconSize, plainDoc, space, textSize } from './snap';
 /**
  * Benefits list: one row per item, 14 px above and below, a hairline under every row; block
  * padding 20 / 48 px. The glyph 14 px in the link color, 3 px down, in a 25 px column; the text
- * 16 / 21.6 px in the heading color. The glyph is an `s` icon (16 px), at the top of its line without the 3 px; the icon column takes `1:3`,
- * not its content width (model gap, step 11).
+ * 16 / 21.6 px in the heading color. The glyph is an `s` icon (16 px), at the top of its line
+ * without the 3 px, in a column as wide as the icon and 16 px before the text.
  */
 export function benefitsToParts(b: BenefitsListBlock): Converted {
   return {
@@ -49,11 +49,11 @@ export function benefitsToParts(b: BenefitsListBlock): Converted {
                     id: 'n3',
                     kind: 'columns',
                     ratio: '1:3',
-                    gap: '0',
+                    gap: space(16),
                     valign: 'top',
                     stack: false,
                     columns: [
-                      { id: 'c1', children: [{ id: 'n4', kind: 'icon', part: 'g1', size: iconSize(14) }] },
+                      { id: 'c1', fit: true, children: [{ id: 'n4', kind: 'icon', part: 'g1', size: iconSize(14) }] },
                       { id: 'c2', children: [{ id: 'n5', kind: 'text', part: 't1', size: textSize(16), lineHeight: 'tight' }] },
                     ],
                   },
@@ -73,9 +73,9 @@ export function benefitsToParts(b: BenefitsListBlock): Converted {
  * CTA link list: one dim line 14 / 24 px per item: the glyph in the link color 8 px before the
  * bold label in the body color, the intro, then the underlined link. Rows 14 px apart with a
  * hairline between them, none above the first and below the last; block padding 20 / 48 px.
- * The glyph is an `s` icon (16 px) in its own `1:3` column like the Benefits list, so every text
- * starts at the same place whatever the glyph's width (maintainer, 2026-10-23); the old inline
- * glyph moved the text by its width. A list part repeats one item design, so every item gets its
+ * The glyph is an `s` icon (16 px) in a column as wide as the icon and 16 px before the text, like
+ * the Benefits list, so every text starts at the same place whatever the glyph's width
+ * (maintainer, 2026-10-23); the old inline glyph moved the text by its width. A list part repeats one item design, so every item gets its
  * padding and its line: the block padding takes 8 px, which with the item's 12 px keeps 20 px at
  * the top, and the last item keeps its line (model gap, step 11). The link is not underlined and
  * not tracked (model gaps, steps 5 and 11).
@@ -125,11 +125,11 @@ export function ctaLinksToParts(b: CtaLinkListBlock): Converted {
                     id: 'n3',
                     kind: 'columns',
                     ratio: '1:3',
-                    gap: '0',
+                    gap: space(16),
                     valign: 'top',
                     stack: false,
                     columns: [
-                      { id: 'c1', children: [{ id: 'n4', kind: 'icon', part: 'g1', size: iconSize(14) }] },
+                      { id: 'c1', fit: true, children: [{ id: 'n4', kind: 'icon', part: 'g1', size: iconSize(14) }] },
                       { id: 'c2', children: [{ id: 'n5', kind: 'text', part: 't1', size: textSize(14), lineHeight: 'loose' }] },
                     ],
                   },

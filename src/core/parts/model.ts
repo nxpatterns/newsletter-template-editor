@@ -148,6 +148,8 @@ export interface BoxNode extends NodeBase {
 
 export interface ColumnNode {
   id: string;
+  /** As wide as its content instead of its ratio share; only a column of icons has a known width. */
+  fit?: boolean;
   children: LayoutNode[];
 }
 

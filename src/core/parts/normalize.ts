@@ -113,7 +113,7 @@ function node(raw: unknown, seen: Set<string>): LayoutNode | null {
         const cid = isObj(c) ? id(c['id']) : null;
         if (!cid || seen.has(cid) || columns.length >= 4) continue;
         seen.add(cid);
-        columns.push({ id: cid, children: nodes((c as Json)['children'], seen) });
+        columns.push({ id: cid, ...((c as Json)['fit'] === true ? { fit: true } : {}), children: nodes((c as Json)['children'], seen) });
       }
       if (!columns.length) return null;
       const ratio = isOneOf(RATIOS, raw['ratio']) && ratioParts(raw['ratio']).length === columns.length ? raw['ratio'] : ratiosFor(columns.length)[0]!;

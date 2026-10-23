@@ -14,6 +14,7 @@ import {
   type BoxProps,
   type ButtonNode,
   type CollectionItem,
+  type ColumnNode,
   type ColumnsNode,
   type ContentPart,
   type DividerNode,
@@ -78,15 +79,35 @@ export function innerPx(px: number, n: BoxProps): number {
   return Math.max(0, px - pad - (sides === 'y' ? 0 : border));
 }
 
-/** Column widths for a ratio: shares of the width left after the gaps; the rest goes to the last. */
+/** Content width of a column that fits its content: the widest icon box (or its circle); null when it holds anything else. */
+export function fitPx(c: ColumnNode): number | null {
+  if (!c.fit) return null;
+  let w = 0;
+  for (const n of c.children) {
+    if (n.kind === 'spacer') continue;
+    if (n.kind !== 'icon') return null;
+    const box = ICON_PX[n.size ?? 'm'] + (n.circle ? 2 * ICON_CIRCLE_PAD_PX : 0);
+    w = Math.max(w, box + 2 * SPACE_PX[n.padH ?? '0']);
+  }
+  return w || null;
+}
+
+/**
+ * Column widths: a column that fits its content takes that width, the others share the width left
+ * after it and the gaps by their ratio; the rest goes to the last of them.
+ */
 export function columnWidths(avail: number, n: Pick<ColumnsNode, 'ratio' | 'gap' | 'columns'>): number[] {
   const shares = ratioParts(n.ratio).slice(0, n.columns.length);
   const gap = SPACE_PX[n.gap ?? 'm'];
-  const free = Math.max(0, avail - gap * Math.max(0, shares.length - 1));
-  const total = shares.reduce((a, b) => a + b, 0) || 1;
-  const widths = shares.map((s) => Math.floor((free * s) / total));
+  const fixed = shares.map((_, i) => (n.columns[i] ? fitPx(n.columns[i]) : null));
+  const fixedSum = fixed.reduce<number>((a, f) => a + (f ?? 0), 0);
+  const free = Math.max(0, avail - gap * Math.max(0, shares.length - 1) - fixedSum);
+  const total = shares.reduce((a, s, i) => a + (fixed[i] === null ? s : 0), 0) || 1;
+  const widths = shares.map((s, i) => fixed[i] ?? Math.floor((free * s) / total));
   const used = widths.reduce((a, b) => a + b, 0);
-  if (widths.length) widths[widths.length - 1]! += free - used;
+  const last = fixed.lastIndexOf(null);
+  const rest = last >= 0 ? last : widths.length - 1;
+  if (widths.length) widths[rest]! += Math.max(0, avail - gap * Math.max(0, shares.length - 1)) - used;
   return widths;
 }
 
@@ -323,7 +344,8 @@ function renderIcon(scope: Scope, n: IconNode): string {
   if (!glyph) return scope.ctx.annotate ? '&nbsp;' : '';
   const size = n.size ?? 'm';
   const px = ICON_PX[size];
-  if (!n.circle) return `<span class="fp-icon fp-icon-${size}">${escapeHtml(glyph)}</span>`;
+  // Every icon of a size is one box wide, the glyph centered, so texts beside icons line up.
+  if (!n.circle) return `<span class="fp-icon fp-icon-${size} fp-icon-w-${size}">${escapeHtml(glyph)}</span>`;
   // In a circle a right-pointing triangle moves right by an eighth and down by a sixteenth of its size, so its centroid sits in the middle.
   const nudge = PLAY_GLYPHS.has(glyph.replace('\uFE0E', '')) ? ` fp-icon-play-${size}` : '';
   const icon = `<span class="fp-icon fp-icon-${size} fp-icon-c${nudge}">${escapeHtml(glyph)}</span>`;
