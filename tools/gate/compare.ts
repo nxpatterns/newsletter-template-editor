@@ -5,11 +5,11 @@
  *
  *   npm run gate:compare -- [out dir]   (default: docs/sessions/cache/screenshots/gate-comparison)
  */
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { chromium } from '@playwright/test';
 import { JSDOM } from 'jsdom';
-import { defaultGlobals } from '../../src/core/brand/defaults';
+import { defaultGlobals, PLACEHOLDER_LOGO_SRC } from '../../src/core/brand/defaults';
 import { compareTextsAndLinks, toFreeBlock } from '../../src/core/parts/convert';
 import { GATE_SAMPLES } from '../../src/core/parts/convert/samples';
 import { renderExport } from '../../src/core/render';
@@ -26,8 +26,13 @@ const out = resolve(process.argv[2] ?? 'docs/sessions/cache/screenshots/gate-com
 rmSync(out, { recursive: true, force: true });
 mkdirSync(join(out, 'shots'), { recursive: true });
 
+// The page has no base URL, so the app's placeholder logo goes in as a data URL.
+const logoSrc = `data:image/png;base64,${readFileSync(join('public', PLACEHOLDER_LOGO_SRC)).toString('base64')}`;
+
 const exportOf = (block: Block) => {
-  const doc: Newsletter = { schemaVersion: CURRENT_SCHEMA_VERSION, globals: defaultGlobals(), blocks: [block] };
+  const globals = defaultGlobals();
+  globals.logo = { ...globals.logo, src: logoSrc };
+  const doc: Newsletter = { schemaVersion: CURRENT_SCHEMA_VERSION, globals, blocks: [block] };
   return renderExport(doc);
 };
 
