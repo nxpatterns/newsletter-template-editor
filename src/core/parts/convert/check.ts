@@ -19,11 +19,14 @@ function decode(s: string): string {
   });
 }
 
+const INLINE_TAG = /<\/?(?:a|span|s|strong|b|em|i|u|sup|sub|code)\b[^>]*>/gi;
+
 export function exportTextsAndLinks(html: string): TextsAndLinks {
   const body = html.replace(/<(style|script|head)\b[\s\S]*?<\/\1>/gi, ' ').replace(/<!--[\s\S]*?-->/g, ' ');
   // An export href can be a ListMonk `{{ TrackLink "url" }}` with raw quotes inside.
   const links = [...body.matchAll(/<a\b[^>]*?\bhref="(\{\{\s*TrackLink\s+"[^"]*"\s*\}\}|[^"]*)"/gi)].map((m) => decode(m[1]!));
-  const text = decode(body.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();
+  // Inline tags join their text (`<s>€</s>199` reads `€199`); every other tag separates words.
+  const text = decode(body.replace(INLINE_TAG, '').replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();
   return { text, links };
 }
 

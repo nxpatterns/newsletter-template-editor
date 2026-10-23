@@ -5,7 +5,7 @@ import type { ContentPart, FreeBlockData, LayoutNode, TextContent } from '../mod
 import { plainDoc, space, textSize } from './snap';
 
 /** A one-line text part, or nothing when the field is empty. */
-function line(id: string, role: TextContent['role'], text: string, doc: RichDoc = plainDoc(text)): TextContent[] {
+export function line(id: string, role: TextContent['role'], text: string, doc: RichDoc = plainDoc(text)): TextContent[] {
   return text.trim() ? [{ id, kind: 'text', role, doc }] : [];
 }
 

@@ -4,6 +4,7 @@ import type { FreeBlockData } from '../model';
 import { chapterToParts, ctaToParts, dividerToParts, heroToParts, quoteToParts } from './blocks';
 import { imageTextToParts, imageToParts, videoToParts } from './images';
 import { paragraphToParts } from './paragraph';
+import { priceToParts, statToParts } from './numbers';
 import { contactToParts, testimonialToParts } from './people';
 
 /**
@@ -31,6 +32,8 @@ export const CONVERTERS: ConverterRegistry = {
   video: videoToParts,
   testimonial: testimonialToParts,
   contact: contactToParts,
+  'stat-box': statToParts,
+  'price-box': priceToParts,
 };
 
 /** Built-in types that have a converter, in registry order. */

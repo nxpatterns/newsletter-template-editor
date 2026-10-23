@@ -92,6 +92,22 @@ describe('gate converters', () => {
     }
   });
 
+  it('strikes only currency and old amount, never the label or the period, and drops an old price line without an amount in both renderers', () => {
+    const p = { id: 'p', type: 'price-box', badge: '', currency: '€', amount: '99', periodLabel: 'net / year', strikeEnabled: true, strikeAmount: '199', strikeLabel: 'Statt', details: '', fine: '' } as const;
+    for (const html of [body(p), body(toFreeBlock(p)!)]) {
+      expect(html).toMatch(/Statt<\/span> <s\b|Statt <s>/);
+      expect(html.match(/<s\b[^>]*>(.*?)<\/s>/)![1]!.replace(/<[^>]+>/g, '')).toBe('€199');
+      expect(html.match(/net \/ year/g)).toHaveLength(1);
+    }
+    const none = { ...p, strikeAmount: ' ' };
+    for (const html of [body(none), body(toFreeBlock(none)!)]) expect(html).not.toMatch(/Statt|<s\b/);
+  });
+
+  it('leaves out an empty badge and empty stat extras in the export', () => {
+    expect(body({ id: 'p', type: 'price-box', badge: '', currency: '$', amount: '1', periodLabel: '', strikeEnabled: false, strikeAmount: '', strikeLabel: '', details: '', fine: '' })).not.toContain('price-badge');
+    expect(body({ id: 's', type: 'stat-box', number: '1', label: 'L', geo: '' })).not.toContain('stat-col-geo');
+  });
+
   it('snaps off-scale px to the nearest step, a tie to the smaller one', () => {
     expect([space(52), space(20), space(28), textSize(22), textSize(13), border(3)]).toEqual(['2xl', 'm', 'l', 'l', 'xs', '2']);
   });

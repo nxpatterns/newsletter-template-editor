@@ -576,6 +576,14 @@ function renderTestimonial(b: TestimonialBlock, ctx: RenderContext): string {
 }
 
 function renderStatBox(b: StatBoxBlock, ctx: RenderContext): string {
+  // Without extras the right half stays empty, no hairline beside nothing; the editor keeps the field to type into.
+  const geoHtml = b.geo.trim() || ctx.annotate
+    ? `<td class="stat-col-geo">
+                    <p class="stat-geo text-geo">
+                      <span data-field="geo">${plainTextToHtml(b.geo)}</span>
+                    </p>
+                  </td>`
+    : '<td>&nbsp;</td>';
   return rowWrap(
     b,
     ctx,
@@ -596,11 +604,7 @@ function renderStatBox(b: StatBoxBlock, ctx: RenderContext): string {
                       <span data-field="label">${escapeHtml(b.label)}</span>
                     </p>
                   </td>
-                  <td class="stat-col-geo">
-                    <p class="stat-geo text-geo">
-                      <span data-field="geo">${plainTextToHtml(b.geo)}</span>
-                    </p>
-                  </td>
+                  ${geoHtml}
                 </tr>
               </table>
             </td>
@@ -659,7 +663,7 @@ function renderBenefitsList(b: BenefitsListBlock, ctx: RenderContext): string {
 }
 
 function composeStrikeLine(b: PriceBoxBlock): string {
-  if (!b.strikeEnabled) return '';
+  if (!b.strikeEnabled || !b.strikeAmount.trim()) return '';
   const money = `${b.currency}${b.strikeAmount}`.trim();
   return [b.strikeLabel.trim(), money].filter(Boolean).join(' ');
 }
@@ -676,6 +680,14 @@ function renderPriceBox(b: PriceBoxBlock, ctx: RenderContext): string {
                 )}</span></s>
               </p>`
     : '';
+  // Without a badge no empty accent square; the editor keeps the field to type into.
+  const badgeHtml = b.badge.trim() || ctx.annotate
+    ? `
+              <p class="price-badge">
+                <span data-field="badge">${escapeHtml(b.badge)}</span>
+              </p>
+              <br /><br />`
+    : '';
   const periodHtml = b.periodLabel.trim()
     ? ` <span data-field="periodLabel" class="price-period text-price-sub">${escapeHtml(b.periodLabel)}</span>`
     : '';
@@ -689,10 +701,7 @@ function renderPriceBox(b: PriceBoxBlock, ctx: RenderContext): string {
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
           <tr>
             <td bgcolor="${color(ctx, 'box')}" class="chapter-bg price-box-bg price-box-inner">
-              <p class="price-badge">
-                <span data-field="badge">${escapeHtml(b.badge)}</span>
-              </p>
-              <br /><br />${strikeHtml}
+              ${badgeHtml}${strikeHtml}
               <p class="price-main text-price-main">
                 <span data-field="currency" class="price-currency">${escapeHtml(b.currency)}</span><span data-field="amount">${escapeHtml(
                   b.amount,
