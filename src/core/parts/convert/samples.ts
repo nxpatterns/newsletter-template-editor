@@ -227,4 +227,34 @@ export const GATE_SAMPLES: readonly GateSample[] = [
       fine: 'Taxes may apply.',
     },
   },
+  {
+    name: 'Benefits list, three items, own glyph, long text',
+    block: {
+      id: 'bl1',
+      type: 'benefits-list',
+      items: [
+        { icon: '›', text: 'Tours online in 48 hours' },
+        { icon: '✓', text: 'No app needed: guests open the tour in any browser, on the phone or on the desktop, without an account.' },
+        { icon: '', text: 'Cancel anytime' },
+      ],
+    },
+  },
+  { name: 'Benefits list, one item', block: { id: 'bl2', type: 'benefits-list', items: [{ icon: '›', text: 'Free updates' }] } },
+  {
+    name: 'CTA link list, three items, mail and no intro',
+    gap: 'links',
+    block: {
+      id: 'cl1',
+      type: 'cta-link-list',
+      items: [
+        { icon: '→', label: 'Demo', intro: 'See a tour in action:', linkText: 'Open the demo', href: 'https://cloudlib.eu/demo' },
+        { icon: '✉', label: 'Questions', intro: 'Write to us at', linkText: 'hello@cloudlib.eu', href: 'mailto:hello@cloudlib.eu' },
+        { icon: '»', label: 'Prices', intro: '', linkText: 'All plans', href: 'https://cloudlib.eu/prices' },
+      ],
+    },
+  },
+  {
+    name: 'CTA link list, one item, no link',
+    block: { id: 'cl2', type: 'cta-link-list', items: [{ icon: '→', label: 'Office hours', intro: 'Mondays to Fridays, 9 to 17.', linkText: 'Call', href: '' }] },
+  },
 ];

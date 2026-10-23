@@ -2,6 +2,7 @@ import type { SlotColor } from '../../colors/model';
 import type { BuiltInBlock, BuiltInType, FreeBlock } from '../../types';
 import type { FreeBlockData } from '../model';
 import { chapterToParts, ctaToParts, dividerToParts, heroToParts, quoteToParts } from './blocks';
+import { benefitsToParts, ctaLinksToParts } from './lists';
 import { imageTextToParts, imageToParts, videoToParts } from './images';
 import { paragraphToParts } from './paragraph';
 import { priceToParts, statToParts } from './numbers';
@@ -34,6 +35,8 @@ export const CONVERTERS: ConverterRegistry = {
   contact: contactToParts,
   'stat-box': statToParts,
   'price-box': priceToParts,
+  'benefits-list': benefitsToParts,
+  'cta-link-list': ctaLinksToParts,
 };
 
 /** Built-in types that have a converter, in registry order. */
