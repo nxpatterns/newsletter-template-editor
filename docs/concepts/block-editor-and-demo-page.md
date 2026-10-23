@@ -132,11 +132,11 @@ A **Date** part (formatted month, day, weekday, time range) and a calendar link 
 
 ### Gate steps
 
-Decisions 84 to 86. Each step is its own fresh thread; step 1 comes first, steps 2 to 9 run one after another because they all touch `src/core/parts/`, step 10 comes last. Event and Greeting stay built-in.
+Decisions 84 to 86. Each step is its own fresh thread; step 1 comes first, steps 2 to 9 and then 11 run one after another because they all touch `src/core/parts/`, step 10 comes last. Event and Greeting stay built-in.
 
 | Step | Blocks | Size |
 | --- | --- | --- |
-| 1. Comparison harness | Converter registry (built-in block to content plus default design); script renders the **export** of each block twice (old renderer, parts) at 600 and 320 px, Light and Dark, onto one side by side overview page in `docs/sessions/cache/`; automatic check only for equal texts and links; first block Paragraph | M |
+| 1. Comparison harness | Converter registry (built-in block to content plus default design); script renders the **export** of each block twice (old renderer, parts) at 640 and 320 px (640, because the phone rules start at max-width 600 px), Light and Dark, onto one side by side overview page in `docs/sessions/cache/`; automatic check only for equal texts and links; first block Paragraph | M |
 | 2. Text blocks | Hero, Chapter band, Pull quote, CTA button | M |
 | 3. Divider | All 5 styles plus page background (glow and ornament need mixed colors) | M |
 | 4. Images | Image, Image and text (widths, side, vertical alignment) | M |
@@ -145,6 +145,7 @@ Decisions 84 to 86. Each step is its own fresh thread; step 1 comes first, steps
 | 7. Numbers | Stat box, Price box (strike-through, mixed sizes in one line) | M |
 | 8. Lists | Benefits list, CTA link list (List part) | M |
 | 9. Teasers | Teasers with 2 and 3 columns | M |
+| 11. Model gaps from the gate | Found in steps 2 and 3: a full width band (section `bleed: full`) gets no phone padding (Chapter band); the pull quote bar gets its width (border scale) and its color as two separate settings, color by default the link color; a button text gets an uppercase option; a slot color can mix two roles (glow steps and ornament hairlines of the Divider); a column can take the width of its content (ornament glyph between two lines); a narrower part can keep its width on phones (two-tone Divider). Converters can already bind slots to other roles (`Converted.colors`); the quote bar uses that once it has its own slot | S |
 | 10. Close the gate | A test checks that every built-in type except Event and Greeting has a converter; mark the gate done here | S |
 
 Each step adds its screenshots to the overview and waits for the maintainer's OK.

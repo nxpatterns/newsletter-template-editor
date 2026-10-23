@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { defaultGlobals } from '../../brand/defaults';
 import { renderExport } from '../../render';
 import { CURRENT_SCHEMA_VERSION, type Block, type Newsletter } from '../../types';
-import { compareTextsAndLinks, exportTextsAndLinks, toFreeBlock } from '.';
+import { compareTextsAndLinks, convertBlock, exportTextsAndLinks, toFreeBlock } from '.';
 import { GATE_SAMPLES } from './samples';
 import { border, space, textSize } from './snap';
 
@@ -25,6 +25,23 @@ describe('gate converters', () => {
   it('keeps the color of a whole paragraph', () => {
     const block: Block = { id: 'p', type: 'paragraph', body: [{ type: 'p', color: 'dim', children: [{ type: 'text', text: 'Dim' }] }] };
     expect(body(toFreeBlock(block as never)!)).toMatch(/<span class="text-dim"[^>]*>Dim<\/span>/);
+  });
+
+  it('binds a divider on the page background and its two-tone marks to their roles', () => {
+    expect(convertBlock({ id: 'd', type: 'divider', style: 'two-tone', background: 'page' })?.colors).toEqual({
+      'n2.line': { role: 'btn' },
+      'n3.line': { role: 'link' },
+      background: { role: 'page' },
+    });
+  });
+
+  it('keeps a divider slot color through the export inliner', () => {
+    const c = convertBlock({ id: 'd', type: 'divider', style: 'two-tone', background: 'content' })!;
+    const globals = defaultGlobals();
+    for (const set of [globals.colors.light, globals.colors.dark]) set.blocks['d'] = c.colors;
+    const html = renderExport({ schemaVersion: CURRENT_SCHEMA_VERSION, globals, blocks: [c.block] }).body;
+    expect(html).toMatch(/class="fp-divider[^"]*" style="[^"]*border-top-color: #1d6bb8/);
+    expect(html).not.toMatch(/class="fp-divider[^"]*" style="[^"]*border-top: /);
   });
 
   it('snaps off-scale px to the nearest step, a tie to the smaller one', () => {

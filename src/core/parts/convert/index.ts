@@ -1,6 +1,7 @@
+import type { SlotColor } from '../../colors/model';
 import type { BuiltInBlock, BuiltInType, FreeBlock } from '../../types';
 import type { FreeBlockData } from '../model';
-import { chapterToParts, ctaToParts, heroToParts, quoteToParts } from './blocks';
+import { chapterToParts, ctaToParts, dividerToParts, heroToParts, quoteToParts } from './blocks';
 import { paragraphToParts } from './paragraph';
 
 /**
@@ -8,7 +9,12 @@ import { paragraphToParts } from './paragraph';
  * the parts model. The built-in renderers stay (decision 85); the converters prove that the parts
  * model expresses every built-in type. `tools/gate/compare.ts` renders both exports side by side.
  */
-export type Converter<T extends BuiltInBlock> = (block: T) => FreeBlockData;
+export type Converter<T extends BuiltInBlock> = (block: T) => Converted;
+
+/** A converted block plus the slot colors it binds to other roles than the slot defaults (block level, both sets). */
+export interface Converted extends FreeBlockData {
+  colors?: Record<string, SlotColor>;
+}
 export type ConverterRegistry = { [K in BuiltInType]?: Converter<Extract<BuiltInBlock, { type: K }>> };
 
 export const CONVERTERS: ConverterRegistry = {
@@ -17,6 +23,7 @@ export const CONVERTERS: ConverterRegistry = {
   'chapter-band': chapterToParts,
   'pull-quote': quoteToParts,
   'cta-button': ctaToParts,
+  divider: dividerToParts,
 };
 
 /** Built-in types that have a converter, in registry order. */
@@ -24,10 +31,17 @@ export function convertedTypes(): BuiltInType[] {
   return Object.keys(CONVERTERS) as BuiltInType[];
 }
 
+/** The block as a free block with the same id plus its slot colors; null while its type has no converter. */
+export function convertBlock(block: BuiltInBlock): { block: FreeBlock; colors: Record<string, SlotColor> } | null {
+  const convert = CONVERTERS[block.type] as Converter<BuiltInBlock> | undefined;
+  if (!convert) return null;
+  const { colors = {}, ...data } = convert(block);
+  return { block: { id: block.id, type: 'free', ...data }, colors };
+}
+
 /** The block as a free block with the same id; null while its type has no converter. */
 export function toFreeBlock(block: BuiltInBlock): FreeBlock | null {
-  const convert = CONVERTERS[block.type] as Converter<BuiltInBlock> | undefined;
-  return convert ? { id: block.id, type: 'free', ...convert(block) } : null;
+  return convertBlock(block)?.block ?? null;
 }
 
 export { exportTextsAndLinks, compareTextsAndLinks, type TextsAndLinks } from './check';

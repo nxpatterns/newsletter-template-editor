@@ -162,7 +162,7 @@ function renderNode(scope: Scope, n: LayoutNode, avail: number): string {
     case 'icon':
       return renderIcon(scope, n);
     case 'divider':
-      return renderDivider(n, avail);
+      return renderDivider(n);
     case 'spacer': {
       const h = SPACE_PX[n.height];
       return `<table ${TABLE} width="100%"><tr><td class="fp-spacer fp-h-${n.height}" height="${h}">&nbsp;</td></tr></table>`;
@@ -322,9 +322,9 @@ function renderIcon(scope: Scope, n: IconNode): string {
   return `<table ${TABLE} align="${n.align ?? 'left'}" class="fp-icon-wrap"><tr><td class="fp-icon-cell fp-r-round" width="${d}" height="${d}" align="center" valign="middle" bgcolor="${hex(scope, `${n.id}.circle`)}">${icon}</td></tr></table>`;
 }
 
-function renderDivider(n: DividerNode, avail: number): string {
-  const w = sharePx(avail, n);
-  return `<table ${TABLE} width="${w}" align="${n.align ?? 'center'}"><tr><td class="fp-divider fp-dv-${n.line ?? 'solid'}-${n.thickness ?? '1'}">&nbsp;</td></tr></table>`;
+/** The cell around it already applies the width share; fluid, so a line in a column that does not stack can shrink on phones. */
+function renderDivider(n: DividerNode): string {
+  return `<table ${TABLE} width="100%"><tr><td class="fp-divider fp-dv-${n.line ?? 'solid'}-${n.thickness ?? '1'}">&nbsp;</td></tr></table>`;
 }
 
 function renderEmbed(scope: Scope, n: EmbedNode, avail: number): string {

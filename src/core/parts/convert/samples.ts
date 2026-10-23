@@ -55,4 +55,12 @@ export const GATE_SAMPLES: readonly GateSample[] = [
     block: { id: 'q1', type: 'pull-quote', quote: 'Since we added the tour, viewings dropped by half and every visitor arrives ready to sign.' },
   },
   { name: 'CTA button', block: { id: 'b1', type: 'cta-button', text: 'Book a demo', href: 'https://cloudlib.eu/demo' } },
+  { name: 'Divider, thin', block: { id: 'd1', type: 'divider', style: 'thin', background: 'content' } },
+  { name: 'Divider, two-tone', block: { id: 'd2', type: 'divider', style: 'two-tone', background: 'content' } },
+  { name: 'Divider, ornament', block: { id: 'd3', type: 'divider', style: 'ornament', background: 'content' } },
+  { name: 'Divider, ornament, page background', block: { id: 'd4', type: 'divider', style: 'ornament', background: 'page' } },
+  { name: 'Divider, glow', block: { id: 'd5', type: 'divider', style: 'glow', background: 'content' } },
+  { name: 'Divider, glow, page background', block: { id: 'd6', type: 'divider', style: 'glow', background: 'page' } },
+  { name: 'Divider, spacer only', block: { id: 'd7', type: 'divider', style: 'spacer-only', background: 'content' } },
+  { name: 'Divider, spacer only, 40 px, page background', block: { id: 'd8', type: 'divider', style: 'spacer-only', background: 'page', heightPx: 40 } },
 ];

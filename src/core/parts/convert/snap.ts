@@ -1,5 +1,5 @@
 import type { RichDoc } from '../../richtext/model';
-import { BORDER_PX, SPACE_PX, TEXT_SIZE_PX, type BorderWidth, type Space, type TextSize } from '../scales';
+import { BORDER_PX, ICON_PX, SPACE_PX, TEXT_SIZE_PX, type BorderWidth, type IconSize, type Space, type TextSize } from '../scales';
 
 /**
  * Off-scale px of the built-in CSS snap to the nearest scale step (decision 86); a tie goes to
@@ -19,6 +19,7 @@ function nearest<T extends string>(table: Readonly<Record<T, number>>, px: numbe
 export const space = (px: number): Space => nearest(SPACE_PX, px);
 export const textSize = (px: number): TextSize => nearest(TEXT_SIZE_PX, px);
 export const border = (px: number): BorderWidth => nearest(BORDER_PX, px);
+export const iconSize = (px: number): IconSize => nearest(ICON_PX, px);
 
 /** Plain text of a built-in field as a rich doc: one paragraph, line breaks kept. */
 export function plainDoc(text: string): RichDoc {

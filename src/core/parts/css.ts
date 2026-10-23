@@ -98,9 +98,10 @@ export function freeBlockCss(): string {
     }),
     ...ICON_SIZES.map((i) => `.fp-icon-${i} { display: inline-block; font-size: ${ICON_PX[i]}px; line-height: ${ICON_PX[i]}px; mso-line-height-rule: exactly; }`),
     '.fp-icon { color: var(--email-link); font-family: Arial, Helvetica, sans-serif; }',
+    // Longhands only: a shorthand after the slot color would reset it once the export inlines both.
     '.fp-divider { font-size: 0; line-height: 0; mso-line-height-rule: exactly; border-top-color: var(--email-line); }',
     ...['solid', 'dashed', 'dotted'].flatMap((line) =>
-      BORDER_WIDTHS.filter((w) => w !== '0').map((w) => `.fp-dv-${line}-${w} { border-top: ${BORDER_PX[w]}px ${line} var(--email-line); height: 0; }`),
+      BORDER_WIDTHS.filter((w) => w !== '0').map((w) => `.fp-dv-${line}-${w} { border-top-width: ${BORDER_PX[w]}px; border-top-style: ${line}; height: 0; }`),
     ),
     ...SPACES.map((s) => `.fp-h-${s} { font-size: 0; line-height: ${SPACE_PX[s]}px; height: ${SPACE_PX[s]}px; mso-line-height-rule: exactly; }`),
     '.fp-spacer, .fp-gap { font-size: 0; line-height: 0; }',

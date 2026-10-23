@@ -1,7 +1,7 @@
 /**
  * Gate comparison (decisions 84 to 86): renders the export of every gate sample twice, with the
- * built-in renderer and as parts, takes screenshots at 600 and 320 px in Light and Dark and
- * writes one side by side overview page. The only automatic check is equal texts and links.
+ * built-in renderer and as parts, takes screenshots at 640 and 320 px in Light and Dark and
+ * writes one side by side overview page. 640, not 600: the phone rules start at max-width 600 px. The only automatic check is equal texts and links.
  *
  *   npm run gate:compare -- [out dir]   (default: docs/sessions/cache/screenshots/gate-comparison)
  */
@@ -10,7 +10,8 @@ import { join, resolve } from 'node:path';
 import { chromium } from '@playwright/test';
 import { JSDOM } from 'jsdom';
 import { defaultGlobals, PLACEHOLDER_LOGO_SRC } from '../../src/core/brand/defaults';
-import { compareTextsAndLinks, toFreeBlock } from '../../src/core/parts/convert';
+import type { SlotColor } from '../../src/core/colors/model';
+import { compareTextsAndLinks, convertBlock } from '../../src/core/parts/convert';
 import { GATE_SAMPLES } from '../../src/core/parts/convert/samples';
 import { renderExport } from '../../src/core/render';
 import { CURRENT_SCHEMA_VERSION, type Block, type Newsletter } from '../../src/core/types';
@@ -19,7 +20,7 @@ import { CURRENT_SCHEMA_VERSION, type Block, type Newsletter } from '../../src/c
 const dom = new JSDOM('');
 Object.assign(globalThis, { DOMParser: dom.window.DOMParser, Node: dom.window.Node, Element: dom.window.Element });
 
-const WIDTHS = [600, 320] as const;
+const WIDTHS = [640, 320] as const;
 const SCHEMES = ['light', 'dark'] as const;
 
 const out = resolve(process.argv[2] ?? 'docs/sessions/cache/screenshots/gate-comparison');
@@ -29,9 +30,10 @@ mkdirSync(join(out, 'shots'), { recursive: true });
 // The page has no base URL, so the app's placeholder logo goes in as a data URL.
 const logoSrc = `data:image/png;base64,${readFileSync(join('public', PLACEHOLDER_LOGO_SRC)).toString('base64')}`;
 
-const exportOf = (block: Block) => {
+const exportOf = (block: Block, colors: Record<string, SlotColor> = {}) => {
   const globals = defaultGlobals();
   globals.logo = { ...globals.logo, src: logoSrc };
+  for (const set of [globals.colors.light, globals.colors.dark]) set.blocks[block.id] = { ...colors };
   const doc: Newsletter = { schemaVersion: CURRENT_SCHEMA_VERSION, globals, blocks: [block] };
   return renderExport(doc);
 };
@@ -44,9 +46,9 @@ const sections: string[] = [];
 let failures = 0;
 
 for (const sample of GATE_SAMPLES) {
-  const free = toFreeBlock(sample.block);
-  if (!free) throw new Error(`No converter for ${sample.block.type}`);
-  const sides = { old: exportOf(sample.block), parts: exportOf(free) };
+  const converted = convertBlock(sample.block);
+  if (!converted) throw new Error(`No converter for ${sample.block.type}`);
+  const sides = { old: exportOf(sample.block), parts: exportOf(converted.block, converted.colors) };
   const diffs = compareTextsAndLinks(sides.old.body, sides.parts.body);
   if (diffs.length) failures++;
   const id = slug(sample.name);
