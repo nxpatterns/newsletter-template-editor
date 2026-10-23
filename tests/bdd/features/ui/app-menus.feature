@@ -6,7 +6,7 @@ Feature: Header menus and reset to defaults
   Scenario: The start page menu offers the start choices, saved templates, open from file and the reset last
     Given I open the start page
     When I open the start page menu
-    Then the start page menu entries should be 'start-menu-blank,start-menu-demo-de,start-menu-demo-en,start-menu-open-saved,start-menu-open-file,menu-factory-reset'
+    Then the start page menu entries should be 'start-menu-blank,start-menu-demo-de,start-menu-demo-en,start-menu-new-block,start-menu-open-saved,start-menu-open-file,menu-factory-reset'
     And the menu entry 'start-menu-open-saved' should be disabled
     And the reset entry should be shown in the danger color
 
@@ -71,9 +71,9 @@ Feature: Header menus and reset to defaults
     And I close the message
     And I delete the start tile 'start-demo-en'
     And I close the message
-    Then the start tiles should be in the order 'start-blank'
+    Then the start tiles should be in the order 'start-blank,start-new-block'
     When I open the start page menu
     And I choose the menu entry 'menu-factory-reset'
     And I confirm the reset
     Then the start page should be visible
-    And the start tiles should be in the order 'start-blank,start-demo-de,start-demo-en'
+    And the start tiles should be in the order 'start-blank,start-demo-de,start-demo-en,start-new-block'

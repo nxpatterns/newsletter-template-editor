@@ -5,7 +5,7 @@ Feature: Start page
   Scenario: First start offers blank first, then the two demos, and nothing recent yet
     Given I open the start page
     Then the start page title should read 'Welcome! How would you like to start?'
-    And the start tiles should be in the order 'start-blank,start-demo-de,start-demo-en'
+    And the start tiles should be in the order 'start-blank,start-demo-de,start-demo-en,start-new-block'
     And there should be no draft to continue
     And the recent list should be empty
 
@@ -189,12 +189,12 @@ Feature: Start page
   Scenario: Deleting a demo tile with the corner ×, then undoing it
     Given I open the start page
     When I delete the start tile 'start-demo-de'
-    Then the start tiles should be in the order 'start-blank,start-demo-en'
+    Then the start tiles should be in the order 'start-blank,start-demo-en,start-new-block'
     And the message should offer to undo
     When I undo in the message
-    Then the start tiles should be in the order 'start-blank,start-demo-de,start-demo-en'
+    Then the start tiles should be in the order 'start-blank,start-demo-de,start-demo-en,start-new-block'
     When I reopen the app
-    Then the start tiles should be in the order 'start-blank,start-demo-de,start-demo-en'
+    Then the start tiles should be in the order 'start-blank,start-demo-de,start-demo-en,start-new-block'
 
   Scenario: Deleting two demo tiles keeps the first undo reachable
     Given I open the start page
@@ -204,7 +204,7 @@ Feature: Start page
     When I page to the older message
     Then the message pager should show 1 of 2
     When I undo in the message
-    Then the start tiles should be in the order 'start-blank,start-demo-de'
+    Then the start tiles should be in the order 'start-blank,start-demo-de,start-new-block'
     And the message should offer to undo
     And the message pager should be hidden
 
@@ -225,19 +225,19 @@ Feature: Start page
     When I delete the start tile 'start-demo-en'
     And I close the message
     And I reopen the app
-    Then the start tiles should be in the order 'start-blank,start-demo-de'
+    Then the start tiles should be in the order 'start-blank,start-demo-de,start-new-block'
     When I open the start page menu
-    Then the start page menu entries should be 'start-menu-blank,start-menu-demo-de,start-menu-open-saved,start-menu-open-file,menu-factory-reset'
+    Then the start page menu entries should be 'start-menu-blank,start-menu-demo-de,start-menu-new-block,start-menu-open-saved,start-menu-open-file,menu-factory-reset'
 
   Scenario: A pinned template is a tile after the demos and opens from there
     Given I open the editor with the German demo
     When I save the template
     And I go back to the start page
     And I pin the recent newsletter 'CloudLib-EU-Example-Newsletter-Template'
-    Then the start tiles should be in the order 'start-blank,start-demo-de,start-demo-en,start-pinned'
+    Then the start tiles should be in the order 'start-blank,start-demo-de,start-demo-en,start-new-block,start-pinned'
     And the recent newsletter 'CloudLib-EU-Example-Newsletter-Template' should be shown as pinned
     When I reopen the app
-    Then the start tiles should be in the order 'start-blank,start-demo-de,start-demo-en,start-pinned'
+    Then the start tiles should be in the order 'start-blank,start-demo-de,start-demo-en,start-new-block,start-pinned'
     When I click the start tile 'start-pinned'
     Then the editor should show the document 'CloudLib-EU-Example-Newsletter-Template'
 
@@ -250,8 +250,8 @@ Feature: Start page
     And I close the message
     And I delete the start tile 'start-demo-en'
     And I close the message
-    Then the start tiles should be in the order 'start-blank,start-pinned'
+    Then the start tiles should be in the order 'start-blank,start-new-block,start-pinned'
     When I unpin the start tile 'CloudLib-EU-Example-Newsletter-Template'
-    Then the start tiles should be in the order 'start-blank'
+    Then the start tiles should be in the order 'start-blank,start-new-block'
     And the recent list should contain 'CloudLib-EU-Example-Newsletter-Template'
     And the recent newsletter 'CloudLib-EU-Example-Newsletter-Template' should not be pinned

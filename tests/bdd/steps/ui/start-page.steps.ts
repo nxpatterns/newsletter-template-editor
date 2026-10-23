@@ -240,6 +240,9 @@ When('I delete the start tile {string}', async ({ page }, id: string) => {
   const del = item.getByTestId('start-demo-delete');
   await expect(del).toBeVisible();
   await del.click();
+  // The tile goes and the undo message comes in the same render, after the store write.
+  await expect(page.getByTestId(id)).toHaveCount(0);
+  await expect(page.getByTestId('app-snackbar-action')).toBeVisible();
 });
 
 Then('the message should offer to undo', async ({ page }) => {
