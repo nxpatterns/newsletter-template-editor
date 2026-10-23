@@ -21,7 +21,8 @@ function decode(s: string): string {
 
 export function exportTextsAndLinks(html: string): TextsAndLinks {
   const body = html.replace(/<(style|script|head)\b[\s\S]*?<\/\1>/gi, ' ').replace(/<!--[\s\S]*?-->/g, ' ');
-  const links = [...body.matchAll(/<a\b[^>]*?\bhref="([^"]*)"/gi)].map((m) => decode(m[1]!));
+  // An export href can be a ListMonk `{{ TrackLink "url" }}` with raw quotes inside.
+  const links = [...body.matchAll(/<a\b[^>]*?\bhref="(\{\{\s*TrackLink\s+"[^"]*"\s*\}\}|[^"]*)"/gi)].map((m) => decode(m[1]!));
   const text = decode(body.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();
   return { text, links };
 }

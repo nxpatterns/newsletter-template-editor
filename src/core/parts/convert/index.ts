@@ -2,7 +2,7 @@ import type { SlotColor } from '../../colors/model';
 import type { BuiltInBlock, BuiltInType, FreeBlock } from '../../types';
 import type { FreeBlockData } from '../model';
 import { chapterToParts, ctaToParts, dividerToParts, heroToParts, quoteToParts } from './blocks';
-import { imageTextToParts, imageToParts } from './images';
+import { imageTextToParts, imageToParts, videoToParts } from './images';
 import { paragraphToParts } from './paragraph';
 
 /**
@@ -27,6 +27,7 @@ export const CONVERTERS: ConverterRegistry = {
   divider: dividerToParts,
   image: imageToParts,
   'image-text': imageTextToParts,
+  video: videoToParts,
 };
 
 /** Built-in types that have a converter, in registry order. */

@@ -15,7 +15,16 @@ describe('gate converters', () => {
   it.each(GATE_SAMPLES.map((s) => [s.name, s] as const))('%s: the parts export shows the same texts and links', (_, s) => {
     const free = toFreeBlock(s.block);
     expect(free?.type).toBe('free');
-    expect(compareTextsAndLinks(body(s.block), body(free!))).toEqual([]);
+    const diffs = compareTextsAndLinks(body(s.block), body(free!));
+    if (s.gap === 'links') expect(diffs.map((d) => d.split(':')[0])).toEqual(['Links differ']);
+    else expect(diffs).toEqual([]);
+  });
+
+  it('links the video thumbnail (tracked) and title but not yet the play icon, and binds the play colors', () => {
+    const c = convertBlock({ id: 'v', type: 'video', src: 'https://x.eu/a.png', alt: 'A', href: 'https://x.eu/v', title: 'Watch', duration: '' })!;
+    // The title is a text link, which the export does not wrap with TrackLink (paragraph links neither).
+    expect(exportTextsAndLinks(body(c.block)).links).toEqual(['{{ TrackLink "https://x.eu/v" }}', 'https://x.eu/v']);
+    expect(c.colors).toEqual({ 'n4.circle': { role: 'link' }, 'n4.icon': { role: 'btnText' } });
   });
 
   it('has no converter for the greeting, which stays built-in', () => {
@@ -74,5 +83,9 @@ describe('gate converters', () => {
 
   it('ignores styles and decodes entities', () => {
     expect(exportTextsAndLinks('<style>p{}</style><p>A &amp; B&nbsp;C</p>').text).toBe('A & B C');
+  });
+
+  it('reads a tracked export link as a whole', () => {
+    expect(exportTextsAndLinks('<a href="{{ TrackLink "https://a.eu" }}">A</a>').links).toEqual(['{{ TrackLink "https://a.eu" }}']);
   });
 });

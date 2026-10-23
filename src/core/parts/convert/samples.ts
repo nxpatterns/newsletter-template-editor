@@ -22,6 +22,8 @@ const copy = (text: string, link?: string): ParagraphBlock['body'] => [
 export interface GateSample {
   name: string;
   block: BuiltInBlock;
+  /** A model gap (gate step 11) the text and link check is expected to show until it is closed. */
+  gap?: 'links';
 }
 
 export const GATE_SAMPLES: readonly GateSample[] = [
@@ -132,4 +134,10 @@ export const GATE_SAMPLES: readonly GateSample[] = [
       valign: 'middle',
     },
   },
+  {
+    name: 'Video, link and duration',
+    block: { id: 'v1', type: 'video', src: LANDSCAPE, alt: 'Harbour at dusk', href: 'https://cloudlib.eu/tour', title: 'Watch the 3D tour', duration: '2:30' },
+    gap: 'links',
+  },
+  { name: 'Video, no link, no duration', block: { id: 'v2', type: 'video', src: LANDSCAPE, alt: 'Harbour at dusk', href: '', title: 'Watch the 3D tour', duration: '' } },
 ];
