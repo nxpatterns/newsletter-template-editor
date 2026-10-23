@@ -98,6 +98,9 @@ export function freeBlockCss(): string {
       return `a.fp-btn-t-${t} { font-size: ${TEXT_SIZE_PX[t]}px; line-height: ${lineHeightPx(t, 'tight')}px; mso-line-height-rule: exactly; }`;
     }),
     ...ICON_SIZES.map((i) => `.fp-icon-${i} { display: inline-block; font-size: ${ICON_PX[i]}px; line-height: ${ICON_PX[i]}px; mso-line-height-rule: exactly; }`),
+    // In a circle the glyph is a block, so the cell centers its box and not a line box of the inherited line height.
+    '.fp-icon-c { display: block; }',
+    ...ICON_SIZES.map((i) => `.fp-icon-play-${i} { padding: ${ICON_PX[i] / 8}px 0 0 ${ICON_PX[i] / 4}px; }`),
     '.fp-icon { color: var(--email-link); font-family: Arial, Helvetica, sans-serif; }',
     // Longhands only: a shorthand after the slot color would reset it once the export inlines both.
     '.fp-divider { font-size: 0; line-height: 0; mso-line-height-rule: exactly; border-top-color: var(--email-line); }',

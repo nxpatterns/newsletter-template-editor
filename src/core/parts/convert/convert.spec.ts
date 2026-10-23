@@ -70,6 +70,14 @@ describe('gate converters', () => {
     expect(html.indexOf('<img')).toBeLessThan(html.lastIndexOf('fp-col'));
   });
 
+  it('gives the play glyph the button text color with and without a link, nudged right in the circle in both renderers', () => {
+    for (const href of ['https://x.eu/v', '']) {
+      const v: Block = { id: 'v', type: 'video', src: '', alt: '', href, title: 'Watch', duration: '' };
+      expect(body(v)).toMatch(/class="video-play-glyph" style="[^"]*color: #ffffff[^"]*padding: 2px 0 0 4px/);
+      expect(body(toFreeBlock(v as never)!)).toMatch(/class="fp-icon fp-icon-s fp-icon-c fp-icon-play-s" style="[^"]*padding: 2px 0 0 4px/);
+    }
+  });
+
   it('snaps off-scale px to the nearest step, a tie to the smaller one', () => {
     expect([space(52), space(20), space(28), textSize(22), textSize(13), border(3)]).toEqual(['2xl', 'm', 'l', 'l', 'xs', '2']);
   });

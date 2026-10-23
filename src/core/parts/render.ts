@@ -312,6 +312,8 @@ function renderButton(scope: Scope, n: ButtonNode): string {
   return `<table ${TABLE}${width} align="${align}" class="fp-btn"><tr><td class="fp-btn-cell fp-btn-${size} fp-btn-${variant}${radius}" align="center"${fill}>${link}</td></tr></table>`;
 }
 
+const PLAY_GLYPHS: ReadonlySet<string> = new Set(['\u25B6', '\u25BA', '\u25B8', '\u25B7', '\u25B9', '\u25BB']);
+
 /** Circle diameter around an icon: the icon plus 8 px each side. */
 export const ICON_CIRCLE_PAD_PX = 8;
 
@@ -321,8 +323,10 @@ function renderIcon(scope: Scope, n: IconNode): string {
   if (!glyph) return scope.ctx.annotate ? '&nbsp;' : '';
   const size = n.size ?? 'm';
   const px = ICON_PX[size];
-  const icon = `<span class="fp-icon fp-icon-${size}">${escapeHtml(glyph)}</span>`;
-  if (!n.circle) return icon;
+  if (!n.circle) return `<span class="fp-icon fp-icon-${size}">${escapeHtml(glyph)}</span>`;
+  // In a circle a right-pointing triangle moves right by an eighth and down by a sixteenth of its size, so its centroid sits in the middle.
+  const nudge = PLAY_GLYPHS.has(glyph.replace('\uFE0E', '')) ? ` fp-icon-play-${size}` : '';
+  const icon = `<span class="fp-icon fp-icon-${size} fp-icon-c${nudge}">${escapeHtml(glyph)}</span>`;
   const d = px + 2 * ICON_CIRCLE_PAD_PX;
   return `<table ${TABLE} align="${n.align ?? 'left'}" class="fp-icon-wrap"><tr><td class="fp-icon-cell fp-r-round" width="${d}" height="${d}" align="center" valign="middle" bgcolor="${hex(scope, `${n.id}.circle`)}">${icon}</td></tr></table>`;
 }

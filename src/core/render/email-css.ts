@@ -402,14 +402,15 @@ ${Object.entries(vars).map(([k, v]) => `    --email-${k}: ${v};`).join('\n')}
   /* Video preview: play row below the thumbnail (no overlay; Gmail/Outlook) */
   .video-play-row { margin-top: 12px; }
   .video-play-cell { width: 32px; height: 32px; border-radius: 50%; }
-  a.video-play-link {
+  a.video-play-link { display: block; text-decoration: none; }
+  /* Same glyph with or without a link; 4 px left and 2 px top put the triangle's centroid, not its box, in the middle (Arial sets it high). */
+  .video-play-glyph {
     display: block;
     font-family: Arial, sans-serif;
     font-size: 13px;
-    line-height: 32px;
+    line-height: 30px;
     color: var(--email-btn-text);
-    text-decoration: none;
-    padding-left: 2px;
+    padding: 2px 0 0 4px;
   }
   .video-title-cell {
     font-family: var(--email-font);

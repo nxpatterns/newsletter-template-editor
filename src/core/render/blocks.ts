@@ -334,7 +334,7 @@ function renderVideo(b: VideoBlock, ctx: RenderContext): string {
       `${pic}
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" class="video-play-row">
           <tr>
-            <td class="video-play-cell" width="32" height="32" align="center" valign="middle" bgcolor="${play}">${wrap('&#9654;&#xFE0E;', 'video-play-link')}</td>
+            <td class="video-play-cell" width="32" height="32" align="center" valign="middle" bgcolor="${play}">${wrap('<span class="video-play-glyph">&#9654;&#xFE0E;</span>', 'video-play-link')}</td>
             <td class="video-play-gap" width="10">&nbsp;</td>
             <td class="video-title-cell" valign="middle">${wrap(`<span data-field="title">${escapeHtml(b.title)}</span>`, 'video-title-link')}${duration}</td>
           </tr>
