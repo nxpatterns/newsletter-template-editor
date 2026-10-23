@@ -182,18 +182,52 @@ export function replaceableBlocks(n: Newsletter, type: Block['type'], ownBlockId
  * placed block stay, layout options and colors come from the copy, and its own colors are dropped.
  */
 export function replaceBlocksWithClone(n: Newsletter, input: { content: CloneContent; ref: OwnBlockRef }): Newsletter {
-  const { block: copy } = input.content;
-  const targets = new Set(replaceableBlocks(n, copy.type, input.ref.blockId).map((b) => b.id));
+  const targets = new Set(replaceableBlocks(n, input.content.block.type, input.ref.blockId).map((b) => b.id));
   if (!targets.size) return n;
   let colors = n.globals.colors;
-  const layout = LAYOUT_FIELDS[copy.type] ?? [];
   const blocks = n.blocks.map((b) => {
     if (!targets.has(b.id)) return b;
     colors = withOwnColors(colors, b.id, input.content.colors);
-    const fromCopy = Object.fromEntries(layout.map((key) => [key, (copy as unknown as Record<string, unknown>)[key]]));
-    return { ...b, ...structuredClone(fromCopy), own: { ...input.ref } } as Block;
+    return adoptCopy(b, input.content.block, input.ref);
   });
   return { ...n, globals: { ...n.globals, colors }, blocks };
+}
+
+/** Texts and images of `b` stay; layout options come from the copy (a free block takes the copy whole). */
+function adoptCopy(b: Block, copy: Block, ref: OwnBlockRef): Block {
+  if (copy.type === 'free') return { ...structuredClone(copy), id: b.id, own: { ...ref } } as Block;
+  const layout = LAYOUT_FIELDS[copy.type] ?? [];
+  const fromCopy = Object.fromEntries(layout.map((key) => [key, (copy as unknown as Record<string, unknown>)[key]]));
+  return { ...b, ...structuredClone(fromCopy), own: { ...ref } } as Block;
+}
+
+/** The newer version of a placed own block's source that waits for "Update", or null (decision 50). */
+export function newerVersionOf(block: Block, latest: number): number | null {
+  const own = block.own;
+  if (!own || latest <= own.version || own.dismissed === latest) return null;
+  return latest;
+}
+
+/**
+ * "Update" to a newer version (decision 52): the user's texts stay, layout and colors come from
+ * the new version. A free block is its design, so it takes the new version whole.
+ */
+export function updatePlacedToVersion(n: Newsletter, input: { id: string; content: CloneContent; ref: OwnBlockRef }): Newsletter {
+  const target = n.blocks.find((b) => b.id === input.id);
+  if (!target?.own || target.own.blockId !== input.ref.blockId) return n;
+  return {
+    ...n,
+    globals: { ...n.globals, colors: withOwnColors(n.globals.colors, input.id, input.content.colors) },
+    blocks: n.blocks.map((b) => (b.id === input.id ? adoptCopy(b, input.content.block, input.ref) : b)),
+  };
+}
+
+/** "Later": the notice for `version` stays hidden until an even newer version comes. */
+export function dismissNewerVersion(n: Newsletter, input: { id: string; version: number }): Newsletter {
+  return {
+    ...n,
+    blocks: n.blocks.map((b) => (b.id === input.id && b.own ? ({ ...b, own: { ...b.own, dismissed: input.version } } as Block) : b)),
+  };
 }
 
 /** Same content, so a draft that matches the stored state counts as unchanged. */

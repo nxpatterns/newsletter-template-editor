@@ -61,24 +61,27 @@ export class BlockEditorFlow {
 
   /** After the first save the block exists: the address drops "new copy of type …". */
   private settleAddress(): void {
-    void this.router.navigate([], { queryParams: { type: null }, queryParamsHandling: 'merge', replaceUrl: true });
+    void this.router.navigate([], { queryParams: { type: null, replace: null }, queryParamsHandling: 'merge', replaceUrl: true });
   }
 
-  /** Decision 49: offered after the first version, off by default; only for the open template. */
+  /**
+   * Offered after the first version, only for the open template: off by default (decision 49),
+   * checked when the copy came from "Adjust" in the Colors tab (decision 33).
+   */
   private async offerReplace(): Promise<void> {
     const count = this.editor.replaceableCount();
     const source = this.editor.source();
     const type = this.editor.baseType();
     if (!count || !source || !type) return;
-    let replace = false;
+    let replace = this.editor.replaceByDefault();
     const typeLabel = this.i18n.t(`block.${type}`);
     const done = await this.confirm.confirm({
       title: this.i18n.t('blockEditor.replaceTitle', { type: typeLabel }),
-      body: this.i18n.t('blockEditor.replaceBody'),
+      body: this.i18n.t('blockEditor.replaceBody') + (replace ? ' ' + this.i18n.t('blockEditor.replaceBodyColors') : ''),
       tone: 'info',
       option: {
         label: this.i18n.t(count === 1 ? 'blockEditor.replaceOptionOne' : 'blockEditor.replaceOption', { n: count, type: typeLabel, template: source.name, name: this.editor.name() }),
-        checked: false,
+        checked: replace,
         onChange: (on) => (replace = on),
       },
       note: this.i18n.t('blockEditor.replaceNote'),

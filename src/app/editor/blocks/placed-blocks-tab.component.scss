@@ -59,6 +59,7 @@
 
   position: relative;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.25rem;
   border: 1px solid color-mix(in srgb, var(--pl-a) 35%, var(--ds-border));
@@ -110,7 +111,7 @@
 }
 
 .placed-select {
-  flex: 1 1 auto;
+  flex: 1 1 0%;
   min-width: 0;
   display: flex;
   align-items: center;
@@ -176,6 +177,36 @@
   line-height: 1.3;
   text-transform: uppercase;
   color: var(--ds-text);
+}
+
+/* Newer-version notice directly under the row (decision 50, mockup R2 variant A). */
+.placed-newer {
+  flex: 1 1 100%;
+  min-width: 0;
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.1rem 0.15rem 0.25rem 1.6rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--ds-accent) 45%, var(--ds-border));
+  border-radius: var(--ds-radius);
+  background: color-mix(in srgb, var(--ds-accent) 7%, var(--ds-bg-panel));
+  font-size: 0.75rem;
+  color: var(--ds-text);
+}
+
+.placed-newer small {
+  color: var(--ds-text-muted);
+}
+
+.placed-newer-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.placed-newer .placed-newer-update {
+  border-color: color-mix(in srgb, var(--ds-accent) 70%, var(--ds-border));
+  color: var(--ds-accent);
 }
 
 .placed-actions {

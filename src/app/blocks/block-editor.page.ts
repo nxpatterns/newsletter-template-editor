@@ -316,7 +316,7 @@ export class BlockEditorPage {
       if (!id) return;
       const query = this.route.snapshot.queryParamMap;
       // Untracked: open() reads the language, and a language switch must not reopen (and wipe) the block.
-      void untracked(() => this.editor.open(id, { from: query.get('from'), type: query.get('type') })).then(() => {
+      void untracked(() => this.editor.open(id, { from: query.get('from'), type: query.get('type'), replace: query.get('replace') })).then(() => {
         if (this.params() !== id || this.editor.status() !== 'missing') return;
         void this.router.navigateByUrl('/missing-block', { skipLocationChange: true });
       });

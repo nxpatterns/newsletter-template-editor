@@ -136,6 +136,8 @@ export interface Globals {
 export interface OwnBlockRef {
   blockId: string;
   version: number;
+  /** Newer version whose notice was put off with "Later"; the notice returns with the next one. */
+  dismissed?: number;
 }
 
 export interface BlockBase {

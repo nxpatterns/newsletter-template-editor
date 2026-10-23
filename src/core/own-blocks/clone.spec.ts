@@ -18,6 +18,9 @@ import {
   replacePlacedWithOwn,
   replaceableBlocks,
   replaceBlocksWithClone,
+  dismissNewerVersion,
+  newerVersionOf,
+  updatePlacedToVersion,
   sameCloneContent,
   setCloneColor,
 } from './clone';
@@ -144,6 +147,43 @@ describe('replacing placed blocks with the copy', () => {
   it('changes nothing when no block of the type is placed', () => {
     const n = blankNewsletter('de');
     expect(replaceBlocksWithClone(n, { content: newCloneContent(price()), ref })).toBe(n);
+  });
+});
+
+describe('updating a placed own block to a newer version', () => {
+  const placedOwn = () => {
+    const n = blankNewsletter('de');
+    n.blocks = [{ ...price(), id: 'p1', amount: '42', currency: '$', own: { ...ref } }];
+    n.globals.colors.dark.blocks['p1'] = { details: { hex: '#010101' } };
+    return n;
+  };
+
+  it('notices a newer version until it is put off, and again for the next one', () => {
+    const n = placedOwn();
+    expect(newerVersionOf(n.blocks[0], 1)).toBeNull();
+    expect(newerVersionOf(n.blocks[0], 2)).toBe(2);
+    const later = dismissNewerVersion(n, { id: 'p1', version: 2 });
+    expect(newerVersionOf(later.blocks[0], 2)).toBeNull();
+    expect(newerVersionOf(later.blocks[0], 3)).toBe(3);
+    expect(newerVersionOf({ ...price(), id: 'x' }, 5)).toBeNull();
+  });
+
+  it('keeps the texts and takes layout and colors from the new version', () => {
+    const copy = { ...price(), currency: '€', amount: '99' };
+    const content = { ...newCloneContent(copy), colors: { price: { hex: '#fb923c' } } };
+    const next = updatePlacedToVersion(dismissNewerVersion(placedOwn(), { id: 'p1', version: 2 }), {
+      id: 'p1',
+      content,
+      ref: { blockId: 'own-1', version: 2 },
+    });
+    expect(next.blocks[0]).toMatchObject({ id: 'p1', amount: '42', currency: '€', own: { blockId: 'own-1', version: 2 } });
+    expect(next.blocks[0].own?.dismissed).toBeUndefined();
+    expect(next.globals.colors.dark.blocks['p1']).toEqual({ price: { hex: '#fb923c' } });
+  });
+
+  it('changes nothing for a block from another own block', () => {
+    const n = placedOwn();
+    expect(updatePlacedToVersion(n, { id: 'p1', content: newCloneContent(price()), ref: { blockId: 'other', version: 2 } })).toBe(n);
   });
 });
 

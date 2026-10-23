@@ -17,8 +17,10 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import type { Block } from '../../../core';
+import { dismissNewerVersion, newerVersionOf, updatePlacedToVersion } from '../../../core/own-blocks/clone';
 import { LocaleService } from '../../i18n/locale.service';
 import { MenuIconComponent } from '../../shell/menu-icon.component';
+import { SnackbarService } from '../../ui/snackbar/snackbar.service';
 import { NewsletterSession } from '../newsletter-session.service';
 import { OwnBlockLibrary } from '../own-block-library.service';
 import type { PlacedView } from '../panel/panel-routes';
@@ -28,6 +30,8 @@ import { SaveOwnBlockDialogComponent } from './save-own-block-dialog.component';
 
 /** Room the row menu needs below its row before it opens upwards instead, in px. */
 const MENU_ROOM_PX = 200;
+/** How long "Undo" stays after "Update" (mockup R2). */
+const UNDO_MS = 8000;
 
 @Component({
   selector: 'app-placed-blocks-tab',
@@ -45,6 +49,7 @@ export class PlacedBlocksTabComponent {
   protected readonly session = inject(NewsletterSession);
   private readonly ownBlocks = inject(OwnBlockLibrary);
   private readonly router = inject(Router);
+  private readonly snackbar = inject(SnackbarService);
 
   private readonly rootEl = viewChild<ElementRef<HTMLElement>>('placedRoot');
 
@@ -99,6 +104,34 @@ export class PlacedBlocksTabComponent {
 
   protected ownEntry(id: string): boolean {
     return !!this.ownBlocks.entry(id);
+  }
+
+  /** Newer version of this placed own block's source waiting for "Update" (decision 50), or null. */
+  protected newerVersion(block: Block): number | null {
+    const entry = block.own ? this.ownBlocks.entry(block.own.blockId) : undefined;
+    return entry?.latest ? newerVersionOf(block, entry.block.versionCount) : null;
+  }
+
+  /** Decision 52: texts stay, layout and colors from the new version; ↶ or "Undo" takes it back. */
+  protected updateToNewer(block: Block): void {
+    const entry = block.own ? this.ownBlocks.entry(block.own.blockId) : undefined;
+    const content = entry?.latest;
+    if (!entry || !content) return;
+    const ref = { blockId: entry.block.id, version: entry.block.versionCount };
+    this.session.applyChange((n) => updatePlacedToVersion(n, { id: block.id, content, ref }));
+    const after = this.session.newsletter();
+    this.snackbar.show(this.i18n.t('placed.newer.done', { name: entry.block.name, n: ref.version }), 'info', UNDO_MS, {
+      label: this.i18n.t('action.undo'),
+      run: () => {
+        // Only while nothing else changed the template since.
+        if (this.session.newsletter() === after) this.session.undo();
+      },
+    });
+  }
+
+  /** "Later": hidden until an even newer version comes. */
+  protected laterNewer(block: Block, version: number): void {
+    this.session.applyChange((n) => dismissNewerVersion(n, { id: block.id, version }));
   }
 
   protected toggleMenu(id: string, event: MouseEvent): void {

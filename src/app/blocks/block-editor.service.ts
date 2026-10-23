@@ -96,11 +96,14 @@ export class BlockEditorService {
   private readonly busySignal = signal(false);
   /** Selected part of a free block (a part id, a column id, or null for the block itself). */
   private readonly selectedPartSignal = signal<string | null>(null);
+  /** Opened from "Adjust" in the Colors tab: replacing the blocks of this type starts checked (decision 33). */
+  private readonly replaceByDefaultSignal = signal(false);
 
   readonly status = this.statusSignal.asReadonly();
   readonly blockId = this.blockIdSignal.asReadonly();
   readonly record = this.recordSignal.asReadonly();
   readonly source = this.sourceSignal.asReadonly();
+  readonly replaceByDefault = this.replaceByDefaultSignal.asReadonly();
   readonly name = this.nameSignal.asReadonly();
   readonly previewMode = this.previewModeSignal.asReadonly();
   readonly tab = this.tabSignal.asReadonly();
@@ -154,8 +157,9 @@ export class BlockEditorService {
    * Open the block behind the address: a stored own block, or a new copy of the built-in `type`
    * (from "Adjust"; nothing is stored before the first save). `from` names the source template.
    */
-  async open(id: string, opts: { from: string | null; type: string | null }): Promise<void> {
+  async open(id: string, opts: { from: string | null; type: string | null; replace?: string | null }): Promise<void> {
     this.blockIdSignal.set(id);
+    this.replaceByDefaultSignal.set(opts.replace === 'all');
     this.statusSignal.set('loading');
     const [source, record] = await Promise.all([this.resolveSource(opts.from), this.library.open(id).catch(() => null)]);
     if (this.blockIdSignal() !== id) return;

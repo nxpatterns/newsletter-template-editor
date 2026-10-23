@@ -1,5 +1,6 @@
 import { isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, PLATFORM_ID, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import {
   blockOverrideCount,
   COLOR_MODES,
@@ -41,7 +42,8 @@ import {
 import { LocaleService } from '../../i18n/locale.service';
 import type { GroupHue } from '../../ui/group-accordion/group-accordion.component';
 import { SnackbarService } from '../../ui/snackbar/snackbar.service';
-import { blockTypeHue, blockTypeIcon, type BlockTypeHue } from '../blocks/block-catalog';
+import { blockTypeHue, blockTypeIcon, CATALOG_TYPES, type BlockTypeHue } from '../blocks/block-catalog';
+import { ID_SOURCE } from '../id-source.token';
 import { NewsletterSession } from '../newsletter-session.service';
 
 /** How long "Undo" stays offered after copying or taking over colors. */
@@ -106,6 +108,8 @@ interface SectionVm {
   sameTypeCount: number;
   /** Copying this block's colors to the others of its type would change something. */
   copyChanges: boolean;
+  /** Built-in type "Adjust" opens as a copy (decision 33); null for header, footer and own blocks. */
+  adjustType: Block['type'] | null;
 }
 
 interface GeneralVm {
@@ -146,6 +150,8 @@ export class ColorsFieldsComponent {
   protected readonly i18n = inject(LocaleService);
   protected readonly session = inject(NewsletterSession);
   private readonly snackbar = inject(SnackbarService);
+  private readonly router = inject(Router);
+  private readonly newId = inject(ID_SOURCE);
 
   protected readonly modes = COLOR_MODES;
   /** Roles a block color can follow; the brand colors are set in the Brand tab. */
@@ -190,6 +196,7 @@ export class ColorsFieldsComponent {
       index: number | null,
       hue: BlockTypeHue | null,
       card: GroupHue | null,
+      adjustType: Block['type'] | null = null,
     ): SectionVm => {
       const others = index === null ? [] : sameTypeTargets(target, blockTargets);
       const rows = colorSlotsOf(target.type).map((def): SlotRowVm => {
@@ -223,6 +230,7 @@ export class ColorsFieldsComponent {
         rows,
         sameTypeCount: others.length ? others.length + 1 : 0,
         copyChanges: others.some((o) => !sameBlockColors(colors, m, target.id, o.id)),
+        adjustType,
       };
     };
     return {
@@ -232,7 +240,15 @@ export class ColorsFieldsComponent {
       blocks: this.session
         .blocks()
         .map((b: Block, i) =>
-          build({ id: b.id, type: b.type }, this.i18n.t(`block.${b.type}`), blockTypeIcon(b.type), i + 1, blockTypeHue(b.type), null),
+          build(
+            { id: b.id, type: b.type },
+            this.i18n.t(`block.${b.type}`),
+            blockTypeIcon(b.type),
+            i + 1,
+            blockTypeHue(b.type),
+            null,
+            !b.own && (CATALOG_TYPES as readonly string[]).includes(b.type) ? b.type : null,
+          ),
         ),
     };
   });
@@ -436,6 +452,16 @@ export class ColorsFieldsComponent {
     const refs = this.refsOf(role).filter((r) => !(r.target.id === section.target.id && r.key === row.key));
     const from = this.generalByRole().get(role)?.hex ?? '';
     this.pending.set({ role, from, to: row.hex, refs, choice: 'keep', source });
+  }
+
+  /**
+   * "Adjust" from the warning (decision 33): a new copy of the type opens in the block editor;
+   * on its first save, replacing the blocks of this type is checked.
+   */
+  protected adjust(type: Block['type']): void {
+    void this.router.navigate(['/blocks', this.newId()], {
+      queryParams: { from: this.session.routeId(), type, replace: 'all' },
+    });
   }
 
   /** Give all blocks of this type the colors of `section`; asks first when that replaces their own colors. */

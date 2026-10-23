@@ -117,6 +117,28 @@
                   </svg>
                 </button>
               </div>
+              @if (newerVersion(block); as v) {
+                <div class="placed-newer" role="note" [attr.data-testid]="'placed-newer-' + block.id">
+                  <span [textContent]="i18n.t('placed.newer.text', { n: v, name: label(block), current: block.own?.version ?? 0 })"></span>
+                  <small [textContent]="i18n.t('placed.newer.keep', { n: v })"></small>
+                  <span class="placed-newer-acts">
+                    <button
+                      type="button"
+                      class="ed-btn placed-newer-update"
+                      [attr.data-testid]="'placed-newer-update-' + block.id"
+                      [textContent]="i18n.t('placed.newer.update')"
+                      (click)="updateToNewer(block)"
+                    ></button>
+                    <button
+                      type="button"
+                      class="ed-btn"
+                      [attr.data-testid]="'placed-newer-later-' + block.id"
+                      [textContent]="i18n.t('placed.newer.later')"
+                      (click)="laterNewer(block, v)"
+                    ></button>
+                  </span>
+                </div>
+              }
               @if (menuFor() === block.id) {
                 <div
                   class="file-menu-panel placed-menu"

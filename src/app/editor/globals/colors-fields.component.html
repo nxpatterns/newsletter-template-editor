@@ -170,6 +170,16 @@
   <div class="colors-row-end">
     <span class="colors-small" [textContent]="i18n.t('colors.block.label')"></span>
     <span class="colors-row-actions">
+      @if (section.adjustType; as type) {
+        <button
+          type="button"
+          class="colors-ghost-btn"
+          [attr.data-testid]="'color-block-adjust-' + section.target.id"
+          [attr.title]="i18n.t('colors.block.adjustHint', { type: section.label })"
+          [textContent]="i18n.t('colors.block.adjust')"
+          (click)="adjust(type)"
+        ></button>
+      }
       @if (section.sameTypeCount > 1) {
         <button
           type="button"
