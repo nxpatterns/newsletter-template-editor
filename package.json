@@ -47,5 +47,5 @@
     "version:write": "node scripts/write-app-version.mjs",
     "watch": "ng build --watch --configuration development"
   },
-  "version": "0.5.0"
+  "version": "0.6.0"
 }
