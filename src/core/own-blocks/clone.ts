@@ -1,9 +1,11 @@
 import {
   COLOR_MODES,
+  COLOR_ROLES,
   defaultColors,
   isColorRole,
   normalizeColors,
   parseHexColor,
+  resolveGeneralColors,
   type ColorsConfig,
   type SlotColor,
 } from '../colors/model';
@@ -197,4 +199,60 @@ export function replaceBlocksWithClone(n: Newsletter, input: { content: CloneCon
 /** Same content, so a draft that matches the stored state counts as unchanged. */
 export function sameCloneContent(a: CloneContent, b: CloneContent): boolean {
   return JSON.stringify(normalizeCloneContent(a)) === JSON.stringify(normalizeCloneContent(b));
+}
+
+/** One own color of a placed block and how "Save as own block" takes it over (decision 34). */
+export interface PlacedColorChoice {
+  key: string;
+  /** The value the block shows in that set. */
+  hex: string;
+  /** A role the color follows from now on, or a fixed value. */
+  color: SlotColor;
+}
+
+/**
+ * The own colors of a placed block as the copy takes them (decision 34): a link stays a link, a
+ * value equal to a general color follows that color (the slot's usual role first), any other value
+ * stays fixed. The active set decides, since an own block has one choice for Light and Dark
+ * (decision 51) and the block must look the same afterwards (decision 53).
+ */
+export function placedColorChoices(n: Newsletter, id: string): PlacedColorChoice[] {
+  const block = n.blocks.find((b) => b.id === id);
+  if (!block) return [];
+  const general = resolveGeneralColors(n.globals.colors);
+  const own = n.globals.colors[n.globals.colors.mode].blocks[id] ?? {};
+  const out: PlacedColorChoice[] = [];
+  for (const slot of slotsOf(colorTargetOf(block))) {
+    const v = own[slot.key];
+    if (!v) continue;
+    if ('role' in v) {
+      out.push({ key: slot.key, hex: general[v.role], color: { role: v.role } });
+      continue;
+    }
+    const role = general[slot.role] === v.hex ? slot.role : COLOR_ROLES.find((r) => general[r] === v.hex);
+    out.push({ key: slot.key, hex: v.hex, color: role ? { role } : { hex: v.hex } });
+  }
+  return out;
+}
+
+/** "Save as own block" from a placed block: its fields as starting texts, its colors per decision 34. */
+export function cloneContentFromPlaced(n: Newsletter, id: string): CloneContent | null {
+  const block = n.blocks.find((b) => b.id === id);
+  if (!block) return null;
+  const { own: _own, ...fields } = structuredClone(block);
+  const colors = Object.fromEntries(placedColorChoices(n, id).map((c) => [c.key, c.color]));
+  return { kind: kindOf(block), block: { ...fields, id: CLONE_BLOCK_ID } as Block, colors };
+}
+
+/**
+ * That one placed block becomes the new own block (decision 53): same fields, its own colors are
+ * now the copy's, in both sets.
+ */
+export function replacePlacedWithOwn(n: Newsletter, input: { id: string; content: CloneContent; ref: OwnBlockRef }): Newsletter {
+  if (!n.blocks.some((b) => b.id === input.id)) return n;
+  return {
+    ...n,
+    globals: { ...n.globals, colors: withOwnColors(n.globals.colors, input.id, input.content.colors) },
+    blocks: n.blocks.map((b) => (b.id === input.id ? ({ ...b, own: { ...input.ref } } as Block) : b)),
+  };
 }

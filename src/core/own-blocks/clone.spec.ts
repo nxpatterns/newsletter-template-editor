@@ -10,9 +10,12 @@ import {
   cloneContentOf,
   cloneWorkDocument,
   newCloneContent,
+  cloneContentFromPlaced,
   newFreeContent,
   normalizeCloneContent,
+  placedColorChoices,
   placeOwnBlock,
+  replacePlacedWithOwn,
   replaceableBlocks,
   replaceBlocksWithClone,
   sameCloneContent,
@@ -141,5 +144,53 @@ describe('replacing placed blocks with the copy', () => {
   it('changes nothing when no block of the type is placed', () => {
     const n = blankNewsletter('de');
     expect(replaceBlocksWithClone(n, { content: newCloneContent(price()), ref })).toBe(n);
+  });
+});
+
+describe('save a placed block as own block', () => {
+  const placed = () => {
+    const n = blankNewsletter('de');
+    n.blocks = [{ ...price(), id: 'b-price' }];
+    n.globals.colors.mode = 'dark';
+    n.globals.colors.dark.blocks['b-price'] = {
+      top: { hex: STANDARD_SETS.dark.accent },
+      badge: { hex: STANDARD_SETS.dark.link },
+      price: { hex: '#fb923c' },
+      frame: { role: 'head' },
+    };
+    n.globals.colors.light.blocks['b-price'] = { price: { hex: '#c2410c' }, oldPrice: { hex: '#123456' } };
+    return n;
+  };
+
+  it('links colors equal to a general color, keeps the others fixed, and reads the active set (decision 34)', () => {
+    const byKey = Object.fromEntries(placedColorChoices(placed(), 'b-price').map((c) => [c.key, c.color]));
+    expect(byKey).toEqual({
+      top: { role: 'accent' },
+      badge: { role: 'link' },
+      price: { hex: '#fb923c' },
+      frame: { role: 'head' },
+    });
+  });
+
+  it('takes the fields as starting texts without the own reference', () => {
+    const n = placed();
+    n.blocks[0] = { ...n.blocks[0], own: ref } as PriceBoxBlock;
+    const c = cloneContentFromPlaced(n, 'b-price')!;
+    expect(c.kind).toBe('clone');
+    expect(c.block.id).toBe(CLONE_BLOCK_ID);
+    expect(c.block.own).toBeUndefined();
+    expect(cloneContentFromPlaced(n, 'missing')).toBeNull();
+  });
+
+  it('replaces only that block, which then looks the same in the active set (decision 53)', () => {
+    const n = placed();
+    n.blocks.push({ ...price(), id: 'b-other' });
+    const before = renderExport(n).body;
+    const content = cloneContentFromPlaced(n, 'b-price')!;
+    const next = replacePlacedWithOwn(n, { id: 'b-price', content, ref });
+    expect(next.blocks[0].own).toEqual(ref);
+    expect(next.blocks[1].own).toBeUndefined();
+    expect(next.globals.colors.light.blocks['b-price']).toEqual(content.colors);
+    expect(renderExport(next).body).toBe(before);
   });
 });
