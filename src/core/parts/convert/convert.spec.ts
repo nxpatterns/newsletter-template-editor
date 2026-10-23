@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { defaultGlobals } from '../../brand/defaults';
 import { renderExport } from '../../render';
-import { CURRENT_SCHEMA_VERSION, type Block, type Newsletter } from '../../types';
+import { CURRENT_SCHEMA_VERSION, type Block, type Newsletter, type TestimonialBlock } from '../../types';
 import { compareTextsAndLinks, convertBlock, exportTextsAndLinks, toFreeBlock } from '.';
 import { GATE_SAMPLES } from './samples';
 import { border, space, textSize } from './snap';
@@ -25,6 +25,20 @@ describe('gate converters', () => {
     // The title is a text link, which the export does not wrap with TrackLink (paragraph links neither).
     expect(exportTextsAndLinks(body(c.block)).links).toEqual(['{{ TrackLink "https://x.eu/v" }}', 'https://x.eu/v']);
     expect(c.colors).toEqual({ 'n4.circle': { role: 'link' }, 'n4.icon': { role: 'btnText' } });
+  });
+
+  it('drops the testimonial picture without a source or in mode none, and keeps the photo round', () => {
+    const t = { id: 't', type: 'testimonial', quote: 'Q', name: 'N', role: 'R', src: 'https://x.eu/p.png', alt: 'P' } as const;
+    const kinds = (b: TestimonialBlock) => toFreeBlock(b)!.content.parts.map((p) => p.kind);
+    expect(kinds({ ...t, imageMode: 'none' })).toEqual(['text', 'text', 'text']);
+    expect(kinds({ ...t, imageMode: 'logo', src: ' ' })).toEqual(['text', 'text', 'text']);
+    expect(body(toFreeBlock({ ...t, imageMode: 'photo' })!)).toContain('fp-r-round');
+  });
+
+  it('links the contact phone and email like the old renderer and shows the button only with a label and a link', () => {
+    const c = { id: 'c', type: 'contact', src: '', alt: '', intro: '', name: 'N', role: '', phone: '+49 30 1', email: 'a@x.eu', buttonLabel: 'Call', href: '' } as const;
+    expect(exportTextsAndLinks(body(toFreeBlock(c)!)).links).toEqual(exportTextsAndLinks(body(c)).links);
+    expect(toFreeBlock(c)!.content.parts.some((p) => p.kind === 'button')).toBe(false);
   });
 
   it('has no converter for the greeting, which stays built-in', () => {

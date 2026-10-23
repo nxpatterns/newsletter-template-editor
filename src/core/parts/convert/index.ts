@@ -4,6 +4,7 @@ import type { FreeBlockData } from '../model';
 import { chapterToParts, ctaToParts, dividerToParts, heroToParts, quoteToParts } from './blocks';
 import { imageTextToParts, imageToParts, videoToParts } from './images';
 import { paragraphToParts } from './paragraph';
+import { contactToParts, testimonialToParts } from './people';
 
 /**
  * Gate converters (decisions 45, 84 to 86): a built-in block as content plus default design of
@@ -28,6 +29,8 @@ export const CONVERTERS: ConverterRegistry = {
   image: imageToParts,
   'image-text': imageTextToParts,
   video: videoToParts,
+  testimonial: testimonialToParts,
+  contact: contactToParts,
 };
 
 /** Built-in types that have a converter, in registry order. */

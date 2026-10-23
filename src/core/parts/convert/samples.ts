@@ -8,6 +8,8 @@ function picture(w: number, h: number): string {
 }
 const LANDSCAPE = picture(1200, 600);
 const PORTRAIT = picture(480, 600);
+const SQUARE = picture(300, 300);
+const LOGO = picture(280, 72);
 
 const copy = (text: string, link?: string): ParagraphBlock['body'] => [
   {
@@ -140,4 +142,36 @@ export const GATE_SAMPLES: readonly GateSample[] = [
     gap: 'links',
   },
   { name: 'Video, no link, no duration', block: { id: 'v2', type: 'video', src: LANDSCAPE, alt: 'Harbour at dusk', href: '', title: 'Watch the 3D tour', duration: '' } },
+  {
+    name: 'Testimonial, photo',
+    block: { id: 'ts1', type: 'testimonial', quote: 'Since the tour went live, half of our viewings are booked by people who already know they want the flat.', name: 'Anna Keller', role: 'Owner, Keller Estates', imageMode: 'photo', src: SQUARE, alt: 'Anna Keller' },
+  },
+  {
+    name: 'Testimonial, logo',
+    block: { id: 'ts2', type: 'testimonial', quote: 'The tour answers the questions before the phone rings.', name: 'Jonas Brandt', role: 'Head of sales, Harbour Offices', imageMode: 'logo', src: LOGO, alt: 'Harbour Offices' },
+  },
+  {
+    name: 'Testimonial, no image',
+    block: { id: 'ts3', type: 'testimonial', quote: 'Clear, quick and friendly.', name: 'Mira Olsen', role: 'Tenant', imageMode: 'none', src: SQUARE, alt: '' },
+  },
+  {
+    name: 'Contact, photo and button',
+    block: {
+      id: 'ct1',
+      type: 'contact',
+      src: SQUARE,
+      alt: 'Anna Keller',
+      intro: 'Your contact',
+      name: 'Anna Keller',
+      role: 'Customer success',
+      phone: '+49 30 1234567',
+      email: 'anna@cloudlib.eu',
+      buttonLabel: 'Book a call',
+      href: 'https://cloudlib.eu/call',
+    },
+  },
+  {
+    name: 'Contact, no photo, no button',
+    block: { id: 'ct2', type: 'contact', src: '', alt: '', intro: 'Questions?', name: 'Jonas Brandt', role: '', phone: '', email: 'jonas@cloudlib.eu', buttonLabel: '', href: '' },
+  },
 ];
