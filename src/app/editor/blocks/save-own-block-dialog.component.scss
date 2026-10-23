@@ -1,0 +1,152 @@
+@use '../../../styles/editor-forms';
+
+.save-own-dialog {
+  width: min(30rem, calc(100vw - 1.5rem));
+  max-height: calc(100dvh - 1.5rem);
+}
+
+.save-own-head-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Same close X as the reset dialog: SVG, centered in its tile. */
+.save-own-x {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 1.9rem;
+  block-size: 1.9rem;
+  border: 1px solid var(--ds-modal-close-border);
+  border-radius: var(--ds-radius);
+  padding: 0;
+  color: var(--ds-modal-head-color);
+  background: var(--ds-modal-close-bg);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--ds-modal-close-bg-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
+
+  svg {
+    display: block;
+    inline-size: 1rem;
+    block-size: 1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+  }
+}
+
+.save-own-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  overflow: auto;
+}
+
+.save-own-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.save-own-help {
+  margin: 0;
+  color: var(--ds-text-muted);
+  font-size: 0.75rem;
+}
+
+.save-own-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius);
+}
+
+.save-own-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.8125rem;
+  color: var(--ds-text);
+
+  & + & {
+    border-block-start: 1px solid var(--ds-border);
+  }
+}
+
+.save-own-sw {
+  flex: none;
+  inline-size: 1.1rem;
+  block-size: 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--ds-text) 25%, transparent);
+  border-radius: 0.3rem;
+}
+
+.save-own-row-text {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+
+  small {
+    color: var(--ds-text-muted);
+    font-size: 0.7rem;
+    font-weight: 500;
+  }
+}
+
+.save-own-tag {
+  flex: none;
+  border: 1px solid color-mix(in srgb, var(--ds-accent) 35%, transparent);
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+  color: var(--ds-accent);
+  font-size: 0.7rem;
+  font-weight: 600;
+
+  &.is-fixed {
+    border-color: var(--ds-border);
+    color: var(--ds-text-muted);
+  }
+}
+
+.save-own-conseq {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0.2rem 0 0;
+  color: var(--ds-text-muted);
+  font-size: 0.75rem;
+
+  b {
+    color: var(--ds-text);
+  }
+}
+
+.save-own-replace {
+  margin-block-start: 0;
+
+  .confirm-ack-box {
+    accent-color: var(--ds-accent);
+  }
+}
+
+@media (max-width: 480px) {
+  .save-own-row {
+    flex-wrap: wrap;
+  }
+
+  .save-own-tag {
+    margin-inline-start: 1.7rem;
+  }
+}

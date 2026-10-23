@@ -1,0 +1,100 @@
+<div class="confirm-overlay" data-testid="save-own-dialog" [class.is-open]="openVisual()">
+  <div class="confirm-backdrop" (click)="close()"></div>
+  <div class="confirm-dialog save-own-dialog" data-tone="info" role="dialog" aria-modal="true" aria-labelledby="save-own-title">
+    <header class="confirm-head">
+      <span class="confirm-tone-tile" aria-hidden="true">
+        <svg class="confirm-tone-icon" viewBox="0 0 24 24"><path d="M12 3.5 20.5 12 12 20.5 3.5 12z" /></svg>
+      </span>
+      <div class="confirm-head-text save-own-head-text">
+        <span class="confirm-eyebrow" [textContent]="i18n.t('saveOwn.eyebrow')"></span>
+        <h2 id="save-own-title" class="confirm-title" [textContent]="i18n.t('saveOwn.title')"></h2>
+      </div>
+      <button
+        type="button"
+        class="save-own-x"
+        data-testid="save-own-close"
+        [attr.aria-label]="i18n.t('saveOwn.close')"
+        [attr.title]="i18n.t('saveOwn.close')"
+        (click)="close()"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+      </button>
+    </header>
+
+    <div class="confirm-body save-own-body">
+      <div class="save-own-field">
+        <label class="ed-label" for="save-own-name" [textContent]="i18n.t('saveOwn.name')"></label>
+        <input
+          #nameInput
+          id="save-own-name"
+          class="ed-input"
+          type="text"
+          maxlength="255"
+          data-testid="save-own-name"
+          (input)="onName($event)"
+          (keydown.enter)="save(false)"
+        />
+        <span class="save-own-help" [textContent]="i18n.t('saveOwn.nameHelp')"></span>
+      </div>
+
+      <div class="save-own-field">
+        <span class="ed-label" [textContent]="i18n.t('saveOwn.colors')"></span>
+        @if (rows().length) {
+          <ul class="save-own-rows" data-testid="save-own-colors">
+            @for (r of rows(); track r.key) {
+              <li class="save-own-row" [attr.data-testid]="'save-own-color-' + r.key">
+                <span class="save-own-sw" [style.background]="r.hex" aria-hidden="true"></span>
+                <span class="save-own-row-text">
+                  <span [textContent]="r.label"></span>
+                  <small [textContent]="r.detail"></small>
+                </span>
+                <span class="save-own-tag" [class.is-fixed]="!r.follows" [textContent]="r.tag"></span>
+              </li>
+            }
+          </ul>
+          <p class="save-own-conseq">
+            <span><b [textContent]="i18n.t('saveOwn.followsTerm')"></b> {{ i18n.t('saveOwn.followsHint') }}</span>
+            <span><b [textContent]="i18n.t('saveOwn.fixedTerm')"></b> {{ i18n.t('saveOwn.fixedHint') }}</span>
+            <span [textContent]="i18n.t('saveOwn.bothSets')"></span>
+          </p>
+        } @else {
+          <p class="save-own-help" data-testid="save-own-no-colors" [textContent]="i18n.t('saveOwn.noColors')"></p>
+        }
+      </div>
+
+      <label class="confirm-ack save-own-replace">
+        <input
+          type="checkbox"
+          class="confirm-ack-box"
+          data-testid="save-own-replace"
+          [checked]="replace()"
+          (change)="onReplace($event)"
+        />
+        <span class="save-own-row-text">
+          <span [textContent]="i18n.t('saveOwn.replace', { name: blockName() })"></span>
+          <small [textContent]="i18n.t('saveOwn.replaceHint')"></small>
+        </span>
+      </label>
+    </div>
+
+    <footer class="confirm-foot">
+      <button type="button" class="confirm-btn confirm-btn--ghost" data-testid="save-own-cancel" [textContent]="i18n.t('saveOwn.cancel')" (click)="close()"></button>
+      <button
+        type="button"
+        class="confirm-btn confirm-btn--ghost"
+        data-testid="save-own-open"
+        [disabled]="busy()"
+        [textContent]="i18n.t('saveOwn.saveOpen')"
+        (click)="save(true)"
+      ></button>
+      <button
+        type="button"
+        class="confirm-btn confirm-btn--primary"
+        data-testid="save-own-save"
+        [disabled]="busy()"
+        [textContent]="i18n.t('saveOwn.save')"
+        (click)="save(false)"
+      ></button>
+    </footer>
+  </div>
+</div>

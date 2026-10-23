@@ -11,6 +11,9 @@ const MENU_ICONS = {
   reset: ['M4 12a8 8 0 1 0 2.3-5.7', 'M4 4v4h4'],
   globe: ['M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0', 'M3 12h18', 'M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z'],
   check: ['M5 12.5l4.5 4.5L19 7.5'],
+  own: ['M12 3.5 20.5 12 12 20.5 3.5 12z'],
+  openExternal: ['M14 4h6v6', 'M20 4l-9 9', 'M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5'],
+  close: ['M6 6l12 12M18 6 6 18'],
 } as const;
 
 export type MenuIconName = keyof typeof MENU_ICONS;

@@ -1,5 +1,6 @@
 @use '../../../styles/pill-switch';
 @use '../../../styles/editor-forms';
+@use '../../shell/dropdown-menu';
 
 :host {
   display: flex;
@@ -56,6 +57,7 @@
   --pl-b: var(--ds-text-muted);
   --pl-ink: var(--ds-bg-page);
 
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.25rem;
@@ -182,12 +184,40 @@
   flex-shrink: 0;
 }
 
-.placed-actions .ed-btn {
-  min-width: 1.65rem;
-  padding-inline: 0.3rem;
+/* Square icon buttons; the SVG sits exactly in the middle. */
+.placed-icon-btn {
+  display: grid;
+  place-items: center;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  padding: 0;
+
+  svg {
+    display: block;
+    inline-size: 0.95rem;
+    block-size: 0.95rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .placed-dots {
+    fill: currentColor;
+    stroke: none;
+  }
 }
 
-.placed-actions .ed-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
+/* Row menu ⋯: the header menu panel, anchored under (or above) its row. */
+.placed-menu {
+  top: calc(100% + 0.25rem);
+  right: 0;
+  z-index: 5;
+  width: min(16.5rem, 86vw);
+
+  &.is-up {
+    top: auto;
+    bottom: calc(100% + 0.25rem);
+  }
 }

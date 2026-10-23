@@ -89,46 +89,78 @@
               <div class="placed-actions">
                 <button
                   type="button"
-                  class="ed-btn"
+                  class="ed-btn placed-icon-btn"
                   [attr.data-testid]="'edit-block-' + block.id"
                   [attr.aria-label]="i18n.t('blocks.edit')"
                   [attr.title]="i18n.t('blocks.edit')"
                   (click)="session.openBlockEditor(block.id)"
                 >
-                  ✎
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M4 20h4L19 9l-4-4L4 16z" />
+                    <path d="M14 6l4 4" />
+                  </svg>
                 </button>
                 <button
                   type="button"
-                  class="ed-btn"
-                  [attr.aria-label]="i18n.t('blocks.moveUp')"
-                  [disabled]="i === 0"
-                  (click)="session.moveBlock(block.id, -1)"
+                  class="ed-btn placed-icon-btn"
+                  aria-haspopup="menu"
+                  [attr.data-testid]="'block-menu-' + block.id"
+                  [attr.aria-expanded]="menuFor() === block.id"
+                  [attr.aria-label]="i18n.t('placed.menu')"
+                  [attr.title]="i18n.t('placed.menu')"
+                  (click)="toggleMenu(block.id, $event)"
                 >
-                  ↑
-                </button>
-                <button
-                  type="button"
-                  class="ed-btn"
-                  [attr.aria-label]="i18n.t('blocks.moveDown')"
-                  [disabled]="i === session.blocks().length - 1"
-                  (click)="session.moveBlock(block.id, 1)"
-                >
-                  ↓
-                </button>
-                <button
-                  type="button"
-                  class="ed-btn ed-btn--danger"
-                  [attr.aria-label]="i18n.t('blocks.remove')"
-                  [attr.data-testid]="'remove-block-' + block.id"
-                  (click)="session.removeBlock(block.id)"
-                >
-                  ✕
+                  <svg class="placed-dots" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <circle cx="5" cy="12" r="1.8" />
+                    <circle cx="12" cy="12" r="1.8" />
+                    <circle cx="19" cy="12" r="1.8" />
+                  </svg>
                 </button>
               </div>
+              @if (menuFor() === block.id) {
+                <div
+                  class="file-menu-panel placed-menu"
+                  role="menu"
+                  [class.is-up]="menuUp()"
+                  [attr.data-testid]="'block-menu-panel-' + block.id"
+                >
+                  <div class="file-menu-body">
+                    <button type="button" class="file-menu-item" role="menuitem" data-testid="block-menu-edit" (click)="menuEdit(block.id)">
+                      <span class="file-menu-tile"><app-menu-icon name="rename" /></span>
+                      <span [textContent]="i18n.t('placed.menu.edit')"></span>
+                    </button>
+                    <button type="button" class="file-menu-item" role="menuitem" data-testid="block-menu-save-own" (click)="menuSaveOwn(block)">
+                      <span class="file-menu-tile"><app-menu-icon name="own" /></span>
+                      <span [textContent]="i18n.t('placed.menu.saveOwn')"></span>
+                    </button>
+                    @if (block.own && ownEntry(block.own.blockId)) {
+                      <button type="button" class="file-menu-item" role="menuitem" data-testid="block-menu-open-editor" (click)="menuOpenEditor(block.own.blockId)">
+                        <span class="file-menu-tile"><app-menu-icon name="openExternal" /></span>
+                        <span [textContent]="i18n.t('placed.menu.openEditor')"></span>
+                      </button>
+                    }
+                    <div class="file-menu-sep"></div>
+                    <button
+                      type="button"
+                      class="file-menu-item file-menu-item--danger"
+                      role="menuitem"
+                      [attr.data-testid]="'remove-block-' + block.id"
+                      (click)="menuRemove(block.id)"
+                    >
+                      <span class="file-menu-tile"><app-menu-icon name="close" /></span>
+                      <span [textContent]="i18n.t('placed.menu.remove')"></span>
+                    </button>
+                  </div>
+                </div>
+              }
             </li>
           }
         </ul>
       }
     </div>
+  }
+
+  @if (saveOwn(); as s) {
+    <app-save-own-block-dialog [blockId]="s.id" [blockName]="s.name" (closed)="saveOwn.set(null)" />
   }
 </section>
