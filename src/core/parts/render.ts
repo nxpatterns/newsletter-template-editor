@@ -262,7 +262,9 @@ function renderText(scope: Scope, n: TextNode): string {
   const names = nameRendering(scope.ctx);
   return part.doc
     .map((p) => {
-      const inner = renderInlines(p.children, { names });
+      let inner = renderInlines(p.children, { names });
+      // A paragraph color sits on a span: the text slot rule on `.fp-p` would win over a class there.
+      if (inner && p.color) inner = `<span class="text-${p.color}">${inner}</span>`;
       return `<${tag} class="${cls}">${inner || '<br>'}</${tag}>`;
     })
     .join('');

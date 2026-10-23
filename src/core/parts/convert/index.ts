@@ -1,5 +1,6 @@
 import type { BuiltInBlock, BuiltInType, FreeBlock } from '../../types';
 import type { FreeBlockData } from '../model';
+import { chapterToParts, ctaToParts, heroToParts, quoteToParts } from './blocks';
 import { paragraphToParts } from './paragraph';
 
 /**
@@ -12,6 +13,10 @@ export type ConverterRegistry = { [K in BuiltInType]?: Converter<Extract<BuiltIn
 
 export const CONVERTERS: ConverterRegistry = {
   paragraph: paragraphToParts,
+  hero: heroToParts,
+  'chapter-band': chapterToParts,
+  'pull-quote': quoteToParts,
+  'cta-button': ctaToParts,
 };
 
 /** Built-in types that have a converter, in registry order. */

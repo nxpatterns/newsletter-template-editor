@@ -48,4 +48,11 @@ export const GATE_SAMPLES: readonly GateSample[] = [
       ],
     },
   },
+  { name: 'Hero', block: { id: 'h1', type: 'hero', label: 'NEWSLETTER · OCTOBER 2026', headline: 'Virtual tours that sell\nyour space for you' } },
+  { name: 'Chapter band', block: { id: 'c1', type: 'chapter-band', title: 'WHAT IS NEW' } },
+  {
+    name: 'Pull quote',
+    block: { id: 'q1', type: 'pull-quote', quote: 'Since we added the tour, viewings dropped by half and every visitor arrives ready to sign.' },
+  },
+  { name: 'CTA button', block: { id: 'b1', type: 'cta-button', text: 'Book a demo', href: 'https://cloudlib.eu/demo' } },
 ];

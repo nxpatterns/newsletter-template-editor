@@ -4,6 +4,7 @@ import { renderExport } from '../../render';
 import { CURRENT_SCHEMA_VERSION, type Block, type Newsletter } from '../../types';
 import { compareTextsAndLinks, exportTextsAndLinks, toFreeBlock } from '.';
 import { GATE_SAMPLES } from './samples';
+import { border, space, textSize } from './snap';
 
 const body = (block: Block): string => {
   const doc: Newsletter = { schemaVersion: CURRENT_SCHEMA_VERSION, globals: defaultGlobals(), blocks: [block] };
@@ -19,6 +20,15 @@ describe('gate converters', () => {
 
   it('has no converter for the greeting, which stays built-in', () => {
     expect(toFreeBlock({ id: 'e', type: 'greeting' } as never)).toBeNull();
+  });
+
+  it('keeps the color of a whole paragraph', () => {
+    const block: Block = { id: 'p', type: 'paragraph', body: [{ type: 'p', color: 'dim', children: [{ type: 'text', text: 'Dim' }] }] };
+    expect(body(toFreeBlock(block as never)!)).toMatch(/<span class="text-dim"[^>]*>Dim<\/span>/);
+  });
+
+  it('snaps off-scale px to the nearest step, a tie to the smaller one', () => {
+    expect([space(52), space(20), space(28), textSize(22), textSize(13), border(3)]).toEqual(['2xl', 'm', 'l', 'l', 'xs', '2']);
   });
 
   it('reports a changed text and a changed link', () => {
